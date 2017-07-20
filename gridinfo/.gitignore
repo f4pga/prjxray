@@ -1,0 +1,8 @@
+/.Xil
+/design
+/design.v
+/design.xdc
+/design.tcl
+/design.log
+/design.dcp
+/logicframes_SLICE_*.bit
