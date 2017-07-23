@@ -69,3 +69,5 @@ vivado -nojournal -log design.log -mode batch -source design.tcl
 	done
 } > grid-${XRAY_PART}-db.txt
 
+python3 gridinfo-txt2json.py grid-${XRAY_PART}-db
+
