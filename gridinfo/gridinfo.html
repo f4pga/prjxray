@@ -1,0 +1,206 @@
+<html><head>
+<title>Project X-Ray Grid Viewer</title>
+
+<!-- https://github.com/ariutta/svg-pan-zoom -->
+<script src="svg-pan-zoom.js"></script>
+
+<script><!--
+
+var device = "xc7a50tfgg484-1";
+
+var database;
+var numrows = 1;
+var numcols = 1;
+
+var hide_props = [
+	"ALTERNATE_SITE_TYPES",
+	"CLASS",
+	"FIRST_SITE_ID",
+	"GRID_POINT_X",
+	"GRID_POINT_Y",
+	"INDEX",
+	"IS_BONDED",
+	"IS_CENTER_TILE",
+	"IS_CLOCK_BUFFER",
+	"IS_CLOCK_PAD",
+	"IS_DCM_TILE",
+	"IS_GLOBAL_CLOCK_BUFFER",
+	"IS_GLOBAL_CLOCK_PAD",
+	"IS_GT_CLOCK_SITE_TILE",
+	"IS_GT_SITE_TILE",
+	"IS_PAD",
+	"IS_REGIONAL_CLOCK_BUFFER",
+	"IS_REGIONAL_CLOCK_PAD",
+	"IS_RESERVED",
+	"IS_TEST",
+	"IS_USED",
+	"MANUAL_ROUTING",
+	"PROHIBIT",
+	"PROHIBIT_FROM_PERSIST",
+	"SITE_PIPS",
+	"SLR_REGION_ID",
+	"TILE_PATTERN_IDX",
+	"TILE_TYPE_INDEX",
+	"TILE_X",
+	"TILE_Y",
+	"TYPE"
+];
+
+function getJSON(url, callback) {
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', url, true);
+	xhr.responseType = 'json';
+	xhr.onload = function() {
+		var status = xhr.status;
+		if (status == 200) {
+			console.log("Finished downloading JSON file " + url + ".");
+			callback(xhr.response);
+		} else {
+			console.log("Failed to download JSON file " + url + ". Status: " + status);
+			window.alert("Failed to download JSON file " + url + ". Status: " + status);
+		}
+	};
+	console.log("Downloading JSON file " + url + ".");
+	xhr.send();
+};
+
+function getBaseURL() {
+	var loc = window.location.toString().split("/");
+	loc[loc.length-1] = "";
+	return loc.join("/");
+}
+
+function tileInfo(tile) {
+	var props = database["tiles"][tile]["props"];
+
+	var html_text = "<h3>Tile: " + tile + "</h3>\n";
+
+	html_text += "<table>\n";
+	for (var p in props) {
+		if (hide_props.indexOf(p) >= 0) continue;
+		html_text += "<tr><td>" + p + "</td><td>" + props[p] + "</td></tr>\n";
+	}
+
+	html_text += "</table>\n";
+
+	for (var site_idx in database["tiles"][tile]["sites"])
+	{
+		var site = database["tiles"][tile]["sites"][site_idx];
+
+		props = database["sites"][site]["props"];
+
+		html_text += "<h3>Site: " + tile + "</h3>\n";
+
+		if ("bit" in database["sites"][site])
+			html_text += '<div style="margin-bottom: 1em">' + database["sites"][site]["bit"] + "</div>\n";
+
+		html_text += "<table>\n";
+		for (var p in props) {
+			if (hide_props.indexOf(p) >= 0) continue;
+			html_text += "<tr><td>" + p + "</td><td>" + props[p] + "</td></tr>\n";
+		}
+
+		html_text += "</table>\n";
+	}
+
+	var infos = document.getElementById("infos");
+	infos.innerHTML = html_text;
+}
+
+function createSvgTile(tile) {
+	var props = database["tiles"][tile]["props"];
+	var row = +props["ROW"];
+	var col = +props["COLUMN"];
+
+	if (row >= numrows) numrows = row + 1;
+	if (col >= numcols) numcols = col + 1;
+
+	color = "Gray";
+
+	if (props["TYPE"].startsWith("CLBLM_")) color = "Khaki";
+	if (props["TYPE"].startsWith("CLBLL_")) color = "Gold";
+	if (props["TYPE"].startsWith("BRAM_")) color = "Red";
+	if (props["TYPE"].startsWith("DSP_")) color = "Tomato";
+	if (props["TYPE"].startsWith("PCIE_")) color = "Green";
+
+	if (props["TYPE"] == "INT_L") color = "SteelBlue";
+	if (props["TYPE"] == "INT_R") color = "SteelBlue";
+	if (props["TYPE"].startsWith("INT_INTERFACE_")) color = "RoyalBlue";
+	if (props["TYPE"].startsWith("BRAM_INT_INTERFACE_")) color = "RoyalBlue";
+	if (props["TYPE"].startsWith("INT_FEEDTHRU_")) color = "SkyBlue";
+
+	if (props["TYPE"] == "VBRK") color = "LightCyan";
+	if (props["TYPE"] == "VFRAME") color = "LightCyan";
+	if (props["TYPE"].search("_TERM_INT") >= 0) color = "LightCyan";
+
+	if (props["TYPE"] == "NULL") color = "Lightgray";
+
+	rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+	rect.setAttribute("id", "tile_" + tile);
+	rect.setAttribute("x", 10 * col + 1);
+	rect.setAttribute("y", 10 * row + 1);
+	rect.setAttribute("width", 8);
+	rect.setAttribute("height", 8);
+	rect.setAttribute("style", "fill: " + color);
+	rect.setAttribute("onmousedown", "tileInfo('" + tile + "')");
+
+	var gridview = document.getElementById("gridview");
+	gridview.appendChild(rect);
+}
+
+function initialize() {
+	for (var tile in database["tiles"])
+		createSvgTile(tile);
+
+	document.getElementById("gridview").setAttribute("viewBox", "0 0 " + (10 * numcols) + " " +  (10 * numrows));
+
+	svgPanZoom('#gridview', {zoomEnabled: true});
+
+	document.getElementById("loading").style.visibility = "hidden";
+	document.getElementById("infos").style.visibility = "visible";
+}
+
+window.onload = function() {
+	getJSON(getBaseURL() + "grid-" + device + "-db.json", function(data) {
+		database = data;
+		initialize();
+	});
+}
+
+//--></script>
+</head><body bgcolor="#aaaaaa">
+
+<div id="loading">Loading device database. Please wait...</div>
+
+<table><tr><td valign="top">
+<div style="background-color: white; width: 600px; height:800px"><svg xmlns="http://www.w3.org/2000/svg"
+	id="gridview" width="100%" height="100%" viewBox="0 0 200 200"></svg></div>
+
+</td><td valign="top" style="padding-left: 1em">
+<div id="legend" style="margin-bottom: 1em">
+<table>
+<tr><td style="background-color: Khaki; width: 3em">&nbsp;</td><td style="padding-left: 0.5em">CLBLM (Tile with two SLICEM sites)</td></tr>
+<tr><td style="background-color: Gold">&nbsp;</td><td style="padding-left: 0.5em">CLBLL (Tile with two SLICEL sites)</td></tr>
+<tr><td style="background-color: Red">&nbsp;</td><td style="padding-left: 0.5em">Block RAM Tile</td></tr>
+<tr><td style="background-color: Tomato">&nbsp;</td><td style="padding-left: 0.5em">DSP Tile</td></tr>
+<tr><td style="background-color: Green">&nbsp;</td><td style="padding-left: 0.5em">PCIE Tile</td></tr>
+<tr><td style="background-color: SteelBlue">&nbsp;</td><td style="padding-left: 0.5em">Regular Interconnect tile</td></tr>
+<tr><td style="background-color: RoyalBlue">&nbsp;</td><td style="padding-left: 0.5em">Interface Interconnect tile</td></tr>
+<tr><td style="background-color: SkyBlue">&nbsp;</td><td style="padding-left: 0.5em">Feedthru Interconnect tile</td></tr>
+<tr><td style="background-color: LightCyan">&nbsp;</td><td style="padding-left: 0.5em">VBRK / VFRAME / TERM</td></tr>
+<tr><td style="background-color: LightGray">&nbsp;</td><td style="padding-left: 0.5em">NULL Tile</td></tr>
+<tr><td style="background-color: Gray">&nbsp;</td><td style="padding-left: 0.5em">Other</td></tr>
+</table>
+</div>
+
+<div style="visibility: hidden" id="infos">
+<pre>&lt;-------------------
+    Zoom with mouse wheel
+    Pan by dragging
+
+Click on a tile for details</pre>
+</div>
+
+</td></tr></table>
+
+</body></html>
