@@ -54,3 +54,18 @@ EOT
 rm -f design.log
 vivado -nojournal -log design.log -mode batch -source design.tcl
 
+{
+	sed -e '/^--tiledata--/ { s/[^ ]* //; p; }; d;' design.log
+
+	for f0 in logicframes_SLICE_*_0.bit; do
+		f1=${f0%_0.bit}_1.bit
+		../tools/bitread -xo ${f0%.bit}.asc < $f0 > /dev/null
+		../tools/bitread -xo ${f1%.bit}.asc < $f1 > /dev/null
+		f0=${f0%.bit}.asc
+		f1=${f1%.bit}.asc
+		n=${f0%_0.asc}
+		n=${n#logicframes_}
+		echo SLICEBIT $n $( diff $f0 $f1 | grep '^>' | cut -c3-; )
+	done
+} > grid-${XRAY_PART}-db.txt
+
