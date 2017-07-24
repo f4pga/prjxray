@@ -9,8 +9,10 @@
 var device = "xc7a50tfgg484-1";
 
 var database;
+var cfgcols = { };
 var numrows = 1;
 var numcols = 1;
+var marker;
 
 var hide_props = [
 	"ALTERNATE_SITE_TYPES",
@@ -72,6 +74,8 @@ function getBaseURL() {
 
 function tileInfo(tile) {
 	var props = database["tiles"][tile]["props"];
+	var row = +props["ROW"];
+	var col = +props["COLUMN"];
 
 	var html_text = "<h3>Tile: " + tile + "</h3>\n";
 
@@ -80,13 +84,22 @@ function tileInfo(tile) {
 		if (hide_props.indexOf(p) >= 0) continue;
 		html_text += "<tr><td>" + p + "</td><td>" + props[p] + "</td></tr>\n";
 	}
-
 	html_text += "</table>\n";
 
-	for (var site_idx in database["tiles"][tile]["sites"])
-	{
-		var site = database["tiles"][tile]["sites"][site_idx];
+	if ("cfgcol" in database["tiles"][tile]) {
+		props = database["tiles"][tile]["cfgcol"]
 
+		html_text += "<h3>Configuration Column</h3>\n";
+		html_text += "<table>\n";
+		for (var p in props) {
+			if (hide_props.indexOf(p) >= 0) continue;
+			html_text += "<tr><td>" + p + "</td><td>" + props[p] + "</td></tr>\n";
+		}
+		html_text += "</table>\n";
+	}
+
+	for (var site_idx in database["tiles"][tile]["sites"]) {
+		var site = database["tiles"][tile]["sites"][site_idx];
 		props = database["sites"][site]["props"];
 
 		html_text += "<h3>Site: " + tile + "</h3>\n";
@@ -99,12 +112,15 @@ function tileInfo(tile) {
 			if (hide_props.indexOf(p) >= 0) continue;
 			html_text += "<tr><td>" + p + "</td><td>" + props[p] + "</td></tr>\n";
 		}
-
 		html_text += "</table>\n";
 	}
 
 	var infos = document.getElementById("infos");
 	infos.innerHTML = html_text;
+
+	marker.setAttribute("cx", 5 + 10 * col);
+	marker.setAttribute("cy", 5 + 10 * row);
+	marker.setAttribute("style", "fill: none; stroke: Black;");
 }
 
 function createSvgTile(tile) {
@@ -115,7 +131,7 @@ function createSvgTile(tile) {
 	if (row >= numrows) numrows = row + 1;
 	if (col >= numcols) numcols = col + 1;
 
-	color = "Gray";
+	var color = "Gray";
 
 	if (props["TYPE"].startsWith("CLBLM_")) color = "Khaki";
 	if (props["TYPE"].startsWith("CLBLL_")) color = "Gold";
@@ -146,17 +162,66 @@ function createSvgTile(tile) {
 
 	var gridview = document.getElementById("gridview");
 	gridview.appendChild(rect);
+
+	if ("cfgcol" in database["tiles"][tile]) {
+		var frameid = database["tiles"][tile]["cfgcol"]["BASE_FRAMEID"];
+		if (!(frameid in cfgcols)) {
+			cfgcols[frameid] = {
+				"first_row": row,
+				"last_row": row,
+				"first_col": col,
+				"last_col": col
+			};
+		}
+
+		if (row < cfgcols[frameid].first_row) cfgcols[frameid].first_row = row;
+		if (row > cfgcols[frameid].last_row) cfgcols[frameid].last_row = row;
+
+		if (col < cfgcols[frameid].first_col) cfgcols[frameid].first_col = col;
+		if (col > cfgcols[frameid].last_col) cfgcols[frameid].last_col = col;
+	}
 }
 
 function initialize() {
 	for (var tile in database["tiles"])
 		createSvgTile(tile);
 
-	document.getElementById("gridview").setAttribute("viewBox", "0 0 " + (10 * numcols) + " " +  (10 * numrows));
+	var gridview = document.getElementById("gridview");
+
+	rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+	rect.setAttribute("id", "tile_" + tile);
+	rect.setAttribute("x", 0);
+	rect.setAttribute("y", 0);
+	rect.setAttribute("width", 10 * numcols);
+	rect.setAttribute("height", 10 * numrows);
+	rect.setAttribute("style", "fill: none; stroke: Black;");
+	gridview.appendChild(rect);
+
+	marker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+	marker.setAttribute("cx", 0);
+	marker.setAttribute("cy", 0);
+	marker.setAttribute("r", 5);
+	marker.setAttribute("style", "fill: none; stroke: none;");
+	gridview.appendChild(marker);
+
+	for (var frameid in cfgcols) {
+		var cfgcol = cfgcols[frameid];
+
+		rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		rect.setAttribute("id", "tile_" + tile);
+		rect.setAttribute("x", 10 * cfgcol.first_col);
+		rect.setAttribute("y", 10 * cfgcol.first_row);
+		rect.setAttribute("width", 10 + 10 * (cfgcol.last_col - cfgcol.first_col));
+		rect.setAttribute("height", 10 + 10 * (cfgcol.last_row - cfgcol.first_row));
+		rect.setAttribute("style", "fill: none; stroke: Black; stroke-width: 0.5px;");
+		gridview.appendChild(rect);
+	}
+
+	gridview.setAttribute("viewBox", "0 0 " + (10 * numcols) + " " +  (10 * numrows));
 
 	svgPanZoom('#gridview', {zoomEnabled: true});
 
-	document.getElementById("loading").style.visibility = "hidden";
+	document.getElementById("title").innerHTML = "Project X-Ray Grid Viewer -- " + database["device"];
 	document.getElementById("infos").style.visibility = "visible";
 }
 
@@ -170,7 +235,7 @@ window.onload = function() {
 //--></script>
 </head><body bgcolor="#aaaaaa">
 
-<div id="loading">Loading device database. Please wait...</div>
+<div><b><span id="title">Loading device database. Please wait...</span></b></div>
 
 <table><tr><td valign="top">
 <div style="background-color: white; width: 600px; height:800px"><svg xmlns="http://www.w3.org/2000/svg"
