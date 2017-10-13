@@ -1,7 +1,11 @@
 /.Xil/
+/design/
 /design.log
 /design.tcl
 /design.xdc
-/design/
+/design.bit
+/design.bits
+/design.dcp
+/lutlist.txt
 /vivado.jou
 /vivado.log

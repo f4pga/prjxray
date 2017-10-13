@@ -10,6 +10,7 @@ bool mode_c = false;
 bool mode_r = false;
 bool mode_m = false;
 bool mode_x = false;
+bool mode_y = false;
 bool mode_z = false;
 bool chksum = false;
 char *outfile = nullptr;
@@ -224,7 +225,7 @@ public:
 int main(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "crmxzCf:o:")) != -1)
+	while ((opt = getopt(argc, argv, "crmxyzCf:o:")) != -1)
 		switch (opt)
 		{
 		case 'c':
@@ -238,6 +239,9 @@ int main(int argc, char **argv)
 			break;
 		case 'x':
 			mode_x = true;
+			break;
+		case 'y':
+			mode_y = true;
 			break;
 		case 'z':
 			mode_z = true;
@@ -274,6 +278,9 @@ help:
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -x\n");
 		fprintf(stderr, "    use format 'bit_%%08x_%%02x_%%02x_t%%d_h%%d_r%%d_c%%d_m%%d_w%%d_b%%d'\n");
+		fprintf(stderr, "\n");
+		fprintf(stderr, "  -y\n");
+		fprintf(stderr, "    use format 'bit_%%08x_%%02x_%%02x'\n");
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -C\n");
 		fprintf(stderr, "    do not ignore the checksum in each frame\n");
@@ -513,14 +520,18 @@ help:
 			}
 
 
-			if (mode_x)
+			if (mode_x || mode_y)
 			{
 				for (int i = 0; i < 101; i++)
 				for (int k = 0; k < 32; k++)
-					if ((i != 50 || chksum) && ((it.second.at(i) & (1 << k)) != 0))
-						fprintf(f, "bit_%08x_%02x_%02x_t%d_h%d_r%d_c%d_m%d_w%d_b%d\n",
-								fid.get_value(), i, k, fid.get_type(), fid.get_topflag(), fid.get_rowaddr(),
-								fid.get_coladdr(), fid.get_minor(), i, k);
+					if ((i != 50 || chksum) && ((it.second.at(i) & (1 << k)) != 0)) {
+						if (mode_x)
+							fprintf(f, "bit_%08x_%02x_%02x_t%d_h%d_r%d_c%d_m%d_w%d_b%d\n",
+									fid.get_value(), i, k, fid.get_type(), fid.get_topflag(), fid.get_rowaddr(),
+									fid.get_coladdr(), fid.get_minor(), i, k);
+						else
+							fprintf(f, "bit_%08x_%02x_%02x\n", fid.get_value(), i, k);
+					}
 				if (outfile == nullptr)
 					fprintf(f, "\n");
 			}
