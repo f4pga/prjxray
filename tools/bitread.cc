@@ -178,6 +178,7 @@ void handle_write(int regaddr, uint32_t data)
 {
 	if (regaddr == REG_FAR) {
 		frameptr = data;
+		configframes[frameptr].clear();
 		configframes_autoincr.erase(frameptr);
 	}
 
