@@ -79,7 +79,13 @@ for tilename, tiledata in grid["tiles"].items():
             assert 0
 
         for name, value in luts[site].items():
-            segments[segname]["tags"]["%s.%s.%s" % (tiledata["props"]["TYPE"], sitekey, name)] = value
+            tile_type = tiledata["props"]["TYPE"]
+
+            # LUT init bits are in the same position for all CLBL[LM]_[LR] tiles
+            if re.match("^CLBL[LM]_[LR]", tile_type) and "LUT.INIT" in name:
+                tile_type = "CLBLX_X"
+
+            segments[segname]["tags"]["%s.%s.%s" % (tile_type, sitekey, name)] = value
 
     base_frame = int(tiledata["cfgcol"]["BASE_FRAMEID"][2:], 16)
     for wordidx in tiledata["cfgcol"]["WORDS"]:

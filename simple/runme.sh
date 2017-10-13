@@ -14,11 +14,11 @@ set_property LOCK_PINS {I0:A1 I1:A2 I2:A3 I3:A4 I4:A5 I5:A6} \
 		[get_cells -quiet -filter {REF_NAME == LUT6} -hierarchical]
 
 create_pblock roi
-add_cells_to_pblock [get_pblocks roi] [get_cells picorv32]
+add_cells_to_pblock [get_pblocks roi] [get_cells stuff]
 resize_pblock [get_pblocks roi] -add {$XRAY_ROI}
 
 # requires partial reconfiguration license
-set_property HD.RECONFIGURABLE TRUE [get_cells picorv32]
+set_property HD.RECONFIGURABLE TRUE [get_cells stuff]
 
 set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
@@ -42,9 +42,8 @@ write_checkpoint -force design.dcp
 write_bitstream -force design.bit
 
 puts "Writing lutlist.txt."
-current_instance picorv32
 set fp [open "lutlist.txt" w]
-set luts [get_cells -filter {REF_NAME == LUT6}]
+set luts [get_cells -hierarchical -filter {REF_NAME == LUT6}]
 foreach lut \$luts {
 	set bel [get_property BEL \$lut]
 	set loc [get_property LOC \$lut]
@@ -64,4 +63,5 @@ else
 fi
 
 python3 segdata.py
+../tools/segmatch < segdata.txt > database.txt
 
