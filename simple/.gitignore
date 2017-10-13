@@ -10,6 +10,7 @@
 /hd_visual/
 /vivado[_.]*
 /usage_statistics_webtalk.*
-/lutlist.txt
+/lutdata.txt
+/carrydata.txt
 /segdata.txt
 /database.txt

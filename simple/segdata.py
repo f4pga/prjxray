@@ -8,6 +8,7 @@ import os, json, re
 grid = None
 bits = dict()
 luts = dict()
+carry = dict()
 
 print("Loading grid.")
 with open("../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"), "r") as f:
@@ -30,8 +31,8 @@ with open("design.bits", "r") as f:
 
         bits[base_frame][bit_wordidx].add((bit_frame, bit_wordidx, bit_bitidx))
 
-print("Loading luts.")
-with open("lutlist.txt", "r") as f:
+print("Loading lut data.")
+with open("lutdata.txt", "r") as f:
     for line in f:
         line = line.split()
         site = line[0]
@@ -44,6 +45,17 @@ with open("lutlist.txt", "r") as f:
         for i in range(64):
             bitname = "%s.INIT[%02d]" % (bel, i)
             luts[site][bitname] = ((init >> i) & 1) != 0
+
+print("Loading carry data.")
+with open("carrydata.txt", "r") as f:
+    for line in f:
+        line = line.split()
+        assert line[0] not in carry
+        carry[line[0]] = dict()
+        for i, n in enumerate("CYINIT:ZRO:ONE:AX:CIN DI0:AX:O5 DI1:AX:O5 DI2:AX:O5 DI3:AX:O5".split()):
+            n = n.split(":")
+            for k in n[1:]:
+                carry[line[0]]["CARRY_%s_MUX_%s" % (n[0], k)] = line[1+i].upper() == k
 
 
 #################################################
@@ -68,7 +80,7 @@ for tilename, tiledata in grid["tiles"].items():
         segments[segname] = { "bits": list(), "tags": dict() }
 
     for site in tiledata["sites"]:
-        if site not in luts:
+        if site not in luts and site not in carry:
             continue
 
         if re.match(r"SLICE_X[0-9]*[02468]Y", site):
@@ -78,14 +90,20 @@ for tilename, tiledata in grid["tiles"].items():
         else:
             assert 0
 
-        for name, value in luts[site].items():
-            tile_type = tiledata["props"]["TYPE"]
+        if site in luts:
+            for name, value in luts[site].items():
+                tile_type = tiledata["props"]["TYPE"]
 
-            # LUT init bits are in the same position for all CLBL[LM]_[LR] tiles
-            if re.match("^CLBL[LM]_[LR]", tile_type) and "LUT.INIT" in name:
-                tile_type = "CLBLX_X"
+                # LUT init bits are in the same position for all CLBL[LM]_[LR] tiles
+                if re.match("^CLBL[LM]_[LR]", tile_type) and "LUT.INIT" in name:
+                    tile_type = "CLBLX_X"
 
-            segments[segname]["tags"]["%s.%s.%s" % (tile_type, sitekey, name)] = value
+                segments[segname]["tags"]["%s.%s.%s" % (tile_type, sitekey, name)] = value
+
+        if site in carry:
+            for name, value in carry[site].items():
+                tile_type = tiledata["props"]["TYPE"]
+                segments[segname]["tags"]["%s.%s.%s" % (tile_type, sitekey, name)] = value
 
     base_frame = int(tiledata["cfgcol"]["BASE_FRAMEID"][2:], 16)
     for wordidx in tiledata["cfgcol"]["WORDS"]:

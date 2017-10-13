@@ -28,6 +28,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 EOT
 
 cat > design.tcl << EOT
+source "utilities.tcl"
 create_project -force -part $XRAY_PART design design
 
 read_xdc design.xdc
@@ -41,14 +42,26 @@ route_design
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
 
-puts "Writing lutlist.txt."
-set fp [open "lutlist.txt" w]
-set luts [get_cells -hierarchical -filter {REF_NAME == LUT6}]
-foreach lut \$luts {
-	set bel [get_property BEL \$lut]
-	set loc [get_property LOC \$lut]
-	set init [get_property INIT \$lut]
+puts "Writing lutdata.txt."
+set fp [open "lutdata.txt" w]
+foreach cell [get_cells -hierarchical -filter {REF_NAME == LUT6}] {
+	set bel [get_property BEL \$cell]
+	set loc [get_property LOC \$cell]
+	set init [get_property INIT \$cell]
 	puts \$fp "\$loc \$bel \$init"
+}
+close \$fp
+
+puts "Writing carrydata.txt."
+set fp [open "carrydata.txt" w]
+foreach cell [get_cells -hierarchical -filter {REF_NAME == CARRY4}] {
+	set loc [get_property LOC \$cell]
+	set cyinit_mux [get_carry_cyinit_mux_cfg \$cell]
+	set di0_mux [get_carry_di0_mux_cfg \$cell]
+	set di1_mux [get_carry_di1_mux_cfg \$cell]
+	set di2_mux [get_carry_di2_mux_cfg \$cell]
+	set di3_mux [get_carry_di3_mux_cfg \$cell]
+	puts \$fp "\$loc \$cyinit_mux \$di0_mux \$di1_mux \$di2_mux \$di3_mux"
 }
 close \$fp
 EOT

@@ -194,8 +194,6 @@ help:
 		} else {
 			printf(" <%d candidates>\n", num_candidates);
 		}
-
-		assert(num_candidates != 0);
 	}
 
 	return 0;
