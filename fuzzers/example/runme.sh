@@ -2,7 +2,7 @@
 
 set -ex
 
-source ../settings.sh
+source ../../settings.sh
 
 cat > design.xdc << EOT
 set_property -dict {PACKAGE_PIN $XRAY_PIN_00 IOSTANDARD LVCMOS33} [get_ports clk]
@@ -69,9 +69,9 @@ EOT
 rm -rf design design.log
 vivado -nojournal -log design.log -mode batch -source design.tcl
 
-#../tools/bitread -o design_roi.bits -zy < design_roi_partial.bit
-../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -zy < design.bit
+#../../tools/bitread -o design_roi.bits -zy < design_roi_partial.bit
+../../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -zy < design.bit
 
 python3 segdata.py
-../tools/segmatch < segdata.txt > database.txt
+../../tools/segmatch < segdata.txt > database.txt
 

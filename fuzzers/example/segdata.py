@@ -11,7 +11,7 @@ luts = dict()
 carry = dict()
 
 print("Loading grid.")
-with open("../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"), "r") as f:
+with open("../../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"), "r") as f:
     grid = json.load(f)
 
 print("Loading bits.")
@@ -61,7 +61,7 @@ with open("carrydata.txt", "r") as f:
 #################################################
 # Group per Segment
 
-print("Pivot segment data.")
+print("Compile segment data.")
 
 segments = dict()
 
