@@ -4,8 +4,11 @@
 /design.tcl
 /design.xdc
 /design.bit
+/design_roi_partial.bit
 /design.bits
 /design.dcp
+/hd_visual/
+/vivado[_.]*
+/usage_statistics_webtalk.*
 /lutlist.txt
-/vivado.jou
-/vivado.log
+/segdata.txt
