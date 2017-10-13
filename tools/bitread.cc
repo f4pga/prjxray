@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 #include <vector>
 #include <string>
@@ -15,6 +16,8 @@ bool mode_z = false;
 bool chksum = false;
 char *outfile = nullptr;
 std::set<uint32_t> frames;
+
+uint32_t frame_range_begin = 0, frame_range_end = 0;
 
 std::vector<uint8_t> bitdata;
 int cursor;
@@ -226,7 +229,7 @@ public:
 int main(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "crmxyzCf:o:")) != -1)
+	while ((opt = getopt(argc, argv, "crmxyzCf:F:o:")) != -1)
 		switch (opt)
 		{
 		case 'c':
@@ -252,6 +255,10 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			frames.insert(strtol(optarg, nullptr, 0));
+			break;
+		case 'F':
+			frame_range_begin = strtol(strtok(optarg, ":"), nullptr, 0);
+			frame_range_end = strtol(strtok(nullptr, ":"), nullptr, 0)+1;
 			break;
 		case 'o':
 			outfile = optarg;
@@ -288,6 +295,9 @@ help:
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -f <frame_address>\n");
 		fprintf(stderr, "    only dump the specified frame (might be used more than once)\n");
+		fprintf(stderr, "\n");
+		fprintf(stderr, "  -F <first_frame_address>:<last_frame_address>\n");
+		fprintf(stderr, "    only dump frame in the specified range\n");
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -o <outfile>\n");
 		fprintf(stderr, "    write machine-readable output file with config frames\n");
@@ -509,6 +519,9 @@ help:
 			frameid fid(it.first);
 
 			if (!frames.empty() && !frames.count(fid.get_value()))
+				continue;
+
+			if (frame_range_begin != frame_range_end && (fid.get_value() < frame_range_begin || frame_range_end <= fid.get_value()))
 				continue;
 
 			if (outfile == nullptr)

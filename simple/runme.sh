@@ -18,7 +18,7 @@ add_cells_to_pblock [get_pblocks roi] [get_cells stuff]
 resize_pblock [get_pblocks roi] -add {$XRAY_ROI}
 
 # requires partial reconfiguration license
-set_property HD.RECONFIGURABLE TRUE [get_cells stuff]
+#set_property HD.RECONFIGURABLE TRUE [get_cells stuff]
 
 set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
@@ -69,11 +69,8 @@ EOT
 rm -rf design design.log
 vivado -nojournal -log design.log -mode batch -source design.tcl
 
-if [ -f design_roi_partial.bit ]; then
-	../tools/bitread -o design.bits -zy < design_roi_partial.bit
-else
-	../tools/bitread -o design.bits -zy < design.bit
-fi
+#../tools/bitread -o design_roi.bits -zy < design_roi_partial.bit
+../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -zy < design.bit
 
 python3 segdata.py
 ../tools/segmatch < segdata.txt > database.txt
