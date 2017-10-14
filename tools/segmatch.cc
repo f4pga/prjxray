@@ -36,7 +36,8 @@ void read_input()
 		if (token == "seg")
 		{
 			std::cin >> token;
-			assert(segdata.count(token) == 0);
+			while (segdata.count(token))
+				token += "_";
 			segptr = &segdata[token];
 			continue;
 		}

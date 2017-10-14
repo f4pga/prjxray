@@ -1,15 +1,2 @@
-/.Xil/
-/design/
-/design.log
-/design.tcl
-/design.xdc
-/design.bit
-/design.bits
-/design.dcp
-/hd_visual/
-/vivado[_.]*
-/usage_statistics_webtalk.*
-/lutdata.txt
-/carrydata.txt
-/segdata.txt
+/specimen_[0-9][0-9][0-9]/
 /database.txt

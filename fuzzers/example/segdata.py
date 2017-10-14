@@ -11,7 +11,7 @@ luts = dict()
 carry = dict()
 
 print("Loading grid.")
-with open("../../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"), "r") as f:
+with open("../../../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"), "r") as f:
     grid = json.load(f)
 
 print("Loading bits.")

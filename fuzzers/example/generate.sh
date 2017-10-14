@@ -1,8 +1,12 @@
 #!/bin/bash
 
 set -ex
-
 source ../../settings.sh
+
+test $# = 1
+test ! -e $1
+mkdir $1
+cd $1
 
 cat > design.xdc << EOT
 set_property -dict {PACKAGE_PIN $XRAY_PIN_00 IOSTANDARD LVCMOS33} [get_ports clk]
@@ -27,13 +31,15 @@ set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 EOT
 
+echo '`define SEED 32'"'h$(echo $1 | md5sum | cut -c1-8)" > setseed.vh
+
 cat > design.tcl << EOT
-source "utilities.tcl"
+source "../utilities.tcl"
 create_project -force -part $XRAY_PART design design
 
 read_xdc design.xdc
-read_verilog design.v
-read_verilog picorv32.v
+read_verilog ../design.v
+read_verilog ../picorv32.v
 
 synth_design -top top
 place_design
@@ -69,9 +75,9 @@ EOT
 rm -rf design design.log
 vivado -nojournal -log design.log -mode batch -source design.tcl
 
-#../../tools/bitread -o design_roi.bits -zy < design_roi_partial.bit
-../../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -zy < design.bit
+#../../../tools/bitread -o design_roi.bits -zy < design_roi_partial.bit
+../../../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -zy < design.bit
 
-python3 segdata.py
-../../tools/segmatch < segdata.txt > database.txt
+python3 ../segdata.py
+#../../../tools/segmatch < segdata.txt > database.txt
 
