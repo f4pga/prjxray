@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <numeric>
 #include <map>
 #include <set>
@@ -26,18 +27,18 @@ static inline vector<bool> &segdata_bits(segdata_t &sd) { return std::get<0>(sd)
 static inline vector<bool> &segdata_tags1(segdata_t &sd) { return std::get<1>(sd); }
 static inline vector<bool> &segdata_tags0(segdata_t &sd) { return std::get<2>(sd); }
 
-void read_input()
+void read_input(std::istream &f, std::string filename)
 {
 	string token;
 	segdata_t *segptr = nullptr;
 
-	while (std::cin >> token)
+	while (f >> token)
 	{
 		if (token == "seg")
 		{
-			std::cin >> token;
-			while (segdata.count(token))
-				token += "_";
+			f >> token;
+			token = filename + ":" + token;
+			assert(segdata.count(token) == 0);
 			segptr = &segdata[token];
 			continue;
 		}
@@ -46,7 +47,7 @@ void read_input()
 		{
 			assert(segptr != nullptr);
 
-			std::cin >> token;
+			f >> token;
 			if (bit_ids.count(token) == 0) {
 				bit_ids[token] = num_bits++;
 				bit_ids_r.push_back(token);
@@ -66,7 +67,7 @@ void read_input()
 		{
 			assert(segptr != nullptr);
 
-			std::cin >> token;
+			f >> token;
 			if (tag_ids.count(token) == 0) {
 				tag_ids[token] = num_tags++;
 				tag_ids_r.push_back(token);
@@ -74,7 +75,7 @@ void read_input()
 
 			int tag_idx = tag_ids.at(token);
 
-			std::cin >> token;
+			f >> token;
 			assert(token == "0" || token == "1");
 
 			auto &tags = token == "1" ? segdata_tags1(*segptr) : segdata_tags0(*segptr);
@@ -116,53 +117,57 @@ void andc_masks(vector<bool> &dst_mask, const vector<bool> &src_mask)
 
 int main(int argc, char **argv)
 {
+	const char *outfile = nullptr;
+
 	int opt;
-	while ((opt = getopt(argc, argv, "")) != -1)
+	while ((opt = getopt(argc, argv, "o:")) != -1)
 		switch (opt)
 		{
-		// case 'c':
-		// 	mode_c = true;
-		// 	break;
-		// case 'r':
-		// 	mode_r = true;
-		// 	break;
-		// case 'm':
-		// 	mode_m = true;
-		// 	break;
-		// case 'x':
-		// 	mode_x = true;
-		// 	break;
-		// case 'y':
-		// 	mode_y = true;
-		// 	break;
-		// case 'z':
-		// 	mode_z = true;
-		// 	break;
-		// case 'C':
-		// 	chksum = true;
-		// 	break;
-		// case 'f':
-		// 	frames.insert(strtol(optarg, nullptr, 0));
-		// 	break;
-		// case 'o':
-		// 	outfile = optarg;
-		// 	break;
+		case 'o':
+			outfile = optarg;
+			break;
 		default:
 			goto help;
 		}
 
-	if (optind != argc) {
+	if (0) {
 help:
 		fprintf(stderr, "\n");
-		fprintf(stderr, "Usage: %s [options] < segdata.txt\n", argv[0]);
+		fprintf(stderr, "Usage: %s [options] file..\n", argv[0]);
 		fprintf(stderr, "\n");
-		// fprintf(stderr, "  -c\n");
-		// fprintf(stderr, "    continuation mode. output '*' for repeating patterns\n");
+		fprintf(stderr, "  -o <filename>\n");
+		fprintf(stderr, "    set output file\n");
 		fprintf(stderr, "\n");
 		return 1;
 	}
 
-	read_input();
+	if (optind != argc) {
+		while (optind != argc) {
+			printf("Reading %s.\n", argv[optind]);
+			std::ifstream f;
+			f.open(argv[optind]);
+			assert(!f.fail());
+			read_input(f, argv[optind++]);
+		}
+	} else {
+		printf("Reading from stding.\n");
+		read_input(std::cin, "stdin");
+	}
+
+	printf("#of segments: %d\n", int(segdata.size()));
+	printf("#of bits: %d\n", num_bits);
+	printf("#of tags: %d\n", num_tags);
+
+	FILE *f = stdout;
+
+	if (outfile) {
+		f = fopen(outfile, "w");
+		assert(f != nullptr);
+	}
+
+	int min_candidates = num_bits;
+	int max_candidates = 0;
+	float avg_candidates = 0;
 
 	for (int tag_idx = 0; tag_idx < num_tags; tag_idx++)
 	{
@@ -184,18 +189,25 @@ help:
 		}
 
 		int num_candidates = std::accumulate(mask.begin(), mask.end(), 0);
+		min_candidates = std::min(min_candidates, num_candidates);
+		max_candidates = std::max(max_candidates, num_candidates);
+		avg_candidates += float(num_candidates) / num_tags;
 
-		printf("%s", tag_ids_r.at(tag_idx).c_str());
+		fprintf(f, "%s", tag_ids_r.at(tag_idx).c_str());
 
 		if (0 < num_candidates && num_candidates <= 4) {
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
 				if (mask.at(bit_idx))
-					printf(" %s", bit_ids_r.at(bit_idx).c_str());
-			printf("\n");
+					fprintf(f, " %s", bit_ids_r.at(bit_idx).c_str());
+			fprintf(f, "\n");
 		} else {
-			printf(" <%d candidates>\n", num_candidates);
+			fprintf(f, " <%d candidates>\n", num_candidates);
 		}
 	}
+
+	printf("min #of candidates: %d\n", min_candidates);
+	printf("max #of candidates: %d\n", max_candidates);
+	printf("avg #of candidates: %f\n", avg_candidates);
 
 	return 0;
 }
