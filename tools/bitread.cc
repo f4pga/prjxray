@@ -327,7 +327,7 @@ help:
 	if (optind+1 == argc) {
 		FILE *f = fopen(argv[optind], "rb");
 		if (f == nullptr) {
-			printf("Can't open input file '%s' for writing!\n", outfile);
+			printf("Can't open input file '%s' for reading!\n", argv[optind]);
 			return 1;
 		}
 		while (1) {
@@ -601,14 +601,8 @@ help:
 			int height = 101*32+100;
 			fprintf(f, "P5 %d %d 15\n", width, height);
 
-			for (int y = 0, bit = 0; y < height; y++, bit++)
+			for (int y = 0, bit = 101*32-1; y < height; y++, bit--)
 			{
-				if (bit % 32 == 0 && y) {
-					for (int x = 0; x < width; x++)
-						fputc(8, f);
-					y++;
-				}
-
 				for (int x = 0, frame = 0, sep = 0; x < width; x++, frame++)
 				{
 					if (sep < int(pgmsep.size()) && frame == pgmsep.at(sep)) {
@@ -617,6 +611,12 @@ help:
 					}
 
 					fputc(pgmdata.at(frame).at(bit) ? 15 : 0, f);
+				}
+
+				if (bit % 32 == 0 && y) {
+					for (int x = 0; x < width; x++)
+						fputc(8, f);
+					y++;
 				}
 			}
 		}
