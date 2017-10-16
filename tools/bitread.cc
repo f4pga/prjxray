@@ -13,6 +13,7 @@ bool mode_m = false;
 bool mode_x = false;
 bool mode_y = false;
 bool mode_z = false;
+bool mode_p = false;
 bool chksum = false;
 char *outfile = nullptr;
 std::set<uint32_t> frames;
@@ -229,7 +230,7 @@ public:
 int main(int argc, char **argv)
 {
 	int opt;
-	while ((opt = getopt(argc, argv, "crmxyzCf:F:o:")) != -1)
+	while ((opt = getopt(argc, argv, "crmxyzpCf:F:o:")) != -1)
 		switch (opt)
 		{
 		case 'c':
@@ -250,6 +251,9 @@ int main(int argc, char **argv)
 		case 'z':
 			mode_z = true;
 			break;
+		case 'p':
+			mode_p = true;
+			break;
 		case 'C':
 			chksum = true;
 			break;
@@ -267,10 +271,10 @@ int main(int argc, char **argv)
 			goto help;
 		}
 
-	if (optind != argc) {
+	if (optind != argc && optind+1 != argc) {
 help:
 		fprintf(stderr, "\n");
-		fprintf(stderr, "Usage: %s [options] < bitfile.bit\n", argv[0]);
+		fprintf(stderr, "Usage: %s [options] [bitfile]\n", argv[0]);
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -c\n");
 		fprintf(stderr, "    continuation mode. output '*' for repeating patterns\n");
@@ -289,6 +293,9 @@ help:
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -y\n");
 		fprintf(stderr, "    use format 'bit_%%08x_%%02x_%%02x'\n");
+		fprintf(stderr, "\n");
+		fprintf(stderr, "  -p\n");
+		fprintf(stderr, "    output a binary netpgm image\n");
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -C\n");
 		fprintf(stderr, "    do not ignore the checksum in each frame\n");
@@ -317,10 +324,24 @@ help:
 		return 1;
 	}
 
-	while (1) {
-		int c = getchar();
-		if (c == EOF) break;
-		bitdata.push_back(c);
+	if (optind+1 == argc) {
+		FILE *f = fopen(argv[optind], "rb");
+		if (f == nullptr) {
+			printf("Can't open input file '%s' for writing!\n", outfile);
+			return 1;
+		}
+		while (1) {
+			int c = fgetc(f);
+			if (c == EOF) break;
+			bitdata.push_back(c);
+		}
+		fclose(f);
+	} else {
+		while (1) {
+			int c = getchar();
+			if (c == EOF) break;
+			bitdata.push_back(c);
+		}
 	}
 
 	printf("Bitstream size: %d bytes\n", int(bitdata.size()));
@@ -511,6 +532,9 @@ help:
 		if (outfile == nullptr)
 			fprintf(f, "\n");
 
+		std::vector<std::vector<bool>> pgmdata;
+		std::vector<int> pgmsep;
+
 		for (auto &it : configframes)
 		{
 			if (mode_z && it.second == zero_frame)
@@ -533,7 +557,18 @@ help:
 				return 1;
 			}
 
+			if (mode_p)
+			{
+				if (fid.get_minor() == 0 && !pgmdata.empty())
+					pgmsep.push_back(pgmdata.size());
 
+				pgmdata.push_back(std::vector<bool>());
+
+				for (int i = 0; i < 101; i++)
+				for (int k = 0; k < 32; k++)
+					pgmdata.back().push_back((it.second.at(i) & (1 << k)) != 0);
+			}
+			else
 			if (mode_x || mode_y)
 			{
 				for (int i = 0; i < 101; i++)
@@ -557,6 +592,32 @@ help:
 				for (int i = 0; i < 101; i++)
 					fprintf(f, "%08x%s", (i != 50 || chksum) ? it.second.at(i) : 0, (i % 6) == 5 ? "\n" : " ");
 				fprintf(f, "\n\n");
+			}
+		}
+
+		if (mode_p)
+		{
+			int width = pgmdata.size() + pgmsep.size();
+			int height = 101*32+100;
+			fprintf(f, "P5 %d %d 15\n", width, height);
+
+			for (int y = 0, bit = 0; y < height; y++, bit++)
+			{
+				if (bit % 32 == 0 && y) {
+					for (int x = 0; x < width; x++)
+						fputc(8, f);
+					y++;
+				}
+
+				for (int x = 0, frame = 0, sep = 0; x < width; x++, frame++)
+				{
+					if (sep < int(pgmsep.size()) && frame == pgmsep.at(sep)) {
+						fputc(8, f);
+						x++, sep++;
+					}
+
+					fputc(pgmdata.at(frame).at(bit) ? 15 : 0, f);
+				}
 			}
 		}
 
