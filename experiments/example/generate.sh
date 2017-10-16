@@ -75,8 +75,9 @@ EOT
 rm -rf design design.log
 vivado -nojournal -log design.log -mode batch -source design.tcl
 
-#../../../tools/bitread -o design_roi.bits -zy < design_roi_partial.bit
-../../../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -zy < design.bit
+#../../../tools/bitread -o design_roi.bits -zy design_roi_partial.bit
+../../../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -zy design.bit
+../../../tools/bitread -F $XRAY_ROI_FRAMES -o design.pgm -p design.bit
 
 python3 ../segdata.py
 #../../../tools/segmatch < segdata.txt > database.txt
