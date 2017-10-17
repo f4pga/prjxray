@@ -53,6 +53,7 @@ for record in tiles:
         segment_name = "SEG_" + tile_name
         database["segments"][segment_name] = dict()
         database["segments"][segment_name]["tiles"] = [tile_name]
+        database["segments"][segment_name]["type"] = "SEG_" + tile_type
         if framebaseaddr is not None:
             database["segments"][segment_name]["baseaddr"] = [framebaseaddr, 0]
         database["tiles"][tile_name]["segment"] = segment_name
