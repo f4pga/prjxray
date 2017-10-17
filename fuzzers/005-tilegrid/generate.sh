@@ -18,5 +18,5 @@ for x in design_*.bits; do
 	diff -u design.bits $x | grep '^[-+]bit' > ${x%.bits}.delta
 done
 
-python3 ../generate.py design_*.delta
+python3 ../generate.py design_*.delta > tilegrid.json
 
