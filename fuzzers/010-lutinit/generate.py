@@ -11,7 +11,7 @@ bits = dict()
 luts = dict()
 
 print("Loading grid.")
-with open("../../../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"), "r") as f:
+with open("../../../database/%s/tilegrid.json" % os.getenv("XRAY_DATABASE"), "r") as f:
     grid = json.load(f)
 
 print("Loading bits.")
@@ -55,16 +55,14 @@ print("Compile segment data.")
 segments = dict()
 
 for tilename, tiledata in grid["tiles"].items():
-    found_data = False
-    for site in tiledata["sites"]:
-        if site in luts:
-            found_data = True
-
-    if not found_data:
+    if "segment" not in tiledata:
         continue
 
-    tile_type = tiledata["props"]["TYPE"]
-    segname = "%s_%02x" % (tiledata["cfgcol"]["BASE_FRAMEID"][2:], min(tiledata["cfgcol"]["WORDS"]))
+    segtype = tiledata["segment"]
+    segdata = grid["segments"][segtype]
+
+    tile_type = tiledata["type"]
+    segname = "%s_%02x" % (segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
 
     if not segname in segments:
         segments[segname] = { "bits": list(), "tags": dict() }
@@ -83,14 +81,14 @@ for tilename, tiledata in grid["tiles"].items():
         for name, value in luts[site].items():
             segments[segname]["tags"]["%s.%s.%s" % (tile_type, sitekey, name)] = value
 
-    base_frame = int(tiledata["cfgcol"]["BASE_FRAMEID"][2:], 16)
-    for wordidx in tiledata["cfgcol"]["WORDS"]:
+    base_frame = int(segdata["baseaddr"][0][2:], 16)
+    for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+2):
         if base_frame not in bits:
             continue
         if wordidx not in bits[base_frame]:
             continue
         for bit_frame, bit_wordidx, bit_bitidx in bits[base_frame][wordidx]:
-            segments[segname]["bits"].append("%02x_%02x_%02x" % (bit_frame - base_frame, bit_wordidx - min(tiledata["cfgcol"]["WORDS"]), bit_bitidx))
+            segments[segname]["bits"].append("%02x_%02x_%02x" % (bit_frame - base_frame, bit_wordidx - segdata["baseaddr"][1], bit_bitidx))
 
     segments[segname]["bits"].sort()
 
