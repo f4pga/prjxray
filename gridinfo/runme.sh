@@ -2,8 +2,6 @@
 
 set -ex
 
-source ../settings.sh
-
 cat > design.xdc << EOT
 set_property -dict {PACKAGE_PIN $XRAY_PIN_00 IOSTANDARD LVCMOS33} [get_ports I[0]]
 set_property -dict {PACKAGE_PIN $XRAY_PIN_01 IOSTANDARD LVCMOS33} [get_ports I[1]]

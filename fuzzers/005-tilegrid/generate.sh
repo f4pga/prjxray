@@ -1,8 +1,6 @@
 #!/bin/bash
 
 set -ex
-source ../../settings.sh
-
 test $# = 1
 test ! -e $1
 mkdir $1

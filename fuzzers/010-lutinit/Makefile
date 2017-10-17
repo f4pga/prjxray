@@ -1,6 +1,4 @@
 
-include ../../settings.sh
-
 N := 1
 SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))

@@ -1,1 +1,0 @@
-database/artix7/settings.sh
