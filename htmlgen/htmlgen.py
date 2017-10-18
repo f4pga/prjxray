@@ -123,7 +123,7 @@ for segtype in segbits.keys():
             print("<tr>", file =f)
             print("<th align=\"right\"><span style=\"font-size:10px\">%d</span></th>" % bitidx, file =f)
             for frameidx in range(segframes[segtype]):
-                bit_pos = "%02x_%02x_%02x" % (frameidx, bitidx // 32, bitidx % 32)
+                bit_pos = "%02d_%02d" % (frameidx, bitidx)
                 bit_name = segbits_r[segtype][bit_pos] if bit_pos in segbits_r[segtype] else None
 
                 label = "&nbsp;"

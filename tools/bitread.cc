@@ -289,10 +289,10 @@ help:
 		fprintf(stderr, "    skip zero frames (frames with all bits cleared) in outout\n");
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -x\n");
-		fprintf(stderr, "    use format 'bit_%%08x_%%02x_%%02x_t%%d_h%%d_r%%d_c%%d_m%%d_w%%d_b%%d'\n");
+		fprintf(stderr, "    use format 'bit_%%08x_%%03d_%%02d_t%%d_h%%d_r%%d_c%%d_m%%d'\n");
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -y\n");
-		fprintf(stderr, "    use format 'bit_%%08x_%%02x_%%02x'\n");
+		fprintf(stderr, "    use format 'bit_%%08x_%%03d_%%02d'\n");
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -p\n");
 		fprintf(stderr, "    output a binary netpgm image\n");
@@ -311,15 +311,13 @@ help:
 		fprintf(stderr, "\n");
 		fprintf(stderr, "In -x format the fields have the following meaning:\n");
 		fprintf(stderr, "  - complete 32 bit hex frame id\n");
-		fprintf(stderr, "  - hex word index within that frame\n");
-		fprintf(stderr, "  - hex bit index within that word\n");
+		fprintf(stderr, "  - word index with that frame (decimal)\n");
+		fprintf(stderr, "  - bit index with that word (decimal)\n");
 		fprintf(stderr, "  - decoded frame type from frame id\n");
 		fprintf(stderr, "  - decoded top/botttom from frame id (top=0)\n");
 		fprintf(stderr, "  - decoded row address from frame id\n");
 		fprintf(stderr, "  - decoded column address from frame id\n");
 		fprintf(stderr, "  - decoded minor address from frame id\n");
-		fprintf(stderr, "  - word index with that frame (decimal)\n");
-		fprintf(stderr, "  - bit index with that word (decimal)\n");
 		fprintf(stderr, "\n");
 		return 1;
 	}
@@ -575,11 +573,11 @@ help:
 				for (int k = 0; k < 32; k++)
 					if ((i != 50 || chksum) && ((it.second.at(i) & (1 << k)) != 0)) {
 						if (mode_x)
-							fprintf(f, "bit_%08x_%02x_%02x_t%d_h%d_r%d_c%d_m%d_w%d_b%d\n",
+							fprintf(f, "bit_%08x_%03d_%02d_t%d_h%d_r%d_c%d_m%d\n",
 									fid.get_value(), i, k, fid.get_type(), fid.get_topflag(), fid.get_rowaddr(),
-									fid.get_coladdr(), fid.get_minor(), i, k);
+									fid.get_coladdr(), fid.get_minor());
 						else
-							fprintf(f, "bit_%08x_%02x_%02x\n", fid.get_value(), i, k);
+							fprintf(f, "bit_%08x_%03d_%02d\n", fid.get_value(), i, k);
 					}
 				if (outfile == nullptr)
 					fprintf(f, "\n");
