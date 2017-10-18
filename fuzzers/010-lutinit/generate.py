@@ -52,14 +52,17 @@ with open("lutdata_%s.txt" % sys.argv[1], "r") as f:
 
 print("Compile segment data.")
 
-segments = dict()
+segments_by_type = dict()
 
 for tilename, tiledata in grid["tiles"].items():
     if "segment" not in tiledata:
         continue
 
-    segtype = tiledata["segment"]
-    segdata = grid["segments"][segtype]
+    segdata = grid["segments"][tiledata["segment"]]
+
+    if segdata["type"] not in segments_by_type:
+        segments_by_type[segdata["type"]] = dict()
+    segments = segments_by_type[segdata["type"]]
 
     tile_type = tiledata["type"]
     segname = "%s_%02x" % (segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
@@ -79,7 +82,7 @@ for tilename, tiledata in grid["tiles"].items():
             assert 0
 
         for name, value in luts[site].items():
-            segments[segname]["tags"]["%s.%s.%s" % (tile_type, sitekey, name)] = value
+            segments[segname]["tags"]["%s.%s.%s" % (re.sub("_[LR]$", "", tile_type), sitekey, name)] = value
 
     base_frame = int(segdata["baseaddr"][0][2:], 16)
     for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+2):
@@ -98,11 +101,13 @@ for tilename, tiledata in grid["tiles"].items():
 
 print("Write segment data.")
 
-with open("segdata_%s.txt" % sys.argv[1], "w") as f:
-    for segname, segdata in sorted(segments.items()):
-        print("seg %s" % segname, file=f)
-        for bitname in sorted(segdata["bits"]):
-            print("bit %s" % bitname, file=f)
-        for tagname, tagval in sorted(segdata["tags"].items()):
-            print("tag %s %d" % (tagname, tagval), file=f)
+for segtype in segments_by_type.keys():
+    with open("segdata_%s_%s.txt" % (segtype, sys.argv[1]), "w") as f:
+        segments = segments_by_type[segtype]
+        for segname, segdata in sorted(segments.items()):
+            print("seg %s" % segname, file=f)
+            for bitname in sorted(segdata["bits"]):
+                print("bit %s" % bitname, file=f)
+            for tagname, tagval in sorted(segdata["tags"].items()):
+                print("tag %s %d" % (tagname, tagval), file=f)
 
