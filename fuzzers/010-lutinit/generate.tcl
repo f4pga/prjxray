@@ -30,7 +30,7 @@ write_checkpoint -force design.dcp
 ########################################
 # Unmodified design with random LUTs
 
-proc write_lutdata {filename} {
+proc write_txtdata {filename} {
 	puts "Writing $filename."
 	set fp [open $filename w]
 	foreach cell [get_cells -hierarchical -filter {REF_NAME == LUT6}] {
@@ -43,7 +43,7 @@ proc write_lutdata {filename} {
 }
 
 write_bitstream -force design_0.bit
-write_lutdata lutdata_0.txt
+write_txtdata design_0.txt
 
 
 ########################################
@@ -71,7 +71,7 @@ foreach cell [get_cells -hierarchical -filter {REF_NAME == LUT6}] {
 }
 
 write_bitstream -force design_1.bit
-write_lutdata lutdata_1.txt
+write_txtdata design_1.txt
 
 
 ########################################
@@ -85,5 +85,5 @@ foreach cell [get_cells -hierarchical -filter {REF_NAME == LUT6}] {
 }
 
 write_bitstream -force design_2.bit
-write_lutdata lutdata_2.txt
+write_txtdata design_2.txt
 

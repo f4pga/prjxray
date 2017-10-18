@@ -20,7 +20,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf $(SPECIMENS)
+	rm -rf $(SPECIMENS) seg_clbll.segbits seg_clblm.segbits
 
 .PHONY: database pushdb clean
 

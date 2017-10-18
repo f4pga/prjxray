@@ -31,8 +31,8 @@ with open("design_%s.bits" % sys.argv[1], "r") as f:
 
         bits[base_frame][bit_wordidx].add((bit_frame, bit_wordidx, bit_bitidx))
 
-print("Loading lut data.")
-with open("lutdata_%s.txt" % sys.argv[1], "r") as f:
+print("Loading text data.")
+with open("design_%s.txt" % sys.argv[1], "r") as f:
     for line in f:
         line = line.split()
         site = line[0]
