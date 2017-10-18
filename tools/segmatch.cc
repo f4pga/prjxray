@@ -15,6 +15,8 @@ using std::tuple;
 using std::vector;
 using std::string;
 
+bool mode_inv = false;
+
 int num_bits = 0, num_tags = 0;
 map<string, int> bit_ids, tag_ids;
 vector<string> bit_ids_r, tag_ids_r;
@@ -84,6 +86,26 @@ void read_input(std::istream &f, std::string filename)
 				tags.resize(tag_idx+1);
 
 			tags[tag_idx] = true;
+
+			if (mode_inv)
+			{
+				auto &inv_tags = token == "1" ? segdata_tags0(*segptr) : segdata_tags1(*segptr);
+
+				token = tag_ids_r.at(tag_idx) + "__INV";
+
+				if (tag_ids.count(token) == 0) {
+					tag_ids[token] = num_tags++;
+					tag_ids_r.push_back(token);
+				}
+
+				int inv_tag_idx = tag_ids.at(token);
+
+				if (int(inv_tags.size()) <= inv_tag_idx)
+					inv_tags.resize(inv_tag_idx+1);
+
+				inv_tags[inv_tag_idx] = true;
+			}
+
 			continue;
 		}
 
@@ -120,11 +142,14 @@ int main(int argc, char **argv)
 	const char *outfile = nullptr;
 
 	int opt;
-	while ((opt = getopt(argc, argv, "o:")) != -1)
+	while ((opt = getopt(argc, argv, "io:")) != -1)
 		switch (opt)
 		{
 		case 'o':
 			outfile = optarg;
+			break;
+		case 'i':
+			mode_inv = true;
 			break;
 		default:
 			goto help;
@@ -137,6 +162,9 @@ help:
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -o <filename>\n");
 		fprintf(stderr, "    set output file\n");
+		fprintf(stderr, "\n");
+		fprintf(stderr, "  -i\n");
+		fprintf(stderr, "    add inverted tags\n");
 		fprintf(stderr, "\n");
 		return 1;
 	}

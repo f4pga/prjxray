@@ -139,6 +139,14 @@ for segtype in segbits.keys():
                         m = re.search(r"(.)LUT.INIT\[(..)\]", bit_name)
                         label = m.group(1) + m.group(2)
 
+                    if re.search(r"\.[ABCD]5?FF\.", bit_name):
+                        bgcolor = "#aaffaa"
+                        m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+)", bit_name)
+                        if m.group(2) == "ZINI":
+                            label = m.group(1) + "Z"
+                        else:
+                            label = m.group(1) + "?"
+
                 print("<td bgcolor=\"%s\" title=\"%s\"><span style=\"font-size:10px\">%s</span></td>" % (bgcolor, "\n".join(title), label), file=f)
             print("</tr>", file =f)
 
