@@ -19,8 +19,8 @@ with open("design_%s.bits" % sys.argv[1], "r") as f:
     for line in f:
         line = line.split("_")
         bit_frame = int(line[1], 16)
-        bit_wordidx = int(line[2], 16)
-        bit_bitidx = int(line[3], 16)
+        bit_wordidx = int(line[2], 10)
+        bit_bitidx = int(line[3], 10)
         base_frame = bit_frame & ~0x7f
 
         if base_frame not in bits:
@@ -65,7 +65,7 @@ for tilename, tiledata in grid["tiles"].items():
     segments = segments_by_type[segdata["type"]]
 
     tile_type = tiledata["type"]
-    segname = "%s_%02x" % (segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
+    segname = "%s_%03d" % (segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
 
     if not segname in segments:
         segments[segname] = { "bits": list(), "tags": dict() }
@@ -97,7 +97,7 @@ for tilename, tiledata in grid["tiles"].items():
         if wordidx not in bits[base_frame]:
             continue
         for bit_frame, bit_wordidx, bit_bitidx in bits[base_frame][wordidx]:
-            segments[segname]["bits"].append("%02x_%02x_%02x" % (bit_frame - base_frame, bit_wordidx - segdata["baseaddr"][1], bit_bitidx))
+            segments[segname]["bits"].append("%02d_%02d" % (bit_frame - base_frame, 32*(bit_wordidx - segdata["baseaddr"][1]) + bit_bitidx))
 
     segments[segname]["bits"].sort()
 
@@ -111,6 +111,8 @@ for segtype in segments_by_type.keys():
     with open("segdata_%s_%s.txt" % (segtype, sys.argv[1]), "w") as f:
         segments = segments_by_type[segtype]
         for segname, segdata in sorted(segments.items()):
+            if len(segdata["tags"]) == 0:
+                continue
             print("seg %s" % segname, file=f)
             for bitname in sorted(segdata["bits"]):
                 print("bit %s" % bitname, file=f)

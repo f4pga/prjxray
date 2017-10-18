@@ -14,7 +14,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf $(SPECIMENS) tilegrid.json
+	rm -rf specimen_[0-9][0-9][0-9]/ tilegrid.json
 
 .PHONY: database pushdb clean
 
