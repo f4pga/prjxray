@@ -82,7 +82,13 @@ for tilename, tiledata in grid["tiles"].items():
             assert 0
 
         for name, value in luts[site].items():
-            segments[segname]["tags"]["%s.%s.%s" % (re.sub("_[LR]$", "", tile_type), sitekey, name)] = value
+            tag = "%s.%s.%s" % (re.sub("_[LR]$", "", tile_type), sitekey, name)
+            tag = tag.replace("SLICE_X0.SLICEM", "SLICEM_X0")
+            tag = tag.replace("SLICE_X1.SLICEM", "SLICEM_X1")
+            tag = tag.replace("SLICE_X0.SLICEL", "SLICEL_X0")
+            tag = tag.replace("SLICE_X1.SLICEL", "SLICEL_X1")
+            tag = tag.replace("6LUT", "LUT")
+            segments[segname]["tags"][tag] = value
 
     base_frame = int(segdata["baseaddr"][0][2:], 16)
     for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+2):
