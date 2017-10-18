@@ -45,10 +45,10 @@ with open("design_%s.txt" % sys.argv[1], "r") as f:
         if site not in data:
             data[site] = dict()
 
-        data[site]["%s.INIT" % bel] = init
-        data[site]["%s.CINV" % bel] = cinv
-        data[site]["%s.DINV" % bel] = dinv
-        data[site]["%s.RINV" % bel] = rinv
+        data[site]["%s.ZINI" % bel] = 1-init
+        # data[site]["%s.CINV" % bel] = cinv
+        # data[site]["%s.DINV" % bel] = dinv
+        # data[site]["%s.RINV" % bel] = rinv
 
 
 #################################################
