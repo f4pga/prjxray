@@ -2,6 +2,8 @@
 
 . ../../utils/genheader.sh
 
+echo '`define SEED 32'"'h$(echo $1 | md5sum | cut -c1-8)" > setseed.vh
+
 vivado -mode batch -source ../generate.tcl
 
 for i in {0..9}; do
