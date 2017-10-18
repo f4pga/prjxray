@@ -37,18 +37,15 @@ with open("design_%s.txt" % sys.argv[1], "r") as f:
         line = line.split()
         site = line[0]
         bel = line[1]
-        init = int(line[2][3])
-        cinv = int(line[3][3])
-        dinv = int(line[4][3])
-        rinv = int(line[5][3])
+        ctype = line[2]
+        init = int(line[3][3])
+        cinv = int(line[4][3])
 
         if site not in data:
             data[site] = dict()
 
         data[site]["%s.ZINI" % bel] = 1-init
-        # data[site]["%s.CINV" % bel] = cinv
-        # data[site]["%s.DINV" % bel] = dinv
-        # data[site]["%s.RINV" % bel] = rinv
+        # data[site]["CLOCK_INV"] = cinv
 
 
 #################################################

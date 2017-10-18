@@ -4,8 +4,9 @@ read_verilog ../top.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
-set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports di]
-set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_02) IOSTANDARD LVCMOS33" [get_ports do]
+set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports rst]
+set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_02) IOSTANDARD LVCMOS33" [get_ports di]
+set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_03) IOSTANDARD LVCMOS33" [get_ports do]
 
 create_pblock roi
 add_cells_to_pblock [get_pblocks roi] [get_cells roi]
@@ -29,14 +30,13 @@ write_checkpoint -force design.dcp
 proc write_txtdata {filename} {
 	puts "Writing $filename."
 	set fp [open $filename w]
-	foreach cell [get_cells -hierarchical -filter {REF_NAME == FDRE}] {
+	foreach cell [get_cells -hierarchical -filter {REF_NAME == FDRE || REF_NAME == FDSE || REF_NAME == FDCE || REF_NAME == FDPE}] {
 		set loc [get_property LOC $cell]
 		set bel [get_property BEL $cell]
+		set ctype [get_property REF_NAME $cell]
 		set init [get_property INIT $cell]
 		set cinv [get_property IS_C_INVERTED $cell]
-		set dinv [get_property IS_D_INVERTED $cell]
-		set rinv [get_property IS_R_INVERTED $cell]
-		puts $fp "$loc $bel $init $cinv $dinv $rinv"
+		puts $fp "$loc $bel $ctype $init $cinv"
 	}
 	close $fp
 }
@@ -46,14 +46,13 @@ write_txtdata design_0.txt
 
 
 ########################################
-# Create versions with random bit changes
+# Versions with random config changes
 
 proc change_design_randomly {} {
 	foreach cell [get_cells -hierarchical -filter {REF_NAME == FDRE}] {
+		set site_cells [get_cells -of_objects [get_sites -of_objects $cell] -filter {REF_NAME == FDRE || REF_NAME == FDSE || REF_NAME == FDCE || REF_NAME == FDPE}]
 		set_property INIT 1'b[expr int(rand()*2)] $cell
-		# set_property IS_C_INVERTED 1'b[expr int(rand()*2)] $cell
-		# set_property IS_D_INVERTED 1'b[expr int(rand()*2)] $cell
-		# set_property IS_R_INVERTED 1'b[expr int(rand()*2)] $cell
+		set_property IS_C_INVERTED 1'b[expr int(rand()*2)] $site_cells
 	}
 }
 
