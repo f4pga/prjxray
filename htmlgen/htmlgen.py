@@ -25,7 +25,7 @@ for segname, segdata in grid["segments"].items():
         segframes[segtype] = 36
 
         print("Loading %s segbits." % segtype)
-        with open("../database/%s/%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
+        with open("../database/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
             for line in f:
                 bit_name, bit_pos = line.split()
                 segbits[segtype][bit_name] = bit_pos
@@ -38,8 +38,9 @@ for segname, segdata in grid["segments"].items():
 grid_range = None
 grid_map = dict()
 
-print("Writing index.html.")
-with open("index.html", "w") as f:
+print("Writing %s/index.html." % os.getenv("XRAY_DATABASE"))
+os.makedirs(os.getenv("XRAY_DATABASE"), exist_ok=True)
+with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
     print("<html><title>X-Ray %s Database</title><body>" % os.getenv("XRAY_DATABASE").upper(), file=f)
 
     for tilename, tiledata in grid["tiles"].items():
@@ -88,7 +89,7 @@ with open("index.html", "w") as f:
             if "segment" in tiledata:
                 segtype = segdata["type"].lower()
                 segtype = re.sub(r"_[lr]$", "", segtype)
-                print("<center><small><a href=\"%s.html\">%s</a></small></center></td>" %
+                print("<center><small><a href=\"seg_%s.html\">%s</a></small></center></td>" %
                         (segtype, tilename.replace("_X", "<br/>X")), file=f)
             else:
                 print("<center><small>%s</small></center></td>" % tilename.replace("_X", "<br/>X"), file=f)
@@ -103,8 +104,8 @@ with open("index.html", "w") as f:
 # Create Segment Pages
 
 for segtype in segbits.keys():
-    print("Writing %s.html." % segtype)
-    with open("%s.html" % segtype, "w") as f:
+    print("Writing %s/seg_%s.html." % (os.getenv("XRAY_DATABASE"), segtype))
+    with open("%s/seg_%s.html" % (os.getenv("XRAY_DATABASE"), segtype), "w") as f:
         print("<html><title>X-Ray %s Database: %s</title><body>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
         print("<table border>", file =f)
 
@@ -114,7 +115,7 @@ for segtype in segbits.keys():
             print("<th width=\"50\">%d</th>" % frameidx, file =f)
         print("</tr>", file =f)
 
-        for bitidx in range(64):
+        for bitidx in range(63, -1, -1):
             print("<tr>", file =f)
             print("<th align=\"right\">%d</th>" % bitidx, file =f)
             for frameidx in range(segframes[segtype]):

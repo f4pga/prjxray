@@ -1,10 +1,6 @@
 #!/bin/bash
 
-set -ex
-test $# = 1
-test ! -e $1
-mkdir $1
-cd $1
+. ../../utils/genheader.sh
 
 echo '`define SEED 32'"'h$(echo $1 | md5sum | cut -c1-8)" > setseed.vh
 

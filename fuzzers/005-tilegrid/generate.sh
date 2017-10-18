@@ -1,10 +1,6 @@
 #!/bin/bash
 
-set -ex
-test $# = 1
-test ! -e $1
-mkdir $1
-cd $1
+. ../../utils/genheader.sh
 
 vivado -mode batch -source ../generate.tcl
 

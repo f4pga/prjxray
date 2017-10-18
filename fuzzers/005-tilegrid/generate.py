@@ -51,9 +51,12 @@ for record in tiles:
 
     if tile_type in ["CLBLL_L", "CLBLL_R", "CLBLM_L", "CLBLM_R"]:
         segment_name = "SEG_" + tile_name
+        segtype = re.sub(r"_[lr]$", "", tile_type.lower())
         database["segments"][segment_name] = dict()
         database["segments"][segment_name]["tiles"] = [tile_name]
-        database["segments"][segment_name]["type"] = "SEG_" + tile_type
+        database["segments"][segment_name]["type"] = segtype
+        database["segments"][segment_name]["frames"] = 36
+        database["segments"][segment_name]["words"] = 2
         if framebaseaddr is not None:
             database["segments"][segment_name]["baseaddr"] = [framebaseaddr, 0]
         database["tiles"][tile_name]["segment"] = segment_name
