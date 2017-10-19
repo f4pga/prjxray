@@ -8,7 +8,7 @@ import os, sys, json, re
 
 grid = None
 bits = dict()
-luts = dict()
+data = dict()
 
 print("Loading grid.")
 with open("../../../database/%s/tilegrid.json" % os.getenv("XRAY_DATABASE"), "r") as f:
@@ -39,12 +39,12 @@ with open("design_%s.txt" % sys.argv[1], "r") as f:
         bel = line[1]
         init = int(line[2][4:], 16)
 
-        if site not in luts:
-            luts[site] = dict()
+        if site not in data:
+            data[site] = dict()
 
         for i in range(64):
             bitname = "%s.INIT[%02d]" % (bel, i)
-            luts[site][bitname] = ((init >> i) & 1) != 0
+            data[site][bitname] = ((init >> i) & 1) != 0
 
 
 #################################################
@@ -71,7 +71,7 @@ for tilename, tiledata in grid["tiles"].items():
         segments[segname] = { "bits": list(), "tags": dict() }
 
     for site in tiledata["sites"]:
-        if site not in luts:
+        if site not in data:
             continue
 
         if re.match(r"SLICE_X[0-9]*[02468]Y", site):
@@ -81,7 +81,7 @@ for tilename, tiledata in grid["tiles"].items():
         else:
             assert 0
 
-        for name, value in luts[site].items():
+        for name, value in data[site].items():
             tag = "%s.%s.%s" % (re.sub("_[LR]$", "", tile_type), sitekey, name)
             tag = tag.replace("SLICE_X0.SLICEM", "SLICEM_X0")
             tag = tag.replace("SLICE_X1.SLICEM", "SLICEM_X1")
