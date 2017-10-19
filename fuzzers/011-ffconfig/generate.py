@@ -45,7 +45,7 @@ with open("design_%s.txt" % sys.argv[1], "r") as f:
             data[site] = dict()
 
         data[site]["%s.ZINI" % bel] = 1-init
-        # data[site]["CLOCK_INV"] = cinv
+        # data[site]["%s.CLOCK_INV" % (bel.split(".")[0])] = cinv
 
 
 #################################################
