@@ -68,12 +68,22 @@ for tilename, tiledata in grid["tiles"].items():
     tile_type = tiledata["type"]
     segname = "%s_%03d" % (segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
 
-    if not segname in segments:
-        segments[segname] = { "bits": list(), "tags": dict() }
-
     for site in tiledata["sites"]:
         if site not in data:
             continue
+
+        if not segname in segments:
+            segments[segname] = { "bits": set(), "tags": dict() }
+
+            base_frame = int(segdata["baseaddr"][0][2:], 16)
+            for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+2):
+                if base_frame not in bits:
+                    continue
+                if wordidx not in bits[base_frame]:
+                    continue
+                for bit_frame, bit_wordidx, bit_bitidx in bits[base_frame][wordidx]:
+                    bitname = "%02d_%02d" % (bit_frame - base_frame, 32*(bit_wordidx - segdata["baseaddr"][1]) + bit_bitidx)
+                    segments[segname]["bits"].add(bitname)
 
         if re.match(r"SLICE_X[0-9]*[02468]Y", site):
             sitekey = "SLICE_X0"
@@ -90,17 +100,6 @@ for tilename, tiledata in grid["tiles"].items():
             tag = tag.replace("SLICE_X1.SLICEL", "SLICEL_X1")
             segments[segname]["tags"][tag] = value
 
-    base_frame = int(segdata["baseaddr"][0][2:], 16)
-    for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+2):
-        if base_frame not in bits:
-            continue
-        if wordidx not in bits[base_frame]:
-            continue
-        for bit_frame, bit_wordidx, bit_bitidx in bits[base_frame][wordidx]:
-            segments[segname]["bits"].append("%02d_%02d" % (bit_frame - base_frame, 32*(bit_wordidx - segdata["baseaddr"][1]) + bit_bitidx))
-
-    segments[segname]["bits"].sort()
-
 
 #################################################
 # Print
@@ -111,8 +110,6 @@ for segtype in segments_by_type.keys():
     with open("segdata_%s_%s.txt" % (segtype, sys.argv[1]), "w") as f:
         segments = segments_by_type[segtype]
         for segname, segdata in sorted(segments.items()):
-            if len(segdata["tags"]) == 0:
-                continue
             print("seg %s" % segname, file=f)
             for bitname in sorted(segdata["bits"]):
                 print("bit %s" % bitname, file=f)
