@@ -193,7 +193,8 @@ help:
 		assert(f != nullptr);
 	}
 
-	int cnt_const = 0;
+	int cnt_const0 = 0;
+	int cnt_const1 = 0;
 	int cnt_candidates = 0;
 	int min_candidates = num_bits;
 	int max_candidates = 0;
@@ -231,21 +232,23 @@ help:
 
 		if (!got1) {
 			fprintf(f, " <const0>\n");
-			cnt_const += 1;
+			cnt_const0 += 1;
 			continue;
 		}
 
 		if (!got0) {
-			fprintf(f, " <const1>\n");
-			cnt_const += 1;
-			continue;
+			fprintf(f, " <const1>");
+			cnt_const1 += 1;
 		}
 
 		int num_candidates = std::accumulate(mask.begin(), mask.end(), 0);
-		min_candidates = std::min(min_candidates, num_candidates);
-		max_candidates = std::max(max_candidates, num_candidates);
-		avg_candidates += num_candidates;
-		cnt_candidates += 1;
+
+		if (got0) {
+			min_candidates = std::min(min_candidates, num_candidates);
+			max_candidates = std::max(max_candidates, num_candidates);
+			avg_candidates += num_candidates;
+			cnt_candidates += 1;
+		}
 
 		if (0 < num_candidates && num_candidates <= 4) {
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
@@ -260,7 +263,8 @@ help:
 	if (cnt_candidates)
 		avg_candidates /= cnt_candidates;
 
-	printf("#of const tags: %d\n", cnt_const);
+	printf("#of const0 tags: %d\n", cnt_const0);
+	printf("#of const1 tags: %d\n", cnt_const1);
 	printf("min #of candidates: %d\n", min_candidates);
 	printf("max #of candidates: %d\n", max_candidates);
 	printf("avg #of candidates: %.3f\n", avg_candidates);
