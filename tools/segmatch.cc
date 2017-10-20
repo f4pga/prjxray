@@ -193,6 +193,8 @@ help:
 		assert(f != nullptr);
 	}
 
+	int cnt_const = 0;
+	int cnt_candidates = 0;
 	int min_candidates = num_bits;
 	int max_candidates = 0;
 	float avg_candidates = 0;
@@ -200,28 +202,50 @@ help:
 	for (int tag_idx = 0; tag_idx < num_tags; tag_idx++)
 	{
 		vector<bool> mask(num_bits, true);
+		bool got1 = false, got0 = false;
 
 		for (auto &segdat : segdata)
 		{
 			auto &sd = segdat.second;
+			bool tag1 = segdata_tags1(sd).at(tag_idx);
+			bool tag0 = segdata_tags0(sd).at(tag_idx);
 
-			if (segdata_tags1(sd).at(tag_idx)) {
+			assert(!tag1 || !tag0);
+
+			if (tag1) {
+				got1 = true;
 				and_masks(mask, segdata_bits(sd));
 				continue;
 			}
 
-			if (segdata_tags0(sd).at(tag_idx)) {
+			if (tag0) {
+				got0 = true;
 				andc_masks(mask, segdata_bits(sd));
 				continue;
 			}
 		}
 
+		assert(got1 || got0);
+
+		fprintf(f, "%s", tag_ids_r.at(tag_idx).c_str());
+
+		if (!got1) {
+			fprintf(f, " <const0>\n");
+			cnt_const += 1;
+			continue;
+		}
+
+		if (!got0) {
+			fprintf(f, " <const1>\n");
+			cnt_const += 1;
+			continue;
+		}
+
 		int num_candidates = std::accumulate(mask.begin(), mask.end(), 0);
 		min_candidates = std::min(min_candidates, num_candidates);
 		max_candidates = std::max(max_candidates, num_candidates);
-		avg_candidates += float(num_candidates) / num_tags;
-
-		fprintf(f, "%s", tag_ids_r.at(tag_idx).c_str());
+		avg_candidates += num_candidates;
+		cnt_candidates += 1;
 
 		if (0 < num_candidates && num_candidates <= 4) {
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
@@ -233,9 +257,13 @@ help:
 		}
 	}
 
+	if (cnt_candidates)
+		avg_candidates /= cnt_candidates;
+
+	printf("#of const tags: %d\n", cnt_const);
 	printf("min #of candidates: %d\n", min_candidates);
 	printf("max #of candidates: %d\n", max_candidates);
-	printf("avg #of candidates: %f\n", avg_candidates);
+	printf("avg #of candidates: %.3f\n", avg_candidates);
 
 	return 0;
 }
