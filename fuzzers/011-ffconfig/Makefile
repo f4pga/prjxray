@@ -19,8 +19,11 @@ $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
+regen:
+	set -ex; for d in $(SPECIMENS); do cd $$d; for i in 0 1 2 3 4 5 6 7 8 9; do python3 ../generate.py $$i; done; cd ..; done
+
 clean:
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_clbll.segbits seg_clblm.segbits
 
-.PHONY: database pushdb clean
+.PHONY: database pushdb regen clean
 

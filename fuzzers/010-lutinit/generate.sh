@@ -8,6 +8,9 @@ vivado -mode batch -source ../generate.tcl
 
 for i in 0 1 2; do
 	../../../tools/bitread -F $XRAY_ROI_FRAMES -o design_$i.bits -zy design_$i.bit
+done
+
+for i in 0 1 2; do
 	python3 ../generate.py $i
 done
 
