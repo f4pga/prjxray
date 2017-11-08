@@ -49,10 +49,7 @@ class segmaker:
             tile_type = tiledata["type"]
             segname = "%s_%03d" % (segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
 
-            for site in tiledata["sites"]:
-                if site not in self.tags:
-                    continue
-
+            def add_segbits():
                 if not segname in segments:
                     segments[segname] = { "bits": set(), "tags": dict() }
 
@@ -65,6 +62,19 @@ class segmaker:
                         for bit_frame, bit_wordidx, bit_bitidx in self.bits[base_frame][wordidx]:
                             bitname = "%02d_%02d" % (bit_frame - base_frame, 32*(bit_wordidx - segdata["baseaddr"][1]) + bit_bitidx)
                             segments[segname]["bits"].add(bitname)
+
+            if tilename in self.tags:
+                add_segbits()
+
+                for name, value in self.tags[tilename].items():
+                    tag = "%s.%s" % (re.sub("_[LR]$", "", tile_type), name)
+                    segments[segname]["tags"][tag] = value
+
+            for site in tiledata["sites"]:
+                if site not in self.tags:
+                    continue
+
+                add_segbits()
 
                 if re.match(r"SLICE_X[0-9]*[02468]Y", site):
                     sitekey = "SLICE_X0"
