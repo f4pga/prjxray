@@ -46,7 +46,7 @@ proc tile_pip_report {fd tile_name} {
 				set src_span [llength [get_tiles -of_objects $src_node]]
 				puts $fd "     Source Wire (Node, Span): $src ($src_node, $src_span) via $pip"
 			}
-			foreach pip [get_pips -filter "TILE != $tile" -uphill -of_objects $dst_node] {
+			foreach pip [get_pips -quiet -filter "TILE != $tile" -uphill -of_objects $dst_node] {
 				puts $fd "           Outside Source PIP: $pip"
 			}
 		}
@@ -69,7 +69,7 @@ proc tile_pip_report {fd tile_name} {
 				set src_span [llength [get_tiles -of_objects $src_node]]
 				puts $fd "     Source Wire (Node, Span): $src ($src_node, $src_span) via $pip"
 			}
-			foreach pip [get_pips -filter "TILE != $tile" -uphill -of_objects $dst_node] {
+			foreach pip [get_pips -quiet -filter "TILE != $tile" -uphill -of_objects $dst_node] {
 				puts $fd "           Outside Source PIP: $pip"
 			}
 		}
