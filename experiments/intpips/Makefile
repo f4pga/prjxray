@@ -1,19 +1,16 @@
 
-N := 5
+N := 15
 SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
-database: database/clbll database/clblm
+database: $(SPECIMENS_OK)
+	../../tools/segmatch -m 5 -M 15 -o seg_int.segbits \
+			$(addsuffix /segdata_clbll.txt,$(SPECIMENS)) \
+			$(addsuffix /segdata_clblm.txt,$(SPECIMENS))
 
-pushdb: pushdb/clbll pushdb/clblm
-
-database/%: $(SPECIMENS_OK)
-	../../tools/segmatch -o seg_$(notdir $@).segbits \
-			$(addsuffix /segdata_$(notdir $@).txt,$(SPECIMENS))
-
-pushdb/%:
-	bash ../../utils/mergedb.sh seg_$(notdir $@).segbits \
-			../../database/$(XRAY_DATABASE)/seg_$(notdir $@).segbits
+pushdb:
+	bash ../../utils/mergedb.sh seg_int.segbits \
+			../../database/$(XRAY_DATABASE)/seg_int.segbits
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
