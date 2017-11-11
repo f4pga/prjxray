@@ -3,5 +3,11 @@
 /design/
 /design.dcp
 /design.bit
-/CLBLL_L_X12Y119.txt
-/INT_L_X12Y119.txt
+/design.bits
+/pips_clbll.txt
+/pips_int.txt
+/routes.dcp
+/routes.bit
+/routes.bits
+/usage_statistics_webtalk.html
+/usage_statistics_webtalk.xml
