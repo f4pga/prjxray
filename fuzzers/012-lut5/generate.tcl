@@ -48,14 +48,16 @@ foreach lut $luts {
 
 set fp [open "design.txt" w]
 foreach lut $luts {
-	set tile [get_tile -of_objects $lut]
-	set grid_x [get_property GRID_POINT_X $tile]
-	set grid_y [get_property GRID_POINT_Y $tile]
-	set type [get_property TYPE $tile]
-	set lut_type [get_property TYPE $lut]
-
 	if [get_property IS_USED $lut] {
-    	puts $fp "$type $tile $grid_x $grid_y $lut $lut_type"
+	    set tile [get_tile -of_objects $lut]
+	    set grid_x [get_property GRID_POINT_X $tile]
+	    set grid_y [get_property GRID_POINT_Y $tile]
+	    set type [get_property TYPE $tile]
+	    set lut_type [get_property TYPE $lut]
+	    set lutc [get_cells -of_objects $lut]
+	    set cell_bel [get_property BEL $lutc]
+
+		puts $fp "$type $tile $grid_x $grid_y $lut $lut_type $cell_bel"
 	}
 }
 close $fp
