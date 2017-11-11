@@ -147,27 +147,45 @@ for segtype in segbits.keys():
                         else:
                             label = m.group(1) + "?"
 
+                    if re.search(r"\.[ABCD]5?FF\.", bit_name):
+                        bgcolor = "#aaffaa"
+                        m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+)", bit_name)
+                        if m.group(2) == "ZINI":
+                            label = m.group(1) + "Z"
+                        else:
+                            label = m.group(1) + "?"
+
+                    if re.search(r"\.[ABCD]LUT5$", bit_name):
+                        bgcolor = "#cccc88"
+                        label = bit_name[-5] + "5"
+
                 print("<td bgcolor=\"%s\" title=\"%s\"><span style=\"font-size:10px\">%s</span></td>" % (bgcolor, "\n".join(title), label), file=f)
             print("</tr>", file =f)
-
-
-        prefix = ""
-
-        for bit_name, bit_pos in sorted(segbits[segtype].items()):
-            bit_prefix = ".".join(bit_name.split(".")[0:-1])
-
-            if prefix != bit_prefix:
-                trstyle = ""
-                prefix = bit_prefix
-                print("</table>", file =f)
-                print("<p/>", file =f)
-                print("<h4>%s</h4>" % prefix, file =f)
-                print("<table cellspacing=0>", file =f)
-                print("<tr><th width=\"500\" align=\"left\">Bit Name</th><th>Position</th></tr>", file=f)
-
-            trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
-            print("<tr%s><td>%s</td><td>%s</td></tr>" % (trstyle, bit_name, bit_pos), file=f)
-
         print("</table>", file =f)
+
+
+        bits_by_prefix = dict()
+
+        for bit_name, bit_pos in segbits[segtype].items():
+            prefix = ".".join(bit_name.split(".")[0:-1])
+
+            if prefix not in bits_by_prefix:
+                bits_by_prefix[prefix] = set()
+
+            bits_by_prefix[prefix].add((bit_name, bit_pos))
+
+        for prefix, bits in sorted(bits_by_prefix.items()):
+            print("<p/>", file =f)
+            print("<h4>%s</h4>" % prefix, file =f)
+            print("<table cellspacing=0>", file =f)
+            print("<tr><th width=\"500\" align=\"left\">Bit Name</th><th>Position</th></tr>", file=f)
+
+            trstyle = ""
+            for bit_name, bit_pos in sorted(bits):
+                trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
+                print("<tr%s><td>%s</td><td>%s</td></tr>" % (trstyle, bit_name, bit_pos), file=f)
+
+            print("</table>", file =f)
+
         print("</body></html>", file=f)
 
