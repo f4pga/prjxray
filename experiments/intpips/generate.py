@@ -42,10 +42,8 @@ for tile, pips_srcs_dsts in tiledata.items():
     for pip, src_dst in pipdata.items():
         if pip in pips:
             segmk.addtag(tile, pip, 1)
-        else:
-            src, dst = src_dst
-            if (src not in srcs) and (dst not in dsts):
-                segmk.addtag(tile, pip, 0)
+        elif src_dst[1] not in dsts:
+            segmk.addtag(tile, pip, 0)
 
 segmk.compile()
 segmk.write()

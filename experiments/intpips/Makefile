@@ -1,5 +1,5 @@
 
-N := 1
+N := 5
 SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
