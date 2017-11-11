@@ -25,14 +25,9 @@ write_checkpoint -force design.dcp
 write_bitstream -force design.bit
 
 
-
-
-
 # Get all 6LUT and 5LUT in pblock
 # A6LUT, B6LUT, A5LUT, etc
 set luts [get_bels -of_objects [get_sites -of_objects [get_pblocks roi]] -filter {TYPE =~ LUT*} */*LUT]
-
-
 
 set grid_min_x -1
 set grid_max_x -1
@@ -50,27 +45,6 @@ foreach lut $luts {
 	if [expr $grid_min_y < 0 || $grid_y < $grid_min_y] {set grid_min_y $grid_y}
 	if [expr $grid_max_y < 0 || $grid_y > $grid_max_y] {set grid_max_y $grid_y}
 }
-
-# set tiles [get_tiles -filter "GRID_POINT_X >= $grid_min_x && GRID_POINT_X <= $grid_max_x && GRID_POINT_Y >= $grid_min_y && GRID_POINT_Y <= $grid_max_y"]
-# set fp [open "tiles.txt" w]
-# foreach tile $tiles {
-# 	set type [get_property TYPE $tile]
-# 	set grid_x [get_property GRID_POINT_X $tile]
-# 	set grid_y [get_property GRID_POINT_Y $tile]
-# 	set sites [get_sites -quiet -of_objects $tile]
-# 	set typed_sites {}
-# 
-# 	if [llength $sites] {
-# 		set site_types [get_property SITE_TYPE $sites]
-# 		foreach t $site_types s $sites {
-# 			lappend typed_sites $t $s
-# 		}
-# 	}
-# 
-# 	puts $fp "$type $tile $grid_x $grid_y $typed_sites"
-# }
-# close $fp
-
 
 set fp [open "design.txt" w]
 foreach lut $luts {

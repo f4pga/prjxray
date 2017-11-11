@@ -10,3 +10,5 @@ for x in design*.bit; do
 	../../../tools/bitread -F $XRAY_ROI_FRAMES -o ${x}s -zy $x
 done
 
+python3 ../generate.py
+
