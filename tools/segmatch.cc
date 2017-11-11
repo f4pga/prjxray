@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <numeric>
+#include <algorithm>
 #include <map>
 #include <set>
 
@@ -140,13 +141,20 @@ void andc_masks(vector<bool> &dst_mask, const vector<bool> &src_mask)
 int main(int argc, char **argv)
 {
 	const char *outfile = nullptr;
+	int min_each = 0, min_total = 0;
 
 	int opt;
-	while ((opt = getopt(argc, argv, "io:")) != -1)
+	while ((opt = getopt(argc, argv, "io:m:M:")) != -1)
 		switch (opt)
 		{
 		case 'o':
 			outfile = optarg;
+			break;
+		case 'm':
+			min_each = atoi(optarg);
+			break;
+		case 'M':
+			min_total = atoi(optarg);
 			break;
 		case 'i':
 			mode_inv = true;
@@ -162,6 +170,12 @@ help:
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -o <filename>\n");
 		fprintf(stderr, "    set output file\n");
+		fprintf(stderr, "\n");
+		fprintf(stderr, "  -m <int>\n");
+		fprintf(stderr, "    min number of set/cleared samples each\n");
+		fprintf(stderr, "\n");
+		fprintf(stderr, "  -M <int>\n");
+		fprintf(stderr, "    min number of set/cleared samples total\n");
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -i\n");
 		fprintf(stderr, "    add inverted tags\n");
@@ -200,10 +214,12 @@ help:
 	int max_candidates = 0;
 	float avg_candidates = 0;
 
+	std::vector<std::string> out_lines;
+
 	for (int tag_idx = 0; tag_idx < num_tags; tag_idx++)
 	{
 		vector<bool> mask(num_bits, true);
-		bool got1 = false, got0 = false;
+		int count1 = 0, count0 = 0;
 
 		for (auto &segdat : segdata)
 		{
@@ -214,36 +230,54 @@ help:
 			assert(!tag1 || !tag0);
 
 			if (tag1) {
-				got1 = true;
+				count1++;
 				and_masks(mask, segdata_bits(sd));
 				continue;
 			}
 
 			if (tag0) {
-				got0 = true;
+				count0++;
 				andc_masks(mask, segdata_bits(sd));
 				continue;
 			}
 		}
 
-		assert(got1 || got0);
+		assert(count1 || count0);
 
-		fprintf(f, "%s", tag_ids_r.at(tag_idx).c_str());
+		std::string out_line = tag_ids_r.at(tag_idx);
 
-		if (!got1) {
-			fprintf(f, " <const0>\n");
+		if (count1 < min_each) {
+			char buffer[64];
+			snprintf(buffer, 64, " <m1 %d>", count1);
+			out_line += buffer;
+		}
+
+		if (count0 < min_each) {
+			char buffer[64];
+			snprintf(buffer, 64, " <m0 %d>", count0);
+			out_line += buffer;
+		}
+
+		if (count1 + count0 < min_total) {
+			char buffer[64];
+			snprintf(buffer, 64, " <M %d %d>", count1, count0);
+			out_line += buffer;
+		}
+
+		if (!count1) {
+			out_lines.push_back(out_line + " <const0>");
 			cnt_const0 += 1;
 			continue;
 		}
 
-		if (!got0) {
-			fprintf(f, " <const1>");
+		if (!count0) {
+			out_line += " <const1>";
 			cnt_const1 += 1;
 		}
 
 		int num_candidates = std::accumulate(mask.begin(), mask.end(), 0);
 
-		if (got0) {
+		if (count0) {
 			min_candidates = std::min(min_candidates, num_candidates);
 			max_candidates = std::max(max_candidates, num_candidates);
 			avg_candidates += num_candidates;
@@ -251,14 +285,26 @@ help:
 		}
 
 		if (0 < num_candidates && num_candidates <= 4) {
+			std::vector<std::string> out_tags;
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
 				if (mask.at(bit_idx))
-					fprintf(f, " %s", bit_ids_r.at(bit_idx).c_str());
-			fprintf(f, "\n");
+					out_tags.push_back(bit_ids_r.at(bit_idx));
+			std::sort(out_tags.begin(), out_tags.end());
+			for (auto &tag : out_tags)
+				out_line += " " + tag;
 		} else {
-			fprintf(f, " <%d candidates>\n", num_candidates);
+			char buffer[64];
+			snprintf(buffer, 64, " <%d candidates>", num_candidates);
+			out_line += buffer;
 		}
+
+		out_lines.push_back(out_line);
 	}
+
+	std::sort(out_lines.begin(), out_lines.end());
+
+	for (auto &line : out_lines)
+		fprintf(f, "%s\n", line.c_str());
 
 	if (cnt_candidates)
 		avg_candidates /= cnt_candidates;
