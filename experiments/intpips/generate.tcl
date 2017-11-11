@@ -19,6 +19,9 @@ set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 
+source ../../../utils/utils.tcl
+randplace_pblock 100 roi
+
 place_design
 route_design
 

@@ -24,6 +24,25 @@ proc route_via {net nodes} {
 	puts ""
 }
 
+proc randsample_list {num lst} {
+	set rlst {}
+	for {set i 0} {$i<$num} {incr i} {
+		set j [expr {int(rand()*[llength $lst])}]
+		lappend rlst [lindex $lst $j]
+		set lst [lreplace $lst $j $j]
+	}
+	return $rlst
+}
+
+proc randplace_pblock {num pblock} {
+	set sites [randsample_list $num [get_sites -filter {SITE_TYPE == SLICEL || SITE_TYPE == SLICEM} -of_objects [get_pblocks $pblock]]]
+	set cells [randsample_list $num [get_cells -hierarchical -filter "PBLOCK == [get_pblocks $pblock] && REF_NAME == LUT6"]]
+	for {set i 0} {$i<$num} {incr i} {
+		set site [lindex $sites $i]
+		set cell [lindex $cells $i]
+	}
+}
+
 proc putl {lst} {
 	foreach line $lst {puts $line}
 }
