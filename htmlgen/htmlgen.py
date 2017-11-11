@@ -10,6 +10,7 @@ grid = None
 segbits = dict()
 segbits_r = dict()
 segframes = dict()
+routebits = dict()
 
 print("Loading tilegrid.")
 with open("../database/%s/tilegrid.json" % os.getenv("XRAY_DATABASE"), "r") as f:
@@ -30,6 +31,15 @@ for segname, segdata in grid["segments"].items():
                 bit_name, bit_pos = line.split()
                 segbits[segtype][bit_name] = bit_pos
                 segbits_r[segtype][bit_pos] = bit_name
+
+print("Loading routing segbits.")
+with open("../database/%s/seg_int.segbits" % os.getenv("XRAY_DATABASE")) as f:
+    for line in f:
+        bit_name, *bit_pos = line.split()
+        for bit in bit_pos:
+            if bit not in routebits:
+                routebits[bit] = set()
+            routebits[bit].add(bit_name)
 
 
 #################################################
@@ -158,6 +168,11 @@ for segtype in segbits.keys():
                     if re.search(r"\.[ABCD]LUT5$", bit_name):
                         bgcolor = "#cccc88"
                         label = bit_name[-5] + "5"
+
+                elif bit_pos in routebits:
+                        title += list(routebits[bit_pos])
+                        bgcolor = "#6666cc"
+                        label = "R"
 
                 print("<td bgcolor=\"%s\" title=\"%s\"><span style=\"font-size:10px\">%s</span></td>" % (bgcolor, "\n".join(title), label), file=f)
             print("</tr>", file =f)
