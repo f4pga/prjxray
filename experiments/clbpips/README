@@ -1,0 +1,8 @@
+
+Experiment looking into the CLB PIPs
+====================================
+
+None of the CLB PIPs are "real". I.e. all those PIPs are in fact implemented
+using other resources. E.g. the PIPs that select which net is routed to which
+LUT input pin is implemented by permutating the LUT INIT bits accordingly.
+
