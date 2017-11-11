@@ -24,11 +24,10 @@ with open("design.txt", "r") as f:
         site_lut_name = line[4]
         site, lut_name = site_lut_name.split('/')
         lut_type = line[5]
-        
+
         if lut_type in ('LUT5', 'LUT6'):
             which = lut_name[0]
-            segmk.addtag(site, "%s.LUT5" % which, lut_type == 'LUT5')
-            #segmk.addtag(site, "%s.LUT6" % which, lut_type == 'LUT6')
+            segmk.addtag(site, "%cLUT5" % which, lut_type == 'LUT5')
 
 segmk.compile()
 segmk.write()
