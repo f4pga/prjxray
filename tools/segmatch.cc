@@ -311,9 +311,12 @@ help:
 
 	printf("#of const0 tags: %d\n", cnt_const0);
 	printf("#of const1 tags: %d\n", cnt_const1);
-	printf("min #of candidates: %d\n", min_candidates);
-	printf("max #of candidates: %d\n", max_candidates);
-	printf("avg #of candidates: %.3f\n", avg_candidates);
+
+	if (cnt_candidates) {
+		printf("min #of candidates: %d\n", min_candidates);
+		printf("max #of candidates: %d\n", max_candidates);
+		printf("avg #of candidates: %.3f\n", avg_candidates);
+	}
 
 	return 0;
 }
