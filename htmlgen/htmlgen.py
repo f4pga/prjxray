@@ -23,6 +23,7 @@ for segname, segdata in grid["segments"].items():
     if segtype not in segbits:
         segbits[segtype] = dict()
         segbits_r[segtype] = dict()
+        routebits[segtype] = dict()
         segframes[segtype] = segdata["frames"]
 
         print("Loading %s segbits." % segtype)
@@ -32,14 +33,14 @@ for segname, segdata in grid["segments"].items():
                 segbits[segtype][bit_name] = bit_pos
                 segbits_r[segtype][bit_pos] = bit_name
 
-print("Loading routing segbits.")
-with open("../database/%s/seg_int.segbits" % os.getenv("XRAY_DATABASE")) as f:
-    for line in f:
-        bit_name, *bit_pos = line.split()
-        for bit in bit_pos:
-            if bit not in routebits:
-                routebits[bit] = set()
-            routebits[bit].add(bit_name)
+        print("Loading %s_int segbits." % segtype)
+        with open("../database/%s/seg_%s_int.segbits" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
+            for line in f:
+                bit_name, *bit_pos = line.split()
+                for bit in bit_pos:
+                    if bit not in routebits[segtype]:
+                        routebits[segtype][bit] = set()
+                    routebits[segtype][bit].add(bit_name)
 
 
 #################################################
@@ -169,8 +170,8 @@ for segtype in segbits.keys():
                         bgcolor = "#cccc88"
                         label = bit_name[-5] + "5"
 
-                elif bit_pos in routebits:
-                        title += list(routebits[bit_pos])
+                elif bit_pos in routebits[segtype]:
+                        title += list(routebits[segtype][bit_pos])
                         bgcolor = "#6666cc"
                         label = "R"
 
