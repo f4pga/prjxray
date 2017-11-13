@@ -51,7 +51,7 @@ for record in tiles:
 
     if tile_type in ["CLBLL_L", "CLBLL_R", "CLBLM_L", "CLBLM_R"]:
         segment_name = "SEG_" + tile_name
-        segtype = re.sub(r"_[lr]$", "", tile_type.lower())
+        segtype = tile_type.lower()
         database["segments"][segment_name] = dict()
         database["segments"][segment_name]["tiles"] = [tile_name]
         database["segments"][segment_name]["type"] = segtype
