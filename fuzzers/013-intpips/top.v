@@ -46,7 +46,9 @@ module roi(input clk, input [41:0] din_bits, output [78:0] dout_bits);
 endmodule
 
 module randluts(input [7:0] din, output [7:0] dout);
-	localparam integer N = 250;
+	localparam integer N =
+			`SEED % 3 == 2 ? 250 :
+			`SEED % 3 == 1 ? 100 : 10;
 
 	function [31:0] xorshift32(input [31:0] xorin);
 		begin

@@ -40,6 +40,7 @@ proc randplace_pblock {num pblock} {
 	for {set i 0} {$i<$num} {incr i} {
 		set site [lindex $sites $i]
 		set cell [lindex $cells $i]
+		set_property LOC $site $cell
 	}
 }
 
