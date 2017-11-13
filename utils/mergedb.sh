@@ -31,6 +31,14 @@ case "$1" in
 		sed < "$2" > "$tmp1" -e 's/^INT\./CLBLM_INT_L./' ;;
 	clblm_int_r)
 		sed < "$2" > "$tmp1" -e 's/^INT\./CLBLM_INT_R./' ;;
+	clbll_mask_l)
+		sed < "$2" > "$tmp1" -e 's/^bit/CLBLL_MASK_L/' ;;
+	clbll_mask_r)
+		sed < "$2" > "$tmp1" -e 's/^bit/CLBLL_MASK_R/' ;;
+	clblm_mask_l)
+		sed < "$2" > "$tmp1" -e 's/^bit/CLBLM_MASK_L/' ;;
+	clblm_mask_r)
+		sed < "$2" > "$tmp1" -e 's/^bit/CLBLM_MASK_R/' ;;
 	*)
 		echo "Invalid mode: $1"
 		rm -f "$tmp1" "$tmp2"

@@ -2,6 +2,7 @@
 
 import os, sys, json, re
 
+routing_use_union = False
 
 class UnionFind:
     def __init__(self):
@@ -33,6 +34,7 @@ segbits = dict()
 segbits_r = dict()
 segframes = dict()
 routebits = dict()
+maskbits = dict()
 
 print("Loading tilegrid.")
 with open("../database/%s/tilegrid.json" % os.getenv("XRAY_DATABASE"), "r") as f:
@@ -45,6 +47,7 @@ for segname, segdata in grid["segments"].items():
         segbits[segtype] = dict()
         segbits_r[segtype] = dict()
         routebits[segtype] = dict()
+        maskbits[segtype] = set()
         segframes[segtype] = segdata["frames"]
 
         print("Loading %s segbits." % segtype)
@@ -54,7 +57,7 @@ for segname, segdata in grid["segments"].items():
                 segbits[segtype][bit_name] = bit_pos
                 segbits_r[segtype][bit_pos] = bit_name
 
-        print("Loading %s_int segbits." % segtype)
+        print("Loading %s segbits." % segtype.replace("_", "_int_"))
         with open("../database/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype.replace("_", "_int_"))) as f:
             for line in f:
                 bit_name, *bit_pos = line.split()
@@ -62,6 +65,12 @@ for segname, segdata in grid["segments"].items():
                     if bit not in routebits[segtype]:
                         routebits[segtype][bit] = set()
                     routebits[segtype][bit].add(bit_name)
+
+        print("Loading %s segbits." % segtype.replace("_", "_mask_"))
+        with open("../database/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype.replace("_", "_mask_"))) as f:
+            for line in f:
+                _, bit = line.split()
+                maskbits[segtype].add(bit)
 
 
 #################################################
@@ -161,6 +170,9 @@ for segtype in segbits.keys():
                 title = [bit_pos]
                 bgcolor = "#aaaaaa"
 
+                if bit_pos not in maskbits[segtype]:
+                    bgcolor = "#444444"
+
                 if bit_name is not None:
                     bgcolor = "#ff0000"
                     title.append(bit_name)
@@ -225,10 +237,11 @@ for segtype in segbits.keys():
 
         ruf = UnionFind()
 
-        for bit, pips in routebits[segtype].items():
-            for pip in pips:
-                grp = pip.split('.')[1]
-                ruf.union(grp, bit)
+        if routing_use_union:
+            for bit, pips in routebits[segtype].items():
+                for pip in pips:
+                    grp = pip.split('.')[1]
+                    ruf.union(grp, bit)
 
         rgroups = dict()
         rgroup_names = dict()
@@ -245,6 +258,15 @@ for segtype in segbits.keys():
                 if pip not in rgroups[grp]:
                     rgroups[grp][pip] = set()
                 rgroups[grp][pip].add(bit)
+
+        if not routing_use_union:
+            shared_bits = dict()
+            for grp, gdata in sorted(rgroups.items()):
+                for pip, bits in gdata.items():
+                    for bit in bits:
+                        if bit not in shared_bits:
+                            shared_bits[bit] = set()
+                        shared_bits[bit].add(grp)
 
         for grp, gdata in sorted(rgroups.items()):
             print("<p/>", file=f)
@@ -275,6 +297,17 @@ for segtype in segbits.keys():
                 print("<tr%s><!-- %s</tr>" % (trstyle, line), file=f)
 
             print("</table>", file=f)
+
+            if not routing_use_union:
+                first_note = True
+                for bit in grp_bits:
+                    if len(shared_bits[bit]) > 1:
+                        if first_note:
+                            print("<p><b>Note(s):</b><br/>", file=f)
+                        print("Groups sharing bit <b>%s</b>: %s.<br/>" % (bit, ", ".join(sorted(shared_bits[bit]))), file=f)
+                        first_note = False
+                if not first_note:
+                    print("</p>", file=f)
 
         print("</body></html>", file=f)
 
