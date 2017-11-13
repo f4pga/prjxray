@@ -24,6 +24,16 @@ proc route_via {net nodes} {
 	puts ""
 }
 
+proc tile_wire_pairs {tile1 tile2} {
+	set tile1 [get_tiles $tile1]
+	set tile2 [get_tiles $tile2]
+
+	foreach wire1 [lsort [get_wires -of_objects $tile1]] {
+		set wire2 [get_wires -quiet -filter "TILE_NAME == $tile2" -of_objects [get_nodes -quiet -of_objects $wire1]]
+		if {$wire2 != ""} {puts "$wire1 $wire2"}
+	}
+}
+
 proc randsample_list {num lst} {
 	set rlst {}
 	for {set i 0} {$i<$num} {incr i} {
