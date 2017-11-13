@@ -16,10 +16,10 @@ for arg in sys.argv[1:]:
             bits = tuple(sorted(set(line[1:])))
 
             if key in database:
-                raise Exception("Duplicate key: %s %s" % (key, bits))
+                print("Warning: Duplicate key: %s %s" % (key, bits))
 
             if bits in database_r:
-                raise Exception("Duplicate bits: %s %s" % (key, bits))
+                print("Warning: Duplicate bits: %s %s" % (key, bits))
 
             database[key] = bits
             database_r[bits] = key
@@ -36,7 +36,7 @@ def check_subsets(bits):
     for sub_bits in sorted(get_subsets(bits)):
         if sub_bits != bits and sub_bits != ():
             if sub_bits in database_r:
-                raise Exception("Entry %s %s is a subset of entry %s %s." % (database_r[sub_bits], sub_bits, database_r[bits], bits))
+                print("Warning: Entry %s %s is a subset of entry %s %s." % (database_r[sub_bits], sub_bits, database_r[bits], bits))
 
 for key, bits in database.items():
     check_subsets(bits)
