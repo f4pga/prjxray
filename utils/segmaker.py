@@ -67,7 +67,7 @@ class segmaker:
                 add_segbits()
 
                 for name, value in self.tags[tilename].items():
-                    tag = "%s.%s" % (re.sub("_[LR]$", "", tile_type), name)
+                    tag = "%s.%s" % (re.sub("(LL|LM)?_[LR]$", "", tile_type), name)
                     segments[segname]["tags"][tag] = value
 
             for site in tiledata["sites"]:
@@ -84,11 +84,9 @@ class segmaker:
                     assert 0
 
                 for name, value in self.tags[site].items():
-                    tag = "%s.%s.%s" % (re.sub("_[LR]$", "", tile_type), sitekey, name)
-                    tag = tag.replace("SLICE_X0.SLICEM", "SLICEM_X0")
-                    tag = tag.replace("SLICE_X1.SLICEM", "SLICEM_X1")
-                    tag = tag.replace("SLICE_X0.SLICEL", "SLICEL_X0")
-                    tag = tag.replace("SLICE_X1.SLICEL", "SLICEL_X1")
+                    tag = "%s.%s.%s" % (re.sub("(LL|LM)?_[LR]$", "", tile_type), sitekey, name)
+                    tag = tag.replace(".SLICEM.", ".")
+                    tag = tag.replace(".SLICEL.", ".")
                     segments[segname]["tags"][tag] = value
 
     def write(self, suffix=None, roi=False):

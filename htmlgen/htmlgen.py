@@ -40,7 +40,6 @@ with open("../database/%s/tilegrid.json" % os.getenv("XRAY_DATABASE"), "r") as f
 
 for segname, segdata in grid["segments"].items():
     segtype = segdata["type"].lower()
-    segtype = re.sub(r"_[lr]$", "", segtype)
 
     if segtype not in segbits:
         segbits[segtype] = dict()
@@ -56,7 +55,7 @@ for segname, segdata in grid["segments"].items():
                 segbits_r[segtype][bit_pos] = bit_name
 
         print("Loading %s_int segbits." % segtype)
-        with open("../database/%s/seg_%s_int.segbits" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
+        with open("../database/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype.replace("_", "_int_"))) as f:
             for line in f:
                 bit_name, *bit_pos = line.split()
                 for bit in bit_pos:
@@ -124,7 +123,6 @@ with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
             print("<td bgcolor=\"%s\" align=\"center\" title=\"%s\"><span style=\"font-size:10px\">" % (bgcolor, "\n".join(title)), file=f)
             if "segment" in tiledata:
                 segtype = segdata["type"].lower()
-                segtype = re.sub(r"_[lr]$", "", segtype)
                 print("<a style=\"text-decoration: none; color: black\" href=\"seg_%s.html\">%s</a></span></td>" %
                         (segtype, tilename.replace("_X", "<br/>X")), file=f)
             else:
