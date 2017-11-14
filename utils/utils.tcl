@@ -60,6 +60,15 @@ proc pblock_tiles {pblock} {
 	return [get_tiles "$clb_tiles $int_tiles"]
 }
 
+proc lintersect {lst1 lst2} {
+	set rlst {}
+	foreach el $lst1 {
+		set idx [lsearch $lst2 $el]
+		if {$idx >= 0} {lappend rlst $el}
+	}
+	return $rlst
+}
+
 proc putl {lst} {
 	foreach line $lst {puts $line}
 }

@@ -24,11 +24,45 @@ with open(sys.argv[1], "r") as f:
 
         bitdata[frame][wordidx].add(bitidx)
 
-for arg in sys.argv[2:]:
-    if arg in grid["tiles"]:
-        segname = grid["tiles"][arg]["segment"]
-    else:
-        segname = arg
+def handle_segment(segname):
+    if ":" in segname:
+        seg1, seg2 = segname.split(":")
+
+        if seg1 in grid["tiles"]:
+            seg1 = grid["tiles"][seg1]["segment"]
+
+        if seg2 in grid["tiles"]:
+            seg2 = grid["tiles"][seg2]["segment"]
+
+        seginfo1 = grid["segments"][seg1]
+        seginfo2 = grid["segments"][seg2]
+
+        frame1 = int(seginfo1["baseaddr"][0], 16)
+        word1 = int(seginfo1["baseaddr"][1])
+
+        frame2 = int(seginfo2["baseaddr"][0], 16)
+        word2 = int(seginfo2["baseaddr"][1])
+
+        if frame1 > frame2:
+            frame1, frame2 = frame2, frame1
+
+        if word1 > word2:
+            word1, word2 = word2, word1
+
+        segs = list()
+
+        for seg, seginfo in sorted(grid["segments"].items()):
+            frame = int(seginfo["baseaddr"][0], 16)
+            word = int(seginfo["baseaddr"][1])
+            if frame1 <= frame <= frame2 and word1 <= word <= word2:
+                segs.append((frame, word, seg))
+
+        for _, _, seg in sorted(segs):
+            handle_segment(seg)
+        return
+
+    if segname in grid["tiles"]:
+        segname = grid["tiles"][segname]["segment"]
 
     print()
     print("seg %s" % segname)
@@ -48,4 +82,7 @@ for arg in sys.argv[2:]:
                 continue
             for bitidx in bitdata[frame][wordidx]:
                 print("bit %02d_%02d" % (frame - baseframe, 32*(wordidx - basewordidx) + bitidx))
+
+for arg in sys.argv[2:]:
+    handle_segment(arg)
 
