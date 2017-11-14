@@ -1,0 +1,10 @@
+
+Some small tests with PIPs. Lists all the PIPs in a regular CLB and INT tile.
+
+None of the PIPs in the CLB are "real". Some are 1:1 connections that are
+"always on" and the others are simply implemented by permuting the LUT init
+values.
+
+Probably only works for with the Artix 7 settings because contains
+hardcoded slice addresses.
+

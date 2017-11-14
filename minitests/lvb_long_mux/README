@@ -1,0 +1,30 @@
+
+A small example for the bidirectional buffers that connect long lines. The configuration
+bit (00_45 for LVB_L12<-->LVB_L12) confiures the direction of the buffer.
+
+Probably only works for with the Artix 7 settings because contains
+hardcoded slice addresses.
+
+Expected output is something like this:
+
+
+	$ python3 ../../utils/segprint.py design_a.bits INT_L_X12Y132 INT_L_X14Y132 INT_L_X16Y132
+
+	seg SEG_CLBLL_L_X12Y132
+	bit 00_45
+
+	seg SEG_CLBLL_L_X14Y132
+
+	seg SEG_CLBLL_L_X16Y132
+	bit 00_45
+
+
+	$ python3 ../../utils/segprint.py design_b.bits INT_L_X12Y132 INT_L_X14Y132 INT_L_X16Y132
+
+	seg SEG_CLBLL_L_X12Y132
+
+	seg SEG_CLBLL_L_X14Y132
+	bit 00_45
+
+	seg SEG_CLBLL_L_X16Y132
+

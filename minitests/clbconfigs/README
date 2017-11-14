@@ -1,0 +1,6 @@
+
+Some small examples on manually placing elements within a CLB.
+
+Probably only works for with the Artix 7 settings because contains
+hardcoded slice addresses.
+

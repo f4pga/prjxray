@@ -1,0 +1,5 @@
+
+This will create an "impossible" CYINIT/CI config for CARRY4. We have no idea
+atm what that does in hardware. Vivado outputs a warning but still generates a
+bit-stream. (see comment in top.v)
+
