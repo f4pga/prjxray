@@ -2,8 +2,6 @@
 
 import os, sys, json, re
 
-routing_use_union = False
-
 class UnionFind:
     def __init__(self):
         self.parents = dict()
@@ -166,7 +164,7 @@ for segtype in segbits.keys():
                 bit_pos = "%02d_%02d" % (frameidx, bitidx)
                 bit_name = segbits_r[segtype][bit_pos] if bit_pos in segbits_r[segtype] else None
 
-                label = "&nbsp;"
+                label = None
                 title = [bit_pos]
                 bgcolor = "#aaaaaa"
 
@@ -207,6 +205,11 @@ for segtype in segbits.keys():
                         bgcolor = "#6666cc"
                         label = "R"
 
+                if label is None:
+                    label = "&nbsp;"
+                else:
+                    label = "<a href=\"#b%s\" style=\"text-decoration: none; color: black;\">%s</a>" % (bit_pos, label)
+
                 print("<td bgcolor=\"%s\" title=\"%s\"><span style=\"font-size:10px\">%s</span></td>" % (bgcolor, "\n".join(title), label), file=f)
             print("</tr>", file=f)
         print("</table>", file=f)
@@ -223,6 +226,9 @@ for segtype in segbits.keys():
             bits_by_prefix[prefix].add((bit_name, bit_pos))
 
         for prefix, bits in sorted(bits_by_prefix.items()):
+            for bit_name, bit_pos in sorted(bits):
+                print("<a id=\"b%s\"/>" % bit_pos, file=f)
+
             print("<p/>", file=f)
             print("<h4>%s</h4>" % prefix, file=f)
             print("<table cellspacing=0>", file=f)
@@ -237,11 +243,10 @@ for segtype in segbits.keys():
 
         ruf = UnionFind()
 
-        if routing_use_union:
-            for bit, pips in routebits[segtype].items():
-                for pip in pips:
-                    grp = pip.split('.')[1]
-                    ruf.union(grp, bit)
+        for bit, pips in routebits[segtype].items():
+            for pip in pips:
+                grp = pip.split('.')[1]
+                ruf.union(grp, bit)
 
         rgroups = dict()
         rgroup_names = dict()
@@ -259,25 +264,27 @@ for segtype in segbits.keys():
                     rgroups[grp][pip] = set()
                 rgroups[grp][pip].add(bit)
 
-        if not routing_use_union:
-            shared_bits = dict()
-            for grp, gdata in sorted(rgroups.items()):
-                for pip, bits in gdata.items():
-                    for bit in bits:
-                        if bit not in shared_bits:
-                            shared_bits[bit] = set()
-                        shared_bits[bit].add(grp)
+        shared_bits = dict()
+        for bit, pips in routebits[segtype].items():
+            for pip in pips:
+                grp_name = pip.split('.')[1]
+                if bit not in shared_bits:
+                    shared_bits[bit] = set()
+                shared_bits[bit].add(grp_name)
 
         for grp, gdata in sorted(rgroups.items()):
-            print("<p/>", file=f)
-            print("<h4>%s</h4>" % ", ".join(sorted(rgroup_names[grp])), file=f)
-            print("<table cellspacing=0>", file=f)
-            print("<tr><th width=\"400\" align=\"left\">PIP</th>", file=f)
-
             grp_bits = set()
             for pip, bits in gdata.items():
                 grp_bits |= bits
             grp_bits = sorted(grp_bits)
+
+            for bit in grp_bits:
+                print("<a id=\"b%s\"/>" % bit, file=f)
+
+            print("<p/>", file=f)
+            print("<h4>%s</h4>" % ", ".join(sorted(rgroup_names[grp])), file=f)
+            print("<table cellspacing=0>", file=f)
+            print("<tr><th width=\"400\" align=\"left\">PIP</th>", file=f)
 
             for bit in grp_bits:
                 print("<th>&nbsp;%s&nbsp;</th>" % bit, file=f)
@@ -298,16 +305,15 @@ for segtype in segbits.keys():
 
             print("</table>", file=f)
 
-            if not routing_use_union:
-                first_note = True
-                for bit in grp_bits:
-                    if len(shared_bits[bit]) > 1:
-                        if first_note:
-                            print("<p><b>Note(s):</b><br/>", file=f)
-                        print("Groups sharing bit <b>%s</b>: %s.<br/>" % (bit, ", ".join(sorted(shared_bits[bit]))), file=f)
-                        first_note = False
-                if not first_note:
-                    print("</p>", file=f)
+            first_note = True
+            for bit in grp_bits:
+                if len(shared_bits[bit]) > 1:
+                    if first_note:
+                        print("<p><b>Note(s):</b><br/>", file=f)
+                    print("Groups sharing bit <b>%s</b>: %s.<br/>" % (bit, ", ".join(sorted(shared_bits[bit]))), file=f)
+                    first_note = False
+            if not first_note:
+                print("</p>", file=f)
 
         print("</body></html>", file=f)
 
