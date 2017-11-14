@@ -1,0 +1,6 @@
+/.Xil
+/design/
+/design.bit
+/design.dcp
+/vivado*
+/nodes_wires_list.txt
