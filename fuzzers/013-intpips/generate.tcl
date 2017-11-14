@@ -32,11 +32,13 @@ proc write_txtdata {filename} {
 	set fp [open $filename w]
 	foreach tile [get_tiles [regsub -all {CLBL[LM]} [get_tiles -of_objects [get_sites -of_objects [get_pblocks roi]]] INT]] {
 		puts "Dumping pips from tile $tile"
-		foreach pip [get_pips -of_objects $tile] {
+		foreach pip [get_pips -filter {IS_DIRECTIONAL} -of_objects $tile] {
 			if {[get_nets -quiet -of_objects $pip] != {}} {
 				set src_wire [get_wires -uphill -of_objects $pip]
 				set dst_wire [get_wires -downhill -of_objects $pip]
-				puts $fp "$tile $pip $src_wire $dst_wire"
+				if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst_wire]]] != 1} {
+					puts $fp "$tile $pip $src_wire $dst_wire"
+				}
 			}
 		}
 	}
