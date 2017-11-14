@@ -54,6 +54,12 @@ proc randplace_pblock {num pblock} {
 	}
 }
 
+proc pblock_tiles {pblock} {
+	set clb_tiles [get_tiles -of_objects [get_sites -of_objects [get_pblocks $pblock]]]
+	set int_tiles [get_tiles [regsub -all {CLBL[LM]} $clb_tiles INT]]
+	return [get_tiles "$clb_tiles $int_tiles"]
+}
+
 proc putl {lst} {
 	foreach line $lst {puts $line}
 }
