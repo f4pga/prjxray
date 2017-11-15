@@ -27,6 +27,7 @@ module top(input clk, stb, di, output do);
 	);
 endmodule
 
+(* KEEP_HIERARCHY *)
 module roi(input clk, input [255:0] din, output [255:0] dout);
 	clb_a clb_a (.clk(clk), .din(din[  0 +: 16]), .dout(dout[  0 +: 16]));
 	clb_b clb_b (.clk(clk), .din(din[ 16 +: 16]), .dout(dout[ 16 +: 16]));
@@ -49,7 +50,7 @@ endmodule
 // ---------------------------------------------------------------------
 
 module clb_a (input clk, input [15:0] din, output [15:0] dout);
-	(* LOC="SLICE_X16Y100", BEL="AFF" *)
+	(* LOC="SLICE_X16Y100", BEL="AFF", DONT_TOUCH *)
 	FDRE ff (
 		.C(clk),
 		.Q(dout[0]),
@@ -61,7 +62,7 @@ module clb_a (input clk, input [15:0] din, output [15:0] dout);
 endmodule
 
 module clb_b (input clk, input [15:0] din, output [15:0] dout);
-	(* LOC="SLICE_X16Y101", BEL="AFF" *)
+	(* LOC="SLICE_X16Y101", BEL="AFF", DONT_TOUCH *)
 	FDSE ff (
 		.C(clk),
 		.Q(dout[0]),
@@ -73,7 +74,7 @@ module clb_b (input clk, input [15:0] din, output [15:0] dout);
 endmodule
 
 module clb_c (input clk, input [15:0] din, output [15:0] dout);
-	(* LOC="SLICE_X16Y102", BEL="AFF" *)
+	(* LOC="SLICE_X16Y102", BEL="AFF", DONT_TOUCH *)
 	FDCE ff (
 		.C(clk),
 		.Q(dout[0]),
@@ -85,7 +86,7 @@ module clb_c (input clk, input [15:0] din, output [15:0] dout);
 endmodule
 
 module clb_d (input clk, input [15:0] din, output [15:0] dout);
-	(* LOC="SLICE_X16Y103", BEL="AFF" *)
+	(* LOC="SLICE_X16Y103", BEL="AFF", DONT_TOUCH *)
 	FDPE ff (
 		.C(clk),
 		.Q(dout[0]),
@@ -101,7 +102,7 @@ endmodule
 module clb_e (input clk, input [15:0] din, output [15:0] dout);
 	wire tmp;
 
-	(* LOC="SLICE_X16Y104", BEL="D6LUT", LOCK_PINS="I0:A1" *)
+	(* LOC="SLICE_X16Y104", BEL="D6LUT", LOCK_PINS="I0:A1", DONT_TOUCH *)
 	LUT1 #(
 		.INIT(2'b01)
 	) lut (
@@ -109,7 +110,7 @@ module clb_e (input clk, input [15:0] din, output [15:0] dout);
 		.O(tmp)
 	);
 
-	(* LOC="SLICE_X16Y104", BEL="BFF" *)
+	(* LOC="SLICE_X16Y104", BEL="BFF", DONT_TOUCH *)
 	FDRE ff (
 		.C(clk),
 		.Q(dout[0]),
@@ -124,7 +125,7 @@ endmodule
 module clb_f (input clk, input [15:0] din, output [15:0] dout);
 	wire tmp;
 
-	(* LOC="SLICE_X16Y105", BEL="D5LUT", LOCK_PINS="I0:A1" *)
+	(* LOC="SLICE_X16Y105", BEL="D5LUT", LOCK_PINS="I0:A1", DONT_TOUCH *)
 	LUT1 #(
 		.INIT(2'b01)
 	) lut (
@@ -132,7 +133,7 @@ module clb_f (input clk, input [15:0] din, output [15:0] dout);
 		.O(tmp)
 	);
 
-	(* LOC="SLICE_X16Y105", BEL="BFF" *)
+	(* LOC="SLICE_X16Y105", BEL="BFF", DONT_TOUCH *)
 	FDRE ff (
 		.C(clk),
 		.Q(dout[0]),
@@ -147,7 +148,7 @@ endmodule
 module clb_g (input clk, input [15:0] din, output [15:0] dout);
 	wire a, b, c;
 
-	(* LOC="SLICE_X16Y106", BEL="D6LUT", LOCK_PINS="I0:A1" *)
+	(* LOC="SLICE_X16Y106", BEL="D6LUT", LOCK_PINS="I0:A1", DONT_TOUCH *)
 	LUT1 #(
 		.INIT(2'b01)
 	) lut (
@@ -155,7 +156,7 @@ module clb_g (input clk, input [15:0] din, output [15:0] dout);
 		.O(a)
 	);
 
-	(* LOC="SLICE_X16Y106", BEL="F7BMUX" *)
+	(* LOC="SLICE_X16Y106", BEL="F7BMUX", DONT_TOUCH *)
 	MUXF7 mux1 (
 		.I0(a),
 		.I1(din[3]),
@@ -163,7 +164,7 @@ module clb_g (input clk, input [15:0] din, output [15:0] dout);
 		.O(b)
 	);
 
-	(* LOC="SLICE_X16Y106", BEL="F8MUX" *)
+	(* LOC="SLICE_X16Y106", BEL="F8MUX", DONT_TOUCH *)
 	MUXF8 mux2 (
 		.I0(b),
 		.I1(din[5]),
@@ -171,7 +172,7 @@ module clb_g (input clk, input [15:0] din, output [15:0] dout);
 		.O(c)
 	);
 
-	(* LOC="SLICE_X16Y106", BEL="BFF" *)
+	(* LOC="SLICE_X16Y106", BEL="BFF", DONT_TOUCH *)
 	FDRE ff (
 		.C(clk),
 		.Q(dout[0]),
@@ -186,7 +187,7 @@ endmodule
 module clb_h (input clk, input [15:0] din, output [15:0] dout);
 	wire a, b, c;
 
-	(* LOC="SLICE_X16Y107", BEL="D5LUT", LOCK_PINS="I0:A1" *)
+	(* LOC="SLICE_X16Y107", BEL="D5LUT", LOCK_PINS="I0:A1", DONT_TOUCH *)
 	LUT1 #(
 		.INIT(2'b01)
 	) lut (
@@ -194,7 +195,7 @@ module clb_h (input clk, input [15:0] din, output [15:0] dout);
 		.O(a)
 	);
 
-	(* LOC="SLICE_X16Y107", BEL="F7BMUX" *)
+	(* LOC="SLICE_X16Y107", BEL="F7BMUX", DONT_TOUCH *)
 	MUXF7 mux1 (
 		.I0(a),
 		.I1(din[3]),
@@ -202,7 +203,7 @@ module clb_h (input clk, input [15:0] din, output [15:0] dout);
 		.O(b)
 	);
 
-	(* LOC="SLICE_X16Y107", BEL="F8MUX" *)
+	(* LOC="SLICE_X16Y107", BEL="F8MUX", DONT_TOUCH *)
 	MUXF8 mux2 (
 		.I0(b),
 		.I1(din[5]),
@@ -210,7 +211,7 @@ module clb_h (input clk, input [15:0] din, output [15:0] dout);
 		.O(c)
 	);
 
-	(* LOC="SLICE_X16Y107", BEL="BFF" *)
+	(* LOC="SLICE_X16Y107", BEL="BFF", DONT_TOUCH *)
 	FDRE ff (
 		.C(clk),
 		.Q(dout[0]),
