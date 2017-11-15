@@ -40,10 +40,13 @@ for tile, pips_srcs_dsts in tiledata.items():
     dsts = pips_srcs_dsts["dsts"]
 
     for pip, src_dst in pipdata.items():
+        src, dst = src_dst
+        if re.match(r"^LVB?(_L)?[0-9]", src) or re.match(r"^LVB?(_L)?[0-9]", dst):
+            continue
         if pip in pips:
-            segmk.addtag(tile, "%s.%s" % (src_dst[1], src_dst[0]), 1)
+            segmk.addtag(tile, "%s.%s" % (dst, src), 1)
         elif src_dst[1] not in dsts:
-            segmk.addtag(tile, "%s.%s" % (src_dst[1], src_dst[0]), 0)
+            segmk.addtag(tile, "%s.%s" % (dst, src), 0)
 
 segmk.compile()
 segmk.write()
