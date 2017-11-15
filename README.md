@@ -9,8 +9,12 @@ See [wiki](https://github.com/cliffordwolf/prjxray/wiki) for more information.
 Quickstart Guide:
 -----------------
 
+Pull submodules:
+    git submodule update --init --recursive
+
 Install CMake and build the C++ tools:
     sudo apt-get install cmake3
+    mkdir build
     pushd build
     cmake ..
     make
