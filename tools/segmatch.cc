@@ -11,12 +11,19 @@
 #include <map>
 #include <set>
 
+#include <absl/strings/str_cat.h>
+#include <gflags/gflags.h>
+
+DEFINE_int32(c, 4, "threshold under which candidates are output. set to -1 to output all.");
+DEFINE_bool(i, false, "add inverted tags");
+DEFINE_int32(m, 0, "min number of set/cleared samples each");
+DEFINE_int32(M, 0, "min number of set/cleared samples total");
+DEFINE_string(o, "", "set output file");
+
 using std::map;
 using std::tuple;
 using std::vector;
 using std::string;
-
-bool mode_inv = false;
 
 int num_bits = 0, num_tags = 0;
 map<string, int> bit_ids, tag_ids;
@@ -98,7 +105,7 @@ void read_input(std::istream &f, std::string filename)
 
 			tags[tag_idx] = true;
 
-			if (mode_inv)
+			if (FLAGS_i)
 			{
 				auto &inv_tags = token == "1" ? segdata_tags0(*segptr) : segdata_tags1(*segptr);
 
@@ -150,64 +157,17 @@ void andc_masks(vector<bool> &dst_mask, const vector<bool> &src_mask)
 
 int main(int argc, char **argv)
 {
-	const char *outfile = nullptr;
-	int min_each = 0, min_total = 0;
-	int candidate_output_limit = 4;
+	gflags::SetUsageMessage(
+			absl::StrCat("Usage: ", argv[0], " [options] file.."));
+	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-	int opt;
-	while ((opt = getopt(argc, argv, "c:io:m:M:")) != -1)
-		switch (opt)
-		{
-		case 'o':
-			outfile = optarg;
-			break;
-		case 'm':
-			min_each = atoi(optarg);
-			break;
-		case 'M':
-			min_total = atoi(optarg);
-			break;
-		case 'i':
-			mode_inv = true;
-			break;
-		case 'c':
-			candidate_output_limit = atoi(optarg);
-			break;
-		default:
-			goto help;
-		}
-
-	if (0) {
-help:
-		fprintf(stderr, "\n");
-		fprintf(stderr, "Usage: %s [options] file..\n", argv[0]);
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -o <filename>\n");
-		fprintf(stderr, "    set output file\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -m <int>\n");
-		fprintf(stderr, "    min number of set/cleared samples each\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -M <int>\n");
-		fprintf(stderr, "    min number of set/cleared samples total\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -i\n");
-		fprintf(stderr, "    add inverted tags\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -c <int>\n");
-		fprintf(stderr, "    threshold under which candidates are output\n");
-		fprintf(stderr, "    set to -1 to output all\n");
-		fprintf(stderr, "\n");
-		return 1;
-	}
-
-	if (optind != argc) {
-		while (optind != argc) {
+	if (argc > 1) {
+		for (int optind = 1; optind < argc; optind++) {
 			printf("Reading %s.\n", argv[optind]);
 			std::ifstream f;
 			f.open(argv[optind]);
 			assert(!f.fail());
-			read_input(f, argv[optind++]);
+			read_input(f, argv[optind]);
 		}
 	} else {
 		printf("Reading from stding.\n");
@@ -220,8 +180,8 @@ help:
 
 	FILE *f = stdout;
 
-	if (outfile) {
-		f = fopen(outfile, "w");
+	if (!FLAGS_o.empty()) {
+		f = fopen(FLAGS_o.c_str(), "w");
 		assert(f != nullptr);
 	}
 
@@ -264,19 +224,19 @@ help:
 
 		std::string out_line = tag_ids_r.at(tag_idx);
 
-		if (count1 < min_each) {
+		if (count1 < FLAGS_m) {
 			char buffer[64];
 			snprintf(buffer, 64, " <m1 %d>", count1);
 			out_line += buffer;
 		}
 
-		if (count0 < min_each) {
+		if (count0 < FLAGS_m) {
 			char buffer[64];
 			snprintf(buffer, 64, " <m0 %d>", count0);
 			out_line += buffer;
 		}
 
-		if (count1 + count0 < min_total) {
+		if (count1 + count0 < FLAGS_M) {
 			char buffer[64];
 			snprintf(buffer, 64, " <M %d %d>", count1, count0);
 			out_line += buffer;
@@ -302,9 +262,9 @@ help:
 			cnt_candidates += 1;
 		}
 
-		if (candidate_output_limit < 0 ||
+		if (FLAGS_c < 0 ||
 		    (0 < num_candidates &&
-		     num_candidates <= candidate_output_limit)) {
+		     num_candidates <= FLAGS_c)) {
 			std::vector<std::string> out_tags;
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
 				if (mask.at(bit_idx))
