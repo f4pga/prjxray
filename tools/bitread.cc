@@ -48,6 +48,7 @@ std::map<uint32_t, std::vector<uint32_t>> configframes;
 std::set<uint32_t> configframes_autoincr;
 
 std::vector<uint32_t> zero_frame(101);
+std::vector<uint32_t> framebuffer;
 
 uint32_t selbits(uint32_t value, int msb, int lsb)
 {
@@ -195,20 +196,34 @@ const char *regname(int addr)
 	}
 }
 
-void handle_write(int regaddr, uint32_t data)
+void start_write(int regaddr, bool /* type2 */)
+{
+	if (regaddr == REG_FDRI)
+		framebuffer.clear();
+}
+
+void handle_write(int regaddr, uint32_t data, bool type2)
 {
 	if (regaddr == REG_FAR) {
 		frameptr = data;
-		configframes[frameptr].clear();
+		configframes[frameptr] = framebuffer;
 		configframes_autoincr.erase(frameptr);
 	}
 
 	if (regaddr == REG_FDRI) {
-		if (configframes[frameptr].size() == 101) {
-			configframes[++frameptr].clear();
-			configframes_autoincr.insert(frameptr);
+		if (type2) {
+			if (configframes[frameptr].size() == 101) {
+				configframes[++frameptr].clear();
+				configframes_autoincr.insert(frameptr);
+			}
+			configframes[frameptr].push_back(data);
+		} else {
+			if (framebuffer.size() >= 101) {
+				printf("Framebuffer overflow!\n");
+				exit(1);
+			}
+			framebuffer.push_back(data);
 		}
-		configframes[frameptr].push_back(data);
 	}
 }
 
@@ -377,6 +392,7 @@ int main(int argc, char **argv)
 
 				if (0) {
 			handle_type1_payload:
+					start_write(regaddr, false);
 					cursor++;
 
 					uint32_t last_word = wcount ? ~configdata.at(cursor) : 0;
@@ -401,7 +417,7 @@ int main(int argc, char **argv)
 							}
 							last_word = this_word;
 						}
-						handle_write(regaddr, configdata.at(cursor));
+						handle_write(regaddr, configdata.at(cursor), false);
 						cursor++;
 					}
 					continue;
@@ -411,23 +427,29 @@ int main(int argc, char **argv)
 			// Type 2 Packet
 			if (cmd_header == 2)
 			{
+				if (FLAGS_m)
+					printf("%8d: 0x%08x Type 2 write\n", cursor, configdata.at(cursor));
+
+#if 1
+				printf("%8d: Type 2 write is not supported at the moment. Set BITSTREAM.GENERAL.PERFRAMECRC on your design.\n", cursor);
+				return 1;
+#else
 				int opcode = selbits(cmd, 28, 27);
 				int wcount = selbits(cmd, 26, 0);
 
 				if (opcode != 2)
 					goto cmderror;
 
-				if (FLAGS_m)
-					printf("%8d: 0x%08x Type 2 write\n", cursor, configdata.at(cursor));
-
 				uint32_t last_word = configdata.at(cursor);
 				bool in_continue = false;
+
+				start_write(regaddr, true);
 
 				cursor++;
 				while (wcount--)
 				{
 					uint32_t this_word = configdata.at(cursor);
-					handle_write(current_write_reg, this_word);
+					handle_write(current_write_reg, this_word, true);
 
 					if (FLAGS_m) {
 						if (FLAGS_c && last_word == this_word) {
@@ -444,6 +466,7 @@ int main(int argc, char **argv)
 					cursor++;
 				}
 				continue;
+#endif
 			}
 
 		cmderror:
