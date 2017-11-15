@@ -6,13 +6,13 @@ all:
 	bash runme.sh
 
 database: $(SPECIMENS_OK)
-	../../tools/segmatch -o seg_clblx.segbits $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -o seg_clblx.segbits $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
 
 pushdb:
-	bash ../../utils/mergedb.sh clbll_l seg_clblx.segbits
-	bash ../../utils/mergedb.sh clbll_r seg_clblx.segbits
-	bash ../../utils/mergedb.sh clblm_l seg_clblx.segbits
-	bash ../../utils/mergedb.sh clblm_r seg_clblx.segbits
+	${XRAY_MERGEDDB} clbll_l seg_clblx.segbits
+	${XRAY_MERGEDDB} clbll_r seg_clblx.segbits
+	${XRAY_MERGEDDB} clblm_l seg_clblx.segbits
+	${XRAY_MERGEDDB} clblm_r seg_clblx.segbits
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
