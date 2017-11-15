@@ -1,4 +1,7 @@
 #!/bin/bash
+
+source environment.sh
+
 set -ex
 test $# = 2
 test -e "$2"

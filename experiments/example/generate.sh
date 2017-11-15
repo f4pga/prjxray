@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ../../utils/environment.sh
+
 set -ex
 test $# = 1
 test ! -e $1
@@ -73,10 +75,10 @@ EOT
 rm -rf design design.log
 vivado -nojournal -log design.log -mode batch -source design.tcl
 
-#../../../tools/bitread -o design_roi.bits -z -y design_roi_partial.bit
-../../../tools/bitread -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit
-../../../tools/bitread -F $XRAY_ROI_FRAMES -o design.pgm -p design.bit
+#${XRAY_BITREAD} -o design_roi.bits -z -y design_roi_partial.bit
+${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit
+${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.pgm -p design.bit
 
 python3 ../segdata.py
-#../../../tools/segmatch < segdata.txt > database.txt
+#${XRAY_SEGMATCH} < segdata.txt > database.txt
 
