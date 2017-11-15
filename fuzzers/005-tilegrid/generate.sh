@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/bin/bash -x
 
-. ../../utils/genheader.sh
+source ../../utils/environment.sh
+source ${XRAY_GENHEADER}
 
 vivado -mode batch -source ../generate.tcl
 
 for x in design*.bit; do
-	../../../tools/bitread -F $XRAY_ROI_FRAMES -o ${x}s -z -y $x
+	${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o ${x}s -z -y $x
 done
 
 for x in design_*.bits; do
