@@ -6,8 +6,12 @@ Documenting the Xilinx 7-series bit-stream format.
 Quickstart Guide:
 -----------------
 
+Pull submodules:
+    git submodule update --init --recursive
+
 Install CMake and build the C++ tools:
     sudo apt-get install cmake3
+    mkdir build
     pushd build
     cmake ..
     make
