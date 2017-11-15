@@ -13,7 +13,8 @@ Pull submodules:
     git submodule update --init --recursive
 
 Install CMake and build the C++ tools:
-    sudo apt-get install cmake3
+    sudo apt-get install cmake # version 3.5.0 or later required,
+                               # for Ubuntu Trusty pkg is called cmake3
     mkdir build
     pushd build
     cmake ..
