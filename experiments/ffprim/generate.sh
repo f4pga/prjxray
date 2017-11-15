@@ -10,7 +10,7 @@ python3 ../top.py >top.v
 vivado -mode batch -source ../generate.tcl
 
 for x in design*.bit; do
-	../../../tools/bitread -F $XRAY_ROI_FRAMES -o ${x}s -zy $x
+	../../../build/tools/bitread -F $XRAY_ROI_FRAMES -o ${x}s -z -y $x
 done
 
 python3 ../generate.py

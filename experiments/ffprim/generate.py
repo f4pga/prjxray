@@ -40,7 +40,7 @@ print("Loading tags from design.txt")
 with open("design.txt", "r") as f:
     for line in f:
         '''
-    	puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
+        puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
 
         CLBLM_L CLBLM_L_X10Y137 30 13 SLICE_X13Y137/AFF REG_INIT 1 FDRE
         CLBLM_L CLBLM_L_X10Y137 30 13 SLICE_X12Y137/D5FF FF_INIT 0 
@@ -90,6 +90,7 @@ with open("design.txt", "r") as f:
         CLB.SLICE_X0.FF_FDRE <9 candidates>
         CLB.SLICE_X0.FF_FDCE <10 candidates>
         '''
+        '''
         if 1:
             # If unused mark all primitives as not present
             # Otherwise mark the primitive we are using
@@ -98,12 +99,12 @@ with open("design.txt", "r") as f:
                 if ref_name == base:
                     for ffprim in ffprims:
                         segmk.addtag(site, "FF_DIFF_%s_%s" % (base, fprim, 0)
-                    
-
+        if 0:
             for ffprim in ffprims:
                     segmk.addtag(site, "FF_%s" % ffprim, 0)
                 elif 
                     segmk.addtag(site, "FF_%s" % ffprim, 1)
+        '''
 
         # Compare '_1' negative edge clock to positive edge
         if used:

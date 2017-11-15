@@ -1,5 +1,7 @@
 import random
 
+random.seed(0)
+
 CLBN = 600
 # SLICE_X12Y100
 # SLICE_X27Y149
@@ -19,7 +21,7 @@ def gen_slices():
 
 DIN_N = CLBN * 4
 DOUT_N = CLBN * 1
-clbs = (
+ffprims = (
         'FD',
         'FD_1',
         'FDC',
@@ -41,6 +43,12 @@ clbs = (
         'FDSE',
         'FDSE_1',
         )
+ffprims = (
+        'FDRE',
+        'FDSE',
+        'FDCE',
+        'FDPE',
+)
 ff_bels = (
         'AFF',
         'A5FF',
@@ -85,13 +93,13 @@ endmodule
 slices = gen_slices()
 print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
 for i in range(CLBN):
-    clb = random.choice(clbs)
+    ffprim = random.choice(ffprims)
     # clb_FD clb_FD (.clk(clk), .din(din[  0 +: 4]), .dout(dout[  0]));
     # clb_FD_1 clb_FD_1 (.clk(clk), .din(din[  4 +: 4]), .dout(dout[  1]));
     loc = next(slices)
     #bel = random.choice(ff_bels)
     bel = "AFF"
-    print('    clb_%s' % clb)
+    print('    clb_%s' % ffprim)
     print('            #(.LOC("%s"), .BEL("%s"))' % (loc, bel))
     print('            clb_%d (.clk(clk), .din(din[  %d +: 4]), .dout(dout[  %d]));' % (i, 4 * i, 1 * i))
 print('''endmodule
