@@ -9,14 +9,17 @@ segmk = segmaker("design.bits")
 
 tiledata = dict()
 pipdata = dict()
+ignpip = set()
 
 print("Loading tags from design.txt.")
 with open("design.txt", "r") as f:
     for line in f:
-        tile, pip, src, dst = line.split()
+        tile, pip, src, dst, pnum, pdir = line.split()
         _, pip = pip.split(".")
         _, src = src.split("/")
         _, dst = dst.split("/")
+        pnum = int(pnum)
+        pdir = int(pdir)
 
         if tile not in tiledata:
             tiledata[tile] = {
@@ -34,6 +37,15 @@ with open("design.txt", "r") as f:
         tiledata[tile]["srcs"].add(src)
         tiledata[tile]["dsts"].add(dst)
 
+        if pdir == 0:
+            tiledata[tile]["srcs"].add(dst)
+            tiledata[tile]["dsts"].add(src)
+
+        if pnum == 1 or pdir == 0 or \
+                re.match(r"^LVB?(_L)?[0-9]", src) or \
+                re.match(r"^LVB?(_L)?[0-9]", dst):
+            ignpip.add(pip)
+
 for tile, pips_srcs_dsts in tiledata.items():
     pips = pips_srcs_dsts["pips"]
     srcs = pips_srcs_dsts["srcs"]
@@ -41,9 +53,9 @@ for tile, pips_srcs_dsts in tiledata.items():
 
     for pip, src_dst in pipdata.items():
         src, dst = src_dst
-        if re.match(r"^LVB?(_L)?[0-9]", src) or re.match(r"^LVB?(_L)?[0-9]", dst):
-            continue
-        if pip in pips:
+        if pip in ignpip:
+            pass
+        elif pip in pips:
             segmk.addtag(tile, "%s.%s" % (dst, src), 1)
         elif src_dst[1] not in dsts:
             segmk.addtag(tile, "%s.%s" % (dst, src), 0)
