@@ -57,8 +57,8 @@ vivado -nojournal -log design.log -mode batch -source design.tcl
 
 	for f0 in logicframes_SLICE_*_0.bit; do
 		f1=${f0%_0.bit}_1.bit
-		../tools/bitread -x -o ${f0%.bit}.asc $f0 > /dev/null
-		../tools/bitread -x -o ${f1%.bit}.asc $f1 > /dev/null
+		${XRAY_BITREAD} -x -o ${f0%.bit}.asc $f0 > /dev/null
+		${XRAY_BITREAD} -x -o ${f1%.bit}.asc $f1 > /dev/null
 		f0=${f0%.bit}.asc
 		f1=${f1%.bit}.asc
 		n=${f0%_0.asc}
