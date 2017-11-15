@@ -6,6 +6,13 @@ Documenting the Xilinx 7-series bit-stream format.
 Quickstart Guide:
 -----------------
 
+Install CMake and build the C++ tools:
+    sudo apt-get install cmake3
+    pushd build
+    cmake ..
+    make
+    popd
+
 Always make sure to set the environment for the device you are working on before
 running any other commands:
 
