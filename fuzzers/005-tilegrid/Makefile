@@ -7,7 +7,7 @@ database: $(SPECIMENS_OK)
 	cp specimen_001/tilegrid.json tilegrid.json
 
 pushdb:
-	cp tilegrid.json ../../database/$(XRAY_DATABASE)/tilegrid.json
+	cp tilegrid.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/tilegrid.json
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
