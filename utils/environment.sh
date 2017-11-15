@@ -8,7 +8,7 @@ XRAY_UTILS_DIR="$( cd -P "$( dirname "$XRAY_ENV_PATH" )" && pwd )"
 
 XRAY_DIR="$( dirname "$XRAY_UTILS_DIR" )"
 XRAY_DATABASE_DIR="${XRAY_DIR}/database"
-XRAY_TOOLS_DIR="${XRAY_DIR}/tools"
+XRAY_TOOLS_DIR="${XRAY_DIR}/build/tools"
 
 XRAY_GENHEADER="${XRAY_UTILS_DIR}/genheader.sh"
 XRAY_BITREAD="${XRAY_TOOLS_DIR}/bitread"
