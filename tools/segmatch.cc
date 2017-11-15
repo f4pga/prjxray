@@ -152,9 +152,10 @@ int main(int argc, char **argv)
 {
 	const char *outfile = nullptr;
 	int min_each = 0, min_total = 0;
+	int candidate_output_limit = 4;
 
 	int opt;
-	while ((opt = getopt(argc, argv, "io:m:M:")) != -1)
+	while ((opt = getopt(argc, argv, "c:io:m:M:")) != -1)
 		switch (opt)
 		{
 		case 'o':
@@ -168,6 +169,9 @@ int main(int argc, char **argv)
 			break;
 		case 'i':
 			mode_inv = true;
+			break;
+		case 'c':
+			candidate_output_limit = atoi(optarg);
 			break;
 		default:
 			goto help;
@@ -189,6 +193,10 @@ help:
 		fprintf(stderr, "\n");
 		fprintf(stderr, "  -i\n");
 		fprintf(stderr, "    add inverted tags\n");
+		fprintf(stderr, "\n");
+		fprintf(stderr, "  -c <int>\n");
+		fprintf(stderr, "    threshold under which candidates are output\n");
+		fprintf(stderr, "    set to -1 to output all\n");
 		fprintf(stderr, "\n");
 		return 1;
 	}
@@ -294,7 +302,9 @@ help:
 			cnt_candidates += 1;
 		}
 
-		if (0 < num_candidates && num_candidates <= 4) {
+		if (candidate_output_limit < 0 ||
+		    (0 < num_candidates &&
+		     num_candidates <= candidate_output_limit)) {
 			std::vector<std::string> out_tags;
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
 				if (mask.at(bit_idx))
