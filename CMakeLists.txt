@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(prjxray)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Werror ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Werror ${CMAKE_CXX_FLAGS} -O3" )
 
 # Hack for missing option in cctz
 option(BUILD_TESTING "" OFF)
