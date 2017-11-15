@@ -7,15 +7,32 @@
 #include <map>
 #include <set>
 
-bool mode_c = false;
-bool mode_r = false;
-bool mode_m = false;
-bool mode_x = false;
-bool mode_y = false;
-bool mode_z = false;
-bool mode_p = false;
-bool chksum = false;
-char *outfile = nullptr;
+#include <absl/strings/numbers.h>
+#include <absl/strings/str_cat.h>
+#include <absl/strings/str_split.h>
+#include <gflags/gflags.h>
+
+DEFINE_bool(c, false, "output '*' for repeating patterns");
+DEFINE_bool(C, false, "do not ignore the checksum in each frame");
+DEFINE_int32(f, -1, "only dump the specified frame (might be used more than once)");
+DEFINE_string(F, "", "<first_frame_address>:<last_frame_address> only dump frame in the specified range");
+DEFINE_bool(m, false, "print commands in config stream");
+DEFINE_string(o, "", "write machine-readable output file with config frames");
+DEFINE_bool(p, false, "output a binary netpgm image");
+DEFINE_bool(r, false, "only decode top-level .bit file format framing");
+DEFINE_bool(x, false, "use format 'bit_%%08x_%%03d_%%02d_t%%d_h%%d_r%%d_c%%d_m%%d'\n"
+		      "The fields have the following meaning:\n"
+		      "  - complete 32 bit hex frame id\n"
+		      "  - word index with that frame (decimal)\n"
+		      "  - bit index with that word (decimal)\n"
+		      "  - decoded frame type from frame id\n"
+		      "  - decoded top/botttom from frame id (top=0)\n"
+		      "  - decoded row address from frame id\n"
+		      "  - decoded column address from frame id\n"
+		      "  - decoded minor address from frame id\n");
+DEFINE_bool(y, false, "use format 'bit_%%08x_%%03d_%%02d'");
+DEFINE_bool(z, false, "skip zero frames (frames with all bits cleared) in o");
+
 std::set<uint32_t> frames;
 
 uint32_t frame_range_begin = 0, frame_range_end = 0;
@@ -39,7 +56,7 @@ uint32_t selbits(uint32_t value, int msb, int lsb)
 
 void print_hexblock(int len)
 {
-	if (!mode_r) {
+	if (!FLAGS_r) {
 		cursor += len;
 		return;
 	}
@@ -53,7 +70,7 @@ void print_hexblock(int len)
 		char asciibuf[17];
 		asciibuf[16] = 0;
 
-		if (len > 16 && mode_c) {
+		if (len > 16 && FLAGS_c) {
 			std::vector<uint8_t> thisbuf(bitdata.begin()+cursor, bitdata.begin()+cursor+16);
 			if (lastbuf == thisbuf) {
 				if (!in_continue)
@@ -92,7 +109,7 @@ void print_pkt_len2()
 {
 	int len = (bitdata.at(cursor) << 8) + bitdata.at(cursor+1);
 
-	if (mode_r)
+	if (FLAGS_r)
 		printf("\nPkt at byte %d with length %d:\n", cursor, len);
 	cursor += 2;
 
@@ -104,7 +121,7 @@ void print_pkt_key_len2()
 	int key = bitdata.at(cursor);
 	int len = (bitdata.at(cursor+1) << 8) + bitdata.at(cursor+2);
 
-	if (mode_r)
+	if (FLAGS_r)
 		printf("\nPkt '%c' at byte %d with length %d:\n", key, cursor, len);
 	cursor += 3;
 
@@ -116,7 +133,7 @@ void print_pkt_key_len4()
 	int key = bitdata.at(cursor);
 	int len = (bitdata.at(cursor+1) << 24) + (bitdata.at(cursor+2) << 16) + (bitdata.at(cursor+3) << 8) + bitdata.at(cursor+4);
 
-	if (mode_r)
+	if (FLAGS_r)
 		printf("\nPkt '%c' at byte %d with length %d:\n", key, cursor, len);
 	cursor += 5;
 
@@ -229,103 +246,24 @@ public:
 
 int main(int argc, char **argv)
 {
-	int opt;
-	while ((opt = getopt(argc, argv, "crmxyzpCf:F:o:")) != -1)
-		switch (opt)
-		{
-		case 'c':
-			mode_c = true;
-			break;
-		case 'r':
-			mode_r = true;
-			break;
-		case 'm':
-			mode_m = true;
-			break;
-		case 'x':
-			mode_x = true;
-			break;
-		case 'y':
-			mode_y = true;
-			break;
-		case 'z':
-			mode_z = true;
-			break;
-		case 'p':
-			mode_p = true;
-			break;
-		case 'C':
-			chksum = true;
-			break;
-		case 'f':
-			frames.insert(strtol(optarg, nullptr, 0));
-			break;
-		case 'F':
-			frame_range_begin = strtol(strtok(optarg, ":"), nullptr, 0);
-			frame_range_end = strtol(strtok(nullptr, ":"), nullptr, 0)+1;
-			break;
-		case 'o':
-			outfile = optarg;
-			break;
-		default:
-			goto help;
-		}
+	gflags::SetUsageMessage(
+			absl::StrCat("Usage: ", argv[0], " [options] [bitfile]"));
+	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-	if (optind != argc && optind+1 != argc) {
-help:
-		fprintf(stderr, "\n");
-		fprintf(stderr, "Usage: %s [options] [bitfile]\n", argv[0]);
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -c\n");
-		fprintf(stderr, "    continuation mode. output '*' for repeating patterns\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -r\n");
-		fprintf(stderr, "    raw mode. only decode top-level .bit file format framing\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -m\n");
-		fprintf(stderr, "    command mode. print commands in config stream\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -z\n");
-		fprintf(stderr, "    skip zero frames (frames with all bits cleared) in outout\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -x\n");
-		fprintf(stderr, "    use format 'bit_%%08x_%%03d_%%02d_t%%d_h%%d_r%%d_c%%d_m%%d'\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -y\n");
-		fprintf(stderr, "    use format 'bit_%%08x_%%03d_%%02d'\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -p\n");
-		fprintf(stderr, "    output a binary netpgm image\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -C\n");
-		fprintf(stderr, "    do not ignore the checksum in each frame\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -f <frame_address>\n");
-		fprintf(stderr, "    only dump the specified frame (might be used more than once)\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -F <first_frame_address>:<last_frame_address>\n");
-		fprintf(stderr, "    only dump frame in the specified range\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "  -o <outfile>\n");
-		fprintf(stderr, "    write machine-readable output file with config frames\n");
-		fprintf(stderr, "\n");
-		fprintf(stderr, "In -x format the fields have the following meaning:\n");
-		fprintf(stderr, "  - complete 32 bit hex frame id\n");
-		fprintf(stderr, "  - word index with that frame (decimal)\n");
-		fprintf(stderr, "  - bit index with that word (decimal)\n");
-		fprintf(stderr, "  - decoded frame type from frame id\n");
-		fprintf(stderr, "  - decoded top/botttom from frame id (top=0)\n");
-		fprintf(stderr, "  - decoded row address from frame id\n");
-		fprintf(stderr, "  - decoded column address from frame id\n");
-		fprintf(stderr, "  - decoded minor address from frame id\n");
-		fprintf(stderr, "\n");
-		return 1;
+	if (FLAGS_f >= 0) {
+		frames.insert(FLAGS_f);
 	}
 
-	if (optind+1 == argc) {
-		FILE *f = fopen(argv[optind], "rb");
+	if (!FLAGS_F.empty()) {
+		std::pair<std::string, std::string> p = absl::StrSplit(FLAGS_F, ":");
+		frame_range_begin = strtol(p.first.c_str(), nullptr, 0);
+		frame_range_end = strtol(p.second.c_str(), nullptr, 0) + 1;
+	}
+
+	if (argc == 2) {
+		FILE *f = fopen(argv[1], "rb");
 		if (f == nullptr) {
-			printf("Can't open input file '%s' for reading!\n", argv[optind]);
+			printf("Can't open input file '%s' for reading!\n", argv[1]);
 			return 1;
 		}
 		while (1) {
@@ -380,7 +318,7 @@ help:
 		return 1;
 	}
 
-	if (!mode_r)
+	if (!FLAGS_r)
 	{
 		printf("Header A: %s\n", header_a.c_str());
 		printf("Header B: %s\n", header_b.c_str());
@@ -414,9 +352,9 @@ help:
 					goto cmderror;
 
 				if (opcode == 0) {
-					if (mode_m) {
+					if (FLAGS_m) {
 						printf("%8d: 0x%08x NOP\n", cursor, configdata.at(cursor));
-						if (mode_c && cmd == 0x20000000 && cursor+1 < int(configdata.size()) && cmd == configdata.at(cursor+1)) {
+						if (FLAGS_c && cmd == 0x20000000 && cursor+1 < int(configdata.size()) && cmd == configdata.at(cursor+1)) {
 							while (cursor+1 < int(configdata.size()) && cmd == configdata.at(cursor+1)) cursor++;
 							printf("*\n");
 						}
@@ -425,13 +363,13 @@ help:
 				}
 
 				if (opcode == 1) {
-					if (mode_m)
+					if (FLAGS_m)
 						printf("%8d: 0x%08x Read %s register (%d)\n", cursor, configdata.at(cursor), regname(regaddr), regaddr);
 					goto handle_type1_payload;
 				}
 
 				if (opcode == 2) {
-					if (mode_m)
+					if (FLAGS_m)
 						printf("%8d: 0x%08x Write %s register (%d)\n", cursor, configdata.at(cursor), regname(regaddr), regaddr);
 					current_write_reg = regaddr;
 					goto handle_type1_payload;
@@ -445,9 +383,9 @@ help:
 					bool in_continue = false;
 
 					while (wcount--) {
-						if (mode_m) {
+						if (FLAGS_m) {
 							uint32_t this_word = configdata.at(cursor);
-							if (mode_c && last_word == this_word) {
+							if (FLAGS_c && last_word == this_word) {
 								if (!in_continue)
 									printf("*\n");
 								in_continue = true;
@@ -479,7 +417,7 @@ help:
 				if (opcode != 2)
 					goto cmderror;
 
-				if (mode_m)
+				if (FLAGS_m)
 					printf("%8d: 0x%08x Type 2 write\n", cursor, configdata.at(cursor));
 
 				uint32_t last_word = configdata.at(cursor);
@@ -491,8 +429,8 @@ help:
 					uint32_t this_word = configdata.at(cursor);
 					handle_write(current_write_reg, this_word);
 
-					if (mode_m) {
-						if (mode_c && last_word == this_word) {
+					if (FLAGS_m) {
+						if (FLAGS_c && last_word == this_word) {
 							if (!in_continue)
 								printf("*\n");
 							in_continue = true;
@@ -517,17 +455,17 @@ help:
 
 		FILE *f = stdout;
 
-		if (outfile != nullptr)
+		if (FLAGS_o.c_str() != nullptr)
 		{
-			f = fopen(outfile, "w");
+			f = fopen(FLAGS_o.c_str(), "w");
 
 			if (f == nullptr) {
-				printf("Can't open output file '%s' for writing!\n", outfile);
+				printf("Can't open output file '%s' for writing!\n", FLAGS_o.c_str());
 				return 1;
 			}
 		}
 
-		if (outfile == nullptr)
+		if (FLAGS_o.c_str() == nullptr)
 			fprintf(f, "\n");
 
 		std::vector<std::vector<bool>> pgmdata;
@@ -535,7 +473,7 @@ help:
 
 		for (auto &it : configframes)
 		{
-			if (mode_z && it.second == zero_frame)
+			if (FLAGS_z && it.second == zero_frame)
 				continue;
 
 			frameid fid(it.first);
@@ -546,7 +484,7 @@ help:
 			if (frame_range_begin != frame_range_end && (fid.get_value() < frame_range_begin || frame_range_end <= fid.get_value()))
 				continue;
 
-			if (outfile == nullptr)
+			if (FLAGS_o.c_str() == nullptr)
 				printf("Frame 0x%08x (Type=%d Top=%d Row=%d Column=%d Minor=%d%s):\n", fid.get_value(), fid.get_type(), fid.get_topflag(),
 						fid.get_rowaddr(), fid.get_coladdr(), fid.get_minor(), configframes_autoincr.count(fid.get_value()) ? " AUTO_INCREMENT" : "");
 
@@ -555,7 +493,7 @@ help:
 				return 1;
 			}
 
-			if (mode_p)
+			if (FLAGS_p)
 			{
 				if (fid.get_minor() == 0 && !pgmdata.empty())
 					pgmsep.push_back(pgmdata.size());
@@ -567,33 +505,33 @@ help:
 					pgmdata.back().push_back((it.second.at(i) & (1 << k)) != 0);
 			}
 			else
-			if (mode_x || mode_y)
+			if (FLAGS_x || FLAGS_y)
 			{
 				for (int i = 0; i < 101; i++)
 				for (int k = 0; k < 32; k++)
-					if ((i != 50 || chksum) && ((it.second.at(i) & (1 << k)) != 0)) {
-						if (mode_x)
+					if ((i != 50 || FLAGS_C) && ((it.second.at(i) & (1 << k)) != 0)) {
+						if (FLAGS_x)
 							fprintf(f, "bit_%08x_%03d_%02d_t%d_h%d_r%d_c%d_m%d\n",
 									fid.get_value(), i, k, fid.get_type(), fid.get_topflag(), fid.get_rowaddr(),
 									fid.get_coladdr(), fid.get_minor());
 						else
 							fprintf(f, "bit_%08x_%03d_%02d\n", fid.get_value(), i, k);
 					}
-				if (outfile == nullptr)
+				if (FLAGS_o.c_str() == nullptr)
 					fprintf(f, "\n");
 			}
 			else
 			{
-				if (outfile != nullptr)
+				if (FLAGS_o.c_str() != nullptr)
 					fprintf(f, ".frame 0x%08x%s\n", fid.get_value(), configframes_autoincr.count(fid.get_value()) ? " AI" : "");
 
 				for (int i = 0; i < 101; i++)
-					fprintf(f, "%08x%s", (i != 50 || chksum) ? it.second.at(i) : 0, (i % 6) == 5 ? "\n" : " ");
+					fprintf(f, "%08x%s", (i != 50 || FLAGS_C) ? it.second.at(i) : 0, (i % 6) == 5 ? "\n" : " ");
 				fprintf(f, "\n\n");
 			}
 		}
 
-		if (mode_p)
+		if (FLAGS_p)
 		{
 			int width = pgmdata.size() + pgmsep.size();
 			int height = 101*32+100;
@@ -619,7 +557,7 @@ help:
 			}
 		}
 
-		if (outfile != nullptr)
+		if (FLAGS_o.c_str() != nullptr)
 			fclose(f);
 	}
 
