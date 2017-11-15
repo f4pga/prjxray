@@ -1,6 +1,5 @@
 #!/bin/bash -x
 
-source ../../utils/environment.sh
 source ${XRAY_GENHEADER}
 
 vivado -mode batch -source ../generate.tcl
