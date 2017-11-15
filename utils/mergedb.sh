@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source environment.sh
-
 set -ex
 test $# = 2
 test -e "$2"
@@ -48,7 +46,7 @@ case "$1" in
 		exit 1
 esac
 
-db=../../database/$XRAY_DATABASE/seg_$1.segbits
+db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/seg_$1.segbits
 touch "$db"
 sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2"
 mv "$tmp2" "$db"
