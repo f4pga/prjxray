@@ -26,6 +26,8 @@ vector<string> bit_ids_r, tag_ids_r;
 typedef tuple<vector<bool>, vector<bool>, vector<bool>> segdata_t;
 map<string, segdata_t> segdata;
 
+map<string, int> segnamecnt;
+
 static inline vector<bool> &segdata_bits(segdata_t &sd) { return std::get<0>(sd); }
 static inline vector<bool> &segdata_tags1(segdata_t &sd) { return std::get<1>(sd); }
 static inline vector<bool> &segdata_tags0(segdata_t &sd) { return std::get<2>(sd); }
@@ -41,7 +43,15 @@ void read_input(std::istream &f, std::string filename)
 		{
 			f >> token;
 			token = filename + ":" + token;
-			assert(segdata.count(token) == 0);
+			while (segdata.count(token)) {
+				int idx = 1;
+				if (segnamecnt.count(token))
+					idx = segnamecnt.at(token);
+				segnamecnt[token] = idx + 1;
+				char buffer[64];
+				snprintf(buffer, 64, "-%d", idx);
+				token += buffer;
+			}
 			segptr = &segdata[token];
 			continue;
 		}
