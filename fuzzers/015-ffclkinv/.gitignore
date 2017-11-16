@@ -5,3 +5,5 @@
 /design.dcp
 /usage_statistics_webtalk.*
 /vivado*
+/specimen_*
+/*.segbits
