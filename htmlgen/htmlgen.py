@@ -49,14 +49,14 @@ for segname, segdata in grid["segments"].items():
         segframes[segtype] = segdata["frames"]
 
         print("Loading %s segbits." % segtype)
-        with open("../database/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
+        with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
             for line in f:
                 bit_name, bit_pos = line.split()
                 segbits[segtype][bit_name] = bit_pos
                 segbits_r[segtype][bit_pos] = bit_name
 
-        print("Loading %s segbits." % segtype.replace("_", "_int_"))
-        with open("../database/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype.replace("_", "_int_"))) as f:
+        print("Loading %s segbits." % re.sub("clbl[lm]", "int", segtype))
+        with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), re.sub("clbl[lm]", "int", segtype))) as f:
             for line in f:
                 bit_name, *bit_pos = line.split()
                 for bit in bit_pos:
@@ -64,8 +64,8 @@ for segname, segdata in grid["segments"].items():
                         routebits[segtype][bit] = set()
                     routebits[segtype][bit].add(bit_name)
 
-        print("Loading %s segbits." % segtype.replace("_", "_mask_"))
-        with open("../database/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE"), segtype.replace("_", "_mask_"))) as f:
+        print("Loading %s maskbits." % segtype)
+        with open("../database/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
             for line in f:
                 _, bit = line.split()
                 maskbits[segtype].add(bit)
@@ -214,25 +214,25 @@ for segtype in segbits.keys():
                         bgcolor = "#6666cc"
                         label = "R"
                         for bn in sorted(routebits[segtype][bit_pos]):
-                            if re.match("^[A-Z_]+_INT_[LR].CTRL(_L)?[0-9]", bn):
+                            if re.match("^INT_[LR].CTRL(_L)?[0-9]", bn):
                                 bgcolor = "#8844ff"
                                 label = "CTRL"
-                            if re.match("^[A-Z_]+_INT_[LR].GFAN(_L)?[0-9]", bn):
+                            if re.match("^INT_[LR].GFAN(_L)?[0-9]", bn):
                                 bgcolor = "#4488ff"
                                 label = "GFAN"
-                            if re.match("^[A-Z_]+_INT_[LR].[SNWE][SNWE]", bn):
+                            if re.match("^INT_[LR].[SNWE][SNWE]", bn):
                                 bgcolor = "#aa88ff"
                                 label = "SNWE"
-                            if re.match("^[A-Z_]+_INT_[LR].IMUX", bn):
+                            if re.match("^INT_[LR].IMUX", bn):
                                 bgcolor = "#88aaff"
                                 label = "IMUX"
-                            if re.match("^[A-Z_]+_INT_[LR].BYP_ALT", bn):
+                            if re.match("^INT_[LR].BYP_ALT", bn):
                                 bgcolor = "#7755ff"
                                 label = "BALT"
-                            if re.match("^[A-Z_]+_INT_[LR].FAN_ALT", bn):
+                            if re.match("^INT_[LR].FAN_ALT", bn):
                                 bgcolor = "#4466bb"
                                 label = "FALT"
-                            if re.match("^[A-Z_]+_INT_[LR].[SNWE][RL]", bn):
+                            if re.match("^INT_[LR].[SNWE][RL]", bn):
                                 label = "RL"
                             title.append(bn)
 
