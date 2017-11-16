@@ -204,10 +204,35 @@ for segtype in segbits.keys():
                         bgcolor = "#ffaa00"
                         label = bit_name[-9:-7] + "M"
 
+                    if re.search(r"\.CLKINV$", bit_name):
+                        bgcolor = "#ffaa00"
+                        label = "CLKI"
+
                 elif bit_pos in routebits[segtype]:
-                        title += list(routebits[segtype][bit_pos])
                         bgcolor = "#6666cc"
                         label = "R"
+                        for bn in sorted(routebits[segtype][bit_pos]):
+                            if re.match("^[A-Z_]+_INT_[LR].CTRL(_L)?[0-9]", bn):
+                                bgcolor = "#8844ff"
+                                label = "CTRL"
+                            if re.match("^[A-Z_]+_INT_[LR].GFAN(_L)?[0-9]", bn):
+                                bgcolor = "#4488ff"
+                                label = "GFAN"
+                            if re.match("^[A-Z_]+_INT_[LR].[SNWE][SNWE]", bn):
+                                bgcolor = "#aa88ff"
+                                label = "SNWE"
+                            if re.match("^[A-Z_]+_INT_[LR].IMUX", bn):
+                                bgcolor = "#88aaff"
+                                label = "IMUX"
+                            if re.match("^[A-Z_]+_INT_[LR].BYP_ALT", bn):
+                                bgcolor = "#7755ff"
+                                label = "BALT"
+                            if re.match("^[A-Z_]+_INT_[LR].FAN_ALT", bn):
+                                bgcolor = "#4466bb"
+                                label = "FALT"
+                            if re.match("^[A-Z_]+_INT_[LR].[SNWE][RL]", bn):
+                                label = "RL"
+                            title.append(bn)
 
                 if label is None:
                     label = "&nbsp;"
@@ -215,7 +240,7 @@ for segtype in segbits.keys():
                 else:
                     onclick = " onmousedown=\"location.href = '#b%s'\"" % bit_pos
 
-                print("<td bgcolor=\"%s\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
+                print("<td bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
                         (bgcolor, "\n".join(title), onclick, label), file=f)
             print("</tr>", file=f)
         print("</table>", file=f)
