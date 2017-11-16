@@ -7,6 +7,8 @@ test -e "$2"
 tmp1=`mktemp -p .`
 tmp2=`mktemp -p .`
 
+db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/segbits_$1.db
+
 case "$1" in
 	clbll_l)
 		sed < "$2" > "$tmp1" \
@@ -24,29 +26,22 @@ case "$1" in
 		sed < "$2" > "$tmp1" \
 			-e 's/^CLB\.SLICE_X0\./CLBLM_R.SLICEM_X0./' \
 			-e 's/^CLB\.SLICE_X1\./CLBLM_R.SLICEL_X1./' ;;
-	clbll_int_l)
-		sed < "$2" > "$tmp1" -e 's/^INT\./CLBLL_INT_L./' ;;
-	clbll_int_r)
-		sed < "$2" > "$tmp1" -e 's/^INT\./CLBLL_INT_R./' ;;
-	clblm_int_l)
-		sed < "$2" > "$tmp1" -e 's/^INT\./CLBLM_INT_L./' ;;
-	clblm_int_r)
-		sed < "$2" > "$tmp1" -e 's/^INT\./CLBLM_INT_R./' ;;
-	clbll_mask_l)
-		sed < "$2" > "$tmp1" -e 's/^bit/CLBLL_MASK_L/' ;;
-	clbll_mask_r)
-		sed < "$2" > "$tmp1" -e 's/^bit/CLBLL_MASK_R/' ;;
-	clblm_mask_l)
-		sed < "$2" > "$tmp1" -e 's/^bit/CLBLM_MASK_L/' ;;
-	clblm_mask_r)
-		sed < "$2" > "$tmp1" -e 's/^bit/CLBLM_MASK_R/' ;;
+
+	int_l)
+		sed < "$2" > "$tmp1" -e 's/^INT\./INT_L./' ;;
+	int_r)
+		sed < "$2" > "$tmp1" -e 's/^INT\./INT_R./' ;;
+
+	mask_*)
+		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
+		cp "$2" "$tmp1" ;;
+
 	*)
 		echo "Invalid mode: $1"
 		rm -f "$tmp1" "$tmp2"
 		exit 1
 esac
 
-db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/seg_$1.segbits
 touch "$db"
 sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2"
 mv "$tmp2" "$db"
