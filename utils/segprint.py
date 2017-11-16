@@ -161,7 +161,10 @@ def handle_segment(segname):
         print("tag %s" % tag)
 
 if len(args) == 1:
-    for seg in grid["segments"]:
+    seglist = list()
+    for seg, seginfo in grid["segments"].items():
+        seglist.append((seginfo["baseaddr"][0], -seginfo["baseaddr"][1], seg))
+    for _, _, seg in sorted(seglist):
         handle_segment(seg)
 else:
     for arg in args[1:]:
