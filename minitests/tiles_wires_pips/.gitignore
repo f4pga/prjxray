@@ -1,0 +1,7 @@
+/.Xil
+/design/
+/design.bit
+/design.dcp
+/vivado*
+/wires_*.txt
+/pips_*.txt
