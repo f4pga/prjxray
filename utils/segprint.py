@@ -1,15 +1,50 @@
 #!/usr/bin/env python3
 
-import sys, os, json, re
+import getopt, sys, os, json, re
 
-# print("Loading %s grid." % os.getenv("XRAY_DATABASE"))
-with open("%s/../database/%s/tilegrid.json" % (os.path.dirname(sys.modules[__name__].__file__), os.getenv("XRAY_DATABASE")), "r") as f:
+flag_z = False
+flag_d = False
+flag_D = False
+
+def usage():
+    print("Usage: %s [options] <bits_file> [segments/tiles]" % sys.argv[0])
+    print("")
+    print("  -z")
+    print("    do not print a 'seg' header for empty segments")
+    print("")
+    print("  -d")
+    print("    decode known segment bits and write them as tags")
+    print("")
+    print("  -D")
+    print("    decode known segment bits and omit them in the output")
+    print("")
+    sys.exit(0)
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "zdD")
+except:
+    usage()
+
+if len(args) == 0:
+    usage()
+
+for o, a in opts:
+    if o == "-z":
+        flag_z = True
+    elif o == "-d":
+        flag_d = True
+    elif o == "-D":
+        flag_D = True
+    else:
+        usage()
+
+with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")), "r") as f:
     grid = json.load(f)
 
 bitdata = dict()
 
 # print("Loading %s." % sys.argv[1])
-with open(sys.argv[1], "r") as f:
+with open(args[0], "r") as f:
     for line in f:
         line = line.split("_")
         frame = int(line[1], 16)
@@ -23,6 +58,26 @@ with open(sys.argv[1], "r") as f:
             bitdata[frame][wordidx] = set()
 
         bitdata[frame][wordidx].add(bitidx)
+
+segbitsdb = dict()
+
+def get_database(segtype):
+    if segtype in segbitsdb:
+        return segbitsdb[segtype]
+
+    segbitsdb[segtype] = list()
+
+    with open("%s/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype), "r") as f:
+        for line in f:
+            line = line.split()
+            segbitsdb[segtype].append(line)
+
+    with open("%s/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype.replace("_", "_int_")), "r") as f:
+        for line in f:
+            line = line.split()
+            segbitsdb[segtype].append(line)
+
+    return segbitsdb[segtype]
 
 def handle_segment(segname):
     if ":" in segname:
@@ -64,15 +119,15 @@ def handle_segment(segname):
     if segname in grid["tiles"]:
         segname = grid["tiles"][segname]["segment"]
 
-    print()
-    print("seg %s" % segname)
-
     seginfo = grid["segments"][segname]
 
     baseframe = int(seginfo["baseaddr"][0], 16)
     basewordidx = int(seginfo["baseaddr"][1])
     numframes = int(seginfo["frames"])
     numwords = int(seginfo["words"])
+
+    segbits = set()
+    segtags = set()
 
     for frame in range(baseframe, baseframe+numframes):
         if frame not in bitdata:
@@ -81,8 +136,34 @@ def handle_segment(segname):
             if wordidx not in bitdata[frame]:
                 continue
             for bitidx in bitdata[frame][wordidx]:
-                print("bit %02d_%02d" % (frame - baseframe, 32*(wordidx - basewordidx) + bitidx))
+                segbits.add("%02d_%02d" % (frame - baseframe, 32*(wordidx - basewordidx) + bitidx))
 
-for arg in sys.argv[2:]:
-    handle_segment(arg)
+    if flag_d or flag_D:
+        for entry in get_database(seginfo["type"]):
+            match_entry = True
+            for bit in entry[1:]:
+                if bit not in segbits:
+                    match_entry = False
+            if match_entry:
+                for bit in entry[1:]:
+                    segbits.remove(bit)
+                if flag_d:
+                    segtags.add(entry[0])
+
+    if not flag_z or len(segbits) > 0 or len(segtags) > 0:
+        print()
+        print("seg %s" % segname)
+
+    for bit in sorted(segbits):
+        print("bit %s" % bit)
+
+    for tag in sorted(segtags):
+        print("tag %s" % tag)
+
+if len(args) == 1:
+    for seg in grid["segments"]:
+        handle_segment(seg)
+else:
+    for arg in args[1:]:
+        handle_segment(arg)
 
