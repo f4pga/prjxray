@@ -169,7 +169,9 @@ for segtype in segbits.keys():
                 bgcolor = "#aaaaaa"
 
                 if bit_pos not in maskbits[segtype]:
+                    label = "&nbsp;"
                     bgcolor = "#444444"
+                    title.append("UNUSED ?")
 
                 if bit_name is not None:
                     bgcolor = "#ff0000"
@@ -236,6 +238,7 @@ for segtype in segbits.keys():
 
                 if label is None:
                     label = "&nbsp;"
+                    title.append("UNKNOWN")
                     onclick = ""
                 else:
                     onclick = " onmousedown=\"location.href = '#b%s'\"" % bit_pos
