@@ -1,4 +1,3 @@
-if 0 {
 create_project -force -part $::env(XRAY_PART) design design
 
 read_verilog top.v
@@ -21,7 +20,6 @@ write_checkpoint -force design.dcp
 write_bitstream -force design.bit
 
 source ../../utils/utils.tcl
-}
 
 proc print_tile_info {tile} {
 	puts "Dumping wires and PIPs for tile $tile."
