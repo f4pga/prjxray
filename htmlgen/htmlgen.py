@@ -200,6 +200,10 @@ for segtype in segbits.keys():
                         bgcolor = "#cccc88"
                         label = bit_name[-5] + "5"
 
+                    if re.search(r"\.(CE|SR)USEDMUX$", bit_name):
+                        bgcolor = "#ffaa00"
+                        label = bit_name[-9:-7] + "M"
+
                 elif bit_pos in routebits[segtype]:
                         title += list(routebits[segtype][bit_pos])
                         bgcolor = "#6666cc"
@@ -207,10 +211,12 @@ for segtype in segbits.keys():
 
                 if label is None:
                     label = "&nbsp;"
+                    onclick = ""
                 else:
-                    label = "<a href=\"#b%s\" style=\"text-decoration: none; color: black;\">%s</a>" % (bit_pos, label)
+                    onclick = " onmousedown=\"location.href = '#b%s'\"" % bit_pos
 
-                print("<td bgcolor=\"%s\" title=\"%s\"><span style=\"font-size:10px\">%s</span></td>" % (bgcolor, "\n".join(title), label), file=f)
+                print("<td bgcolor=\"%s\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
+                        (bgcolor, "\n".join(title), onclick, label), file=f)
             print("</tr>", file=f)
         print("</table>", file=f)
 
