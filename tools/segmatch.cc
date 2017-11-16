@@ -29,15 +29,113 @@ int num_bits = 0, num_tags = 0;
 map<string, int> bit_ids, tag_ids;
 vector<string> bit_ids_r, tag_ids_r;
 
+#if 0
+struct bool_vec
+{
+	vector<bool> data;
+
+	bool_vec(int n = 0, bool initval = false) : data(n, initval)
+	{
+	}
+
+	void set(int n)
+	{
+		if (int(data.size()) <= n)
+			data.resize(n+1);
+		data[n] = true;
+	}
+
+	bool get(int n)
+	{
+		return data.at(n);
+	}
+
+	void resize(int n)
+	{
+		data.resize(n);
+	}
+
+	int count()
+	{
+		return std::accumulate(data.begin(), data.end(), 0);
+	}
+
+	void apply_and(const bool_vec &other)
+	{
+		assert(data.size() == other.data.size());
+		for (int i = 0; i < int(data.size()); i++)
+			data[i] = data[i] && other.data[i];
+	}
+
+	void apply_andc(const bool_vec &other)
+	{
+		assert(data.size() == other.data.size());
+		for (int i = 0; i < int(data.size()); i++)
+			data[i] = data[i] && !other.data[i];
+	}
+};
+#else
+struct bool_vec
+{
+	vector<uint64_t> data;
+
+	bool_vec(int n = 0, bool initval = false) :
+		data((n+63)/64, initval ? ~uint64_t(0) : uint64_t(0))
+	{
+		for (int i = data.size()*64-1; i >= n; i--)
+			data[n / 64] &= ~(uint64_t(1) << (n % 64));
+	}
+
+	void set(int n)
+	{
+		if (int(data.size()*64) <= n)
+			data.resize((n+64) / 64);
+		data[n / 64] |= uint64_t(1) << (n % 64);
+	}
+
+	bool get(int n)
+	{
+		return (data[n / 64] >> (n % 64)) & 1;
+	}
+
+	void resize(int n)
+	{
+		data.resize((n+63) / 64);
+	}
+
+	int count()
+	{
+		int sum = 0;
+		for (int i = 0; i < 64*int(data.size()); i++)
+			if (get(i)) sum++;
+		return sum;
+	}
+
+	void apply_and(const bool_vec &other)
+	{
+		assert(data.size() == other.data.size());
+		for (int i = 0; i < int(data.size()); i++)
+			data[i] &= other.data[i];
+	}
+
+	void apply_andc(const bool_vec &other)
+	{
+		assert(data.size() == other.data.size());
+		for (int i = 0; i < int(data.size()); i++)
+			data[i] &= ~other.data[i];
+	}
+};
+#endif
+
 // segname -> bits, tags_on, tags_off
-typedef tuple<vector<bool>, vector<bool>, vector<bool>> segdata_t;
+typedef tuple<bool_vec, bool_vec, bool_vec> segdata_t;
 map<string, segdata_t> segdata;
 
 map<string, int> segnamecnt;
 
-static inline vector<bool> &segdata_bits(segdata_t &sd) { return std::get<0>(sd); }
-static inline vector<bool> &segdata_tags1(segdata_t &sd) { return std::get<1>(sd); }
-static inline vector<bool> &segdata_tags0(segdata_t &sd) { return std::get<2>(sd); }
+static inline bool_vec &segdata_bits(segdata_t &sd) { return std::get<0>(sd); }
+static inline bool_vec &segdata_tags1(segdata_t &sd) { return std::get<1>(sd); }
+static inline bool_vec &segdata_tags0(segdata_t &sd) { return std::get<2>(sd); }
 
 void read_input(std::istream &f, std::string filename)
 {
@@ -76,10 +174,7 @@ void read_input(std::istream &f, std::string filename)
 			int bit_idx = bit_ids.at(token);
 			auto &bits = segdata_bits(*segptr);
 
-			if (int(bits.size()) <= bit_idx)
-				bits.resize(bit_idx+1);
-
-			bits[bit_idx] = true;
+			bits.set(bit_idx);
 			continue;
 		}
 
@@ -100,10 +195,7 @@ void read_input(std::istream &f, std::string filename)
 
 			auto &tags = token == "1" ? segdata_tags1(*segptr) : segdata_tags0(*segptr);
 
-			if (int(tags.size()) <= tag_idx)
-				tags.resize(tag_idx+1);
-
-			tags[tag_idx] = true;
+			tags.set(tag_idx);
 
 			if (FLAGS_i)
 			{
@@ -117,11 +209,7 @@ void read_input(std::istream &f, std::string filename)
 				}
 
 				int inv_tag_idx = tag_ids.at(token);
-
-				if (int(inv_tags.size()) <= inv_tag_idx)
-					inv_tags.resize(inv_tag_idx+1);
-
-				inv_tags[inv_tag_idx] = true;
+				inv_tags.set(inv_tag_idx);
 			}
 
 			continue;
@@ -139,20 +227,6 @@ void read_input(std::istream &f, std::string filename)
 		segdata_tags1(segdat.second).resize(num_tags);
 		segdata_tags0(segdat.second).resize(num_tags);
 	}
-}
-
-void and_masks(vector<bool> &dst_mask, const vector<bool> &src_mask)
-{
-	assert(dst_mask.size() == src_mask.size());
-	for (int i = 0; i < int(dst_mask.size()); i++)
-		dst_mask[i] = dst_mask[i] && src_mask[i];
-}
-
-void andc_masks(vector<bool> &dst_mask, const vector<bool> &src_mask)
-{
-	assert(dst_mask.size() == src_mask.size());
-	for (int i = 0; i < int(dst_mask.size()); i++)
-		dst_mask[i] = dst_mask[i] && !src_mask[i];
 }
 
 int main(int argc, char **argv)
@@ -196,26 +270,26 @@ int main(int argc, char **argv)
 
 	for (int tag_idx = 0; tag_idx < num_tags; tag_idx++)
 	{
-		vector<bool> mask(num_bits, true);
+		bool_vec mask(num_bits, true);
 		int count1 = 0, count0 = 0;
 
 		for (auto &segdat : segdata)
 		{
 			auto &sd = segdat.second;
-			bool tag1 = segdata_tags1(sd).at(tag_idx);
-			bool tag0 = segdata_tags0(sd).at(tag_idx);
+			bool tag1 = segdata_tags1(sd).get(tag_idx);
+			bool tag0 = segdata_tags0(sd).get(tag_idx);
 
 			assert(!tag1 || !tag0);
 
 			if (tag1) {
 				count1++;
-				and_masks(mask, segdata_bits(sd));
+				mask.apply_and(segdata_bits(sd));
 				continue;
 			}
 
 			if (tag0) {
 				count0++;
-				andc_masks(mask, segdata_bits(sd));
+				mask.apply_andc(segdata_bits(sd));
 				continue;
 			}
 		}
@@ -253,7 +327,7 @@ int main(int argc, char **argv)
 			cnt_const1 += 1;
 		}
 
-		int num_candidates = std::accumulate(mask.begin(), mask.end(), 0);
+		int num_candidates = mask.count();
 
 		if (count0) {
 			min_candidates = std::min(min_candidates, num_candidates);
@@ -267,7 +341,7 @@ int main(int argc, char **argv)
 		     num_candidates <= FLAGS_c)) {
 			std::vector<std::string> out_tags;
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
-				if (mask.at(bit_idx))
+				if (mask.get(bit_idx))
 					out_tags.push_back(bit_ids_r.at(bit_idx));
 			std::sort(out_tags.begin(), out_tags.end());
 			for (auto &tag : out_tags)
