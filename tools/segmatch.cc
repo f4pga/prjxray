@@ -19,6 +19,7 @@ DEFINE_bool(i, false, "add inverted tags");
 DEFINE_int32(m, 0, "min number of set/cleared samples each");
 DEFINE_int32(M, 0, "min number of set/cleared samples total");
 DEFINE_string(o, "", "set output file");
+DEFINE_string(k, "", "set output mask file");
 
 using std::map;
 using std::tuple;
@@ -370,6 +371,14 @@ int main(int argc, char **argv)
 		printf("min #of candidates: %d\n", min_candidates);
 		printf("max #of candidates: %d\n", max_candidates);
 		printf("avg #of candidates: %.3f\n", avg_candidates);
+	}
+
+	if (!FLAGS_k.empty()) {
+		f = fopen(FLAGS_k.c_str(), "w");
+		assert(f != nullptr);
+		std::sort(bit_ids_r.begin(), bit_ids_r.end());
+		for (auto bit : bit_ids_r)
+			fprintf(f, "bit %s\n", bit.c_str());
 	}
 
 	return 0;
