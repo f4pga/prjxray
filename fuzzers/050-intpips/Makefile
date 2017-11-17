@@ -24,7 +24,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_clbl[lm]_int_[lr].segbits seg_clbl[lm]_mask_[lr].segbits
+	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits mask_clbl[lm]_[lr].segbits
 
 .PHONY: database pushdb clean
 
