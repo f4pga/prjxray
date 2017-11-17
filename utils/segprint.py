@@ -67,12 +67,12 @@ def get_database(segtype):
 
     segbitsdb[segtype] = list()
 
-    with open("%s/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype), "r") as f:
+    with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype), "r") as f:
         for line in f:
             line = line.split()
             segbitsdb[segtype].append(line)
 
-    with open("%s/%s/seg_%s.segbits" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype.replace("_", "_int_")), "r") as f:
+    with open("%s/%s/segbits_int_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype[-1]), "r") as f:
         for line in f:
             line = line.split()
             segbitsdb[segtype].append(line)
