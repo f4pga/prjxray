@@ -32,6 +32,7 @@ segbits = dict()
 segbits_r = dict()
 segframes = dict()
 routebits = dict()
+piptypes = dict()
 maskbits = dict()
 
 print("Loading tilegrid.")
@@ -234,6 +235,7 @@ for segtype in segbits.keys():
                                 label = "FALT"
                             if re.match("^INT_[LR].[SNWE][RL]", bn):
                                 label = "RL"
+                            piptypes[bit_pos] = label
                             title.append(bn)
 
                 if label is None:
@@ -306,7 +308,21 @@ for segtype in segbits.keys():
                     shared_bits[bit] = set()
                 shared_bits[bit].add(grp_name)
 
+        rgroups_with_title = list()
+
         for grp, gdata in sorted(rgroups.items()):
+            title = ""
+            for pip, bits in gdata.items():
+                for bit in bits:
+                    if bit in piptypes:
+                        # title = piptypes[bit] + "-"
+                        pass
+                    else:
+                        print("Detected DB error in PIP %s %s" % (pip, bits))
+            title += "PIPs driving " + ", ".join(sorted(rgroup_names[grp]))
+            rgroups_with_title.append((title, grp, gdata))
+
+        for title, grp, gdata in sorted(rgroups_with_title):
             grp_bits = set()
             for pip, bits in gdata.items():
                 grp_bits |= bits
@@ -316,7 +332,7 @@ for segtype in segbits.keys():
                 print("<a id=\"b%s\"/>" % bit, file=f)
 
             print("<p/>", file=f)
-            print("<h4>%s</h4>" % ", ".join(sorted(rgroup_names[grp])), file=f)
+            print("<h4>%s</h4>" % title, file=f)
             print("<table cellspacing=0>", file=f)
             print("<tr><th width=\"400\" align=\"left\">PIP</th>", file=f)
 
