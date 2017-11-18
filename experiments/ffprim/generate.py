@@ -66,11 +66,11 @@ with open("design.txt", "r") as f:
 
         which = ff_name[0]
         # Reduced test for now
-        if ff_name != 'AFF':
-            continue
+        #if ff_name != 'AFF':
+        #    continue
 
-        segmk.addtag(site, "FF_USED", used)
-        if 1:
+        #segmk.addtag(site, "FF_USED", used)
+        if 0:
             # If unused mark all primitives as not present
             # Otherwise mark the primitive we are using
             for ffprim in ffprims:
@@ -78,39 +78,19 @@ with open("design.txt", "r") as f:
                     segmk.addtag(site, "FF_%s" % ffprim, 0)
                 elif ref_name == ffprim:
                     segmk.addtag(site, "FF_%s" % ffprim, 1)
-        
-        '''
-        Experiment diffing against one of the lower bit set candidates
-        can probably isolate a few bits this way
-        really though I want to diff against USED but not sure how to do that
 
-        CLB.SLICE_X0.FF_USED <7 candidates>
-        CLB.SLICE_X0.FF_FDSE <8 candidates>
-        CLB.SLICE_X0.FF_FDPE <8 candidates>
-        CLB.SLICE_X0.FF_FDRE <9 candidates>
-        CLB.SLICE_X0.FF_FDCE <10 candidates>
-        '''
-        '''
+        # Theory:
+        # FDPE represents none of the FF specific bits used
+        # FDRE has none of the bits used
         if 1:
             # If unused mark all primitives as not present
             # Otherwise mark the primitive we are using
+            # Should yield 3 bits
             if used:
-                base = 'FDSE'
-                if ref_name == base:
-                    for ffprim in ffprims:
-                        segmk.addtag(site, "FF_DIFF_%s_%s" % (base, fprim, 0)
-        if 0:
-            for ffprim in ffprims:
-                    segmk.addtag(site, "FF_%s" % ffprim, 0)
-                elif 
-                    segmk.addtag(site, "FF_%s" % ffprim, 1)
-        '''
-
-        # Compare '_1' negative edge clock to positive edge
-        if used:
-            #inv_clk = ref_name.endswith("_1")
-            inv_clk = cinv
-            segmk.addtag(site, "%s.FF_INV_CLK" % ff_name, inv_clk)
+                if ref_name == 'FDPE':
+                    segmk.addtag(site, "%s.PRIM" % ff_name, 0)
+                if ref_name == 'FDRE':
+                    segmk.addtag(site, "%s.PRIM" % ff_name, 1)
 
 segmk.compile()
 segmk.write()

@@ -97,8 +97,8 @@ for i in range(CLBN):
     # clb_FD clb_FD (.clk(clk), .din(din[  0 +: 4]), .dout(dout[  0]));
     # clb_FD_1 clb_FD_1 (.clk(clk), .din(din[  4 +: 4]), .dout(dout[  1]));
     loc = next(slices)
-    #bel = random.choice(ff_bels)
-    bel = "AFF"
+    bel = random.choice(ff_bels)
+    #bel = "AFF"
     print('    clb_%s' % ffprim)
     print('            #(.LOC("%s"), .BEL("%s"))' % (loc, bel))
     print('            clb_%d (.clk(clk), .din(din[  %d +: 4]), .dout(dout[  %d]));' % (i, 4 * i, 1 * i))
