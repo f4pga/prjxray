@@ -32,6 +32,7 @@ segbits = dict()
 segbits_r = dict()
 segframes = dict()
 routebits = dict()
+routezbits = dict()
 piptypes = dict()
 maskbits = dict()
 
@@ -46,6 +47,7 @@ for segname, segdata in grid["segments"].items():
         segbits[segtype] = dict()
         segbits_r[segtype] = dict()
         routebits[segtype] = dict()
+        routezbits[segtype] = dict()
         maskbits[segtype] = set()
         segframes[segtype] = segdata["frames"]
 
@@ -53,6 +55,7 @@ for segname, segdata in grid["segments"].items():
         with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
             for line in f:
                 bit_name, bit_pos = line.split()
+                assert bit_pos[0] != "!"
                 segbits[segtype][bit_name] = bit_pos
                 segbits_r[segtype][bit_pos] = bit_name
 
@@ -61,9 +64,14 @@ for segname, segdata in grid["segments"].items():
             for line in f:
                 bit_name, *bit_pos = line.split()
                 for bit in bit_pos:
-                    if bit not in routebits[segtype]:
-                        routebits[segtype][bit] = set()
-                    routebits[segtype][bit].add(bit_name)
+                    if bit[0] == "!":
+                        if bit[1:] not in routezbits[segtype]:
+                            routezbits[segtype][bit[1:]] = set()
+                        routezbits[segtype][bit[1:]].add(bit_name)
+                    else:
+                        if bit not in routebits[segtype]:
+                            routebits[segtype][bit] = set()
+                        routebits[segtype][bit].add(bit_name)
 
         print("Loading %s maskbits." % segtype)
         with open("../database/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
@@ -215,12 +223,6 @@ for segtype in segbits.keys():
                         bgcolor = "#6666cc"
                         label = "R"
                         for bn in sorted(routebits[segtype][bit_pos]):
-                            if re.match("^INT_[LR].CTRL(_L)?[0-9]", bn):
-                                bgcolor = "#8844ff"
-                                label = "CTRL"
-                            if re.match("^INT_[LR].GFAN(_L)?[0-9]", bn):
-                                bgcolor = "#4488ff"
-                                label = "GFAN"
                             if re.match("^INT_[LR].[SNWE][SNWE]", bn):
                                 bgcolor = "#aa88ff"
                                 label = "SNWE"
@@ -278,8 +280,10 @@ for segtype in segbits.keys():
             print("</table>", file=f)
 
         ruf = UnionFind()
+        routebits_routezbits = list(routebits[segtype].items())
+        routebits_routezbits += list(routezbits[segtype].items())
 
-        for bit, pips in routebits[segtype].items():
+        for bit, pips in routebits_routezbits:
             for pip in pips:
                 grp = pip.split('.')[1]
                 ruf.union(grp, bit)
@@ -287,7 +291,7 @@ for segtype in segbits.keys():
         rgroups = dict()
         rgroup_names = dict()
 
-        for bit, pips in routebits[segtype].items():
+        for bit, pips in routebits_routezbits:
             for pip in pips:
                 grp_name = pip.split('.')[1]
                 grp = ruf.find(grp_name)
@@ -301,7 +305,7 @@ for segtype in segbits.keys():
                 rgroups[grp][pip].add(bit)
 
         shared_bits = dict()
-        for bit, pips in routebits[segtype].items():
+        for bit, pips in routebits_routezbits:
             for pip in pips:
                 grp_name = pip.split('.')[1]
                 if bit not in shared_bits:
@@ -344,7 +348,9 @@ for segtype in segbits.keys():
             for pip, bits in sorted(gdata.items()):
                 line = " --><td>%s</td>" % (pip)
                 for bit in grp_bits:
-                    c = "1" if bit in bits else "-"
+                    c = "-"
+                    if bit in routebits[segtype]  and pip in routebits[segtype][bit]:  c = "1"
+                    if bit in routezbits[segtype] and pip in routezbits[segtype][bit]: c = "0"
                     line = "%s%s<td align=\"center\">%s</td>" % (c, line, c)
                 lines.append(line)
 
