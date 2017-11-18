@@ -142,11 +142,14 @@ def handle_segment(segname):
         for entry in get_database(seginfo["type"]):
             match_entry = True
             for bit in entry[1:]:
-                if bit not in segbits:
+                if bit[0] != "!" and bit not in segbits:
+                    match_entry = False
+                if bit[0] == "!" and bit[1:] in segbits:
                     match_entry = False
             if match_entry:
                 for bit in entry[1:]:
-                    segbits.remove(bit)
+                    if bit[0] != "!":
+                        segbits.remove(bit)
                 if flag_d:
                     segtags.add(entry[0])
 
