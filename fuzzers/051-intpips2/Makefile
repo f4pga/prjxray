@@ -21,10 +21,12 @@ $(SPECIMENS_OK): todo.txt
 	touch $@
 
 todo.txt:
-	: vivado -mode batch -source piplist.tcl
-	python3 maketodo.py | sort -R | head -n 50 > todo.txt
+	vivado -mode batch -source piplist.tcl
+	python3 maketodo.py > todo.txt
 
 clean:
+	rm -rf .Xil/ filtered_seg_int_[lr].segbits
+	rm -rf todo.txt vivado* piplist/ piplist.dcp pattern_[lr].txt pips_int_[lr].txt
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits mask_clbl[lm]_[lr].segbits
 
 .PHONY: database pushdb clean
