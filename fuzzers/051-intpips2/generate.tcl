@@ -1,4 +1,3 @@
-if 0 {
 create_project -force -part $::env(XRAY_PART) design design
 
 read_verilog ../top.v
@@ -20,7 +19,6 @@ place_design
 route_design
 
 write_checkpoint -force design.dcp
-}
 
 source ../../../utils/utils.tcl
 
@@ -53,7 +51,7 @@ for {gets $fp line} {$line != ""} {gets $fp line} {
 }
 close $fp
 
-for {set i 100} {$i < 120} {incr i} {
+for {set i 100} {$i < 200} {incr i} {
 	set route_nodes {}
 	foreach line [randsample_list 5 $todo_lines] {
 		set line [split $line .]

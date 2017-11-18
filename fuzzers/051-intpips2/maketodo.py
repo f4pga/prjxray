@@ -15,7 +15,9 @@ def maketodo(pipfile, dbfile):
             continue
         if line.endswith(".GND_WIRE"):
             continue
-        if ".CTRL" in line:
+        if re.match(r".*\.(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", line):
+            continue
+        if re.match(r"^INT_[LR]\.(CTRL|GFAN)(_L)?[0-9]", line):
             continue
         print(line)
 
