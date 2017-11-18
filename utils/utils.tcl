@@ -20,7 +20,7 @@ proc route_via {net nodes} {
 		}
 	}
 
-	set_property FIXED_ROUTE $fixed_route $net
+	set_property -quiet FIXED_ROUTE $fixed_route $net
 	puts ""
 }
 
