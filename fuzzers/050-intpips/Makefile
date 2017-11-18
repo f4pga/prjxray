@@ -18,6 +18,7 @@ pushdb:
 	${XRAY_MERGEDB} mask_clbll_r mask_clbll_r.segbits
 	${XRAY_MERGEDB} mask_clblm_l mask_clblm_l.segbits
 	${XRAY_MERGEDB} mask_clblm_r mask_clblm_r.segbits
+	${XRAY_DBFIXUP}
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)

@@ -43,7 +43,8 @@ with open("design.txt", "r") as f:
 
         if pnum == 1 or pdir == 0 or \
                 re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", src) or \
-                re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", dst):
+                re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", dst) or \
+                re.match(r"^(CTRL|GFAN)(_L)?[0-9]", dst):
             ignpip.add(pip)
 
 for tile, pips_srcs_dsts in tiledata.items():
