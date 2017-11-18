@@ -1,8 +1,9 @@
 /.Xil/
-/design_fd?e/
-/design_fd?e.dcp
-/design_fd?e.bit
-/design_fd?e.bits
+/design_*/
+/design_*.dcp
+/design_*.bit
+/design_*.bits
+/design_*.segd
 /fixed.xdc
 /usage_statistics_webtalk.*
 /vivado*
