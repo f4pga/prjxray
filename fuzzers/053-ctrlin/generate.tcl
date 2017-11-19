@@ -32,35 +32,31 @@ set int_r_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi
 
 for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
 	set line [lindex $todo_lines $idx]
+	puts "== $idx: $line"
 
 	set tile_type [lindex $line 0]
 	set dst_wire [lindex $line 1]
 	set src_wire [lindex $line 2]
 
-	if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]}
-	if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]}
+	if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]; set other_tile [lindex $int_r_tiles $idx]}
+	if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]; set other_tile [lindex $int_l_tiles $idx]}
 
-	set clb_dst_wire [get_wires -filter {TILE_NAME =~ CLB*} -of_objects [get_nodes -of_objects [get_wire $tile/$dst_wire]]]
-	set clb_src_wire [get_wires -filter {TILE_NAME =~ CLB*} -of_objects [get_nodes -of_objects [get_wire $tile/$src_wire]]]
+	set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+			-of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
 
-	set clb_dst_pin [get_site_pins -of_objects [get_nodes -downhill -of_objects [get_pips -of_objects $clb_dst_wire]]]
-	set clb_src_pin [get_site_pins -of_objects [get_nodes -uphill -of_objects [get_pips -of_objects $clb_src_wire]]]
+	set recv_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+			-of_objects [get_nodes -of_objects [get_wires $tile/$dst_wire]]]]]
 
-	set src_prefix [regsub {(.*/.).*} ${clb_src_pin} {\1}]
-	set dst_prefix [regsub {(.*/.).*} ${clb_dst_pin} {\1}]
+	set mylut [create_cell -reference LUT1 mylut_$idx]
+	set_property -dict "LOC $driver_site BEL A6LUT" $mylut
 
-	if {$src_prefix == $dst_prefix} {
-		set slice [get_sites -of_objects $clb_dst_pin]
-		set lut [regsub {.*/} $src_prefix {}]6LUT
+	set myff [create_cell -reference FDRE myff_$idx]
+	set ffbel [lindex "AFF A5FF BFF B5FF CFF C5FF DFF D5FF" [expr {int(rand()*8)}]]
+	set_property -dict "LOC $recv_site BEL $ffbel" $myff
 
-		puts "=== $slice $lut ($clb_src_pin -> $clb_dst_pin)"
-
-		set mynet [create_net mynet_$idx]
-		set mylut [create_cell -reference LUT1 mylut_$idx]
-		set lutin [regsub {.*(.)} $clb_dst_pin {A\1}]
-		set_property -dict "LOC $slice BEL $lut LOCK_PINS I0:$lutin" $mylut
-		connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
-	}
+	set mynet [create_net mynet_$idx]
+	connect_net -net $mynet -objects "$mylut/O $myff/R"
+	route_via $mynet "$tile/$src_wire $tile/$dst_wire"
 }
 
 proc write_txtdata {filename} {
