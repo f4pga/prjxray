@@ -157,7 +157,8 @@ for segtype in segbits.keys():
     print("Writing %s/seg_%s.html." % (os.getenv("XRAY_DATABASE"), segtype))
     with open("%s/seg_%s.html" % (os.getenv("XRAY_DATABASE"), segtype), "w") as f:
         print("<html><title>X-Ray %s Database: %s</title><body>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
-        print("<h3>X-Ray %s Database: %s</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
+        print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper(),
+                segtype.upper(), re.sub("clbl[lm]", "int", segtype).upper()), file=f)
         print("<table border>", file=f)
 
         print("<tr>", file=f)
@@ -254,6 +255,7 @@ for segtype in segbits.keys():
             print("</tr>", file=f)
         print("</table>", file=f)
 
+        print("<div>", file=f)
 
         bits_by_prefix = dict()
 
@@ -373,5 +375,6 @@ for segtype in segbits.keys():
             if not first_note:
                 print("</p>", file=f)
 
+        print("</div>", file=f)
         print("</body></html>", file=f)
 
