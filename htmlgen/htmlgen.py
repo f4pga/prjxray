@@ -237,6 +237,8 @@ for segtype in segbits.keys():
                                 label = "FALT"
                             if re.match("^INT_[LR].[SNWE][RL]", bn):
                                 label = "RL"
+                            if re.match("^INT_[LR].CLK", bn):
+                                label = "CLK"
                             piptypes[bit_pos] = label
                             title.append(bn)
 
