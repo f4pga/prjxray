@@ -1,0 +1,13 @@
+/filtered_seg_int_l.segbits
+/filtered_seg_int_r.segbits
+/pattern_l.txt
+/pattern_r.txt
+/piplist.dcp
+/piplist/
+/pips_int_l.txt
+/pips_int_r.txt
+/seg_int_l.segbits
+/seg_int_r.segbits
+/specimen_[0-9][0-9][0-9]/
+/todo.txt
+/vivado*
