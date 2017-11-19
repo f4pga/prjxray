@@ -31,7 +31,7 @@ class segmaker:
             self.tags[site] = dict()
         self.tags[site][name] = value
 
-    def compile(self):
+    def compile(self, bitfilter=None):
         print("Compiling segment data.")
 
         self.segments_by_type = dict()
@@ -60,8 +60,11 @@ class segmaker:
                         if wordidx not in self.bits[base_frame]:
                             continue
                         for bit_frame, bit_wordidx, bit_bitidx in self.bits[base_frame][wordidx]:
-                            bitname = "%02d_%02d" % (bit_frame - base_frame, 32*(bit_wordidx - segdata["baseaddr"][1]) + bit_bitidx)
-                            segments[segname]["bits"].add(bitname)
+                            bitname_frame = bit_frame - base_frame
+                            bitname_bit = 32*(bit_wordidx - segdata["baseaddr"][1]) + bit_bitidx
+                            if bitfilter is None or bitfilter(bitname_frame, bitname_bit):
+                                bitname = "%02d_%02d" % (bitname_frame, bitname_bit)
+                                segments[segname]["bits"].add(bitname)
 
             if tilename in self.tags:
                 add_segbits()
