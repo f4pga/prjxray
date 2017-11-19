@@ -221,7 +221,7 @@ for segtype in segbits.keys():
                         label = "CLKI"
 
                 elif bit_pos in routebits[segtype]:
-                        bgcolor = "#6666cc"
+                        bgcolor = "#0000ff"
                         label = "R"
                         for bn in sorted(routebits[segtype][bit_pos]):
                             if re.match("^INT_[LR].[SNWE][SNWE]", bn):
@@ -237,9 +237,14 @@ for segtype in segbits.keys():
                                 bgcolor = "#4466bb"
                                 label = "FALT"
                             if re.match("^INT_[LR].[SNWE][RL]", bn):
+                                bgcolor = "#4466bb"
                                 label = "RL"
                             if re.match("^INT_[LR].CLK", bn):
+                                bgcolor = "#4466bb"
                                 label = "CLK"
+                            if re.match("^INT_[LR].CTRL", bn):
+                                bgcolor = "#7755ff"
+                                label = "CTRL"
                             piptypes[bit_pos] = label
                             title.append(bn)
 
