@@ -60,10 +60,7 @@ for tile, pips_srcs_dsts in tiledata.items():
 
 def bitfilter(frame_idx, bit_idx):
     assert os.getenv("XRAY_DATABASE") == "artix7"
-    return True
-    if frame_idx == 0 and bit_idx == 48:
-        return False
-    if frame_idx == 1 and bit_idx == 31:
+    if (frame_idx, bit_idx) in [(0, 48), (1, 31), (0, 32), (1, 35)]:
         return False
     return frame_idx in [0, 1]
 
