@@ -41,7 +41,7 @@ with open("design.txt", "r") as f:
             tiledata[tile]["srcs"].add(dst)
             tiledata[tile]["dsts"].add(src)
 
-        if pnum == 1 or pdir == 0 or not re.match(r"^CTRL", dst):
+        if pnum == 1 or pdir == 0 or not re.match(r"^GFAN", dst):
             ignpip.add(pip)
 
 for tile, pips_srcs_dsts in tiledata.items():
@@ -58,12 +58,6 @@ for tile, pips_srcs_dsts in tiledata.items():
         elif src_dst[1] not in dsts:
             segmk.addtag(tile, "%s.%s" % (dst, src), 0)
 
-def bitfilter(frame_idx, bit_idx):
-    assert os.getenv("XRAY_DATABASE") == "artix7"
-    if (frame_idx, bit_idx) in [(0, 48), (1, 31), (0, 32), (1, 35)]:
-        return False
-    return frame_idx in [0, 1]
-
-segmk.compile(bitfilter=bitfilter)
+segmk.compile()
 segmk.write()
 
