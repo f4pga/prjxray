@@ -245,6 +245,9 @@ for segtype in segbits.keys():
                             if re.match("^INT_[LR].CTRL", bn):
                                 bgcolor = "#7755ff"
                                 label = "CTRL"
+                            if re.match("^INT_[LR].GFAN", bn):
+                                bgcolor = "#7755ff"
+                                label = "GFAN"
                             piptypes[bit_pos] = label
                             title.append(bn)
 
