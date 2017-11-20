@@ -23,7 +23,7 @@ todo.txt:
 clean:
 	rm -rf .Xil/ .cache/ filtered_seg_int_[lr].segbits
 	rm -rf todo.txt vivado* piplist/ piplist.dcp pattern_[lr].txt pips_int_[lr].txt
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits mask_clbl[lm]_[lr].segbits
+	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits
 
 .PHONY: database pushdb clean
 
