@@ -41,8 +41,12 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
 	if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]; set other_tile [lindex $int_r_tiles $idx]}
 	if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]; set other_tile [lindex $int_l_tiles $idx]}
 
+	puts "PIP Tile: $tile"
+
 	set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
 			-of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
+
+	puts "LUT Tile (Site): $other_tile ($driver_site)"
 
 	set mylut [create_cell -reference LUT1 mylut_$idx]
 	set_property -dict "LOC $driver_site BEL A6LUT" $mylut
