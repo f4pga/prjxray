@@ -17,6 +17,16 @@ std::unique_ptr<MemoryMappedFile> MemoryMappedFile::InitWithFile(
 	struct stat statbuf;
 	if (fstat(fd, &statbuf) < 0) {
 		close(fd);
+		return nullptr;
+	}
+
+	// mmap() will fail with EINVAL if length==0. If this file is
+	// zero-length, return an object (to indicate the file exists) but
+	// load it with a nullptr and zero length.
+	if (statbuf.st_size == 0) {
+		close(fd);
+		return std::unique_ptr<MemoryMappedFile>(
+			new MemoryMappedFile(nullptr, 0));
 	}
 
 	void *file_map = mmap(NULL, statbuf.st_size, PROT_READ,
