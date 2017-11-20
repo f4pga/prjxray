@@ -10,6 +10,13 @@ segmk = segmaker("design.bits")
 tiledata = dict()
 pipdata = dict()
 ignpip = set()
+todo = set()
+
+print("Loading todo from ../todo.txt.")
+with open("../todo.txt", "r") as f:
+    for line in f:
+        line = tuple(line.strip().split("."))
+        todo.add(line)
 
 print("Loading tags from design.txt.")
 with open("design.txt", "r") as f:
@@ -42,6 +49,9 @@ with open("design.txt", "r") as f:
             tiledata[tile]["dsts"].add(src)
 
         if pnum == 1 or pdir == 0:
+            ignpip.add(pip)
+
+        if ("_".join(tile.split("_")[0:2]), dst, src) not in todo:
             ignpip.add(pip)
 
 for tile, pips_srcs_dsts in tiledata.items():
