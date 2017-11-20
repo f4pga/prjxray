@@ -41,7 +41,7 @@ with open("design.txt", "r") as f:
             tiledata[tile]["srcs"].add(dst)
             tiledata[tile]["dsts"].add(src)
 
-        if pnum == 1 or pdir == 0 or not re.match(r"^(SRC|GND)_WIRE$", src):
+        if pnum == 1 or pdir == 0 or not re.match(r"^(VCC|GND)_WIRE$", src):
             ignpip.add(pip)
 
 for tile, pips_srcs_dsts in tiledata.items():
