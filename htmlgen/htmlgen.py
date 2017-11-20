@@ -227,27 +227,36 @@ for segtype in segbits.keys():
                             if re.match("^INT_[LR].[SNWE][SNWE]", bn):
                                 bgcolor = "#aa88ff"
                                 label = "SNWE"
-                            if re.match("^INT_[LR].IMUX", bn):
+                            elif re.match("^INT_[LR].IMUX", bn):
                                 bgcolor = "#88aaff"
                                 label = "IMUX"
-                            if re.match("^INT_[LR].BYP_ALT", bn):
+                            elif re.match("^INT_[LR].BYP_ALT", bn):
                                 bgcolor = "#7755ff"
                                 label = "BALT"
-                            if re.match("^INT_[LR].FAN_ALT", bn):
+                            elif re.match("^INT_[LR].FAN_ALT", bn):
                                 bgcolor = "#4466bb"
                                 label = "FALT"
-                            if re.match("^INT_[LR].[SNWE][RL]", bn):
+                            elif re.match("^INT_[LR].[SNWE][RL]", bn):
                                 bgcolor = "#4466bb"
                                 label = "RL"
-                            if re.match("^INT_[LR].CLK", bn):
+                            elif re.match("^INT_[LR].CLK", bn):
                                 bgcolor = "#4466bb"
                                 label = "CLK"
-                            if re.match("^INT_[LR].CTRL", bn):
+                            elif re.match("^INT_[LR].CTRL", bn):
                                 bgcolor = "#7755ff"
                                 label = "CTRL"
-                            if re.match("^INT_[LR].GFAN", bn):
+                            elif re.match("^INT_[LR].GFAN", bn):
                                 bgcolor = "#7755ff"
                                 label = "GFAN"
+                            elif re.match("^INT_[LR].LVB", bn):
+                                bgcolor = "#88aaff"
+                                label = "LVB"
+                            elif re.match("^INT_[LR].LV", bn):
+                                bgcolor = "#88aaff"
+                                label = "LV"
+                            elif re.match("^INT_[LR].LH", bn):
+                                bgcolor = "#4466bb"
+                                label = "LH"
                             piptypes[bit_pos] = label
                             title.append(bn)
 
