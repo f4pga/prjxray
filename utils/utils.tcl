@@ -18,6 +18,7 @@ proc route_via {net nodes} {
 			puts "  $from_node -> $to_node: $route"
 			set fixed_route [concat $fixed_route [lrange $route 1 end]]
 		}
+		set_property -quiet FIXED_ROUTE $fixed_route $net
 	}
 
 	set_property -quiet FIXED_ROUTE $fixed_route $net
