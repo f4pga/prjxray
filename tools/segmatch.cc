@@ -175,7 +175,7 @@ void read_input(std::istream &f, std::string filename)
 
 			f >> token;
 
-			if (exclude_bits.find(token) == exclude_bits.end())
+			if (exclude_bits.find(token) != exclude_bits.end())
 				continue;
 
 			if (bit_ids.count(token) == 0) {
@@ -196,7 +196,7 @@ void read_input(std::istream &f, std::string filename)
 
 			f >> token;
 
-			if (exclude_tags.find(token) == exclude_tags.end()) {
+			if (exclude_tags.find(token) != exclude_tags.end()) {
 				// Consume the rest of the line.
 				f >> token;
 				continue;
