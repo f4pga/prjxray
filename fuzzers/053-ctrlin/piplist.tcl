@@ -22,7 +22,7 @@ source ../../utils/utils.tcl
 
 proc print_tile_pips {tile_type filename} {
 	set tile [lindex [get_tiles -filter "TYPE == $tile_type"] 0]
-	puts "Dumping and PIPs for tile $tile ($tile_type) to $filename."
+	puts "Dumping PIPs for tile $tile ($tile_type) to $filename."
 	set fp [open $filename w]
 	foreach pip [lsort [get_pips -filter {IS_DIRECTIONAL} -of_objects [get_tiles $tile]]] {
 		set src [get_wires -uphill -of_objects $pip]
