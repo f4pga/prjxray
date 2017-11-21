@@ -1,4 +1,5 @@
 add_library(libprjxray
+	database.cc
 	memory_mapped_file.cc
 	segbits_file_reader.cc)
 target_include_directories(libprjxray PUBLIC "include")
