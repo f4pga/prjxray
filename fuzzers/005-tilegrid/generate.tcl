@@ -22,10 +22,17 @@ set luts [get_bels -of_objects [get_sites -of_objects [get_pblocks roi]] -filter
 set selected_luts {}
 set lut_index 0
 
-set grid_min_x -1
-set grid_max_x -1
-set grid_min_y -1
-set grid_max_y -1
+if 0 {
+	set grid_min_x -1
+	set grid_max_x -1
+	set grid_min_y -1
+	set grid_max_y -1
+} {
+	set grid_min_x $::env(XRAY_ROI_GRID_X1)
+	set grid_max_x $::env(XRAY_ROI_GRID_X2)
+	set grid_min_y $::env(XRAY_ROI_GRID_Y1)
+	set grid_max_y $::env(XRAY_ROI_GRID_Y2)
+}
 
 foreach lut $luts {
 	set tile [get_tile -of_objects $lut]
