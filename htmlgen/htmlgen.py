@@ -161,6 +161,9 @@ for segtype in segbits.keys():
                 segtype.upper(), re.sub("clbl[lm]", "int", segtype).upper()), file=f)
         print("<table border>", file=f)
 
+        gray_bits = 0
+        colored_bits = 0
+
         print("<tr>", file=f)
         print("<th width=\"30\"></th>", file=f)
         for frameidx in range(segframes[segtype]):
@@ -267,12 +270,21 @@ for segtype in segbits.keys():
                 else:
                     onclick = " onmousedown=\"location.href = '#b%s'\"" % bit_pos
 
+                if bgcolor in ["#aaaaaa", "#444444"]:
+                    gray_bits += 1
+                else:
+                    colored_bits += 1
+
                 print("<td bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
                         (bgcolor, "\n".join(title), onclick, label), file=f)
             print("</tr>", file=f)
         print("</table>", file=f)
 
         print("<div>", file=f)
+
+        if True:
+            print("  gray: %d, colored: %d, total: %d, percentage: %.2f%%" % (gray_bits, colored_bits,
+                    gray_bits + colored_bits, 100 * colored_bits / (gray_bits + colored_bits)))
 
         bits_by_prefix = dict()
 
