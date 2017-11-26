@@ -1,4 +1,3 @@
-if 0 {
 create_project -force -part $::env(XRAY_PART) design design
 
 read_verilog ../top.v
@@ -19,7 +18,6 @@ route_design
 
 write_checkpoint -force design.dcp
 # write_bitstream -force design.bit
-}
 
 proc print_tile_pair {fp t1 t2} {
 	set t1 [get_tiles $t1]
