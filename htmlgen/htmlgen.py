@@ -2,6 +2,23 @@
 
 import os, sys, json, re
 
+# copy&paste from dbfixup.py
+zero_db = [
+    "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
+    "00_23 00_30 01_22 01_25|00_27 00_29 01_26 01_29",
+    "01_12 01_14 01_16 01_18|00_10 00_11 01_09 01_10",
+    "00_13 01_17 00_15 00_17|00_18 00_19 01_13 00_14",
+    "00_34 00_38 01_33 01_37|00_35 00_39 01_38 01_40",
+    "00_33 00_41 01_32 01_34|00_37 00_42 01_36 01_41",
+]
+
+zero_bits = set()
+
+for zdb in zero_db:
+    a, b = zdb.split("|")
+    for bit in b.split():
+        zero_bits.add(bit)
+
 class UnionFind:
     def __init__(self):
         self.parents = dict()
@@ -363,7 +380,13 @@ for segtype in segbits.keys():
             grp_bits = set()
             for pip, bits in gdata.items():
                 grp_bits |= bits
-            grp_bits = sorted(grp_bits)
+
+            def bit_key(b):
+                if b in zero_bits:
+                    return "b" + b
+                return "a" + b
+
+            grp_bits = sorted(grp_bits, key=bit_key)
 
             for bit in grp_bits:
                 print("<a id=\"b%s\"/>" % bit, file=f)
@@ -399,6 +422,7 @@ for segtype in segbits.keys():
                 if len(shared_bits[bit]) > 1:
                     if first_note:
                         print("<p><b>Note(s):</b><br/>", file=f)
+                    print("Warning: Groups sharing bit %s: %s." % (bit, ", ".join(sorted(shared_bits[bit]))))
                     print("Groups sharing bit <b>%s</b>: %s.<br/>" % (bit, ", ".join(sorted(shared_bits[bit]))), file=f)
                     first_note = False
             if not first_note:
