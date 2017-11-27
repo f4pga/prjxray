@@ -87,15 +87,18 @@ def get_database(segtype):
 
 def handle_segment(segname):
     if segname is None:
-        segframes = set()
+        segframes = dict()
         for segname, segdata in grid["segments"].items():
             framebase = int(segdata["baseaddr"][0], 16)
             for i in range(segdata["frames"]):
-                segframes.add(framebase+i)
+                if (framebase+i) not in segframes:
+                    segframes[framebase+i] = set()
+                for j in range(segdata["baseaddr"][1], segdata["baseaddr"][1] + segdata["words"]):
+                    segframes[framebase+i].add(j)
         for frame in sorted(bitdata.keys()):
-            if frame in segframes:
-                continue
             for wordidx in sorted(bitdata[frame].keys()):
+                if frame in segframes and wordidx in segframes[frame]:
+                    continue
                 for bitidx in sorted(bitdata[frame][wordidx]):
                     print("bit_%08x_%03d_%02d" % (frame, wordidx, bitidx))
         return
