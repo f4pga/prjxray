@@ -3,6 +3,7 @@
 import getopt, sys, os, json, re
 
 flag_z = False
+flag_b = False
 flag_d = False
 flag_D = False
 
@@ -11,6 +12,9 @@ def usage():
     print("")
     print("  -z")
     print("    do not print a 'seg' header for empty segments")
+    print("")
+    print("  -b")
+    print("    print bits outside of known segments")
     print("")
     print("  -d")
     print("    decode known segment bits and write them as tags")
@@ -21,7 +25,7 @@ def usage():
     sys.exit(0)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "zdD")
+    opts, args = getopt.getopt(sys.argv[1:], "zbdD")
 except:
     usage()
 
@@ -31,6 +35,8 @@ if len(args) == 0:
 for o, a in opts:
     if o == "-z":
         flag_z = True
+    elif o == "-b":
+        flag_b = True
     elif o == "-d":
         flag_d = True
     elif o == "-D":
@@ -80,6 +86,19 @@ def get_database(segtype):
     return segbitsdb[segtype]
 
 def handle_segment(segname):
+    if segname is None:
+        segframes = set()
+        for segname, segdata in grid["segments"].items():
+            framebase = int(segdata["baseaddr"][0], 16)
+            for i in range(segdata["frames"]):
+                segframes.add(framebase+i)
+        for frame in sorted(bitdata.keys()):
+            if frame in segframes:
+                continue
+            for wordidx in sorted(bitdata[frame].keys()):
+                for bitidx in sorted(bitdata[frame][wordidx]):
+                    print("bit_%08x_%03d_%02d" % (frame, wordidx, bitidx))
+        return
     if ":" in segname:
         seg1, seg2 = segname.split(":")
 
@@ -162,6 +181,9 @@ def handle_segment(segname):
 
     for tag in sorted(segtags):
         print("tag %s" % tag)
+
+if flag_b:
+    handle_segment(None)
 
 if len(args) == 1:
     seglist = list()
