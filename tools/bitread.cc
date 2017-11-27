@@ -532,7 +532,7 @@ int main(int argc, char **argv)
 			{
 				for (int i = 0; i < 101; i++)
 				for (int k = 0; k < 32; k++)
-					if ((i != 50 || FLAGS_C) && ((it.second.at(i) & (1 << k)) != 0)) {
+					if ((i != 50 || k > 12 || FLAGS_C) && ((it.second.at(i) & (1 << k)) != 0)) {
 						if (FLAGS_x)
 							fprintf(f, "bit_%08x_%03d_%02d_t%d_h%d_r%d_c%d_m%d\n",
 									fid.get_value(), i, k, fid.get_type(), fid.get_topflag(), fid.get_rowaddr(),
@@ -549,7 +549,7 @@ int main(int argc, char **argv)
 					fprintf(f, ".frame 0x%08x%s\n", fid.get_value(), configframes_autoincr.count(fid.get_value()) ? " AI" : "");
 
 				for (int i = 0; i < 101; i++)
-					fprintf(f, "%08x%s", (i != 50 || FLAGS_C) ? it.second.at(i) : 0, (i % 6) == 5 ? "\n" : " ");
+					fprintf(f, "%08x%s", it.second.at(i) & ((i != 50 || FLAGS_C) ? 0xffffffff : 0xffffe000), (i % 6) == 5 ? "\n" : " ");
 				fprintf(f, "\n\n");
 			}
 		}
