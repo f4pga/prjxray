@@ -29,7 +29,7 @@ write_bitstream -force design_fdre.bit
 
 close_project
 
-foreach variant {fdse fdce fdce_inv fdpe} {}
+foreach variant {fdse fdce fdce_inv fdpe ldce ldpe} {
 	create_project -force -part $::env(XRAY_PART) design_${variant} design_${variant}
 	read_verilog top_${variant}.v
 	read_xdc fixed.xdc
