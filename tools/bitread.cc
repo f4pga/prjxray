@@ -478,7 +478,7 @@ int main(int argc, char **argv)
 
 		FILE *f = stdout;
 
-		if (FLAGS_o.c_str() != nullptr)
+		if (!FLAGS_o.empty())
 		{
 			f = fopen(FLAGS_o.c_str(), "w");
 
@@ -488,7 +488,7 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (FLAGS_o.c_str() == nullptr)
+		if (FLAGS_o.empty())
 			fprintf(f, "\n");
 
 		std::vector<std::vector<bool>> pgmdata;
@@ -507,7 +507,7 @@ int main(int argc, char **argv)
 			if (frame_range_begin != frame_range_end && (fid.get_value() < frame_range_begin || frame_range_end <= fid.get_value()))
 				continue;
 
-			if (FLAGS_o.c_str() == nullptr)
+			if (FLAGS_o.empty())
 				printf("Frame 0x%08x (Type=%d Top=%d Row=%d Column=%d Minor=%d%s):\n", fid.get_value(), fid.get_type(), fid.get_topflag(),
 						fid.get_rowaddr(), fid.get_coladdr(), fid.get_minor(), configframes_autoincr.count(fid.get_value()) ? " AUTO_INCREMENT" : "");
 
@@ -540,12 +540,12 @@ int main(int argc, char **argv)
 						else
 							fprintf(f, "bit_%08x_%03d_%02d\n", fid.get_value(), i, k);
 					}
-				if (FLAGS_o.c_str() == nullptr)
+				if (FLAGS_o.empty())
 					fprintf(f, "\n");
 			}
 			else
 			{
-				if (FLAGS_o.c_str() != nullptr)
+				if (!FLAGS_o.empty())
 					fprintf(f, ".frame 0x%08x%s\n", fid.get_value(), configframes_autoincr.count(fid.get_value()) ? " AI" : "");
 
 				for (int i = 0; i < 101; i++)
@@ -580,7 +580,7 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (FLAGS_o.c_str() != nullptr)
+		if (!FLAGS_o.empty())
 			fclose(f);
 	}
 
