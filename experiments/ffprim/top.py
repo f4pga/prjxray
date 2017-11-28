@@ -1,3 +1,5 @@
+from prims import *
+
 import random
 
 random.seed(0)
@@ -21,44 +23,6 @@ def gen_slices():
 
 DIN_N = CLBN * 4
 DOUT_N = CLBN * 1
-ffprims = (
-        'FD',
-        'FD_1',
-        'FDC',
-        'FDC_1',
-        'FDCE',
-        'FDCE_1',
-        'FDE',
-        'FDE_1',
-        'FDP',
-        'FDP_1',
-        'FDPE',
-        'FDPE_1',
-        'FDR',
-        'FDR_1',
-        'FDRE',
-        'FDRE_1',
-        'FDS',
-        'FDS_1',
-        'FDSE',
-        'FDSE_1',
-        )
-ffprims = (
-        'FDRE',
-        'FDSE',
-        'FDCE',
-        'FDPE',
-)
-ff_bels = (
-        'AFF',
-        'A5FF',
-        'BFF',
-        'B5FF',
-        'CFF',
-        'C5FF',
-        'DFF',
-        'D5FF',
-        )
 
 print('''
 module top(input clk, stb, di, output do);
@@ -97,7 +61,11 @@ for i in range(CLBN):
     # clb_FD clb_FD (.clk(clk), .din(din[  0 +: 4]), .dout(dout[  0]));
     # clb_FD_1 clb_FD_1 (.clk(clk), .din(din[  4 +: 4]), .dout(dout[  1]));
     loc = next(slices)
-    bel = random.choice(ff_bels)
+    # Latch can't go in 5s
+    if isff(ffprim):
+        bel = random.choice(ff_bels)
+    else:
+        bel = random.choice(ff_bels_ffl)
     #bel = "AFF"
     print('    clb_%s' % ffprim)
     print('            #(.LOC("%s"), .BEL("%s"))' % (loc, bel))
@@ -354,5 +322,129 @@ module clb_FDSE_1 (input clk, input [3:0] din, output dout);
 		.D(din[2])
 	);
 	endmodule
+
+//********************************************************************************
+
+module clb_LDC (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y120";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDC ff (
+		.G(~clk),
+		.Q(dout),
+		.D(din[0]),
+		.CLR(din[1])
+	);
+	endmodule
+module clb_LDC_1 (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y121";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDC_1 ff (
+		.G(~clk),
+		.Q(dout),
+		.D(din[0]),
+		.CLR(din[1])
+	);
+	endmodule
+
+module clb_LDCE (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y122";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDCE ff (
+		.G(~clk),
+		//NOTE: diagram shows two outputs. Error?
+		.Q(dout),
+		.D(din[0]),
+		.GE(din[1]),
+		.CLR(din[2])
+	);
+	endmodule
+module clb_LDCE_1 (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y123";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDCE_1 ff (
+		.G(~clk),
+		//NOTE: diagram shows two outputs. Error?
+		.Q(dout),
+		.D(din[0]),
+		.GE(din[1]),
+		.CLR(din[2])
+	);
+	endmodule
+
+module clb_LDE (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y124";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDE ff (
+		.G(~clk),
+		.Q(dout),
+		.D(din[0]),
+		.GE(din[1])
+	);
+	endmodule
+module clb_LDE_1 (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y125";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDE_1 ff (
+		.G(~clk),
+		.Q(dout),
+		.D(din[0]),
+		.GE(din[1])
+	);
+	endmodule
+
+module clb_LDP (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y126";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDP ff (
+		.G(~clk),
+		.Q(dout),
+		.D(din[0]),
+		.PRE(din[1])
+	);
+	endmodule
+module clb_LDP_1 (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y127";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDP_1 ff (
+		.G(~clk),
+		.Q(dout),
+		.D(din[0]),
+		.PRE(din[1])
+	);
+	endmodule
+
+module clb_LDPE (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y128";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDPE ff (
+		.G(~clk),
+		.Q(dout),
+		.PRE(din[0]),
+		.D(din[1]),
+		.GE(din[2])
+	);
+	endmodule
+module clb_LDPE_1 (input clk, input [3:0] din, output dout);
+    parameter LOC="SLICE_X16Y129";
+    parameter BEL="AFF";
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	LDPE_1 ff (
+		.G(~clk),
+		.Q(dout),
+		.PRE(din[0]),
+		.D(din[1]),
+		.GE(din[2])
+	);
+	endmodule
+
 ''')
 

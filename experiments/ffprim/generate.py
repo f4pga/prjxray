@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from prims import *
+
 import sys, re
 
 sys.path.append("../../../utils/")
@@ -7,34 +9,14 @@ from segmaker import segmaker
 
 segmk = segmaker("design.bits")
 
-ffprims = (
-        'FD',
-        'FD_1',
-        'FDC',
-        'FDC_1',
-        'FDCE',
-        'FDCE_1',
-        'FDE',
-        'FDE_1',
-        'FDP',
-        'FDP_1',
-        'FDPE',
-        'FDPE_1',
-        'FDR',
-        'FDR_1',
-        'FDRE',
-        'FDRE_1',
-        'FDS',
-        'FDS_1',
-        'FDSE',
-        'FDSE_1',
-        )
-ffprims = (
-        'FDRE',
-        'FDSE',
-        'FDCE',
-        'FDPE',
-        )
+def ones(l):
+    #return l + [x + '_1' for x in l]
+    #return sorted(l + [x + '_1' for x in l])
+    ret = []
+    for x in l:
+        ret.append(x)
+        ret.append(x + '_1')
+    return ret
 
 print("Loading tags from design.txt")
 with open("design.txt", "r") as f:
@@ -55,11 +37,12 @@ with open("design.txt", "r") as f:
         site, ff_name = site_ff_name.split('/')
         ff_type = line[5]
         used = int(line[6])
-        ref_name = None
+        cel_prim = None
         cel_name = None
         if used:
             cel_name = line[7]
-            ref_name = line[8]
+            # ex: FDCE
+            cel_prim = line[8]
             # 1'b1
             # cinv = int(line[9][-1])
             cinv = int(line[9])
@@ -68,29 +51,62 @@ with open("design.txt", "r") as f:
         # Reduced test for now
         #if ff_name != 'AFF':
         #    continue
+        
+        is5 = '5' in ff_name
 
         #segmk.addtag(site, "FF_USED", used)
-        if 0:
+        if 1:
             # If unused mark all primitives as not present
             # Otherwise mark the primitive we are using
-            for ffprim in ffprims:
-                if not used:
-                    segmk.addtag(site, "FF_%s" % ffprim, 0)
-                elif ref_name == ffprim:
-                    segmk.addtag(site, "FF_%s" % ffprim, 1)
+            if used:
+                segmk.addtag(site, "%s.%s" % (ff_name, cel_prim), 1)
+            else:
+                for ffprim in ffprims:
+                    # FF's don't do 5's
+                    if isff(ffprim) or (isl(ffprim) and not is5):
+                        segmk.addtag(site, "%s.%s" % (ff_name, ffprim), 0)
 
         # Theory:
         # FDPE represents none of the FF specific bits used
-        # FDRE has none of the bits used
-        if 1:
+        # FDRE has all of the bits used
+        if 0:
             # If unused mark all primitives as not present
             # Otherwise mark the primitive we are using
             # Should yield 3 bits
             if used:
-                if ref_name == 'FDPE':
+                if cel_prim == 'FDPE':
                     segmk.addtag(site, "%s.PRIM" % ff_name, 0)
-                if ref_name == 'FDRE':
+                if cel_prim == 'FDRE':
                     segmk.addtag(site, "%s.PRIM" % ff_name, 1)
+
+        # FF specific test
+        # Theory: FDSE and FDCE are the most and least encoded FF's
+        if 1:
+            # If unused mark all primitives as not present
+            # Otherwise mark the primitive we are using
+            # Should yield 3 bits
+            if used and isff(cel_prim):
+                # PRIM1 is now FFSYNC
+                #segmk.addtag(site, "%s.PRIM1" % ff_name,
+                #    cel_prim in ('FDSE', 'FDRE'))
+                segmk.addtag(site, "%s.PRIM2" % ff_name,
+                    cel_prim in ('FDCE', 'FDRE'))
+        
+        # Theory: there are some common enable bits
+        '''
+                00_48   30_32   30_12   31_03
+        FDPE
+        FDSE    X
+        FDRE    X               X       X
+        FDCE                    X       X
+        LDCE            X       X       X
+        LDPE            X
+
+        00_48 is shared between all X0 FFs
+        '''
+        if 1 and used:
+            segmk.addtag(site, "FFSYNC",
+                    cel_prim in ('FDSE', 'FDRE'))
 
 segmk.compile()
 segmk.write()
