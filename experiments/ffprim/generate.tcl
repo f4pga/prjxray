@@ -48,7 +48,9 @@ foreach ff $ffs {
         set ref_name [get_property REF_NAME $ffc]
         #set cinv [get_property IS_C_INVERTED $ffc]
 
-        set cpin [get_pins -of_objects $ffc -filter {REF_PIN_NAME == C}]
+        # FF have clock pin
+        # Latches have gate pin
+        set cpin [get_pins -of_objects $ffc -filter {REF_PIN_NAME == C || REF_PIN_NAME == G}]
         set cinv [get_property IS_INVERTED $cpin]
         set usedstr "$cell_bel $ref_name $cinv"
     }
