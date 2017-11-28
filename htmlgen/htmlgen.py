@@ -2,22 +2,41 @@
 
 import os, sys, json, re
 
-# copy&paste from dbfixup.py
-zero_db = [
+bitgroups_db = [
+    # copy&paste from zero_db in dbfixup.py
     "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
     "00_23 00_30 01_22 01_25|00_27 00_29 01_26 01_29",
     "01_12 01_14 01_16 01_18|00_10 00_11 01_09 01_10",
     "00_13 01_17 00_15 00_17|00_18 00_19 01_13 00_14",
     "00_34 00_38 01_33 01_37|00_35 00_39 01_38 01_40",
     "00_33 00_41 01_32 01_34|00_37 00_42 01_36 01_41",
+
+    # other manual groupings for individual bits
+    "00_02 00_05 00_09 01_04|00_07 01_05 01_06",
+    "00_01 00_06 01_00 01_08|00_03 01_01 01_02",
+    "00_59 01_54 01_58 01_61|00_57 00_58 01_56",
+    "00_55 00_63 01_57 01_62|00_61 00_62 01_60",
+    "00_43 00_47 00_50 00_53 00_54 01_42|00_51 01_50 01_52",
+    "00_49 01_44 01_45 01_48 01_49 01_53|00_45 00_46 01_46",
+
 ]
 
-zero_bits = set()
+# groupings for SNWE bits in frames 2..7
+for i in range(0, 64, 4):
+    bitgroups_db.append("02_%02d 03_%02d 05_%02d 06_%02d 07_%02d|05_%02d 03_%02d 04_%02d 04_%02d" %
+            (i+1, i, i, i, i+1, i+3, i+1, i+1, i+2))
+    bitgroups_db.append("02_%02d 04_%02d 05_%02d 05_%02d 06_%02d|02_%02d 03_%02d 04_%02d 07_%02d" %
+            (i+2, i, i+1, i+2, i+2, i+3, i+2, i+3, i+3))
 
-for zdb in zero_db:
-    a, b = zdb.split("|")
+left_bits = set()
+right_bits = set()
+
+for entry in bitgroups_db:
+    a, b = entry.split("|")
+    for bit in a.split():
+        left_bits.add(bit)
     for bit in b.split():
-        zero_bits.add(bit)
+        right_bits.add(bit)
 
 class UnionFind:
     def __init__(self):
@@ -176,6 +195,39 @@ for segtype in segbits.keys():
         print("<html><title>X-Ray %s Database: %s</title><body>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
         print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper(),
                 segtype.upper(), re.sub("clbl[lm]", "int", segtype).upper()), file=f)
+
+        print("""
+<script><!--
+var grp2bits = { };
+var bit2grp = { }
+var highlight_bits = [ ];
+
+function ome(bit) {
+    // console.log("ome: " + bit);
+    if (bit in bit2grp) {
+        grp = bit2grp[bit];
+        for (i in grp2bits[grp]) {
+            b = grp2bits[grp][i];
+            // console.log("  -> " + b);
+            el = document.getElementById("bit" + b);
+            el.style.fontWeight = "bold";
+            highlight_bits.push(b);
+        }
+    }
+}
+
+function oml() {
+    // console.log("oml");
+    for (i in highlight_bits) {
+        b = highlight_bits[i];
+        el = document.getElementById("bit" + b);
+        el.style.fontWeight = "normal";
+    }
+    highlight_bits.length = 0;
+}
+//--></script>
+        """, file=f)
+
         print("<table border>", file=f)
 
         gray_bits = 0
@@ -292,8 +344,8 @@ for segtype in segbits.keys():
                 else:
                     colored_bits += 1
 
-                print("<td bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
-                        (bgcolor, "\n".join(title), onclick, label), file=f)
+                print("<td id=\"bit%s\" onmouseenter=\"ome('%s');\" onmouseleave=\"oml();\" bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
+                        (bit_pos, bit_pos, bgcolor, "\n".join(title), onclick, label), file=f)
             print("</tr>", file=f)
         print("</table>", file=f)
 
@@ -382,14 +434,22 @@ for segtype in segbits.keys():
                 grp_bits |= bits
 
             def bit_key(b):
-                if b in zero_bits:
-                    return "b" + b
-                return "a" + b
+                if b in left_bits:
+                    return "a" + b
+                if b in right_bits:
+                    return "c" + b
+                return "b" + b
 
             grp_bits = sorted(grp_bits, key=bit_key)
 
             for bit in grp_bits:
                 print("<a id=\"b%s\"/>" % bit, file=f)
+
+            print("<script><!--", file=f)
+            print("grp2bits['%s'] = ['%s'];" % (grp_bits[0], "', '".join(grp_bits)), file=f)
+            for bit in grp_bits:
+                print("bit2grp['%s'] = '%s';" % (bit, grp_bits[0]), file=f)
+            print("//--></script>", file=f)
 
             print("<p/>", file=f)
             print("<h4>%s</h4>" % title, file=f)
