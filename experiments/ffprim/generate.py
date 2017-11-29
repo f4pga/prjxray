@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+'''
+FDCE Primitive: D Flip-Flop with Clock Enable and Asynchronous Clear
+FDPE Primitive: D Flip-Flop with Clock Enable and Asynchronous Preset
+FDRE Primitive: D Flip-Flop with Clock Enable and Synchronous Reset
+FDSE Primitive: D Flip-Flop with Clock Enable and Synchronous Set
+LDCE Primitive: Transparent Data Latch with Asynchronous Clear and Gate Enable
+LDPE Primitive: Transparent Data Latch with Asynchronous Preset and Gate Enable
+'''
+
 from prims import *
 
 import sys, re
@@ -18,6 +27,29 @@ def ones(l):
         ret.append(x + '_1')
     return ret
 
+def loadtop():
+    '''
+    i,prim,loc,bel
+    0,FDPE,SLICE_X12Y100,C5FF
+    1,FDPE,SLICE_X15Y100,A5FF
+    2,FDPE_1,SLICE_X16Y100,B5FF
+    3,LDCE_1,SLICE_X17Y100,BFF
+    '''
+    f = open('top.txt', 'r')
+    f.readline()
+    ret = {}
+    for l in f:
+        i,prim,loc,bel,init = l.split(",")
+        i = int(i)
+        init = int(init)
+        ret[loc] = (i,prim,loc,bel,init)
+    return ret
+
+top = loadtop()
+
+def vs2i(s):
+    return {"1'b0": 0, "1'b1": 1}[s]
+
 print("Loading tags from design.txt")
 with open("design.txt", "r") as f:
     for line in f:
@@ -33,6 +65,7 @@ with open("design.txt", "r") as f:
         grid_x = line[2]
         grid_y = line[3]
         # Other code uses BEL name
+        # SLICE_X12Y137/D5FF
         site_ff_name = line[4]
         site, ff_name = site_ff_name.split('/')
         ff_type = line[5]
@@ -46,67 +79,41 @@ with open("design.txt", "r") as f:
             # 1'b1
             # cinv = int(line[9][-1])
             cinv = int(line[9])
+            init = vs2i(line[10])
+            #init = int(line[10])
 
+        # A B C D
         which = ff_name[0]
-        # Reduced test for now
-        #if ff_name != 'AFF':
-        #    continue
-        
+        # LUT6 vs LUT5 FF
         is5 = '5' in ff_name
 
-        #segmk.addtag(site, "FF_USED", used)
-        if 1:
-            # If unused mark all primitives as not present
-            # Otherwise mark the primitive we are using
-            if used:
-                segmk.addtag(site, "%s.%s" % (ff_name, cel_prim), 1)
+        if used:
+            segmk.addtag(site, "%s.ZINIT" % ff_name, 1 ^ init)
+
+            # CLKINV turns out to be more complicated than origianlly thought
+            if isff(cel_prim):
+                segmk.addtag(site, "CLKINV", cinv)
             else:
-                for ffprim in ffprims:
-                    # FF's don't do 5's
-                    if isff(ffprim) or (isl(ffprim) and not is5):
-                        segmk.addtag(site, "%s.%s" % (ff_name, ffprim), 0)
+                segmk.addtag(site, "CLKINV", 1 ^ cinv)
 
-        # Theory:
-        # FDPE represents none of the FF specific bits used
-        # FDRE has all of the bits used
-        if 0:
-            # If unused mark all primitives as not present
-            # Otherwise mark the primitive we are using
-            # Should yield 3 bits
-            if used:
-                if cel_prim == 'FDPE':
-                    segmk.addtag(site, "%s.PRIM" % ff_name, 0)
-                if cel_prim == 'FDRE':
-                    segmk.addtag(site, "%s.PRIM" % ff_name, 1)
-
-        # FF specific test
-        # Theory: FDSE and FDCE are the most and least encoded FF's
-        if 1:
-            # If unused mark all primitives as not present
-            # Otherwise mark the primitive we are using
-            # Should yield 3 bits
-            if used and isff(cel_prim):
-                # PRIM1 is now FFSYNC
-                #segmk.addtag(site, "%s.PRIM1" % ff_name,
-                #    cel_prim in ('FDSE', 'FDRE'))
-                segmk.addtag(site, "%s.PRIM2" % ff_name,
-                    cel_prim in ('FDCE', 'FDRE'))
-        
-        # Theory: there are some common enable bits
-        '''
-                00_48   30_32   30_12   31_03
-        FDPE
-        FDSE    X
-        FDRE    X               X       X
-        FDCE                    X       X
-        LDCE            X       X       X
-        LDPE            X
-
-        00_48 is shared between all X0 FFs
-        '''
-        if 1 and used:
+            # Synchronous vs asynchronous FF
+            # Unlike most bits, shared between all CLB FFs
             segmk.addtag(site, "FFSYNC",
                     cel_prim in ('FDSE', 'FDRE'))
+
+            # Latch bit
+            # Only applies to LUT6 (non-5) FF's
+            if not is5:
+                segmk.addtag(site, "LATCH", isl(cel_prim))
+
+            '''
+            On name:
+            The primitives you listed have a control input to set the FF value to zero (clear/reset),
+            the other three primitives have a control input that sets the FF value to one.
+            Z => inversion
+            '''
+            segmk.addtag(site, "%s.ZRESET" % ff_name,
+                cel_prim in ('FDRE', 'FDCE', 'LDCE'))
 
 segmk.compile()
 segmk.write()

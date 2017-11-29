@@ -41,6 +41,7 @@ foreach ff $ffs {
     set bel_type [get_property TYPE $ff]
     set used [get_property IS_USED $ff]
     set usedstr ""
+
     if $used {
 	    set ffc [get_cells -of_objects $ff]
 	    set cell_bel [get_property BEL $ffc]
@@ -52,7 +53,10 @@ foreach ff $ffs {
         # Latches have gate pin
         set cpin [get_pins -of_objects $ffc -filter {REF_PIN_NAME == C || REF_PIN_NAME == G}]
         set cinv [get_property IS_INVERTED $cpin]
-        set usedstr "$cell_bel $ref_name $cinv"
+
+    	set init [get_property INIT $ffc]
+
+        set usedstr "$cell_bel $ref_name $cinv $init"
     }
 	puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
 }
