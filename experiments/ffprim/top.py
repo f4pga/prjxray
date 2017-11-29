@@ -16,6 +16,9 @@ print('//SLICEY: %s' % str(SLICEY))
 print('//SLICEN: %s' % str(SLICEN))
 print('//Requested CLBs: %s' % str(CLBN))
 
+f = open("top.txt", "w")
+f.write("i,prim,loc,bel,init\n")
+
 def gen_slices():
     for slicey in range(*SLICEY):
         for slicex in range(*SLICEX):
@@ -57,7 +60,7 @@ endmodule
 slices = gen_slices()
 print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
 for i in range(CLBN):
-    ffprim = random.choice(ffprims)
+    ffprim = random.choice(ones(ffprims))
     # clb_FD clb_FD (.clk(clk), .din(din[  0 +: 4]), .dout(dout[  0]));
     # clb_FD_1 clb_FD_1 (.clk(clk), .din(din[  4 +: 4]), .dout(dout[  1]));
     loc = next(slices)
@@ -66,10 +69,12 @@ for i in range(CLBN):
         bel = random.choice(ff_bels)
     else:
         bel = random.choice(ff_bels_ffl)
+    init = random.choice((0, 1))
     #bel = "AFF"
     print('    clb_%s' % ffprim)
-    print('            #(.LOC("%s"), .BEL("%s"))' % (loc, bel))
+    print('            #(.LOC("%s"), .BEL("%s"), .INIT(%d))' % (loc, bel, init))
     print('            clb_%d (.clk(clk), .din(din[  %d +: 4]), .dout(dout[  %d]));' % (i, 4 * i, 1 * i))
+    f.write("%d,%s,%s,%s,%d\n" % (i, ffprim, loc, bel, init))
 print('''endmodule
 
 // ---------------------------------------------------------------------
@@ -80,7 +85,8 @@ print('''
 module clb_FD (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y100";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FD ff (
 		.C(clk),
 		.Q(dout),
@@ -91,7 +97,8 @@ module clb_FD (input clk, input [3:0] din, output dout);
 module clb_FD_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y101";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FD_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -102,7 +109,8 @@ module clb_FD_1 (input clk, input [3:0] din, output dout);
 module clb_FDC (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y102";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDC ff (
 		.C(clk),
 		.Q(dout),
@@ -114,7 +122,8 @@ module clb_FDC (input clk, input [3:0] din, output dout);
 module clb_FDC_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y103";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDC_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -126,7 +135,8 @@ module clb_FDC_1 (input clk, input [3:0] din, output dout);
 module clb_FDCE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y104";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDCE ff (
 		.C(clk),
 		.Q(dout),
@@ -139,7 +149,8 @@ module clb_FDCE (input clk, input [3:0] din, output dout);
 module clb_FDCE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y105";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDCE_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -152,7 +163,8 @@ module clb_FDCE_1 (input clk, input [3:0] din, output dout);
 module clb_FDE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y106";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDE ff (
 		.C(clk),
 		.Q(dout),
@@ -164,7 +176,8 @@ module clb_FDE (input clk, input [3:0] din, output dout);
 module clb_FDE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y107";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDE_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -176,7 +189,8 @@ module clb_FDE_1 (input clk, input [3:0] din, output dout);
 module clb_FDP (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y108";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDP ff (
 		.C(clk),
 		.Q(dout),
@@ -188,7 +202,8 @@ module clb_FDP (input clk, input [3:0] din, output dout);
 module clb_FDP_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y109";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDP_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -200,7 +215,8 @@ module clb_FDP_1 (input clk, input [3:0] din, output dout);
 module clb_FDPE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y110";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDPE ff (
 		.C(clk),
 		.Q(dout),
@@ -213,7 +229,8 @@ module clb_FDPE (input clk, input [3:0] din, output dout);
 module clb_FDPE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y111";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDPE_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -226,7 +243,8 @@ module clb_FDPE_1 (input clk, input [3:0] din, output dout);
 module clb_FDR (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y112";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDR ff (
 		.C(clk),
 		.Q(dout),
@@ -238,7 +256,8 @@ module clb_FDR (input clk, input [3:0] din, output dout);
 module clb_FDR_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y113";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDR_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -250,7 +269,8 @@ module clb_FDR_1 (input clk, input [3:0] din, output dout);
 module clb_FDRE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y114";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDRE ff (
 		.C(clk),
 		.Q(dout),
@@ -263,7 +283,8 @@ module clb_FDRE (input clk, input [3:0] din, output dout);
 module clb_FDRE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y115";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDRE_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -276,7 +297,8 @@ module clb_FDRE_1 (input clk, input [3:0] din, output dout);
 module clb_FDS (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y116";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDS ff (
 		.C(clk),
 		.Q(dout),
@@ -288,7 +310,8 @@ module clb_FDS (input clk, input [3:0] din, output dout);
 module clb_FDS_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y117";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDS_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -300,7 +323,8 @@ module clb_FDS_1 (input clk, input [3:0] din, output dout);
 module clb_FDSE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y118";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDSE ff (
 		.C(clk),
 		.Q(dout),
@@ -313,7 +337,8 @@ module clb_FDSE (input clk, input [3:0] din, output dout);
 module clb_FDSE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y119";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	FDSE_1 ff (
 		.C(clk),
 		.Q(dout),
@@ -328,7 +353,8 @@ module clb_FDSE_1 (input clk, input [3:0] din, output dout);
 module clb_LDC (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y120";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDC ff (
 		.G(~clk),
 		.Q(dout),
@@ -339,7 +365,8 @@ module clb_LDC (input clk, input [3:0] din, output dout);
 module clb_LDC_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y121";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDC_1 ff (
 		.G(~clk),
 		.Q(dout),
@@ -351,7 +378,8 @@ module clb_LDC_1 (input clk, input [3:0] din, output dout);
 module clb_LDCE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y122";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDCE ff (
 		.G(~clk),
 		//NOTE: diagram shows two outputs. Error?
@@ -364,7 +392,8 @@ module clb_LDCE (input clk, input [3:0] din, output dout);
 module clb_LDCE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y123";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDCE_1 ff (
 		.G(~clk),
 		//NOTE: diagram shows two outputs. Error?
@@ -378,7 +407,8 @@ module clb_LDCE_1 (input clk, input [3:0] din, output dout);
 module clb_LDE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y124";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDE ff (
 		.G(~clk),
 		.Q(dout),
@@ -389,7 +419,8 @@ module clb_LDE (input clk, input [3:0] din, output dout);
 module clb_LDE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y125";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDE_1 ff (
 		.G(~clk),
 		.Q(dout),
@@ -401,7 +432,8 @@ module clb_LDE_1 (input clk, input [3:0] din, output dout);
 module clb_LDP (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y126";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDP ff (
 		.G(~clk),
 		.Q(dout),
@@ -412,7 +444,8 @@ module clb_LDP (input clk, input [3:0] din, output dout);
 module clb_LDP_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y127";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDP_1 ff (
 		.G(~clk),
 		.Q(dout),
@@ -424,7 +457,8 @@ module clb_LDP_1 (input clk, input [3:0] din, output dout);
 module clb_LDPE (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y128";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDPE ff (
 		.G(~clk),
 		.Q(dout),
@@ -436,7 +470,8 @@ module clb_LDPE (input clk, input [3:0] din, output dout);
 module clb_LDPE_1 (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y129";
     parameter BEL="AFF";
-	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+    parameter INIT=1'b0;
+	(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH, INIT=INIT *)
 	LDPE_1 ff (
 		.G(~clk),
 		.Q(dout),

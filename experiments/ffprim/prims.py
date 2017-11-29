@@ -7,6 +7,7 @@ def ones(l):
         ret.append(x + '_1')
     return ret
 
+# The complete primitive sets
 ffprims_fall = ones([
         'FD',
         'FDC',
@@ -19,12 +20,6 @@ ffprims_fall = ones([
         'FDS',
         'FDSE',
         ])
-ffprims_f = [
-        'FDRE',
-        'FDSE',
-        'FDCE',
-        'FDPE',
-        ]
 ffprims_lall = ones([
         'LDC',
         'LDCE',
@@ -32,6 +27,14 @@ ffprims_lall = ones([
         'LDPE',
         'LDP',
         ])
+
+# Base primitives
+ffprims_f = [
+        'FDRE',
+        'FDSE',
+        'FDCE',
+        'FDPE',
+        ]
 ffprims_l = [
         'LDCE',
         'LDPE',
