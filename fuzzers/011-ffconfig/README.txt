@@ -1,16 +1,12 @@
+Documents the following:
+-FF clock inversion
+-FF primitive mapping
+-FF initialization value
+
 Clock inversion is per slice (as BEL CLKINV)
 Vivado GUI is misleading as it often shows it per FF, which is not actually true
 
-CLB.SLICE_X0.AFF.FF_INV_CLK 00_51
-CLB.SLICE_X1.AFF.FF_INV_CLK <0 candidates>
-Clifford suggests X1 may be in adjacent tile
-as he found with X1 INIT values
-More research needed
-
-
-
-
-        FSYNC   LATCH   ZRESET
+        FFSYNC  LATCH   ZRST
 Sample  00_48   30_32   30_12
 FDPE
 FDSE    X
