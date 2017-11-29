@@ -1,14 +1,14 @@
 create_project -force -part $::env(XRAY_PART) design design
-
-read_verilog ../top.v
+read_verilog top.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
-set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports rst]
+set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports stb]
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_02) IOSTANDARD LVCMOS33" [get_ports di]
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_03) IOSTANDARD LVCMOS33" [get_ports do]
 
 create_pblock roi
+set_property EXCLUDE_PLACEMENT 1 [get_pblocks roi]
 add_cells_to_pblock [get_pblocks roi] [get_cells roi]
 resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
 
@@ -22,43 +22,43 @@ place_design
 route_design
 
 write_checkpoint -force design.dcp
+write_bitstream -force design.bit
 
 
-########################################
-# Unmodified design with random LUTs
 
-proc write_txtdata {filename} {
-	puts "Writing $filename."
-	set fp [open $filename w]
-	foreach cell [get_cells -hierarchical -filter {REF_NAME == FDRE || REF_NAME == FDSE || REF_NAME == FDCE || REF_NAME == FDPE}] {
-		set loc [get_property LOC $cell]
-		set bel [get_property BEL $cell]
-		set ctype [get_property REF_NAME $cell]
-		set init [get_property INIT $cell]
-		set cinv [get_property IS_C_INVERTED $cell]
-		puts $fp "$loc $bel $ctype $init $cinv"
-	}
-	close $fp
+# Get all FF's in pblock
+set ffs [get_bels -of_objects [get_sites -of_objects [get_pblocks roi]] -filter {TYPE =~ *} */*FF]
+
+set fp [open "design.txt" w]
+# set ff [lindex $ffs 0]
+# set ff [get_bels SLICE_X23Y100/AFF]
+# proc putl {lst} { foreach line $lst {puts $line} }
+foreach ff $ffs {
+    set tile [get_tile -of_objects $ff]
+    set grid_x [get_property GRID_POINT_X $tile]
+    set grid_y [get_property GRID_POINT_Y $tile]
+    set type [get_property TYPE $tile]
+    set bel_type [get_property TYPE $ff]
+    set used [get_property IS_USED $ff]
+    set usedstr ""
+
+    if $used {
+	    set ffc [get_cells -of_objects $ff]
+	    set cell_bel [get_property BEL $ffc]
+	    # ex: FDRE
+        set ref_name [get_property REF_NAME $ffc]
+        #set cinv [get_property IS_C_INVERTED $ffc]
+
+        # FF have clock pin
+        # Latches have gate pin
+        set cpin [get_pins -of_objects $ffc -filter {REF_PIN_NAME == C || REF_PIN_NAME == G}]
+        set cinv [get_property IS_INVERTED $cpin]
+
+    	set init [get_property INIT $ffc]
+
+        set usedstr "$cell_bel $ref_name $cinv $init"
+    }
+	puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
 }
-
-write_bitstream -force design_0.bit
-write_txtdata design_0.txt
-
-
-########################################
-# Versions with random config changes
-
-proc change_design_randomly {} {
-	foreach cell [get_cells -hierarchical -filter {REF_NAME == FDRE}] {
-		set site_cells [get_cells -of_objects [get_sites -of_objects $cell] -filter {REF_NAME == FDRE || REF_NAME == FDSE || REF_NAME == FDCE || REF_NAME == FDPE}]
-		set_property INIT 1'b[expr int(rand()*2)] $cell
-		set_property IS_C_INVERTED 1'b[expr int(rand()*2)] $site_cells
-	}
-}
-
-for {set i 1} {$i < 10} {incr i} {
-	change_design_randomly
-	write_bitstream -force design_$i.bit
-	write_txtdata design_$i.txt
-}
+close $fp
 
