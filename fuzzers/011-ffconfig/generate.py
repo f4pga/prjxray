@@ -1,38 +1,120 @@
 #!/usr/bin/env python3
 
+'''
+FDCE Primitive: D Flip-Flop with Clock Enable and Asynchronous Clear
+FDPE Primitive: D Flip-Flop with Clock Enable and Asynchronous Preset
+FDRE Primitive: D Flip-Flop with Clock Enable and Synchronous Reset
+FDSE Primitive: D Flip-Flop with Clock Enable and Synchronous Set
+LDCE Primitive: Transparent Data Latch with Asynchronous Clear and Gate Enable
+LDPE Primitive: Transparent Data Latch with Asynchronous Preset and Gate Enable
+'''
+
+from prims import *
+
 import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
 
-segmk = segmaker("design_%s.bits" % sys.argv[1])
+segmk = segmaker("design.bits")
 
-print("Loading tags from design_%s.txt." % sys.argv[1])
-with open("design_%s.txt" % sys.argv[1], "r") as f:
+def ones(l):
+    #return l + [x + '_1' for x in l]
+    #return sorted(l + [x + '_1' for x in l])
+    ret = []
+    for x in l:
+        ret.append(x)
+        ret.append(x + '_1')
+    return ret
+
+def loadtop():
+    '''
+    i,prim,loc,bel
+    0,FDPE,SLICE_X12Y100,C5FF
+    1,FDPE,SLICE_X15Y100,A5FF
+    2,FDPE_1,SLICE_X16Y100,B5FF
+    3,LDCE_1,SLICE_X17Y100,BFF
+    '''
+    f = open('top.txt', 'r')
+    f.readline()
+    ret = {}
+    for l in f:
+        i,prim,loc,bel,init = l.split(",")
+        i = int(i)
+        init = int(init)
+        ret[loc] = (i,prim,loc,bel,init)
+    return ret
+
+top = loadtop()
+
+def vs2i(s):
+    return {"1'b0": 0, "1'b1": 1}[s]
+
+print("Loading tags from design.txt")
+with open("design.txt", "r") as f:
     for line in f:
+        '''
+        puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
+
+        CLBLM_L CLBLM_L_X10Y137 30 13 SLICE_X13Y137/AFF REG_INIT 1 FDRE
+        CLBLM_L CLBLM_L_X10Y137 30 13 SLICE_X12Y137/D5FF FF_INIT 0 
+        '''
         line = line.split()
-        site = line[0]
-        bel = line[1]
-        ctype = line[2]
-        init = int(line[3][3])
-        cinv = int(line[4][3])
+        tile_type = line[0]
+        tile_name = line[1]
+        grid_x = line[2]
+        grid_y = line[3]
+        # Other code uses BEL name
+        # SLICE_X12Y137/D5FF
+        site_ff_name = line[4]
+        site, ff_name = site_ff_name.split('/')
+        ff_type = line[5]
+        used = int(line[6])
+        cel_prim = None
+        cel_name = None
+        if used:
+            cel_name = line[7]
+            # ex: FDCE
+            cel_prim = line[8]
+            # 1'b1
+            # cinv = int(line[9][-1])
+            cinv = int(line[9])
+            init = vs2i(line[10])
+            #init = int(line[10])
 
-        if False:
-            segmk.addtag(site, "%s.TYPE_%s" % (bel, ctype), 1)
+        # A B C D
+        which = ff_name[0]
+        # LUT6 vs LUT5 FF
+        is5 = '5' in ff_name
 
-            for i in range(1, 15):
-                types = set()
-                if i & 1: types.add("FDCE")
-                if i & 2: types.add("FDPE")
-                if i & 4: types.add("FDRE")
-                if i & 8: types.add("FDSE")
-                segmk.addtag(site, "%s.TYPES_%s" % (bel, "_".join(sorted(types))), ctype in types)
+        if used:
+            segmk.addtag(site, "%s.ZINIT" % ff_name, 1 ^ init)
 
-        if False:
-            segmk.addtag(site, "%s.CLOCK_INV" % (bel.split(".")[0]), cinv)
+            # CLKINV turns out to be more complicated than origianlly thought
+            if isff(cel_prim):
+                segmk.addtag(site, "CLKINV", cinv)
+            else:
+                segmk.addtag(site, "CLKINV", 1 ^ cinv)
 
-        segmk.addtag(site, "%s.ZINI" % bel, 1-init)
+            # Synchronous vs asynchronous FF
+            # Unlike most bits, shared between all CLB FFs
+            segmk.addtag(site, "FFSYNC",
+                    cel_prim in ('FDSE', 'FDRE'))
+
+            # Latch bit
+            # Only applies to LUT6 (non-5) FF's
+            if not is5:
+                segmk.addtag(site, "LATCH", isl(cel_prim))
+
+            '''
+            On name:
+            The primitives you listed have a control input to set the FF value to zero (clear/reset),
+            the other three primitives have a control input that sets the FF value to one.
+            Z => inversion
+            '''
+            segmk.addtag(site, "%s.ZRESET" % ff_name,
+                cel_prim in ('FDRE', 'FDCE', 'LDCE'))
 
 segmk.compile()
-segmk.write(sys.argv[1])
+segmk.write()
 
