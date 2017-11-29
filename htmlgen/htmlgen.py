@@ -268,17 +268,19 @@ function oml() {
                         bgcolor = "#aaffaa"
                         m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+)", bit_name)
                         if m.group(2) == "ZINI":
-                            label = m.group(1) + "Z"
+                            label = m.group(1) + "ZI"
+                        elif m.group(2) == "ZRST":
+                            label = m.group(1) + "ZR"
                         else:
-                            label = m.group(1) + "?"
+                            bgcolor = "#ff0000"
 
-                    if re.search(r"\.[ABCD]5?FF\.", bit_name):
+                    if re.search(r"\.LATCH$", bit_name):
                         bgcolor = "#aaffaa"
-                        m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+)", bit_name)
-                        if m.group(2) == "ZINI":
-                            label = m.group(1) + "Z"
-                        else:
-                            label = m.group(1) + "?"
+                        label = "LAT"
+
+                    if re.search(r"\.FFSYNC$", bit_name):
+                        bgcolor = "#aaffaa"
+                        label = "SYN"
 
                     if re.search(r"\.[ABCD]LUT5$", bit_name):
                         bgcolor = "#cccc88"
