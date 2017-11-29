@@ -88,7 +88,7 @@ with open("design.txt", "r") as f:
         is5 = '5' in ff_name
 
         if used:
-            segmk.addtag(site, "%s.ZINIT" % ff_name, 1 ^ init)
+            segmk.addtag(site, "%s.ZINI" % ff_name, 1 ^ init)
 
             # CLKINV turns out to be more complicated than origianlly thought
             if isff(cel_prim):
@@ -112,7 +112,7 @@ with open("design.txt", "r") as f:
             the other three primitives have a control input that sets the FF value to one.
             Z => inversion
             '''
-            segmk.addtag(site, "%s.ZRESET" % ff_name,
+            segmk.addtag(site, "%s.ZRST" % ff_name,
                 cel_prim in ('FDRE', 'FDCE', 'LDCE'))
 
 segmk.compile()
