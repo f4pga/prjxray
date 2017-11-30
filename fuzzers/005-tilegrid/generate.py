@@ -37,12 +37,12 @@ for record in tiles:
 
     database["tiles"][tile_name] = {
         "type": tile_type,
+        "sites": dict(),
         "grid_x": grid_x,
         "grid_y": grid_y
     }
 
     if len(record) > 4:
-        database["tiles"][tile_name]["sites"] = dict()
         for i in range(4, len(record), 2):
             site_type, site_name = record[i:i+2]
             if site_name in site_baseaddr:
@@ -59,6 +59,16 @@ for record in tiles:
         database["segments"][segment_name]["words"] = 2
         if framebaseaddr is not None:
             database["segments"][segment_name]["baseaddr"] = [framebaseaddr, 0]
+        database["tiles"][tile_name]["segment"] = segment_name
+
+    if tile_type in ["HCLK_L", "HCLK_R"]:
+        segment_name = "SEG_" + tile_name
+        segtype = tile_type.lower()
+        database["segments"][segment_name] = dict()
+        database["segments"][segment_name]["tiles"] = [tile_name]
+        database["segments"][segment_name]["type"] = segtype
+        database["segments"][segment_name]["frames"] = 36
+        database["segments"][segment_name]["words"] = 1
         database["tiles"][tile_name]["segment"] = segment_name
 
 
@@ -112,6 +122,13 @@ for segment_name in database["segments"].keys():
         database["tiles"][inttile]["segment"] = segment_name
         s = set(database["segments"][segment_name]["tiles"] + [inttile])
         database["segments"][segment_name]["tiles"] = list(sorted(s))
+
+        if inttile.endswith("25") or inttile.endswith("75"):
+            clktile = tiles_by_grid[(grid_x, grid_y+1)]
+            assert clktile.startswith("HCLK_")
+            clkseg = database["tiles"][clktile]["segment"]
+            framebase, wordbase = database["segments"][segment_name]["baseaddr"]
+            database["segments"][clkseg]["baseaddr"] = [framebase, wordbase-1]
 
 
 #######################################
