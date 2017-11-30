@@ -156,6 +156,7 @@ with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
             if tiledata["type"] in ["INT_L", "INT_R"]: bgcolor="#aaaaff"
             if tiledata["type"] in ["CLBLL_L", "CLBLL_R"]: bgcolor="#ffffaa"
             if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]: bgcolor="#ffaaaa"
+            if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor="#aaffaa"
 
             title = [tilename]
             
@@ -178,7 +179,7 @@ with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
                 print("<a style=\"text-decoration: none; color: black\" href=\"seg_%s.html\">%s</a></span></td>" %
                         (segtype, tilename.replace("_X", "<br/>X")), file=f)
             else:
-                print("%s</span></td>" % tilename.replace("_X", "<br/>X"), file=f)
+                print("%s</span></td>" % tilename.replace("_X", "<br/>X").replace("B_TERM", "B<br/>TERM"), file=f)
 
         print("</tr>", file=f)
 
@@ -193,8 +194,11 @@ for segtype in segbits.keys():
     print("Writing %s/seg_%s.html." % (os.getenv("XRAY_DATABASE"), segtype))
     with open("%s/seg_%s.html" % (os.getenv("XRAY_DATABASE"), segtype), "w") as f:
         print("<html><title>X-Ray %s Database: %s</title><body>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
-        print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper(),
-                segtype.upper(), re.sub("clbl[lm]", "int", segtype).upper()), file=f)
+        if segtype in ["hclk_l", "hclk-r"]:
+            print("<h3>X-Ray %s Database: %s Segment</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
+        else:
+            print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper(),
+                    segtype.upper(), re.sub("clbl[lm]", "int", segtype).upper()), file=f)
 
         print("""
 <script><!--
@@ -230,8 +234,9 @@ function oml() {
 
         print("<table border>", file=f)
 
-        gray_bits = 0
-        colored_bits = 0
+        unused_bits = 0
+        unknown_bits = 0
+        known_bits = 0
 
         print("<tr>", file=f)
         print("<th width=\"30\"></th>", file=f)
@@ -239,7 +244,7 @@ function oml() {
             print("<th width=\"30\"><span style=\"font-size:10px\">%d</span></th>" % frameidx, file=f)
         print("</tr>", file=f)
 
-        for bitidx in range(63, -1, -1):
+        for bitidx in range(31 if (segtype in ["hclk_l", "hclk_r"]) else 63, -1, -1):
             print("<tr>", file=f)
             print("<th align=\"right\"><span style=\"font-size:10px\">%d</span></th>" % bitidx, file=f)
             for frameidx in range(segframes[segtype]):
@@ -254,6 +259,10 @@ function oml() {
                     label = "&nbsp;"
                     bgcolor = "#444444"
                     title.append("UNUSED ?")
+
+                if (segtype in ["hclk_l", "hclk_r"]) and bitidx < 13:
+                    label = "ECC"
+                    bgcolor = "#44aa44"
 
                 if bit_name is not None:
                     bgcolor = "#ff0000"
@@ -341,10 +350,12 @@ function oml() {
                 else:
                     onclick = " onmousedown=\"location.href = '#b%s'\"" % bit_pos
 
-                if bgcolor in ["#aaaaaa", "#444444"]:
-                    gray_bits += 1
+                if bgcolor == "#aaaaaa":
+                    unknown_bits += 1
+                elif bgcolor == "#444444":
+                    unused_bits += 1
                 else:
-                    colored_bits += 1
+                    known_bits += 1
 
                 print("<td id=\"bit%s\" onmouseenter=\"ome('%s');\" onmouseleave=\"oml();\" bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
                         (bit_pos, bit_pos, bgcolor, "\n".join(title), onclick, label), file=f)
@@ -354,8 +365,10 @@ function oml() {
         print("<div>", file=f)
 
         if True:
-            print("  gray: %d, colored: %d, total: %d, percentage: %.2f%%" % (gray_bits, colored_bits,
-                    gray_bits + colored_bits, 100 * colored_bits / (gray_bits + colored_bits)))
+            print("  unused: %d, unknown: %d, known: %d, total: %d, percentage: %.2f%% (%.2f%%)" % (
+                    unused_bits, unknown_bits, known_bits, unused_bits + unknown_bits + known_bits,
+                    100 * known_bits / (unknown_bits + unused_bits + known_bits),
+                    100 * (known_bits + unused_bits) / (unknown_bits + unused_bits + known_bits)))
 
         bits_by_prefix = dict()
 
