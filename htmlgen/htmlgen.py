@@ -87,13 +87,14 @@ for segname, segdata in grid["segments"].items():
         maskbits[segtype] = set()
         segframes[segtype] = segdata["frames"]
 
-        print("Loading %s segbits." % segtype)
-        with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
-            for line in f:
-                bit_name, bit_pos = line.split()
-                assert bit_pos[0] != "!"
-                segbits[segtype][bit_name] = bit_pos
-                segbits_r[segtype][bit_pos] = bit_name
+        if segtype not in ["hclk_l", "hclk_r"]:
+            print("Loading %s segbits." % segtype)
+            with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
+                for line in f:
+                    bit_name, bit_pos = line.split()
+                    assert bit_pos[0] != "!"
+                    segbits[segtype][bit_name] = bit_pos
+                    segbits_r[segtype][bit_pos] = bit_name
 
         print("Loading %s segbits." % re.sub("clbl[lm]", "int", segtype))
         with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), re.sub("clbl[lm]", "int", segtype))) as f:
