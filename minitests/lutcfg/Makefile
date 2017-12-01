@@ -4,6 +4,8 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 all:
 	bash runme.sh
+	test -z $(fgrep CRITICAL vivado.log)
+	segprint -z -D design.bits  >design.txt
 
 database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o seg_clblx.segbits $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
