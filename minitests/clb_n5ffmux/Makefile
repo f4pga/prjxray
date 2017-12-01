@@ -21,7 +21,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit
+	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit design.txt
 
 .PHONY: database pushdb clean
 
