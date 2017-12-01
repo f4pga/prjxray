@@ -15,7 +15,7 @@ for arg in sys.argv[1:]:
             _, pip = pip.split("/")
             tile_type, pip = pip.split(".")
             src, dst = pip.split("->>")
-            tag = "%s.%s.%s" % (tile_type, dst, src)
+            tag = "%s.%s" % (dst, src)
             tags[tag] = dst
 
 for arg in sys.argv[1:]:
@@ -32,7 +32,7 @@ for arg in sys.argv[1:]:
             _, pip = pip.split("/")
             tile_type, pip = pip.split(".")
             src, dst = pip.split("->>")
-            tag = "%s.%s.%s" % (tile_type, dst, src)
+            tag = "%s.%s" % (dst, src)
             segmk.addtag(tile, tag, 1)
             for tag, tag_dst in tags.items():
                 if tag_dst != dst:

@@ -32,6 +32,11 @@ case "$1" in
 	int_r)
 		sed < "$2" > "$tmp1" -e 's/^INT\./INT_R./' ;;
 
+	hclk_l)
+		sed < "$2" > "$tmp1" -e 's/^HCLK\./HCLK_L./' ;;
+	hclk_r)
+		sed < "$2" > "$tmp1" -e 's/^HCLK\./HCLK_R./' ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		cp "$2" "$tmp1" ;;
