@@ -6,6 +6,11 @@ target_include_directories(libprjxray PUBLIC "include")
 target_link_libraries(libprjxray absl::strings)
 
 if (PRJXRAY_BUILD_TESTING)
+	add_executable(bit_ops_test bit_ops_test.cc)
+	target_link_libraries(bit_ops_test libprjxray gtest_main)
+	add_test(NAME bit_ops_test
+		 COMMAND bit_ops_test)
+
 	add_executable(memory_mapped_file_test memory_mapped_file_test.cc)
 	target_link_libraries(memory_mapped_file_test libprjxray gtest_main)
 	add_test(NAME memory_mapped_file_test
