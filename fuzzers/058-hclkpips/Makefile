@@ -6,10 +6,14 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o seg_hclk_l.segbits $(addsuffix /segdata_hclk_l_design_*.txt,$(SPECIMENS))
 	${XRAY_SEGMATCH} -o seg_hclk_r.segbits $(addsuffix /segdata_hclk_r_design_*.txt,$(SPECIMENS))
+	${XRAY_MASKMERGE} mask_hclk_l.segbits $(addsuffix /segdata_hclk_l_design_*.txt,$(SPECIMENS))
+	${XRAY_MASKMERGE} mask_hclk_r.segbits $(addsuffix /segdata_hclk_r_design_*.txt,$(SPECIMENS))
 
 pushdb:
 	${XRAY_MERGEDB} hclk_l seg_hclk_l.segbits
 	${XRAY_MERGEDB} hclk_r seg_hclk_r.segbits
+	${XRAY_MERGEDB} mask_hclk_l mask_hclk_l.segbits
+	${XRAY_MERGEDB} mask_hclk_r mask_hclk_r.segbits
 	${XRAY_DBFIXUP}
 
 $(SPECIMENS_OK):
@@ -17,7 +21,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_hclk_[lr].segbits
+	rm -rf specimen_[0-9][0-9][0-9]/ seg_hclk_[lr].segbits mask_hclk_[lr].segbits
 
 .PHONY: database pushdb clean
 
