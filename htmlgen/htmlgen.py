@@ -69,7 +69,6 @@ segbits_r = dict()
 segframes = dict()
 routebits = dict()
 routezbits = dict()
-piptypes = dict()
 maskbits = dict()
 
 print("Loading tilegrid.")
@@ -191,7 +190,7 @@ with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
 #################################################
 # Create Segment Pages
 
-for segtype in segbits.keys():
+for segtype in sorted(segbits.keys()):
     print("Writing %s/seg_%s.html." % (os.getenv("XRAY_DATABASE"), segtype))
     with open("%s/seg_%s.html" % (os.getenv("XRAY_DATABASE"), segtype), "w") as f:
         print("<html><title>X-Ray %s Database: %s</title><body>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
@@ -238,6 +237,7 @@ function oml() {
         unused_bits = 0
         unknown_bits = 0
         known_bits = 0
+        piptypes = dict()
 
         print("<tr>", file=f)
         print("<th width=\"30\"></th>", file=f)
@@ -341,6 +341,12 @@ function oml() {
                             elif re.match("^INT_[LR].LH", bn):
                                 bgcolor = "#4466bb"
                                 label = "LH"
+                            elif re.match("^HCLK_[LR]", bn) and "_B_BOT" in bn:
+                                bgcolor = "#4466bb"
+                                label = "BOT"
+                            elif re.match("^HCLK_[LR]", bn) and "_B_TOP" in bn:
+                                bgcolor = "#7755ff"
+                                label = "TOP"
                             piptypes[bit_pos] = label
                             title.append(bn)
 
