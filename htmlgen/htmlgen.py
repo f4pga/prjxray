@@ -194,7 +194,7 @@ for segtype in sorted(segbits.keys()):
     print("Writing %s/seg_%s.html." % (os.getenv("XRAY_DATABASE"), segtype))
     with open("%s/seg_%s.html" % (os.getenv("XRAY_DATABASE"), segtype), "w") as f:
         print("<html><title>X-Ray %s Database: %s</title><body>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
-        if segtype in ["hclk_l", "hclk-r"]:
+        if segtype in ["hclk_l", "hclk_r"]:
             print("<h3>X-Ray %s Database: %s Segment</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
         else:
             print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper(),
