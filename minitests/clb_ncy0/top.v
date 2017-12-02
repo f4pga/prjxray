@@ -28,24 +28,24 @@ endmodule
 
 module roi(input clk, input [255:0] din, output [255:0] dout);
     clb_NCY0_MX # (.LOC("SLICE_X20Y100"), .BEL("A6LUT"), .N(0))
-    am (.clk(clk), .din(din[  0 +: 8]), .dout(dout[0 +: 8]));
+            am (.clk(clk), .din(din[  0 +: 8]), .dout(dout[0 +: 8]));
     clb_NCY0_O5 # (.LOC("SLICE_X20Y101"), .BEL("A6LUT"), .N(0))
-    a5 (.clk(clk), .din(din[  8 +: 8]), .dout(dout[8 +: 8]));
+            a5 (.clk(clk), .din(din[  8 +: 8]), .dout(dout[8 +: 8]));
 
     clb_NCY0_MX # (.LOC("SLICE_X20Y102"), .BEL("B6LUT"), .N(1))
-    bm (.clk(clk), .din(din[  16 +: 8]), .dout(dout[16 +: 8]));
+            bm (.clk(clk), .din(din[  16 +: 8]), .dout(dout[16 +: 8]));
     clb_NCY0_O5 # (.LOC("SLICE_X20Y103"), .BEL("B6LUT"), .N(1))
-    b5 (.clk(clk), .din(din[  24 +: 8]), .dout(dout[24 +: 8]));
+            b5 (.clk(clk), .din(din[  24 +: 8]), .dout(dout[24 +: 8]));
 
     clb_NCY0_MX # (.LOC("SLICE_X20Y104"), .BEL("C6LUT"), .N(2))
-    cm (.clk(clk), .din(din[  32 +: 8]), .dout(dout[32 +: 8]));
+            cm (.clk(clk), .din(din[  32 +: 8]), .dout(dout[32 +: 8]));
     clb_NCY0_O5 # (.LOC("SLICE_X20Y105"), .BEL("C6LUT"), .N(2))
-    c5 (.clk(clk), .din(din[  40 +: 8]), .dout(dout[40 +: 8]));
+            c5 (.clk(clk), .din(din[  40 +: 8]), .dout(dout[40 +: 8]));
 
     clb_NCY0_MX # (.LOC("SLICE_X20Y106"), .BEL("D6LUT"), .N(3))
-    dm (.clk(clk), .din(din[  48 +: 8]), .dout(dout[48 +: 8]));
+            dm (.clk(clk), .din(din[  48 +: 8]), .dout(dout[48 +: 8]));
     clb_NCY0_O5 # (.LOC("SLICE_X20Y107"), .BEL("D6LUT"), .N(3))
-    d5 (.clk(clk), .din(din[  56 +: 8]), .dout(dout[56 +: 8]));
+            d5 (.clk(clk), .din(din[  56 +: 8]), .dout(dout[56 +: 8]));
 endmodule
 
 module clb_NCY0_MX (input clk, input [7:0] din, output [7:0] dout);
