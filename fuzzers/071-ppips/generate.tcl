@@ -49,9 +49,7 @@ proc write_int_ppips_db {filename tile} {
 		set dst_wire [get_wires -downhill -of_objects $pip]
 		if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
 			set src_wire [get_wires -uphill -of_objects $pip]
-			if {! [regexp "^GCLK_" $src_wire]} {
-				puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
-			}
+			puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
 		}
 	}
 
