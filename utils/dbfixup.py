@@ -75,4 +75,6 @@ update_mask("clbll_l", "clbll_l", "int_l")
 update_mask("clbll_r", "clbll_r", "int_r")
 update_mask("clblm_l", "clblm_l", "int_l")
 update_mask("clblm_r", "clblm_r", "int_r")
+update_mask("hclk_l", "hclk_l")
+update_mask("hclk_r", "hclk_r")
 
