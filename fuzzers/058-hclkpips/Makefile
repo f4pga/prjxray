@@ -16,8 +16,8 @@ pushdb:
 	${XRAY_MERGEDB} hclk_r seg_hclk_r.segbits
 	${XRAY_MERGEDB} mask_hclk_l mask_hclk_l.segbits
 	${XRAY_MERGEDB} mask_hclk_r mask_hclk_r.segbits
-	cp ppips_hclk_l.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
-	cp ppips_hclk_r.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
+	cp ppips_hclk_l.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_l.db
+	cp ppips_hclk_r.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_r.db
 	${XRAY_DBFIXUP}
 
 $(SPECIMENS_OK):

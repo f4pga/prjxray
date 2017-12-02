@@ -2,7 +2,7 @@
 
 import os, sys, json, re
 
-bitgroups_db = [
+clb_bitgroups_db = [
     # copy&paste from zero_db in dbfixup.py
     "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
     "00_23 00_30 01_22 01_25|00_27 00_29 01_26 01_29",
@@ -18,25 +18,46 @@ bitgroups_db = [
     "00_55 00_63 01_57 01_62|00_61 00_62 01_60",
     "00_43 00_47 00_50 00_53 00_54 01_42|00_51 01_50 01_52",
     "00_49 01_44 01_45 01_48 01_49 01_53|00_45 00_46 01_46",
+]
 
+hclk_bitgroups_db = [
+    # manual groupings
+    "03_14 03_15 04_14 04_15|00_15 00_16 01_14 01_15",
+    "02_16 03_16 04_16 05_16|02_14 02_15 05_14 05_15",
+    "02_18 02_19 05_18 05_19|00_17 00_18 01_16 01_17",
+    "03_18 03_19 04_18 04_19|02_17 03_17 04_17 05_17",
+    "02_20 02_21 05_20 05_21|02_22 03_22 04_22 05_22",
+    "02_29 03_29 04_29 05_29|03_30 03_31 04_30 04_31",
+    "02_26 02_27 05_26 05_27|02_28 03_28 04_28 05_28",
+    "02_23 03_23 04_23 05_23|03_24 03_25 04_24 04_25",
 ]
 
 # groupings for SNWE bits in frames 2..7
 for i in range(0, 64, 4):
-    bitgroups_db.append("02_%02d 03_%02d 05_%02d 06_%02d 07_%02d|05_%02d 03_%02d 04_%02d 04_%02d" %
+    clb_bitgroups_db.append("02_%02d 03_%02d 05_%02d 06_%02d 07_%02d|05_%02d 03_%02d 04_%02d 04_%02d" %
             (i+1, i, i, i, i+1, i+3, i+1, i+1, i+2))
-    bitgroups_db.append("02_%02d 04_%02d 05_%02d 05_%02d 06_%02d|02_%02d 03_%02d 04_%02d 07_%02d" %
+    clb_bitgroups_db.append("02_%02d 04_%02d 05_%02d 05_%02d 06_%02d|02_%02d 03_%02d 04_%02d 07_%02d" %
             (i+2, i, i+1, i+2, i+2, i+3, i+2, i+3, i+3))
 
-left_bits = set()
-right_bits = set()
+clb_left_bits = set()
+clb_right_bits = set()
 
-for entry in bitgroups_db:
+for entry in clb_bitgroups_db:
     a, b = entry.split("|")
     for bit in a.split():
-        left_bits.add(bit)
+        clb_left_bits.add(bit)
     for bit in b.split():
-        right_bits.add(bit)
+        clb_right_bits.add(bit)
+
+hclk_left_bits = set()
+hclk_right_bits = set()
+
+for entry in hclk_bitgroups_db:
+    a, b = entry.split("|")
+    for bit in a.split():
+        hclk_left_bits.add(bit)
+    for bit in b.split():
+        hclk_right_bits.add(bit)
 
 class UnionFind:
     def __init__(self):
@@ -67,6 +88,7 @@ grid = None
 segbits = dict()
 segbits_r = dict()
 segframes = dict()
+segtiles = dict()
 routebits = dict()
 routezbits = dict()
 maskbits = dict()
@@ -85,6 +107,10 @@ for segname, segdata in grid["segments"].items():
         routezbits[segtype] = dict()
         maskbits[segtype] = set()
         segframes[segtype] = segdata["frames"]
+
+        segtiles[segtype] = set()
+        for t in segdata["tiles"]:
+            segtiles[segtype].add(grid["tiles"][t]["type"])
 
         if segtype not in ["hclk_l", "hclk_r"]:
             print("Loading %s segbits." % segtype)
@@ -379,6 +405,8 @@ function oml() {
 
         print("<div>", file=f)
 
+        print("<h3>Segment Configuration Bits</h3>", file=f)
+
         if True:
             print("  unused: %d, unknown: %d, known: %d, total: %d, percentage: %.2f%% (%.2f%%)" % (
                     unused_bits, unknown_bits, known_bits, unused_bits + unknown_bits + known_bits,
@@ -464,10 +492,16 @@ function oml() {
                 grp_bits |= bits
 
             def bit_key(b):
-                if b in left_bits:
-                    return "a" + b
-                if b in right_bits:
-                    return "c" + b
+                if segtype in ["hclk_l", "hclk_r"]:
+                    if b in hclk_left_bits:
+                        return "a" + b
+                    if b in hclk_right_bits:
+                        return "c" + b
+                if segtype in ["clblm_l", "clblm_r", "clbll_l", "clbll_r"]:
+                    if b in clb_left_bits:
+                        return "a" + b
+                    if b in clb_right_bits:
+                        return "c" + b
                 return "b" + b
 
             grp_bits = sorted(grp_bits, key=bit_key)
@@ -517,6 +551,18 @@ function oml() {
                     first_note = False
             if not first_note:
                 print("</p>", file=f)
+
+        for tile_type in segtiles[segtype]:
+            print("<h3>Tile %s Pseudo PIPs</h3>" % tile_type, file=f)
+            print("<table cellspacing=0>", file=f)
+            print("<tr><th width=\"500\" align=\"left\">PIP</th><th>Type</th></tr>", file=f)
+            trstyle = ""
+            with open("../database/%s/ppips_%s.db" % (os.getenv("XRAY_DATABASE"), tile_type.lower())) as fi:
+                for line in fi:
+                    pip_name, pip_type = line.split()
+                    trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
+                    print("<tr%s><td>%s</td><td>%s</td></tr>" % (trstyle, pip_name, pip_type), file=f)
+            print("</table>", file=f)
 
         print("</div>", file=f)
         print("</body></html>", file=f)
