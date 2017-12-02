@@ -99,15 +99,19 @@ for segname, segdata in grid["segments"].items():
         with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), re.sub("clbl[lm]", "int", segtype))) as f:
             for line in f:
                 bit_name, *bit_pos = line.split()
-                for bit in bit_pos:
-                    if bit[0] == "!":
-                        if bit[1:] not in routezbits[segtype]:
-                            routezbits[segtype][bit[1:]] = set()
-                        routezbits[segtype][bit[1:]].add(bit_name)
-                    else:
-                        if bit not in routebits[segtype]:
-                            routebits[segtype][bit] = set()
-                        routebits[segtype][bit].add(bit_name)
+                if segtype in ["hclk_l", "hclk_r"] and ".ENABLE_BUFFER." in bit_name:
+                    segbits[segtype][bit_name] = bit_pos[0]
+                    segbits_r[segtype][bit_pos[0]] = bit_name
+                else:
+                    for bit in bit_pos:
+                        if bit[0] == "!":
+                            if bit[1:] not in routezbits[segtype]:
+                                routezbits[segtype][bit[1:]] = set()
+                            routezbits[segtype][bit[1:]].add(bit_name)
+                        else:
+                            if bit not in routebits[segtype]:
+                                routebits[segtype][bit] = set()
+                            routebits[segtype][bit].add(bit_name)
 
         print("Loading %s maskbits." % segtype)
         with open("../database/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
@@ -303,6 +307,10 @@ function oml() {
                     if re.search(r"\.CLKINV$", bit_name):
                         bgcolor = "#ffaa00"
                         label = "CLKI"
+
+                    if ".ENABLE_BUFFER." in bit_name:
+                        bgcolor = "#ffaa00"
+                        label = "BUF"
 
                 elif bit_pos in routebits[segtype]:
                         bgcolor = "#0000ff"
