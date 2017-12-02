@@ -54,7 +54,7 @@ class segmaker:
                     segments[segname] = { "bits": set(), "tags": dict() }
 
                     base_frame = int(segdata["baseaddr"][0][2:], 16)
-                    for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+2):
+                    for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+segdata["words"]):
                         if base_frame not in self.bits:
                             continue
                         if wordidx not in self.bits[base_frame]:
