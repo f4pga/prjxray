@@ -8,6 +8,7 @@ set -ex
 
 python3 ../top.py >top.v
 vivado -mode batch -source ../generate.tcl
+test -z $(fgrep CRITICAL vivado.log)
 
 for x in design*.bit; do
 	../../../build/tools/bitread -F $XRAY_ROI_FRAMES -o ${x}s -z -y $x
