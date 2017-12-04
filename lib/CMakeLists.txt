@@ -6,6 +6,11 @@ target_include_directories(libprjxray PUBLIC "include")
 target_link_libraries(libprjxray absl::strings)
 
 if (PRJXRAY_BUILD_TESTING)
+	add_executable(big_endian_span_test big_endian_span_test.cc)
+	target_link_libraries(big_endian_span_test libprjxray gtest_main)
+	add_test(NAME big_endian_span_test
+		 COMMAND big_endian_span_test)
+
 	add_executable(bit_ops_test bit_ops_test.cc)
 	target_link_libraries(bit_ops_test libprjxray gtest_main)
 	add_test(NAME bit_ops_test
