@@ -13,8 +13,8 @@ class MemoryMappedFile {
 	static std::unique_ptr<MemoryMappedFile> InitWithFile(
 			const std::string &path);
 
-	const void* data() { return data_; }
-	const size_t size() { return size_; }
+	void* const data() const { return data_; }
+	const size_t size() const { return size_; }
 
  private:
 	MemoryMappedFile(void *data, size_t size)
