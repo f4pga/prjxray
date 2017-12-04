@@ -41,3 +41,31 @@ TEST(BitFieldGetTest, SelectMidway) {
 	uint32_t expected = prjxray::bit_field_get(0xFFCCBBAA, 18, 8);
 	EXPECT_EQ(static_cast<uint32_t>(0x4BB), expected);
 }
+
+TEST(BitFieldSetTest, WriteOneBit) {
+	uint32_t actual = prjxray::bit_field_set(
+			static_cast<uint32_t>(0x0), 23, 23,
+			static_cast<uint32_t>(0x1));
+	EXPECT_EQ(actual, static_cast<uint32_t>(0x800000));
+}
+
+TEST(BitFieldSetTest, WriteOneBitWithOutOfRangeValue) {
+	uint32_t actual = prjxray::bit_field_set(
+			static_cast<uint32_t>(0x0), 23, 23,
+			static_cast<uint32_t>(0x3));
+	EXPECT_EQ(actual, static_cast<uint32_t>(0x800000));
+}
+
+TEST(BitFieldSetTest, WriteMultipleBits) {
+	uint32_t actual = prjxray::bit_field_set(
+			static_cast<uint32_t>(0x0), 18, 8,
+			static_cast<uint32_t>(0x123));
+	EXPECT_EQ(actual, static_cast<uint32_t>(0x12300));
+}
+
+TEST(BitFieldSetTest, WriteMultipleBitsWithOutOfRangeValue) {
+	uint32_t actual = prjxray::bit_field_set(
+			static_cast<uint32_t>(0x0), 18, 8,
+			static_cast<uint32_t>(0x1234));
+	EXPECT_EQ(actual, static_cast<uint32_t>(0x23400));
+}
