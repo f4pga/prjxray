@@ -1,6 +1,31 @@
+import random
+
+random.seed(0)
+
+CLBN = 400
+# SLICE_X12Y100
+# SLICE_X27Y149
+SLICEX = (12, 28)
+SLICEY = (100, 150)
+# 800
+SLICEN = (SLICEY[1] - SLICEY[0]) * (SLICEX[1] - SLICEX[0])
+print('//SLICEX: %s' % str(SLICEX))
+print('//SLICEY: %s' % str(SLICEY))
+print('//SLICEN: %s' % str(SLICEN))
+print('//Requested CLBs: %s' % str(CLBN))
+
+def gen_slices():
+    for slicey in range(*SLICEY):
+        for slicex in range(*SLICEX):
+            yield "SLICE_X%dY%d" % (slicex, slicey)
+
+DIN_N = CLBN * 8
+DOUT_N = CLBN * 8
+
+print('''
 module top(input clk, stb, di, output do);
-    localparam integer DIN_N = 256;
-    localparam integer DOUT_N = 256;
+    localparam integer DIN_N = %d;
+    localparam integer DOUT_N = %d;
 
     reg [DIN_N-1:0] din;
     wire [DOUT_N-1:0] dout;
@@ -25,28 +50,36 @@ module top(input clk, stb, di, output do);
         .dout(dout)
     );
 endmodule
+''' % (DIN_N, DOUT_N))
 
-module roi(input clk, input [255:0] din, output [255:0] dout);
-    parameter N=0;
+f = open('params.csv', 'w')
+f.write('module,loc,n\n')
+slices = gen_slices()
+print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
+for i in range(CLBN):
+    modules = ['clb_NFFMUX_' + x for x in ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR']]
+    module = random.choice(modules)
 
-    clb_NFFMUX_AX #(.LOC("SLICE_X18Y100"), .N(N))
-            clb_NFFMUX_AX       (.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    clb_NFFMUX_CY #(.LOC("SLICE_X18Y101"), .N(N))
-            clb_NFFMUX_CY       (.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    generate
-        if (N != 3) begin
-            clb_NFFMUX_F78 #(.LOC("SLICE_X18Y102"), .N(N))
-                    clb_NFFMUX_F78       (.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-        end
-    endgenerate
-    clb_NFFMUX_O5 #(.LOC("SLICE_X18Y103"), .N(N))
-            clb_NFFMUX_O5       (.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    clb_NFFMUX_O6 #(.LOC("SLICE_X18Y104"), .N(N))
-            clb_NFFMUX_O6     (.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
-    clb_NFFMUX_XOR #(.LOC("SLICE_X18Y105"), .N(N))
-            clb_NFFMUX_XOR     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));
-endmodule
+    if module == 'clb_NFFMUX_F78':
+        n = random.randint(0, 2)
+    else:
+        n = random.randint(0, 3)
+    #n = 0
+    loc = next(slices)
 
+    print('    %s' % module)
+    print('            #(.LOC("%s"), .N(%d))' % (loc, n))
+    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
+
+    f.write('%s,%s,%s\n' % (module, loc, n))
+f.close()
+print('''endmodule
+
+// ---------------------------------------------------------------------
+
+''')
+
+print('''
 module myLUT8 (input clk, input [7:0] din,
         output lut8o, output lut7bo, output lut7ao,
         //caro: XOR additional result (main output)
@@ -290,4 +323,5 @@ module clb_NFFMUX_XOR (input clk, input [7:0] din, output [7:0] dout);
             .ff_q(dout[0]),
             .ff_d(caro));
 endmodule
+''')
 
