@@ -306,13 +306,22 @@ function oml() {
 
                     if re.search(r"\.[ABCD]5?FF\.", bit_name):
                         bgcolor = "#aaffaa"
-                        m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+)", bit_name)
+                        m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+(\.A|\.B)?)$", bit_name)
                         if m.group(2) == "ZINI":
                             label = m.group(1) + "ZI"
                         elif m.group(2) == "ZRST":
                             label = m.group(1) + "ZR"
+                        elif m.group(2) == "MUX.A":
+                            label = m.group(1) + "MA"
+                        elif m.group(2) == "MUX.B":
+                            label = m.group(1) + "MB"
                         else:
                             bgcolor = "#ff0000"
+
+                    if re.search(r"\.CARRY4\.([A-Z0-9]+)$", bit_name):
+                        m = re.search(r"\.CARRY4\.([A-Z0-9]+)$", bit_name)
+                        bgcolor = "##88cc00"
+                        label = m.group(1)
 
                     if re.search(r"\.LATCH$", bit_name):
                         bgcolor = "#aaffaa"
