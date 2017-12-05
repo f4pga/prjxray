@@ -5,6 +5,7 @@
 
 #include <absl/types/optional.h>
 #include <absl/types/span.h>
+#include <prjxray/xilinx/xc7series/configuration_register.h>
 
 namespace prjxray {
 namespace xilinx {
@@ -23,7 +24,7 @@ class ConfigurationPacket {
 		/* reserved = 3 */
 	};
 
-	ConfigurationPacket(Opcode opcode, uint32_t address,
+	ConfigurationPacket(Opcode opcode, ConfigurationRegister address,
 			    const absl::Span<uint32_t> &data)
 		: opcode_(opcode), address_(address), data_(std::move(data)) {}
 
@@ -39,12 +40,12 @@ class ConfigurationPacket {
 			const ConfigurationPacket *previous_packet = nullptr);
 
 	const Opcode opcode() const { return opcode_; }
-	const uint32_t address() const { return address_; }
+	const ConfigurationRegister address() const { return address_; }
 	const absl::Span<uint32_t> &data() const { return data_; }
 
  private:
 	Opcode opcode_;
-	uint32_t address_;
+	ConfigurationRegister address_;
 	absl::Span<uint32_t> data_;
 };
 

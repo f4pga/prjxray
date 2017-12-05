@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <prjxray/bit_ops.h>
 
-using prjxray::xilinx::xc7series::ConfigurationPacket;
+namespace xc7series = prjxray::xilinx::xc7series;
 
 constexpr uint32_t kType1NOP = prjxray::bit_field_set<uint32_t>(0, 31, 29, 0x1);
 
@@ -31,7 +31,7 @@ constexpr uint32_t MakeType2(const int opcode, const int word_count) {
 
 
 TEST(ConfigPacket, InitWithZeroBytes) {
-	auto packet = ConfigurationPacket::InitWithWords({});
+	auto packet = xc7series::ConfigurationPacket::InitWithWords({});
 
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	EXPECT_FALSE(packet.second);
@@ -40,56 +40,65 @@ TEST(ConfigPacket, InitWithZeroBytes) {
 TEST(ConfigPacket, InitWithType1Nop) {
 	std::vector<uint32_t> words{kType1NOP};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket::InitWithWords(word_span);
+	auto packet = xc7series::ConfigurationPacket::InitWithWords(word_span);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
-	EXPECT_EQ(packet.second->opcode(), ConfigurationPacket::Opcode::NOP);
-	EXPECT_EQ(packet.second->address(), static_cast<uint32_t>(0));
+	EXPECT_EQ(packet.second->opcode(),
+		  xc7series::ConfigurationPacket::Opcode::NOP);
+	EXPECT_EQ(packet.second->address(),
+		  xc7series::ConfigurationRegister::CRC);
 	EXPECT_EQ(packet.second->data(), absl::Span<uint32_t>());
 }
 
 TEST(ConfigPacket, InitWithType1Read) {
-	std::vector<uint32_t> words{MakeType1(0x1, 0x1234, 2), 0xAA, 0xBB};
+	std::vector<uint32_t> words{MakeType1(0x1, 0x2, 2), 0xAA, 0xBB};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket::InitWithWords(word_span);
+	auto packet = xc7series::ConfigurationPacket::InitWithWords(word_span);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
-	EXPECT_EQ(packet.second->opcode(), ConfigurationPacket::Opcode::Read);
-	EXPECT_EQ(packet.second->address(), static_cast<uint32_t>(0x1234));
+	EXPECT_EQ(packet.second->opcode(),
+		  xc7series::ConfigurationPacket::Opcode::Read);
+	EXPECT_EQ(packet.second->address(),
+		  xc7series::ConfigurationRegister::FDRI);
 	EXPECT_EQ(packet.second->data(), word_span.subspan(1));
 }
 
 TEST(ConfigPacket, InitWithType1Write) {
-	std::vector<uint32_t> words{MakeType1(0x2, 0x1234, 2), 0xAA, 0xBB};
+	std::vector<uint32_t> words{MakeType1(0x2, 0x3, 2), 0xAA, 0xBB};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket::InitWithWords(word_span);
+	auto packet = xc7series::ConfigurationPacket::InitWithWords(word_span);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
-	EXPECT_EQ(packet.second->opcode(), ConfigurationPacket::Opcode::Write);
-	EXPECT_EQ(packet.second->address(), static_cast<uint32_t>(0x1234));
+	EXPECT_EQ(packet.second->opcode(),
+		  xc7series::ConfigurationPacket::Opcode::Write);
+	EXPECT_EQ(packet.second->address(),
+		  xc7series::ConfigurationRegister::FDRO);
 	EXPECT_EQ(packet.second->data(), word_span.subspan(1));
 }
 
 TEST(ConfigPacket, InitWithType2WithoutPreviousPacketFails) {
 	std::vector<uint32_t> words{MakeType2(0x01, 12)};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket::InitWithWords(word_span);
+	auto packet = xc7series::ConfigurationPacket::InitWithWords(word_span);
 	EXPECT_EQ(packet.first, words);
 	EXPECT_FALSE(packet.second);
 }
 
 TEST(ConfigPacket, InitWithType2WithPreviousPacket) {
-	ConfigurationPacket previous_packet(
-			ConfigurationPacket::Opcode::Read, 0x1234,
+	xc7series::ConfigurationPacket previous_packet(
+			xc7series::ConfigurationPacket::Opcode::Read,
+			xc7series::ConfigurationRegister::MFWR,
 			absl::Span<uint32_t>());
 	std::vector<uint32_t> words{
 		MakeType2(0x01, 12), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket::InitWithWords(
+	auto packet = xc7series::ConfigurationPacket::InitWithWords(
 			word_span, &previous_packet);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
-	EXPECT_EQ(packet.second->opcode(), ConfigurationPacket::Opcode::Read);
-	EXPECT_EQ(packet.second->address(), static_cast<uint32_t>(0x1234));
+	EXPECT_EQ(packet.second->opcode(),
+		  xc7series::ConfigurationPacket::Opcode::Read);
+	EXPECT_EQ(packet.second->address(),
+		  xc7series::ConfigurationRegister::MFWR);
 	EXPECT_EQ(packet.second->data(), word_span.subspan(1));
 }
