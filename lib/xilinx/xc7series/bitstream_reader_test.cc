@@ -3,19 +3,19 @@
 #include <gtest/gtest.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
 #include <prjxray/xilinx/xc7series/configuration_packet.h>
+#include <prjxray/xilinx/xc7series/configuration_register.h>
 
-using prjxray::xilinx::xc7series::BitstreamReader;
-using prjxray::xilinx::xc7series::ConfigurationPacket;
+namespace xc7series = prjxray::xilinx::xc7series;
 
 TEST(BitstreamReaderTest, InitWithEmptyBytesReturnsNull) {
 	absl::Span<uint8_t> bitstream;
-	auto reader = BitstreamReader::InitWithBytes(bitstream);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_FALSE(reader);
 }
 
 TEST(BitstreamReaderTest, InitWithOnlySyncReturnsObject) {
 	std::vector<uint8_t> bitstream{0xAA, 0x99, 0x55, 0x66};
-	auto reader = BitstreamReader::InitWithBytes(bitstream);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_TRUE(reader);
 }
 
@@ -25,7 +25,7 @@ TEST(BitstreamReaderTest,
 		0xFF, 0xFE,
 		0xAA, 0x99, 0x55, 0x66
 	};
-	auto reader = BitstreamReader::InitWithBytes(bitstream);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_TRUE(reader);
 }
 
@@ -35,7 +35,7 @@ TEST(BitstreamReaderTest,
 		0xFF, 0xFE, 0xFD, 0xFC,
 		0xAA, 0x99, 0x55, 0x66
 	};
-	auto reader = BitstreamReader::InitWithBytes(bitstream);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_TRUE(reader);
 }
 
@@ -44,12 +44,13 @@ TEST(BitstreamReaderTest, ParsesType1Packet) {
 		0xAA, 0x99, 0x55, 0x66,  // sync
 		0b001'00'000, 0b00000000, 0b000'00'000, 0b00000000,  // NOP
 	};
-	auto reader = BitstreamReader::InitWithBytes(bitstream);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
 	ASSERT_NE(reader->begin(), reader->end());
 
 	auto first_packet = reader->begin();
-	EXPECT_EQ(first_packet->opcode(), ConfigurationPacket::Opcode::NOP);
+	EXPECT_EQ(first_packet->opcode(),
+		  xc7series::ConfigurationPacket::Opcode::NOP);
 
 	EXPECT_EQ(++first_packet, reader->end());
 }
@@ -59,7 +60,7 @@ TEST(BitstreamReaderTest, ParseType2PacketWithoutType1Fails) {
 		0xAA, 0x99, 0x55, 0x66,  // sync
 		0b010'00'000, 0b00000000, 0b000'00'000, 0b00000000,  // NOP
 	};
-	auto reader = BitstreamReader::InitWithBytes(bitstream);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
 	EXPECT_EQ(reader->begin(), reader->end());
 }
@@ -78,19 +79,23 @@ TEST(BitstreamReaderTest, ParsesType2AfterType1Packet) {
 	std::vector<uint32_t> data_words{
 		0x01020304, 0x05060708, 0x090A0B0C, 0x0D0E0F10};
 
-	auto reader = BitstreamReader::InitWithBytes(bitstream);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
 	ASSERT_NE(reader->begin(), reader->end());
 
 	auto first_packet = reader->begin();
-	EXPECT_EQ(first_packet->opcode(), ConfigurationPacket::Opcode::Read);
-	EXPECT_EQ(first_packet->address(), static_cast<uint32_t>(0x3));
+	EXPECT_EQ(first_packet->opcode(),
+		  xc7series::ConfigurationPacket::Opcode::Read);
+	EXPECT_EQ(first_packet->address(),
+		  xc7series::ConfigurationRegister::FDRO);
 	EXPECT_EQ(first_packet->data(), absl::Span<uint32_t>());
 
 	auto second_packet = ++first_packet;
 	ASSERT_NE(second_packet, reader->end());
-	EXPECT_EQ(second_packet->opcode(), ConfigurationPacket::Opcode::Read);
-	EXPECT_EQ(second_packet->address(), static_cast<uint32_t>(0x3));
+	EXPECT_EQ(second_packet->opcode(),
+		  xc7series::ConfigurationPacket::Opcode::Read);
+	EXPECT_EQ(second_packet->address(),
+		  xc7series::ConfigurationRegister::FDRO);
 	EXPECT_EQ(first_packet->data(), absl::Span<uint32_t>(data_words));
 
 	EXPECT_EQ(++first_packet, reader->end());

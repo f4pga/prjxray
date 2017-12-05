@@ -1,5 +1,6 @@
 #include <prjxray/xilinx/xc7series/configuration_packet.h>
 
+#include <iomanip>
 #include <ostream>
 
 #include <prjxray/bit_ops.h>
@@ -19,7 +20,9 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 	case 0b001: {
 		Opcode opcode = static_cast<Opcode>(
 				bit_field_get(words[0], 28, 27));
-		uint32_t address = bit_field_get(words[0], 26, 13);
+		ConfigurationRegister address =
+			static_cast<ConfigurationRegister>(
+				bit_field_get(words[0], 26, 13));
 		uint32_t data_word_count = bit_field_get(words[0], 10, 0);
 
 		// If the full packet has not been received, return as though
@@ -61,13 +64,21 @@ std::ostream& operator<<(std::ostream& o, const ConfigurationPacket &packet) {
 		case ConfigurationPacket::Opcode::NOP:
 			return o << "[NOP]" << std::endl;
 		case ConfigurationPacket::Opcode::Read:
-			return o << "[Read Address=" << packet.address()
-				 << " Length=" << packet.data().size() <<
-				 "]" << std::endl;
+			return o << "[Read Address="
+				 << std::setw(2)
+				 << static_cast<int>(packet.address())
+				 << " Length="
+				 << std::setw(10) << packet.data().size()
+				 << " Reg=\"" << packet.address() << "\""
+				 << "]" << std::endl;
 		case ConfigurationPacket::Opcode::Write:
-			return o << "[Write Address=" << packet.address()
-				 << " Length=" << packet.data().size() <<
-				 "]" << std::endl;
+			return o << "[Write Address="
+				 << std::setw(2)
+				 << static_cast<int>(packet.address())
+				 << " Length="
+				 << std::setw(10) << packet.data().size()
+				 << " Reg=\"" << packet.address() << "\""
+				 << "]" << std::endl;
 		default:
 			return o << "[Invalid Opcode]" << std::endl;
 	}

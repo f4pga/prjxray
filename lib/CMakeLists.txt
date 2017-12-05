@@ -2,8 +2,10 @@ add_library(libprjxray
 	database.cc
 	memory_mapped_file.cc
 	segbits_file_reader.cc
-	xilinx/xc7series/configuration_packet.cc
 	xilinx/xc7series/bitstream_reader.cc
+	xilinx/xc7series/configuration_frame_address.cc
+	xilinx/xc7series/configuration_packet.cc
+	xilinx/xc7series/configuration_register.cc
 )
 target_include_directories(libprjxray PUBLIC "include")
 target_link_libraries(libprjxray absl::optional absl::strings absl::span)
