@@ -27,13 +27,20 @@ module top(input clk, stb, di, output do);
 endmodule
 
 module roi(input clk, input [255:0] din, output [255:0] dout);
-    //clb_BFFMUX_NO clb_BFFMUX_NO       (.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    clb_BFFMUX_BX clb_BFFMUX_BX       (.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    clb_BFFMUX_CY clb_BFFMUX_CY       (.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    clb_BFFMUX_F8 clb_BFFMUX_F8       (.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    clb_BFFMUX_O5 clb_BFFMUX_O5       (.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    clb_BFFMUX_O6 clb_BFFMUX_O6     (.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8])); 
-    clb_BFFMUX_XOR clb_BFFMUX_XOR     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));    
+    parameter N=1;
+
+    clb_BFFMUX_BX #(.LOC("SLICE_X18Y100"), .N(N))
+            clb_BFFMUX_BX       (.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    clb_BFFMUX_CY #(.LOC("SLICE_X18Y101"), .N(N))
+            clb_BFFMUX_CY       (.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    clb_BFFMUX_F8 #(.LOC("SLICE_X18Y102"), .N(N))
+            clb_BFFMUX_F8       (.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    clb_BFFMUX_O5 #(.LOC("SLICE_X18Y103"), .N(N))
+            clb_BFFMUX_O5       (.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    clb_BFFMUX_O6 #(.LOC("SLICE_X18Y104"), .N(N))
+            clb_BFFMUX_O6     (.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8])); 
+    clb_BFFMUX_XOR #(.LOC("SLICE_X18Y105"), .N(N))
+            clb_BFFMUX_XOR     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));    
 endmodule
 
 module myLUT8 (input clk, input [7:0] din,
@@ -51,6 +58,7 @@ module myLUT8 (input clk, input [7:0] din,
     assign caro = caro_all[N];
     wire [3:0] carco_all;
     assign carco = carco_all[N];
+
     wire [3:0] lutno6;
     wire [3:0] lutno5;
     wire lut7bo, lut7ao;
@@ -133,22 +141,11 @@ endmodule
 //******************************************************************************
 //BFFMUX tests
 
-/*
-module clb_BFFMUX_NO (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y100";
-
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din),
-            .lut8o(),
-            .caro(), .carco(), .bo5(), .bo6(),
-            .n5ff_q());
-endmodule
-*/
-
 module clb_BFFMUX_BX (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y101";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
 
-    myLUT8 #(.LOC(LOC))
+    myLUT8 #(.LOC(LOC), .N(N))
             myLUT8(.clk(clk), .din(din),
             .lut8o(),
             .caro(), .carco(),
@@ -159,10 +156,11 @@ module clb_BFFMUX_BX (input clk, input [7:0] din, output [7:0] dout);
 endmodule
 
 module clb_BFFMUX_CY (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y102";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
     wire carco;
 
-    myLUT8 #(.LOC(LOC))
+    myLUT8 #(.LOC(LOC), .N(N))
             myLUT8(.clk(clk), .din(din),
             .lut8o(),
             .caro(), .carco(carco),
@@ -172,10 +170,11 @@ module clb_BFFMUX_CY (input clk, input [7:0] din, output [7:0] dout);
 endmodule
 
 module clb_BFFMUX_F8 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y103";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
     wire lut8o;
 
-    myLUT8 #(.LOC(LOC))
+    myLUT8 #(.LOC(LOC), .N(N))
             myLUT8(.clk(clk), .din(din),
             .lut8o(lut8o),
             .caro(), .carco(),
@@ -185,10 +184,11 @@ module clb_BFFMUX_F8 (input clk, input [7:0] din, output [7:0] dout);
 endmodule
 
 module clb_BFFMUX_O5 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y104";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
     wire bo5;
 
-    myLUT8 #(.LOC(LOC))
+    myLUT8 #(.LOC(LOC), .N(N))
             myLUT8(.clk(clk), .din(din),
             .lut8o(lut8o),
             .caro(), .carco(),
@@ -198,10 +198,11 @@ module clb_BFFMUX_O5 (input clk, input [7:0] din, output [7:0] dout);
 endmodule
 
 module clb_BFFMUX_O6 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y105";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
     wire bo6;
 
-    myLUT8 #(.LOC(LOC))
+    myLUT8 #(.LOC(LOC), .N(N))
             myLUT8(.clk(clk), .din(din),
             .lut8o(lut8o),
             .caro(), .carco(),
@@ -211,10 +212,11 @@ module clb_BFFMUX_O6 (input clk, input [7:0] din, output [7:0] dout);
 endmodule
 
 module clb_BFFMUX_XOR (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y106";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
     wire caro;
 
-    myLUT8 #(.LOC(LOC))
+    myLUT8 #(.LOC(LOC), .N(N))
             myLUT8(.clk(clk), .din(din),
             .lut8o(),
             .caro(caro), .carco(),

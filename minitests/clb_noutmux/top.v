@@ -29,23 +29,39 @@ module top(input clk, stb, di, output do);
 endmodule
 
 module roi(input clk, input [255:0] din, output [255:0] dout);
-    //clb_BOUTMUX_NO clb_BOUTMUX_NO       (.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    clb_BOUTMUX_CY clb_BOUTMUX_CY       (.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    clb_BOUTMUX_F8 clb_BOUTMUX_F8       (.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    //clb_BOUTMUX_O6 clb_BOUTMUX_O6       (.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    clb_BOUTMUX_O5 clb_BOUTMUX_O5       (.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    //clb_BOUTMUX_O56 clb_BOUTMUX_O56     (.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8])); 
-    clb_BOUTMUX_B5Q clb_BOUTMUX_B5Q     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));    
-    clb_BOUTMUX_XOR clb_BOUTMUX_XOR     (.clk(clk), .din(din[  56 +: 8]), .dout(dout[ 56 +: 8 ]));
+    parameter N=1;
+
+    clb_BOUTMUX_CY #(.LOC("SLICE_X18Y100"), .N(N))
+            clb_BOUTMUX_CY       (.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    clb_BOUTMUX_F8 #(.LOC("SLICE_X18Y101"), .N(N))
+            clb_BOUTMUX_F8       (.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    //clb_BOUTMUX_O6 #(.LOC("SLICE_X18Y102"), .N(N))
+    //        clb_BOUTMUX_O6       (.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    clb_BOUTMUX_O5 #(.LOC("SLICE_X18Y103"), .N(N))
+            clb_BOUTMUX_O5       (.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    clb_BOUTMUX_B5Q #(.LOC("SLICE_X18Y104"), .N(N))
+            clb_BOUTMUX_B5Q     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));    
+    clb_BOUTMUX_XOR #(.LOC("SLICE_X18Y105"), .N(N))
+            clb_BOUTMUX_XOR     (.clk(clk), .din(din[  56 +: 8]), .dout(dout[ 56 +: 8 ]));
 endmodule
 
 module myLUT8 (input clk, input [7:0] din,
         output lut8o,
-        output [3:0] co, output [3:0] cout, output bo5, output bo6,
+        output caro, output carco,
+        output bo5, output bo6,
         //Note: b5ff_q requires the mux and will conflict with other wires
         //Otherwise this FF drops out
-        output wire [3:0] n5ff_q);
+        output wire ff_q);
+        //output wire [3:0] n5ff_q);
     parameter LOC="SLICE_FIXME";
+
+    wire [3:0] caro_all;
+    assign caro = caro_all[N];
+    wire [3:0] carco_all;
+    assign carco = carco_all[N];
+
+    wire [3:0] n5ff_q;
+    ff_q = n5ff_q[N];
 
     wire [3:0] lutno6;
     wire [3:0] lutno5;
@@ -124,7 +140,6 @@ module myLUT8 (input clk, input [7:0] din,
 		.CE(1'b1),
 		.PRE(1'b0),
 		.D(lutno5[3]));
-
 	(* LOC=LOC, BEL="C5FF", KEEP, DONT_TOUCH *)
 	FDPE c5ff (
 		.C(clk),
@@ -132,32 +147,13 @@ module myLUT8 (input clk, input [7:0] din,
 		.CE(1'b1),
 		.PRE(1'b0),
 		.D(lutno5[2]));
-
-    /*
-	(* LOC=LOC, BEL="B5FF" *)
-	FDPE ff (
-		.C(clk),
-		.Q(n5ff_q[1]),
-		.CE(1'b1),
-		 //SR options
-		 //0 or dedicated SR
-		//.PRE(1'b0), //bypass mode
-		.PRE(din[0]),
-        //D options
-	    //A: B6LUT:O5 (seems easiest)
-	    //B: BX => MUX8:S
-		.D(lutno5[1]));
-	*/
 	(* LOC=LOC, BEL="B5FF", KEEP, DONT_TOUCH *)
 	FDPE b5ff (
 		.C(clk),
 		.Q(n5ff_q[1]),
 		.CE(1'b1),
 		.PRE(1'b0),
-		//causing routing congestion with MUX8
-		//.D(1'b0));
 		.D(lutno5[1]));
-
 	(* LOC=LOC, BEL="A5FF", KEEP, DONT_TOUCH *)
 	FDPE a5ff (
 		.C(clk),
@@ -170,87 +166,76 @@ endmodule
 //******************************************************************************
 //BOUTMUX tests
 
-/*
-module clb_BOUTMUX_NO (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y100";
-
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din),
-            .lut8o(),
-            .co(), .cout(), .bo5(), .bo6(),
-            .n5ff_q());
-endmodule
-*/
-
 module clb_BOUTMUX_CY (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y101";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
 
-    wire [3:0] cout;
-    assign dout[0] = cout[1];
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din),
-            .lut8o(),
-            .co(), .cout(cout), .bo5(), .bo6(),
-            .n5ff_q());
+    myLUT8 #(.LOC(LOC), .N(N))
+            myLUT8(.clk(clk), .din(din), .lut8o(),
+            .caro(), .carco(dout[0]),
+            .bo5(), .bo6(),
+            .ff_q());
 endmodule
 
 //clb_BOUTMUX_F8: already have above as clb_LUT8
 module clb_BOUTMUX_F8 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y102";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
 
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din), .lut8o(dout[0]), .co(), .cout(), .bo5(), .bo6());
+    myLUT8 #(.LOC(LOC), .N(N))
+            myLUT8(.clk(clk), .din(din), .lut8o(dout[0]),
+            .caro(), .carco(),
+            .bo5(), .bo6(),
+            .ff_q());
 endmodule
 
 /*
 //FIXME: need to force it to use both X and O6
 module clb_BOUTMUX_O6 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y103";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
 
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din), .lut8o(), .co(), .cout(), .bo5(), .bo6());
+    myLUT8 #(.LOC(LOC), .N(N))
+            myLUT8(.clk(clk), .din(din), .lut8o(), .co(), .carco(), .bo5(), .bo6());
 endmodule
 */
 
 module clb_BOUTMUX_O5 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y104";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
 
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din), .lut8o(), .co(), .cout(), .bo5(dout[1]), .bo6());
+    myLUT8 #(.LOC(LOC), .N(N))
+            myLUT8(.clk(clk), .din(din), .lut8o(),
+            .caro(), .carco(),
+            .bo5(dout[1]), .bo6(),
+            .ff_q());
 endmodule
-
-/*
-No observed difference to O5
-The buffer doesn't give me any additional info
-module clb_BOUTMUX_O56 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y105";
-
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din), .lut8o(), .co(), .cout(), .bo5(dout[1]), .bo6(dout[0]));
-endmodule
-*/
 
 module clb_BOUTMUX_B5Q (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y106";
-    wire [3:0] n5ff_q;
-    assign dout[0] = n5ff_q[1];
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
 
-    myLUT8 #(.LOC(LOC))
+    myLUT8 #(.LOC(LOC), .N(N))
             myLUT8(.clk(clk), .din(din),
             .lut8o(),
-            .co(), .cout(), .bo5(), .bo6(),
-            .n5ff_q(n5ff_q));
+            .caro(), .carco(),
+            .bo5(), .bo6(),
+            .ff_q(dout[0]));
 endmodule
 
 module clb_BOUTMUX_XOR (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC="SLICE_X18Y107";
+    parameter LOC="SLICE_FIXME";
+    parameter N=1;
 
     //Shady connections, just enough to keep it placed
     wire [3:0] co;
     assign dout = co[1];
 
-    myLUT8 #(.LOC(LOC))
-            myLUT8(.clk(clk), .din(din), .lut8o(), .co(co), .cout(), .bo5(), .bo6());
+    myLUT8 #(.LOC(LOC), .N(N))
+            myLUT8(.clk(clk), .din(din), .lut8o(),
+            .caro(co), .cout(),
+            .bo5(), .bo6(),
+            .ff_q());
 endmodule
 
 
