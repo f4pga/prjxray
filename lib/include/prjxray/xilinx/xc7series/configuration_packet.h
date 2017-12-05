@@ -1,5 +1,5 @@
-#ifndef PRJXRAY_LIB_XILINX_7SERIES_CONFIGURATION_PACKET_H
-#define PRJXRAY_LIB_XILINX_7SERIES_CONFIGURATION_PACKET_H
+#ifndef PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_PACKET_H
+#define PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_PACKET_H
 
 #include <cstdint>
 
@@ -7,11 +7,13 @@
 #include <absl/types/span.h>
 
 namespace prjxray {
+namespace xilinx {
+namespace xc7series {
 
-class Xilinx7SeriesConfigurationPacket {
+class ConfigurationPacket {
  public:
 	typedef std::pair<absl::Span<uint32_t>,
-		          absl::optional<Xilinx7SeriesConfigurationPacket>>
+		          absl::optional<ConfigurationPacket>>
 		ParseResult;
 
 	enum Opcode {
@@ -21,8 +23,8 @@ class Xilinx7SeriesConfigurationPacket {
 		/* reserved = 3 */
 	};
 
-	Xilinx7SeriesConfigurationPacket(Opcode opcode, uint32_t address,
-					 const absl::Span<uint32_t> &data)
+	ConfigurationPacket(Opcode opcode, uint32_t address,
+			    const absl::Span<uint32_t> &data)
 		: opcode_(opcode), address_(address), data_(std::move(data)) {}
 
 	// Attempt to read a configuration packet from a sequence of
@@ -33,8 +35,8 @@ class Xilinx7SeriesConfigurationPacket {
 	// packet is produced.  If no valid header is found, an empty span is
 	// returned.
 	static ParseResult InitWithWords(
-		absl::Span<uint32_t> words,
-		const Xilinx7SeriesConfigurationPacket *previous_packet = nullptr);
+			absl::Span<uint32_t> words,
+			const ConfigurationPacket *previous_packet = nullptr);
 
 	const Opcode opcode() const { return opcode_; }
 	const uint32_t address() const { return address_; }
@@ -46,9 +48,10 @@ class Xilinx7SeriesConfigurationPacket {
 	absl::Span<uint32_t> data_;
 };
 
-std::ostream& operator<<(std::ostream& o,
-			 const Xilinx7SeriesConfigurationPacket &packet);
+std::ostream& operator<<(std::ostream& o, const ConfigurationPacket &packet);
 
+}  // namespace xc7series
+}  // namespace xilinx
 }  // namespace prjxray
 
-#endif  // PRJXRAY_LIB_XILINX_7SERIES_CONFIGURATION_PACKET_H
+#endif  // PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_PACKET_H

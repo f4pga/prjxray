@@ -1,71 +1,71 @@
 #include <array>
 
 #include <gtest/gtest.h>
-#include <prjxray/xilinx_7series_bitstream_reader.h>
-#include <prjxray/xilinx_7series_configuration_packet.h>
+#include <prjxray/xilinx/xc7series/bitstream_reader.h>
+#include <prjxray/xilinx/xc7series/configuration_packet.h>
 
-using prjxray::Xilinx7SeriesBitstreamReader;
-using prjxray::Xilinx7SeriesConfigurationPacket;
+using prjxray::xilinx::xc7series::BitstreamReader;
+using prjxray::xilinx::xc7series::ConfigurationPacket;
 
-TEST(Xilinx7SeriesBitstreamReaderTest, InitWithEmptyBytesReturnsNull) {
+TEST(BitstreamReaderTest, InitWithEmptyBytesReturnsNull) {
 	absl::Span<uint8_t> bitstream;
-	auto reader = Xilinx7SeriesBitstreamReader::InitWithBytes(bitstream);
+	auto reader = BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_FALSE(reader);
 }
 
-TEST(Xilinx7SeriesBitstreamReaderTest, InitWithOnlySyncReturnsObject) {
+TEST(BitstreamReaderTest, InitWithOnlySyncReturnsObject) {
 	std::vector<uint8_t> bitstream{0xAA, 0x99, 0x55, 0x66};
-	auto reader = Xilinx7SeriesBitstreamReader::InitWithBytes(bitstream);
+	auto reader = BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_TRUE(reader);
 }
 
-TEST(Xilinx7SeriesBitstreamReaderTest,
+TEST(BitstreamReaderTest,
      InitWithSyncAfterNonWordSizedPaddingReturnsObject) {
 	std::vector<uint8_t> bitstream{
 		0xFF, 0xFE,
 		0xAA, 0x99, 0x55, 0x66
 	};
-	auto reader = Xilinx7SeriesBitstreamReader::InitWithBytes(bitstream);
+	auto reader = BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_TRUE(reader);
 }
 
-TEST(Xilinx7SeriesBitstreamReaderTest,
+TEST(BitstreamReaderTest,
      InitWithSyncAfterWordSizedPaddingReturnsObject) {
 	std::vector<uint8_t> bitstream{
 		0xFF, 0xFE, 0xFD, 0xFC,
 		0xAA, 0x99, 0x55, 0x66
 	};
-	auto reader = Xilinx7SeriesBitstreamReader::InitWithBytes(bitstream);
+	auto reader = BitstreamReader::InitWithBytes(bitstream);
 	EXPECT_TRUE(reader);
 }
 
-TEST(Xilinx7SeriesBitstreamReaderTest, ParsesType1Packet) {
+TEST(BitstreamReaderTest, ParsesType1Packet) {
 	std::vector<uint8_t> bitstream{
 		0xAA, 0x99, 0x55, 0x66,  // sync
 		0b001'00'000, 0b00000000, 0b000'00'000, 0b00000000,  // NOP
 	};
-	auto reader = Xilinx7SeriesBitstreamReader::InitWithBytes(bitstream);
+	auto reader = BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
 	ASSERT_NE(reader->begin(), reader->end());
 
 	auto first_packet = reader->begin();
-	EXPECT_EQ(first_packet->opcode(), Xilinx7SeriesConfigurationPacket::Opcode::NOP);
+	EXPECT_EQ(first_packet->opcode(), ConfigurationPacket::Opcode::NOP);
 
 	EXPECT_EQ(++first_packet, reader->end());
 }
 
-TEST(Xilinx7SeriesBitstreamReaderTest, ParseType2PacketWithoutType1Fails) {
+TEST(BitstreamReaderTest, ParseType2PacketWithoutType1Fails) {
 	std::vector<uint8_t> bitstream{
 		0xAA, 0x99, 0x55, 0x66,  // sync
 		0b010'00'000, 0b00000000, 0b000'00'000, 0b00000000,  // NOP
 	};
-	auto reader = Xilinx7SeriesBitstreamReader::InitWithBytes(bitstream);
+	auto reader = BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
 	EXPECT_EQ(reader->begin(), reader->end());
 }
 
 
-TEST(Xilinx7SeriesBitstreamReaderTest, ParsesType2AfterType1Packet) {
+TEST(BitstreamReaderTest, ParsesType2AfterType1Packet) {
 	std::vector<uint8_t> bitstream{
 		0xAA, 0x99, 0x55, 0x66,  // sync
 		0b001'01'000, 0b00000000, 0b011'00'000, 0b00000000,  // Read
@@ -75,20 +75,21 @@ TEST(Xilinx7SeriesBitstreamReaderTest, ParsesType2AfterType1Packet) {
 		0x9, 0xA, 0xB, 0xC,
 		0xD, 0xE, 0xF, 0x10,
 	};
-	std::vector<uint32_t> data_words{ 0x01020304, 0x05060708, 0x090A0B0C, 0x0D0E0F10};
+	std::vector<uint32_t> data_words{
+		0x01020304, 0x05060708, 0x090A0B0C, 0x0D0E0F10};
 
-	auto reader = Xilinx7SeriesBitstreamReader::InitWithBytes(bitstream);
+	auto reader = BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
 	ASSERT_NE(reader->begin(), reader->end());
 
 	auto first_packet = reader->begin();
-	EXPECT_EQ(first_packet->opcode(), Xilinx7SeriesConfigurationPacket::Opcode::Read);
+	EXPECT_EQ(first_packet->opcode(), ConfigurationPacket::Opcode::Read);
 	EXPECT_EQ(first_packet->address(), static_cast<uint32_t>(0x3));
 	EXPECT_EQ(first_packet->data(), absl::Span<uint32_t>());
 
 	auto second_packet = ++first_packet;
 	ASSERT_NE(second_packet, reader->end());
-	EXPECT_EQ(second_packet->opcode(), Xilinx7SeriesConfigurationPacket::Opcode::Read);
+	EXPECT_EQ(second_packet->opcode(), ConfigurationPacket::Opcode::Read);
 	EXPECT_EQ(second_packet->address(), static_cast<uint32_t>(0x3));
 	EXPECT_EQ(first_packet->data(), absl::Span<uint32_t>(data_words));
 
