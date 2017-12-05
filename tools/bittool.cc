@@ -4,7 +4,9 @@
 #include <absl/types/span.h>
 #include <gflags/gflags.h>
 #include <prjxray/memory_mapped_file.h>
-#include <prjxray/xilinx_7series_bitstream_reader.h>
+#include <prjxray/xilinx/xc7series/bitstream_reader.h>
+
+namespace xc7series = prjxray::xilinx::xc7series;
 
 DEFINE_string(action, "list_config_packets", "");
 
@@ -24,8 +26,7 @@ int ListConfigPackets(int argc, char *argv[]) {
 	auto in_bytes = absl::Span<uint8_t>(
 			static_cast<uint8_t*>(in_file->data()),
 			in_file->size());
-	auto reader = prjxray::Xilinx7SeriesBitstreamReader::InitWithBytes(
-			in_bytes);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(in_bytes);
 	if (!reader) {
 		std::cerr << "Input doesn't look like a bitstream"
 			  << std::endl;

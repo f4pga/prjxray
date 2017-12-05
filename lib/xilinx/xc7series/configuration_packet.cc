@@ -1,15 +1,16 @@
-#include <prjxray/xilinx_7series_configuration_packet.h>
+#include <prjxray/xilinx/xc7series/configuration_packet.h>
 
 #include <ostream>
 
 #include <prjxray/bit_ops.h>
 
 namespace prjxray {
+namespace xilinx {
+namespace xc7series {
 
-std::pair<absl::Span<uint32_t>, absl::optional<Xilinx7SeriesConfigurationPacket>>
-Xilinx7SeriesConfigurationPacket::InitWithWords(
-		absl::Span<uint32_t> words,
-		const Xilinx7SeriesConfigurationPacket *previous_packet) {
+std::pair<absl::Span<uint32_t>, absl::optional<ConfigurationPacket>>
+ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
+				   const ConfigurationPacket *previous_packet) {
 	// Need at least one 32-bit word to have a valid packet header.
 	if (words.size() < 1) return  {words, {}};
 
@@ -31,7 +32,7 @@ Xilinx7SeriesConfigurationPacket::InitWithWords(
 			{{opcode, address, words.subspan(1, data_word_count)}}};
 	}
 	case 0b010: {
-		absl::optional<Xilinx7SeriesConfigurationPacket> packet;
+		absl::optional<ConfigurationPacket> packet;
 		Opcode opcode = static_cast<Opcode>(
 				bit_field_get(words[0], 28, 27));
 		uint32_t data_word_count = bit_field_get(words[0], 26, 0);
@@ -43,7 +44,7 @@ Xilinx7SeriesConfigurationPacket::InitWithWords(
 		}
 
 		if (previous_packet) {
-			packet = Xilinx7SeriesConfigurationPacket(
+			packet = ConfigurationPacket(
 					opcode, previous_packet->address(),
 					words.subspan(1, data_word_count));
 		}
@@ -55,16 +56,15 @@ Xilinx7SeriesConfigurationPacket::InitWithWords(
 	}
 }
 
-std::ostream& operator<<(std::ostream& o,
-			 const Xilinx7SeriesConfigurationPacket &packet) {
+std::ostream& operator<<(std::ostream& o, const ConfigurationPacket &packet) {
 	switch (packet.opcode()) {
-		case Xilinx7SeriesConfigurationPacket::Opcode::NOP:
+		case ConfigurationPacket::Opcode::NOP:
 			return o << "[NOP]" << std::endl;
-		case Xilinx7SeriesConfigurationPacket::Opcode::Read:
+		case ConfigurationPacket::Opcode::Read:
 			return o << "[Read Address=" << packet.address()
 				 << " Length=" << packet.data().size() <<
 				 "]" << std::endl;
-		case Xilinx7SeriesConfigurationPacket::Opcode::Write:
+		case ConfigurationPacket::Opcode::Write:
 			return o << "[Write Address=" << packet.address()
 				 << " Length=" << packet.data().size() <<
 				 "]" << std::endl;
@@ -73,4 +73,6 @@ std::ostream& operator<<(std::ostream& o,
 	}
 }
 
+}  // namespace xc7series
+}  // namespace xilinx
 }  // namespace prjxray
