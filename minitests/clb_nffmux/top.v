@@ -64,9 +64,9 @@ module myLUT8 (input clk, input [7:0] din,
     assign carco = carco_all[N];
 
     wire [3:0] lutno6;
+    assign bo6 = lutno6[N];
     wire [3:0] lutno5;
     assign bo5 = lutno5[N];
-    assign bo6 = lutno6[N];
 
     //Outputs does not have to be used, will stay without it
     (* LOC=LOC, BEL="F8MUX", KEEP, DONT_TOUCH *)

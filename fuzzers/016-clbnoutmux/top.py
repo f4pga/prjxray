@@ -1,59 +1,86 @@
-//move some stuff to minitests/ncy0
+import random
 
+random.seed(0)
+
+CLBN = 400
+# SLICE_X12Y100
+# SLICE_X27Y149
+SLICEX = (12, 28)
+SLICEY = (100, 150)
+# 800
+SLICEN = (SLICEY[1] - SLICEY[0]) * (SLICEX[1] - SLICEX[0])
+print('//SLICEX: %s' % str(SLICEX))
+print('//SLICEY: %s' % str(SLICEY))
+print('//SLICEN: %s' % str(SLICEN))
+print('//Requested CLBs: %s' % str(CLBN))
+
+def gen_slices():
+    for slicey in range(*SLICEY):
+        for slicex in range(*SLICEX):
+            yield "SLICE_X%dY%d" % (slicex, slicey)
+
+DIN_N = CLBN * 8
+DOUT_N = CLBN * 8
+
+print('''
 module top(input clk, stb, di, output do);
-	localparam integer DIN_N = 256;
-	localparam integer DOUT_N = 256;
+    localparam integer DIN_N = %d;
+    localparam integer DOUT_N = %d;
 
-	reg [DIN_N-1:0] din;
-	wire [DOUT_N-1:0] dout;
+    reg [DIN_N-1:0] din;
+    wire [DOUT_N-1:0] dout;
 
-	reg [DIN_N-1:0] din_shr;
-	reg [DOUT_N-1:0] dout_shr;
+    reg [DIN_N-1:0] din_shr;
+    reg [DOUT_N-1:0] dout_shr;
 
-	always @(posedge clk) begin
-		din_shr <= {din_shr, di};
-		dout_shr <= {dout_shr, din_shr[DIN_N-1]};
-		if (stb) begin
-			din <= din_shr;
-			dout_shr <= dout;
-		end
-	end
-
-	assign do = dout_shr[DOUT_N-1];
-
-	roi roi (
-		.clk(clk),
-		.din(din),
-		.dout(dout)
-	);
-endmodule
-
-module roi(input clk, input [255:0] din, output [255:0] dout);
-    parameter N=3;
-
-    //ok
-    clb_NOUTMUX_CY #(.LOC("SLICE_X18Y100"), .N(N))
-            clb_NOUTMUX_CY       (.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    //ok
-    generate
-        if (N != 3) begin
-            clb_NOUTMUX_F78 #(.LOC("SLICE_X18Y101"), .N(N))
-                    clb_NOUTMUX_F78       (.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    always @(posedge clk) begin
+        din_shr <= {din_shr, di};
+        dout_shr <= {dout_shr, din_shr[DIN_N-1]};
+        if (stb) begin
+            din <= din_shr;
+            dout_shr <= dout;
         end
-    endgenerate
-    //ok
-    clb_NOUTMUX_O5 #(.LOC("SLICE_X18Y102"), .N(N))
-            clb_NOUTMUX_O5       (.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    //clb_NOUTMUX_O6 #(.LOC("SLICE_X18Y103"), .N(N))
-    //        clb_NOUTMUX_O6       (.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    //FIXME
-    clb_NOUTMUX_XOR #(.LOC("SLICE_X18Y104"), .N(N))
-            clb_NOUTMUX_XOR     (.clk(clk), .din(din[  56 +: 8]), .dout(dout[ 56 +: 8 ]));
-    //ok
-    clb_NOUTMUX_B5Q #(.LOC("SLICE_X18Y105"), .N(N))
-            clb_NOUTMUX_B5Q     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));    
-endmodule
+    end
 
+    assign do = dout_shr[DOUT_N-1];
+
+    roi roi (
+        .clk(clk),
+        .din(din),
+        .dout(dout)
+    );
+endmodule
+''' % (DIN_N, DOUT_N))
+
+f = open('params.csv', 'w')
+f.write('module,loc,n\n')
+slices = gen_slices()
+print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
+for i in range(CLBN):
+    # Don't have an O6 example
+    modules = ['clb_NOUTMUX_' + x for x in ['CY', 'F78', 'O5', 'XOR', 'B5Q']]
+    module = random.choice(modules)
+
+    if module == 'clb_NOUTMUX_F78':
+        n = random.randint(0, 2)
+    else:
+        n = random.randint(0, 3)
+    #n = 0
+    loc = next(slices)
+
+    print('    %s' % module)
+    print('            #(.LOC("%s"), .N(%d))' % (loc, n))
+    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
+
+    f.write('%s,%s,%s\n' % (module, loc, n))
+f.close()
+print('''endmodule
+
+// ---------------------------------------------------------------------
+
+''')
+
+print('''
 module myLUT8 (input clk, input [7:0] din,
         output lut8o, output lut7bo, output lut7ao,
         //caro: XOR additional result (main output)
@@ -271,4 +298,5 @@ module clb_NOUTMUX_B5Q (input clk, input [7:0] din, output [7:0] dout);
             .bo5(), .bo6(),
             .ff_q(dout[0]));
 endmodule
+''')
 
