@@ -134,7 +134,7 @@ for segname, segdata in grid["segments"].items():
             print("Loading %s segbits." % segtype)
             with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
                 for line in f:
-                    if ".DMUX." in line:
+                    if re.search(r"\.[ABCD]MUX\.", line):
                         add_pip_bits(line)
                     else:
                         add_single_bit(line)
@@ -394,7 +394,10 @@ function oml() {
                                 label = "LH"
                             elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX", bn):
                                 bgcolor = "#88aaff"
-                                label = "DMUX"
+                                label = "DMX"
+                            elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX", bn):
+                                bgcolor = "#aa88ff"
+                                label = "OMX"
                             elif re.match("^HCLK_[LR]", bn) and "_B_BOT" in bn:
                                 bgcolor = "#4466bb"
                                 label = "BOT"
