@@ -1,0 +1,7 @@
+read_verilog top.v
+read_verilog picorv32.v
+synth_xilinx -edif top.edif -top top
+
+# read_verilog picorv32.v
+# synth_xilinx -edif top.edif -top picorv32
+
