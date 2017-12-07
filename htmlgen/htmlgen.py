@@ -112,32 +112,40 @@ for segname, segdata in grid["segments"].items():
         for t in segdata["tiles"]:
             segtiles[segtype].add(grid["tiles"][t]["type"])
 
+        def add_pip_bits(line):
+            bit_name, *bit_pos = line.split()
+            for bit in bit_pos:
+                if bit[0] == "!":
+                    if bit[1:] not in routezbits[segtype]:
+                        routezbits[segtype][bit[1:]] = set()
+                    routezbits[segtype][bit[1:]].add(bit_name)
+                else:
+                    if bit not in routebits[segtype]:
+                        routebits[segtype][bit] = set()
+                    routebits[segtype][bit].add(bit_name)
+
+        def add_single_bit(line):
+            bit_name, bit_pos = line.split()
+            assert bit_pos[0] != "!"
+            segbits[segtype][bit_name] = bit_pos
+            segbits_r[segtype][bit_pos] = bit_name
+
         if segtype not in ["hclk_l", "hclk_r"]:
             print("Loading %s segbits." % segtype)
             with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
                 for line in f:
-                    bit_name, bit_pos = line.split()
-                    assert bit_pos[0] != "!"
-                    segbits[segtype][bit_name] = bit_pos
-                    segbits_r[segtype][bit_pos] = bit_name
+                    if ".DMUX." in line:
+                        add_pip_bits(line)
+                    else:
+                        add_single_bit(line)
 
         print("Loading %s segbits." % re.sub("clbl[lm]", "int", segtype))
         with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), re.sub("clbl[lm]", "int", segtype))) as f:
             for line in f:
-                bit_name, *bit_pos = line.split()
-                if segtype in ["hclk_l", "hclk_r"] and ".ENABLE_BUFFER." in bit_name:
-                    segbits[segtype][bit_name] = bit_pos[0]
-                    segbits_r[segtype][bit_pos[0]] = bit_name
+                if segtype in ["hclk_l", "hclk_r"] and ".ENABLE_BUFFER." in line:
+                    add_single_bit(line)
                 else:
-                    for bit in bit_pos:
-                        if bit[0] == "!":
-                            if bit[1:] not in routezbits[segtype]:
-                                routezbits[segtype][bit[1:]] = set()
-                            routezbits[segtype][bit[1:]].add(bit_name)
-                        else:
-                            if bit not in routebits[segtype]:
-                                routebits[segtype][bit] = set()
-                            routebits[segtype][bit].add(bit_name)
+                    add_pip_bits(line)
 
         print("Loading %s maskbits." % segtype)
         with open("../database/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
@@ -384,6 +392,9 @@ function oml() {
                             elif re.match("^INT_[LR].LH", bn):
                                 bgcolor = "#4466bb"
                                 label = "LH"
+                            elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX", bn):
+                                bgcolor = "#88aaff"
+                                label = "DMUX"
                             elif re.match("^HCLK_[LR]", bn) and "_B_BOT" in bn:
                                 bgcolor = "#4466bb"
                                 label = "BOT"
@@ -454,7 +465,7 @@ function oml() {
 
         for bit, pips in routebits_routezbits:
             for pip in pips:
-                grp = pip.split('.')[1]
+                grp = ".".join(pip.split('.')[:-1])
                 ruf.union(grp, bit)
 
         rgroups = dict()
@@ -462,7 +473,7 @@ function oml() {
 
         for bit, pips in routebits_routezbits:
             for pip in pips:
-                grp_name = pip.split('.')[1]
+                grp_name = ".".join(pip.split('.')[:-1])
                 grp = ruf.find(grp_name)
                 if grp not in rgroup_names:
                     rgroup_names[grp] = set()
@@ -476,7 +487,7 @@ function oml() {
         shared_bits = dict()
         for bit, pips in routebits_routezbits:
             for pip in pips:
-                grp_name = pip.split('.')[1]
+                grp_name = ".".join(pip.split('.')[:-1])
                 if bit not in shared_bits:
                     shared_bits[bit] = set()
                 shared_bits[bit].add(grp_name)
