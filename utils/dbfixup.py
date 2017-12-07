@@ -9,6 +9,16 @@ zero_db = [
     "00_13 01_17 00_15 00_17|00_18 00_19 01_13 00_14",
     "00_34 00_38 01_33 01_37|00_35 00_39 01_38 01_40",
     "00_33 00_41 01_32 01_34|00_37 00_42 01_36 01_41",
+
+    # CLBL?_?.SLICE?_X?.?FF.DMUX
+    "30_00 30_01 30_02 30_03",
+    "30_24 30_25 30_26 30_27",
+    "30_35 30_36 30_37 30_38",
+    "30_59 30_60 30_61 30_62",
+    "30_04 31_00 31_01 31_02",
+    "31_24 31_25 31_26 31_27",
+    "31_35 31_36 31_37 31_38",
+    "30_58 31_60 31_61 31_62",
 ]
 
 def add_zero_bits(tile_type):
@@ -33,9 +43,13 @@ def add_zero_bits(tile_type):
                     if bit not in bits:
                         bits.add("!" + bit)
             for zdb in zero_db:
-                a, b = zdb.split("|")
-                a = a.split()
-                b = b.split()
+                if "|" in zdb:
+                    a, b = zdb.split("|")
+                    a = a.split()
+                    b = b.split()
+                else:
+                    a = zdb.split()
+                    b = a
                 match = False
                 for bit in a:
                     if bit in bits:
@@ -70,6 +84,10 @@ def update_mask(mask_db, *src_dbs):
 
 add_zero_bits("int_l")
 add_zero_bits("int_r")
+add_zero_bits("clbll_l")
+add_zero_bits("clbll_r")
+add_zero_bits("clblm_l")
+add_zero_bits("clblm_r")
 
 update_mask("clbll_l", "clbll_l", "int_l")
 update_mask("clbll_r", "clbll_r", "int_r")
