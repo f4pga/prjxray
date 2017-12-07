@@ -1,12 +1,18 @@
 import random
-
 random.seed(0)
+import os
+import re
+
+def slice_xy():
+    '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for xrange)'''
+    # SLICE_X12Y100:SLICE_X27Y149
+    # Note XRAY_ROI_GRID_* is something else
+    m = re.match(r'SLICE_X(.*)Y(.*):SLICE_X(.*)Y(.*)', os.getenv('XRAY_ROI'))
+    ms = [int(m.group(i + 1)) for i in range(4)]
+    return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
 
 CLBN = 400
-# SLICE_X12Y100
-# SLICE_X27Y149
-SLICEX = (12, 28)
-SLICEY = (100, 150)
+SLICEX, SLICEY = slice_xy()
 # 800
 SLICEN = (SLICEY[1] - SLICEY[0]) * (SLICEX[1] - SLICEX[0])
 print('//SLICEX: %s' % str(SLICEX))
