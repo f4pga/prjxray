@@ -22,21 +22,37 @@ for l in txt.split('\n'):
     # input CLKARDCLK,
     # input [13:0] ADDRARDADDR,
     # output [1:0] DOPBDOP
-    m = re.match(r'(input|output)( \[([0-9]*):([0:9]*)\] | )([a-zA-Z0-9_]+)', l)
+    m = re.match(r'(input|output)( \[([0-9]*):([0:9]*)\] | )([a-zA-Z0-9_ ,]+)', l)
     if m:
-        name = m.group(5)
+        names = m.group(5)
         aio = m.group(1)
+        
+        for name in names.split(','):
+            name = name.strip()
+            if not name:
+                continue
+            wout = None
+            width = m.group(2).strip()
+            if width:
+                mw = re.match(r'\[([0-9]*):([0:9]*)\]', width)
+                wl = int(mw.group(1))
+                wr = int(mw.group(2))
+                wout = (wl, wr)
 
-        wout = None
-        width = m.group(2).strip()
-        if width:
-            mw = re.match(r'\[([0-9]*):([0:9]*)\]', width)
-            wl = int(mw.group(1))
-            wr = int(mw.group(2))
-            wout = (wl, wr)
-
-        ios.append((name, aio, wout))
+            ios.append((name, aio, wout))
         continue
+
+    # output DPO, SPO,
+    # input  D, WCLK, WE,
+    m = re.match(r'(input|output)(.*)', l)
+    if m:
+        aio = m.group(1)
+        wout = None
+        for name in m.group(2).split(','):
+            name = name.strip()
+            if not name:
+                continue
+            ios.append((name, aio, wout))
 
     # parameter SIM_DEVICE = "VIRTEX6";
     m = re.match(r'parameter([ ])([a-zA-Z0-9_]+) = (.+);', l)
@@ -49,6 +65,8 @@ for l in txt.split('\n'):
         params.append((name, wout, defval))
 
 
+    # input A0, A1, A2, A3, A4, A5, D, WCLK, WE;
+    
 modinst = modname
 
 print '''\
