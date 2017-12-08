@@ -18,11 +18,11 @@ clb_NFFMUX_O6,SLICE_X14Y100,3
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
-    src,loc,n = l.split(',')
+    module,loc,n = l.split(',')
     n = int(n)
     which = chr(ord('A') + n)
     # clb_NFFMUX_AX => AX
-    src = src.replace('clb_NFFMUX_', '')
+    src = module.replace('clb_NFFMUX_', '')
 
     '''
     AFFMUX
