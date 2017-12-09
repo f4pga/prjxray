@@ -398,6 +398,9 @@ function oml() {
                             elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX", bn):
                                 bgcolor = "#aa88ff"
                                 label = "OMX"
+                            elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].PRECYINIT", bn):
+                                bgcolor = "#88aaff"
+                                label = "CYI"
                             elif re.match("^HCLK_[LR]", bn) and "_B_BOT" in bn:
                                 bgcolor = "#4466bb"
                                 label = "BOT"
