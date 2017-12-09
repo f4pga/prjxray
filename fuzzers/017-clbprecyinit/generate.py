@@ -14,9 +14,6 @@ for l in f:
     module,loc,loc2 = l.split(',')
     # clb_PRECYINIT_AX => AX
     src = module.replace('clb_PRECYINIT_', '')
-    print(src, src == '0')
-    #if src == 'CIN':
-    #    continue
 
     '''
     PRECYINIT
