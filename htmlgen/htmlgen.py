@@ -134,7 +134,7 @@ for segname, segdata in grid["segments"].items():
             print("Loading %s segbits." % segtype)
             with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
                 for line in f:
-                    if re.search(r"\.[ABCD]MUX\.", line):
+                    if re.search(r"(\.[ABCD]MUX\.)|(\.PRECYINIT\.)", line):
                         add_pip_bits(line)
                     else:
                         add_single_bit(line)
