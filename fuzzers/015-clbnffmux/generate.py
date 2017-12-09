@@ -35,9 +35,11 @@ for l in f:
     O6                              1
     '''
 
+    # if location not included in cache yet: start with assuming all four MUXes are unused.
     if loc not in cache:
         cache[loc] = set("ABCD")
 
+    # rewrite name of F78 source net: MUXes A and C have an F7 input, MUX B has an F8 input
     if src == "F78":
         if which in "AC":
             src = "F7"
@@ -46,13 +48,18 @@ for l in f:
         else:
             assert 0
 
+    # rewrite name of AX source net: It's actually AX, BX, CX, or DX
     if src == "AX":
         src = which + "X"
 
+    # add the 1-tag for this connection
     tag = "%sFF.DMUX.%s" % (which, src)
     segmk.addtag(loc, tag, 1)
+
+    # remove this MUX from the cache, preventing generation of 0-tags for this MUX
     cache[loc].remove(which)
 
+# create 0-tags for all sources on the remaining (unused) MUXes
 for loc, muxes in cache.items():
     for which in muxes:
         for src in "F7 F8 CY O5 AX XOR O6".split():
@@ -62,6 +69,7 @@ for loc, muxes in cache.items():
             tag = "%sFF.DMUX.%s" % (which, src)
             segmk.addtag(loc, tag, 0)
 
+# we know that all bits for those MUXes are in frames 30 and 31, so filter all other bits
 def bitfilter(frame_idx, bit_idx):
     assert os.getenv("XRAY_DATABASE") == "artix7"
     return frame_idx in [30, 31]

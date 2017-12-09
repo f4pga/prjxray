@@ -35,9 +35,11 @@ for l in f:
     B5Q                             1
     '''
 
+    # if location not included in cache yet: start with assuming all four MUXes are unused.
     if loc not in cache:
         cache[loc] = set("ABCD")
 
+    # rewrite name of F78 source net: MUXes A and C have an F7 input, MUX B has an F8 input
     if src == "F78":
         if which in "AC":
             src = "F7"
@@ -46,13 +48,18 @@ for l in f:
         else:
             assert 0
 
+    # rewrite name of B5Q source net: It's actually A5Q, B5Q, C5Q, or D5Q
     if src == "B5Q":
         src = which + "5Q"
 
+    # add the 1-tag for this connection
     tag = "%sMUX.%s" % (which, src)
     segmk.addtag(loc, tag, 1)
+
+    # remove this MUX from the cache, preventing generation of 0-tags for this MUX
     cache[loc].remove(which)
 
+# create 0-tags for all sources on the remaining (unused) MUXes
 for loc, muxes in cache.items():
     for which in muxes:
         for src in "F7 F8 CY O5 XOR O6 5Q".split():
@@ -65,6 +72,9 @@ for loc, muxes in cache.items():
 def bitfilter(frame_idx, bit_idx):
     assert os.getenv("XRAY_DATABASE") == "artix7"
 
+    # locations of A5MA, B5MA, C5MA, D5MA bits. because of the way we generate specimens
+    # in this fuzzer we get some aliasing with those bits, so we have to manually exclude
+    # them. (Maybe FIXME: read the bit locations from the database files)
     if (frame_idx, bit_idx) in [
             (30, 55), (31, 55), # D5MA
             (31, 44), (31, 45), # C5MA
@@ -72,6 +82,7 @@ def bitfilter(frame_idx, bit_idx):
             (30,  9), (31,  8), # A5MA
         ]: return False
 
+    # we know that all bits for those MUXes are in frames 30 and 31, so filter all other bits
     return frame_idx in [30, 31]
 
 segmk.compile(bitfilter=bitfilter)
