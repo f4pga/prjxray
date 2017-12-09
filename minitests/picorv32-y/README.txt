@@ -1,1 +1,1 @@
-Unknown bits CPU synthesis test (Vivado synthesis)
+Unknown bits CPU synthesis test (Yosys synthesis + Vivado for PnR)
