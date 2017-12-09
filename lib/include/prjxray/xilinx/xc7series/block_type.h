@@ -1,6 +1,8 @@
 #ifndef PRJXRAY_LIB_XILINX_XC7SERIES_BLOCK_TYPE_H_
 #define PRJXRAY_LIB_XILINX_XC7SERIES_BLOCK_TYPE_H_
 
+#include <ostream>
+
 namespace prjxray {
 namespace xilinx {
 namespace xc7series {
@@ -11,7 +13,9 @@ enum class BlockType : unsigned int {
 	CFG_CLB = 0b010,
 	/* reserved = 0b011, */
 };
-	
+
+std::ostream &operator<<(std::ostream &o, BlockType value);
+
 }  // namespace xc7series
 }  // namespace xilinx
 }  // namespace prjxray
