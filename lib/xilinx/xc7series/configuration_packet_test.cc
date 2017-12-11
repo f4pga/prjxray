@@ -86,6 +86,7 @@ TEST(ConfigPacket, InitWithType2WithoutPreviousPacketFails) {
 
 TEST(ConfigPacket, InitWithType2WithPreviousPacket) {
 	xc7series::ConfigurationPacket previous_packet(
+			static_cast<unsigned int>(0x1),
 			xc7series::ConfigurationPacket::Opcode::Read,
 			xc7series::ConfigurationRegister::MFWR,
 			absl::Span<uint32_t>());
