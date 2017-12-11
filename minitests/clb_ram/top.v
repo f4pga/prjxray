@@ -41,310 +41,6 @@ module top(input clk, stb, di, output do);
 endmodule
 
 module roi(input clk, input [255:0] din, output [255:0] dout);
-    //ok
-    my_NDI1MUX_NMC31 #(.LOC("SLICE_X6Y100"))
-            my_NDI1MUX_NMC31(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    /*
-    //Can't find a valid solution
-    my_NDI1MUX_NDI1 #(.LOC("SLICE_X6Y101"))
-            my_NDI1MUX_NDI1(.clk(clk), .din(din[  8 +: 32]), .dout(dout[  8 +: 8]));
-    */
-    my_NDI1MUX_NI #(.LOC("SLICE_X6Y102"))
-            my_NDI1MUX_NI(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
-    
-    
-
-    /*
-    //ok
-    my_BDI1MUX_AI #(.LOC("SLICE_X8Y100"), .BEL("A6LUT"))
-            my_BDI1MUX_AI(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
-    */
-    /*
-    //bad
-    my_BDI1MUX_BDI1 #(.LOC("SLICE_X8Y101"), .BELO("C6LUT"), .BELI("A6LUT"))
-            my_BDI1MUX_BDI1(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
-    */
-    /*
-    //ok
-    my_BDI1MUX_BMC31 #(.LOC("SLICE_X8Y102"), .BELO("B6LUT"), .BELI("A6LUT"))
-            my_BDI1MUX_BMC31(.clk(clk), .din(din[  80 +: 8]), .dout(dout[  80 +: 8]));
-    */
-endmodule
-
-/****************************************************************************
-Tries to set all three muxes at once
-****************************************************************************/
-
-module my_NDI1MUX_NMC31 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "SLICE_X6Y100";
-    wire [3:0] q31;
-
-    (* LOC=LOC, BEL="D6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutd (
-            .Q(dout[0]),
-            .Q31(q31[3]),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-    (* LOC=LOC, BEL="C6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutc (
-            .Q(dout[1]),
-            .Q31(q31[2]),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            //.D(din[7]));
-            .D(q31[3]));
-    (* LOC=LOC, BEL="B6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutb (
-            .Q(dout[2]),
-            .Q31(q31[1]),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            //.D(din[7]));
-            .D(q31[2]));
-    (* LOC=LOC, BEL="A6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) luta (
-            .Q(dout[3]),
-            .Q31(q31[0]),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            //.D(din[7]));
-            .D(q31[1]));
-endmodule
-
-/*
-//Cannot loc instance 'roi/my_NDI1MUX_NDI1/lutc' at site SLICE_X6Y100,
-//Bel does not match with the valid locations at which this inst can be placed
-
-module my_NDI1MUX_NDI1 (input clk, input [31:0] din, output [7:0] dout);
-    parameter LOC = "SLICE_X6Y100";
-    wire [3:0] q31;
-
-    (* LOC=LOC, BEL="D6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutd (
-            .Q(dout[0]),
-            .Q31(q31[3]),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-    (* LOC=LOC, BEL="C6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutc (
-            .Q(dout[1]),
-            .Q31(q31[2]),
-            .A(din[12:8]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[15]));
-    (* LOC=LOC, BEL="B6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutb (
-            .Q(dout[2]),
-            .Q31(q31[1]),
-            .A(din[20:16]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            //.D(din[23]));
-            .D(q31[2]));
-    (* LOC=LOC, BEL="A6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) luta (
-            .Q(dout[3]),
-            .Q31(q31[0]),
-            .A(din[28:24]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            //.D(din[31]));
-            .D(q31[2]));
-endmodule
-*/
-
-
-module my_NDI1MUX_NI (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "SLICE_X6Y100";
-
-    (* LOC=LOC, BEL="D6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutd (
-            .Q(dout[0]),
-            .Q31(),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-    (* LOC=LOC, BEL="C6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutc (
-            .Q(dout[1]),
-            .Q31(),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-    (* LOC=LOC, BEL="B6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutb (
-            .Q(dout[2]),
-            .Q31(),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-    (* LOC=LOC, BEL="A6LUT" *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) luta (
-            .Q(dout[3]),
-            .Q31(),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-endmodule
-
-/****************************************************************************
-Individual mux tests
-****************************************************************************/
-
-module my_BDI1MUX_AI (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "";
-    parameter BEL="A6LUT";
-
-    wire mc31c;
-
-    (* LOC=LOC, BEL=BEL *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lut (
-            .Q(dout[0]),
-            .Q31(mc31c),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-endmodule
-
-module my_BDI1MUX_BDI1 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "";
-    parameter BELO="C6LUT";
-    parameter BELI="A6LUT";
-
-    wire mc31c;
-    //wire da = din[6];
-
-    (* LOC=LOC, BEL=BELO *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutb (
-            .Q(dout[0]),
-            .Q31(mc31c),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-    (* LOC=LOC, BEL=BELI *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) luta (
-            .Q(dout[1]),
-            .Q31(dout[2]),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(mc31c));
-endmodule
-
-//ok
-module my_BDI1MUX_BMC31 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "";
-    parameter BELO="B6LUT";
-    parameter BELI="A6LUT";
-
-    wire mc31b;
-
-    (* LOC=LOC, BEL=BELO *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) lutb (
-            .Q(dout[0]),
-            .Q31(mc31b),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(din[7]));
-    (* LOC=LOC, BEL=BELI *)
-    SRLC32E #(
-            .INIT(32'h00000000),
-            .IS_CLK_INVERTED(1'b0)
-        ) luta (
-            .Q(dout[1]),
-            .Q31(dout[2]),
-            .A(din[4:0]),
-            .CE(din[5]),
-            .CLK(din[6]),
-            .D(mc31b));
-
-endmodule
-
-
-
-
-
-
-
-
-
-/*
-Old stuff
-This is original file, move mux test out and restore this
-*/
-
-
-
-
-
-
-
-
-
-
     /*
     //BEL works
     my_SRLC32E #(.LOC("SLICE_X6Y100"), .BEL("A6LUT"))
@@ -356,6 +52,42 @@ This is original file, move mux test out and restore this
     my_SRLC32E #(.LOC("SLICE_X6Y103"), .BEL("D6LUT"))
             c3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
     */
+
+    /*
+    //BEL works
+    //No unknown bits
+    my_SRL16E #(.LOC("SLICE_X6Y100"), .BEL("A6LUT"))
+            c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    my_SRL16E #(.LOC("SLICE_X6Y101"), .BEL("B6LUT"))
+            c1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    my_SRL16E #(.LOC("SLICE_X6Y102"), .BEL("C6LUT"))
+            c2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    my_SRL16E #(.LOC("SLICE_X6Y103"), .BEL("D6LUT"))
+            c3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    */
+
+/*
+RAM64M 64-Deep by 4-bit Wide Multi Port Random Access Memory (Select RAM)
+RAM64X1D 64-Deep by 1-Wide Dual Port Static Synchronous RAM
+RAM64X1S 64-Deep by 1-Wide Static Synchronous RAM
+RAM64X1S_1 64-Deep by 1-Wide Static Synchronous RAM with Negative-Edge Clock
+*/
+
+    /*
+    my_RAM64M #(.LOC("SLICE_X6Y100"))
+            my_RAM64M(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    my_RAM64X1S #(.LOC("SLICE_X6Y101"))
+            my_RAM64X1S(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    my_RAM64X1S_1 #(.LOC("SLICE_X6Y102"))
+            my_RAM64X1S_1(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    my_RAM64X2S #(.LOC("SLICE_X6Y103"))
+            my_RAM64X2S(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    my_RAM64X1D #(.LOC("SLICE_X6Y104"))
+            my_RAM64X1D(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    my_RAM128X1D #(.LOC("SLICE_X6Y105"))
+            my_RAM128X1D(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
+    */
+endmodule
 
 module my_SRLC32E (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
@@ -376,18 +108,6 @@ module my_SRLC32E (input clk, input [7:0] din, output [7:0] dout);
             .D(din[7]));
 endmodule
 
-    /*
-    //BEL works
-    //No unknown bits
-    my_SRL16E #(.LOC("SLICE_X6Y100"), .BEL("A6LUT"))
-            c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    my_SRL16E #(.LOC("SLICE_X6Y101"), .BEL("B6LUT"))
-            c1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    my_SRL16E #(.LOC("SLICE_X6Y102"), .BEL("C6LUT"))
-            c2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    my_SRL16E #(.LOC("SLICE_X6Y103"), .BEL("D6LUT"))
-            c3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    */
 
 module my_SRL16E (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
@@ -429,28 +149,6 @@ module my_RAM64M (input clk, input [7:0] din, output [7:0] dout);
             .WE(din[1]));
 endmodule
 
-
-/*
-RAM64M 64-Deep by 4-bit Wide Multi Port Random Access Memory (Select RAM)
-RAM64X1D 64-Deep by 1-Wide Dual Port Static Synchronous RAM
-RAM64X1S 64-Deep by 1-Wide Static Synchronous RAM
-RAM64X1S_1 64-Deep by 1-Wide Static Synchronous RAM with Negative-Edge Clock
-*/
-
-    /*
-    my_RAM64M #(.LOC("SLICE_X6Y100"))
-            my_RAM64M(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    my_RAM64X1S #(.LOC("SLICE_X6Y101"))
-            my_RAM64X1S(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    my_RAM64X1S_1 #(.LOC("SLICE_X6Y102"))
-            my_RAM64X1S_1(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    my_RAM64X2S #(.LOC("SLICE_X6Y103"))
-            my_RAM64X2S(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    my_RAM64X1D #(.LOC("SLICE_X6Y104"))
-            my_RAM64X1D(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    my_RAM128X1D #(.LOC("SLICE_X6Y105"))
-            my_RAM128X1D(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
-    */
 
 module my_RAM64X1S (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
