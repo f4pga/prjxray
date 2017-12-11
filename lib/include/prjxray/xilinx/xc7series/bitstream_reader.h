@@ -49,6 +49,8 @@ class BitstreamReader {
 	template<typename T>
 	static absl::optional<BitstreamReader> InitWithBytes(T &bitstream);
 
+	const std::vector<uint32_t> &words() { return words_; };
+
 	// Returns an iterator that yields `ConfigurationPackets`
 	// as read from the bitstream.
 	iterator begin();
