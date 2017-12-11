@@ -32,7 +32,8 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 		}
 
 		return {words.subspan(data_word_count+1),
-			{{opcode, address, words.subspan(1, data_word_count)}}};
+			{{header_type, opcode, address,
+				 words.subspan(1, data_word_count)}}};
 	}
 	case 0b010: {
 		absl::optional<ConfigurationPacket> packet;
@@ -48,7 +49,8 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 
 		if (previous_packet) {
 			packet = ConfigurationPacket(
-					opcode, previous_packet->address(),
+					header_type, opcode,
+					previous_packet->address(),
 					words.subspan(1, data_word_count));
 		}
 
@@ -62,26 +64,48 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 std::ostream& operator<<(std::ostream& o, const ConfigurationPacket &packet) {
 	switch (packet.opcode()) {
 		case ConfigurationPacket::Opcode::NOP:
-			return o << "[NOP]" << std::endl;
+			o << "[NOP]" << std::endl;
+			break;
 		case ConfigurationPacket::Opcode::Read:
-			return o << "[Read Address="
-				 << std::setw(2)
-				 << static_cast<int>(packet.address())
-				 << " Length="
-				 << std::setw(10) << packet.data().size()
-				 << " Reg=\"" << packet.address() << "\""
-				 << "]" << std::endl;
+			o << "[Read Type=";
+			o << packet.header_type();
+			o << " Address=";
+			o << std::setw(2) << std::hex;
+			o << static_cast<int>(packet.address());
+			o << " Length=";
+			o << std::setw(10) << std::dec << packet.data().size();
+			o << " Reg=\"" << packet.address() << "\"";
+			o << "]" << std::endl;
+			break;
 		case ConfigurationPacket::Opcode::Write:
-			return o << "[Write Address="
-				 << std::setw(2)
-				 << static_cast<int>(packet.address())
-				 << " Length="
-				 << std::setw(10) << packet.data().size()
-				 << " Reg=\"" << packet.address() << "\""
-				 << "]" << std::endl;
+			o << "[Write Type=";
+			o << packet.header_type();
+			o << " Address=";
+			o << std::setw(2) << std::hex;
+			o << static_cast<int>(packet.address());
+			o << " Length=";
+			o << std::setw(10) << std::dec << packet.data().size();
+			o << " Reg=\"" << packet.address() << "\"";
+			o << "]" << std::endl;
+			o << "Data in hex:" << std::endl;
+
+			for (size_t ii = 0; ii < packet.data().size(); ++ii) {
+				o << std::setw(8) << std::hex;
+				o << packet.data()[ii] << " ";
+
+				if ((ii+1) % 4 == 0) {
+					o << std::endl;
+				}
+			}
+			if (packet.data().size() % 4 != 0) {
+				o << std::endl;
+			}
+			break;
 		default:
-			return o << "[Invalid Opcode]" << std::endl;
+			o << "[Invalid Opcode]" << std::endl;
 	}
+
+	return o;
 }
 
 }  // namespace xc7series

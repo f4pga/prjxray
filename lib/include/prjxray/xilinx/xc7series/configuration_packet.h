@@ -24,9 +24,11 @@ class ConfigurationPacket {
 		/* reserved = 3 */
 	};
 
-	ConfigurationPacket(Opcode opcode, ConfigurationRegister address,
+	ConfigurationPacket(unsigned int header_type, Opcode opcode,
+			    ConfigurationRegister address,
 			    const absl::Span<uint32_t> &data)
-		: opcode_(opcode), address_(address), data_(std::move(data)) {}
+		: header_type_(header_type), opcode_(opcode),
+		  address_(address), data_(std::move(data)) {}
 
 	// Attempt to read a configuration packet from a sequence of
 	// 32-bit, big-endian words. If successful, returns the packet read and
@@ -39,11 +41,13 @@ class ConfigurationPacket {
 			absl::Span<uint32_t> words,
 			const ConfigurationPacket *previous_packet = nullptr);
 
+	unsigned int header_type() const { return header_type_; }
 	const Opcode opcode() const { return opcode_; }
 	const ConfigurationRegister address() const { return address_; }
 	const absl::Span<uint32_t> &data() const { return data_; }
 
  private:
+	unsigned int header_type_;
 	Opcode opcode_;
 	ConfigurationRegister address_;
 	absl::Span<uint32_t> data_;
