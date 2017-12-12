@@ -4,6 +4,8 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o seg_clblx.segbits $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
+	cat seg_clblx.segbits |grep -v O6 >tmp.segbits
+	cat tmp.segbits o6.segbits >seg_clblx.segbits
 
 pushdb:
 	${XRAY_MERGEDB} clbll_l seg_clblx.segbits
@@ -17,7 +19,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit top.v
+	rm -rf specimen_[0-9][0-9][0-9]/ *.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit top.v
 
 .PHONY: database pushdb clean
 
