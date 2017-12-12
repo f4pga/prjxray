@@ -35,8 +35,13 @@ def add_zero_bits(tile_type):
     assert os.getenv("XRAY_DATABASE") == "artix7"
     dbfile = "%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), tile_type)
     new_lines = set()
+    llast = None
     with open(dbfile, "r") as f:
         for line in f:
+            # Hack: skip duplicate lines
+            # This happens while merging a new multibit entry
+            if line == llast:
+                continue
             line = line.split()
             tag = line[0]
             bits = set(line[1:])
@@ -69,6 +74,7 @@ def add_zero_bits(tile_type):
                         if bit not in bits:
                             bits.add("!" + bit)
             new_lines.add(" ".join([tag] + sorted(bits)))
+            llast = line
     with open(dbfile, "w") as f:
         for line in sorted(new_lines):
             print(line, file=f)
