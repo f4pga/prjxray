@@ -74,6 +74,30 @@ RAM64X1S_1 64-Deep by 1-Wide Static Synchronous RAM with Negative-Edge Clock
 */
 
     /*
+    seg SEG_CLBLM_L_X10Y127
+    bit 01_23
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    bit 31_47
+
+    seg SEG_CLBLM_L_X10Y100
+    bit 01_23
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    bit 31_47
+    */
+    my_RAM64X1D2 #(.LOC("SLICE_X6Y100"))
+            dut0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    my_RAM64X1D2 #(.LOC("SLICE_X6Y127"))
+            dut1(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    my_RAM64X1D2 #(.LOC("SLICE_X12Y100"))
+            dut2(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
+    my_RAM64X1D2 #(.LOC("SLICE_X12Y127"))
+            dut3(.clk(clk), .din(din[  128 +: 8]), .dout(dout[  128 +: 8]));
+
+    /*
     my_RAM64M #(.LOC("SLICE_X6Y100"))
             my_RAM64M(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
     my_RAM64X1S #(.LOC("SLICE_X6Y101"))
@@ -87,6 +111,54 @@ RAM64X1S_1 64-Deep by 1-Wide Static Synchronous RAM with Negative-Edge Clock
     my_RAM128X1D #(.LOC("SLICE_X6Y105"))
             my_RAM128X1D(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
     */
+endmodule
+
+module my_RAM64X1D2 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC *)
+    RAM64X1D #(
+            .INIT(64'h0),
+            .IS_WCLK_INVERTED(1'b0)
+        ) ramb (
+            .DPO(dout[1]),
+            .D(din[0]),
+            .WCLK(clk),
+            .WE(din[2]),
+            .A0(din[3]),
+            .A1(din[4]),
+            .A2(din[5]),
+            .A3(din[6]),
+            .A4(din[7]),
+            .A5(din[0]),
+            .DPRA0(din[1]),
+            .DPRA1(din[2]),
+            .DPRA2(din[3]),
+            .DPRA3(din[4]),
+            .DPRA4(din[5]),
+            .DPRA5(din[6]));
+
+    (* LOC=LOC *)
+    RAM64X1D #(
+            .INIT(64'h0),
+            .IS_WCLK_INVERTED(1'b0)
+        ) rama (
+            .DPO(dout[0]),
+            .D(din[0]),
+            .WCLK(clk),
+            .WE(din[2]),
+            .A0(din[3]),
+            .A1(din[4]),
+            .A2(din[5]),
+            .A3(din[6]),
+            .A4(din[7]),
+            .A5(din[0]),
+            .DPRA0(din[1]),
+            .DPRA1(din[2]),
+            .DPRA2(din[3]),
+            .DPRA3(din[4]),
+            .DPRA4(din[5]),
+            .DPRA5(din[6]));
 endmodule
 
 module my_SRLC32E (input clk, input [7:0] din, output [7:0] dout);
