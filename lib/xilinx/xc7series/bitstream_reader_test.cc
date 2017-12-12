@@ -42,7 +42,7 @@ TEST(BitstreamReaderTest,
 TEST(BitstreamReaderTest, ParsesType1Packet) {
 	std::vector<uint8_t> bitstream{
 		0xAA, 0x99, 0x55, 0x66,  // sync
-		0b001'00'000, 0b00000000, 0b000'00'000, 0b00000000,  // NOP
+		0x20, 0x00, 0x00, 0x00, // NOP
 	};
 	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
@@ -57,8 +57,8 @@ TEST(BitstreamReaderTest, ParsesType1Packet) {
 
 TEST(BitstreamReaderTest, ParseType2PacketWithoutType1Fails) {
 	std::vector<uint8_t> bitstream{
-		0xAA, 0x99, 0x55, 0x66,  // sync
-		0b010'00'000, 0b00000000, 0b000'00'000, 0b00000000,  // NOP
+		0xAA, 0x99, 0x55, 0x66, // sync
+		0x40, 0x00, 0x00, 0x00, // Type 2 NOP
 	};
 	auto reader = xc7series::BitstreamReader::InitWithBytes(bitstream);
 	ASSERT_TRUE(reader);
@@ -68,9 +68,9 @@ TEST(BitstreamReaderTest, ParseType2PacketWithoutType1Fails) {
 
 TEST(BitstreamReaderTest, ParsesType2AfterType1Packet) {
 	std::vector<uint8_t> bitstream{
-		0xAA, 0x99, 0x55, 0x66,  // sync
-		0b001'01'000, 0b00000000, 0b011'00'000, 0b00000000,  // Read
-		0b010'01'000, 0b00000000, 0b0000000000, 0b00000100,
+		0xAA, 0x99, 0x55, 0x66, // sync
+		0x28, 0x00, 0x60, 0x00, // Type 1 Read zero bytes from 6 
+		0x48, 0x00, 0x00, 0x04, // Type 2 write of 4 words
 		0x1, 0x2, 0x3, 0x4,
 		0x5, 0x6, 0x7, 0x8,
 		0x9, 0xA, 0xB, 0xC,

@@ -17,7 +17,7 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 
 	uint32_t header_type = bit_field_get(words[0], 31, 29);
 	switch (header_type) {
-	case 0b001: {
+	case 0x1: {
 		Opcode opcode = static_cast<Opcode>(
 				bit_field_get(words[0], 28, 27));
 		ConfigurationRegister address =
@@ -35,7 +35,7 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 			{{header_type, opcode, address,
 				 words.subspan(1, data_word_count)}}};
 	}
-	case 0b010: {
+	case 0x2: {
 		absl::optional<ConfigurationPacket> packet;
 		Opcode opcode = static_cast<Opcode>(
 				bit_field_get(words[0], 28, 27));

@@ -8,10 +8,10 @@ namespace xilinx {
 namespace xc7series {
 
 enum class BlockType : unsigned int {
-	CLB_IO_CLK = 0b000,
-	BLOCK_RAM = 0b001,
-	CFG_CLB = 0b010,
-	/* reserved = 0b011, */
+	CLB_IO_CLK = 0x0,
+	BLOCK_RAM = 0x1,
+	CFG_CLB = 0x2,
+	/* reserved = 0x3, */
 };
 
 std::ostream &operator<<(std::ostream &o, BlockType value);
