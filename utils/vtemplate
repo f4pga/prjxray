@@ -74,6 +74,7 @@ module my_%s (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
 ''' % modname
 
+print '    (* LOC=LOC, KEEP, DONT_TOUCH *)'
 print '    %s #(' % modname
 for pi, p in enumerate(params):
     name, wout, defval = p
@@ -83,6 +84,8 @@ for pi, p in enumerate(params):
 
 print '        ) %s (' % modinst
 
+DII_N = 8
+DOI_N = 8
 dii = 0
 doi = 0
 for ioi, io in enumerate(ios):
@@ -90,11 +93,23 @@ for ioi, io in enumerate(ios):
     comma = ',' if ioi != len(ios) - 1 else ');'
 
     if aio == 'input':
-        wire = 'din[%d]' % dii
-        dii = (dii + 1) % 8
+        if wout:
+            n = int(abs(wout[1] - wout[0]) + 1)
+            if dii + n >= DII_N:
+                dii = 0
+            wire = 'din[%d:%d]' % (dii + n, dii)
+            dii = (dii + n) % DII_N
+        else:
+            wire = 'din[%d]' % dii
+            dii = (dii + 1) % DII_N
     else:
-        wire = 'dout[%d]' % doi
-        doi += 1
+        if wout:
+            n = int(abs(wout[1] - wout[0]) + 1)
+            wire = 'dout[%d:%d]' % (doi + n, doi)
+            doi = doi + n
+        else:
+            wire = 'dout[%d]' % doi
+            doi += 1
     print '            .%s(%s)%s' % (name, wire, comma)
 
 print 'endmodule'
