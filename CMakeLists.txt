@@ -22,5 +22,11 @@ add_subdirectory(third_party/gflags EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/cctz EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/abseil-cpp EXCLUDE_FROM_ALL)
 
+option(YAML_CPP_BUILD_TESTS "" OFF)
+add_subdirectory(third_party/yaml-cpp EXCLUDE_FROM_ALL)
+target_include_directories(yaml-cpp PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/yaml-cpp/include>
+	)
+
 add_subdirectory(lib)
 add_subdirectory(tools)
