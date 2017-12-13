@@ -1,0 +1,10 @@
+/.Xil
+/design/
+/design.bit
+/design.bits
+/design.dcp
+/usage_statistics_webtalk.*
+/vivado*
+/design.txt
+/top.v
+/params.csv
