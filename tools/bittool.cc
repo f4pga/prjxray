@@ -8,17 +8,24 @@
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
-DEFINE_string(action, "list_config_packets", "");
-
 struct Action {
 	std::string name;
 	std::function<int(int, char*[])> handler;
 };
 
 int ListConfigPackets(int argc, char *argv[]) {
-	auto in_file = prjxray::MemoryMappedFile::InitWithFile(argv[1]);
+	if (argc < 1) {
+		std::cerr << "ERROR: no input specified" << std::endl;
+		std::cerr << "Usage: " << argv[0]
+			  << "list_config_packets <bit_file>"
+			  << std::endl;
+		return 1;
+	}
+
+	auto in_file_name = argv[0];
+	auto in_file = prjxray::MemoryMappedFile::InitWithFile(in_file_name);
 	if (!in_file) {
-		std::cerr << "Unable to open bit file: " << argv[1]
+		std::cerr << "Unable to open bit file: " << in_file_name
 			  << std::endl;
 		return 1;
 	}
@@ -107,23 +114,23 @@ int main(int argc, char *argv[]) {
 			absl::StrCat("Usage: ", argv[0], " [options] [bitfile]"));
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-	if (argc != 2) {
-		std::cerr << "no input file provided" << std::endl;
+	if (argc < 2) {
+		std::cerr << "ERROR: no command specified" << std::endl;
+		std::cerr << "Usage: " << argv[0]
+			  << "<command> <command_options>" << std::endl;
 		return 1;
 	}
 
-	if (FLAGS_action.empty()) {
-		std::cerr << "no action specified" << std::endl;
-		return 1;
-	}
-
+	auto requested_action_str = argv[1];
 	auto requested_action = std::find_if(
 			std::begin(actions), std::end(actions),
-			[](const Action& t) { return t.name == FLAGS_action; });
+			[&](const Action& t) {
+				return t.name == requested_action_str; });
 	if (requested_action == std::end(actions)) {
-		std::cerr << "Unknown action: " << FLAGS_action << std::endl;
+		std::cerr << "Unknown action: "
+			  << requested_action_str << std::endl;
 		return 1;
 	}
 
-	return requested_action->handler(argc, argv);
+	return requested_action->handler(argc - 2, argv + 2);
 }
