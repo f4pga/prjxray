@@ -9,7 +9,7 @@ add_library(libprjxray
 	xilinx/xc7series/configuration_register.cc
 )
 target_include_directories(libprjxray PUBLIC "include")
-target_link_libraries(libprjxray absl::optional absl::strings absl::span)
+target_link_libraries(libprjxray absl::optional absl::strings absl::span yaml-cpp)
 
 if (PRJXRAY_BUILD_TESTING)
 	add_executable(big_endian_span_test big_endian_span_test.cc)

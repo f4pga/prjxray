@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <prjxray/xilinx/xc7series/block_type.h>
+#include <yaml-cpp/yaml.h>
 
 namespace prjxray {
 namespace xilinx {
@@ -13,6 +14,10 @@ class ConfigurationFrameAddress {
  public:
 	ConfigurationFrameAddress(uint32_t address)
 		: address_(address) {};
+
+	ConfigurationFrameAddress(
+		BlockType block_type, bool is_bottom_half_rows,
+		uint8_t row, uint16_t column, uint8_t minor);
 
 	operator uint32_t() const { return address_; }
 
@@ -30,4 +35,12 @@ class ConfigurationFrameAddress {
 }  // namespace xilinx
 }  // namespace prjxray
 
+namespace YAML {
+template<>
+struct convert<prjxray::xilinx::xc7series::ConfigurationFrameAddress> {
+	static Node encode(const prjxray::xilinx::xc7series::ConfigurationFrameAddress &rhs);
+	static bool decode(const Node& node,
+			   prjxray::xilinx::xc7series::ConfigurationFrameAddress &lhs);
+};
+} // namespace YAML
 #endif  // PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_FRAME_ADDRESS_H_
