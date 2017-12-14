@@ -11,7 +11,7 @@ def slice_xy():
     ms = [int(m.group(i + 1)) for i in range(4)]
     return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
 
-CLBN = 4
+CLBN = 50
 SLICEX, SLICEY = slice_xy()
 # 800
 SLICEN = (SLICEY[1] - SLICEY[0]) * (SLICEX[1] - SLICEX[0])
@@ -75,10 +75,11 @@ endmodule
 ''' % (DIN_N, DOUT_N))
 
 f = open('params.csv', 'w')
-f.write('module,loc,n,def_a\n')
+f.write('module,loc,bela,belb,belc,beld\n')
 slices = gen_slicems()
 print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
-for i in range(CLBN):
+multis = 0
+for clbi in range(CLBN):
     bel = ''
 
     # Can fit 4 per CLB
@@ -86,6 +87,7 @@ for i in range(CLBN):
     multi_bels_by = [
         'SRL16E',
         'SRLC32E',
+        'LUT6',
         ]
     # Not BELable
     multi_bels_bn = [
@@ -103,6 +105,7 @@ for i in range(CLBN):
 
     loc = next(slices)
 
+    params = ''
     cparams = ''
     # Multi module
     if random.randint(0, 3) > 0:
@@ -110,7 +113,19 @@ for i in range(CLBN):
         module = 'my_ram_N'
 
         # Pick one un-LOCable and then fill in with LOCable
-        unbel_beli = random.randint(0, 3)
+        '''
+        CRITICAL WARNING: [Constraints 18-5] Cannot loc instance '\''roi/clb_2/lutd'\'' 
+        at site SLICE_X12Y102, Instance roi/clb_2/lutd can not be placed in D6LUT 
+        of site SLICE_X12Y102 because the bel is occupied by roi/clb_2/RAM64X1S/SP(port:). 
+        This could be caused by bel constraint conflict
+
+        Hmm I guess they have to go in LUTD after all
+        Unclear to me why this is
+        '''
+        #unbel_beli = random.randint(0, 3)
+        unbel_beli = 3
+        if random.randint(0, 1):
+            unbel_beli = None
         bels = []
         for beli in range(4):
             belc = chr(ord('A') + beli)
@@ -120,21 +135,26 @@ for i in range(CLBN):
                 params += ', .N_%s(1)' % bel
             else:
                 bel = random.choice(multi_bels_by)
+                if multis == 0:
+                    # Force an all LUT6 SLICE
+                    bel = 'LUT6'
                 params += ', .%c_%s(1)' % (belc, bel)
 
             bels.append(bel)
         # Record the BELs we chose in the module (A, B, C, D)
-        cparams = ',' + (', '.join(bels))
+        cparams = ',' + (','.join(bels))
+        multis += 1
     # Greedy module
     # Don't place anything else in it
     # For solving muxes vs previous results
     else:
         module = random.choice(greedy_modules)
         params = ''
+        cparams = ',,,,'
 
     print('    %s' % module)
     print('            #(.LOC("%s")%s)' % (loc, params))
-    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
+    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (clbi, 8 * clbi, 8 * clbi))
 
     f.write('%s,%s%s\n' % (module, loc, cparams))
 f.close()
@@ -154,15 +174,28 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
     parameter D_SRL16E=0;
     parameter D_SRLC32E=0;
+    parameter D_LUT6=0;
+
     parameter C_SRL16E=0;
     parameter C_SRLC32E=0;
+    parameter C_LUT6=0;
+
     parameter B_SRL16E=0;
     parameter B_SRLC32E=0;
+    parameter B_LUT6=0;
+
     parameter A_SRL16E=0;
     parameter A_SRLC32E=0;
+    parameter A_LUT6=0;
 
     parameter N_RAM32X1S=0;
     parameter N_RAM64X1S=0;
+    
+    parameter SRLINIT = 32'h00000000;
+    //parameter LUTINIT6 = 64'h0000_0000_0000_0000;
+    parameter LUTINIT6 = 64'hFFFF_FFFF_FFFF_FFFF;
+
+    wire ce = din[4];
 
     generate
         if (D_SRL16E) begin
@@ -174,22 +207,36 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
                     .A1(din[1]),
                     .A2(din[2]),
                     .A3(din[3]),
-                    .CE(din[4]),
-                    .CLK(din[5]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[6]));
         end
         if (D_SRLC32E) begin
             (* LOC=LOC, BEL="D6LUT", KEEP, DONT_TOUCH *)
             SRLC32E #(
-                    .INIT(32'h00000000),
+                    .INIT(SRLINIT),
                     .IS_CLK_INVERTED(1'b0)
                 ) lutd (
                     .Q(dout[3]),
                     .Q31(),
                     .A(din[4:0]),
-                    .CE(din[5]),
-                    .CLK(din[6]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[7]));
+        end
+        if (D_LUT6) begin
+	        (* LOC=LOC, BEL="D6LUT", KEEP, DONT_TOUCH *)
+	        LUT6_2 #(
+		        .INIT(LUTINIT6)
+	        ) lutd (
+		        .I0(din[0]),
+		        .I1(din[1]),
+		        .I2(din[2]),
+		        .I3(din[3]),
+		        .I4(din[4]),
+		        .I5(din[5]),
+		        .O5(),
+		        .O6(dout[3]));
         end
 
         if (C_SRL16E) begin
@@ -201,22 +248,36 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
                     .A1(din[1]),
                     .A2(din[2]),
                     .A3(din[3]),
-                    .CE(din[4]),
-                    .CLK(din[5]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[6]));
         end
         if (C_SRLC32E) begin
             (* LOC=LOC, BEL="C6LUT", KEEP, DONT_TOUCH *)
             SRLC32E #(
-                    .INIT(32'h00000000),
+                    .INIT(SRLINIT),
                     .IS_CLK_INVERTED(1'b0)
                 ) lutc (
                     .Q(dout[2]),
                     .Q31(),
                     .A(din[4:0]),
-                    .CE(din[5]),
-                    .CLK(din[6]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[7]));
+        end
+        if (C_LUT6) begin
+	        (* LOC=LOC, BEL="C6LUT", KEEP, DONT_TOUCH *)
+	        LUT6_2 #(
+		        .INIT(LUTINIT6)
+	        ) lutc (
+		        .I0(din[0]),
+		        .I1(din[1]),
+		        .I2(din[2]),
+		        .I3(din[3]),
+		        .I4(din[4]),
+		        .I5(din[5]),
+		        .O5(),
+		        .O6(dout[2]));
         end
 
         if (B_SRL16E) begin
@@ -228,22 +289,36 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
                     .A1(din[1]),
                     .A2(din[2]),
                     .A3(din[3]),
-                    .CE(din[4]),
-                    .CLK(din[5]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[6]));
         end
         if (B_SRLC32E) begin
             (* LOC=LOC, BEL="B6LUT", KEEP, DONT_TOUCH *)
             SRLC32E #(
-                    .INIT(32'h00000000),
+                    .INIT(SRLINIT),
                     .IS_CLK_INVERTED(1'b0)
                 ) lutb (
                     .Q(dout[1]),
                     .Q31(),
                     .A(din[4:0]),
-                    .CE(din[5]),
-                    .CLK(din[6]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[7]));
+        end
+        if (B_LUT6) begin
+	        (* LOC=LOC, BEL="B6LUT", KEEP, DONT_TOUCH *)
+	        LUT6_2 #(
+		        .INIT(LUTINIT6)
+	        ) lutb (
+		        .I0(din[0]),
+		        .I1(din[1]),
+		        .I2(din[2]),
+		        .I3(din[3]),
+		        .I4(din[4]),
+		        .I5(din[5]),
+		        .O5(),
+		        .O6(dout[1]));
         end
 
         if (A_SRL16E) begin
@@ -255,22 +330,36 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
                     .A1(din[1]),
                     .A2(din[2]),
                     .A3(din[3]),
-                    .CE(din[4]),
-                    .CLK(din[5]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[6]));
         end
         if (A_SRLC32E) begin
             (* LOC=LOC, BEL="A6LUT", KEEP, DONT_TOUCH *)
             SRLC32E #(
-                    .INIT(32'h00000000),
+                    .INIT(SRLINIT),
                     .IS_CLK_INVERTED(1'b0)
                 ) luta (
                     .Q(dout[0]),
                     .Q31(),
                     .A(din[4:0]),
-                    .CE(din[5]),
-                    .CLK(din[6]),
+                    .CE(ce),
+                    .CLK(clk),
                     .D(din[7]));
+        end
+        if (A_LUT6) begin
+	        (* LOC=LOC, BEL="A6LUT", KEEP, DONT_TOUCH *)
+	        LUT6_2 #(
+		        .INIT(LUTINIT6)
+	        ) luta (
+		        .I0(din[0]),
+		        .I1(din[1]),
+		        .I2(din[2]),
+		        .I3(din[3]),
+		        .I4(din[4]),
+		        .I5(din[5]),
+		        .O5(),
+		        .O6(dout[0]));
         end
 
         if (N_RAM32X1S) begin
@@ -284,8 +373,8 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
                     .A3(din[3]),
                     .A4(din[4]),
                     .D(din[5]),
-                    .WCLK(din[6]),
-                    .WE(din[7]));
+                    .WCLK(clk),
+                    .WE(ce));
         end
         if (N_RAM64X1S) begin
             (* LOC=LOC, KEEP, DONT_TOUCH *)
@@ -300,7 +389,7 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
                     .A5(din[5]),
                     .D(din[6]),
                     .WCLK(clk),
-                    .WE(din[0]));
+                    .WE(ce));
         end
     endgenerate
 endmodule
