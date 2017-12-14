@@ -13,7 +13,6 @@
 
 #include <absl/strings/str_cat.h>
 #include <gflags/gflags.h>
-#include <prjxray/database.h>
 
 DEFINE_int32(c, 4, "threshold under which candidates are output. set to -1 to output all.");
 DEFINE_bool(i, false, "add inverted tags");
@@ -21,9 +20,6 @@ DEFINE_int32(m, 0, "min number of set/cleared samples each");
 DEFINE_int32(M, 0, "min number of set/cleared samples total");
 DEFINE_string(o, "", "set output file");
 DEFINE_string(k, "", "set output mask file");
-DEFINE_string(database_path, "", "path to root directory of a database");
-DEFINE_bool(exclude_known, false, "exclude tags and bits recorded in the "
-				  "database specified by --database");
 
 using std::map;
 using std::tuple;
@@ -142,9 +138,6 @@ static inline bool_vec &segdata_bits(segdata_t &sd) { return std::get<0>(sd); }
 static inline bool_vec &segdata_tags1(segdata_t &sd) { return std::get<1>(sd); }
 static inline bool_vec &segdata_tags0(segdata_t &sd) { return std::get<2>(sd); }
 
-std::set<std::string> exclude_tags;
-std::set<std::string> exclude_bits;
-
 void read_input(std::istream &f, std::string filename)
 {
 	string token;
@@ -174,10 +167,6 @@ void read_input(std::istream &f, std::string filename)
 			assert(segptr != nullptr);
 
 			f >> token;
-
-			if (exclude_bits.find(token) == exclude_bits.end())
-				continue;
-
 			if (bit_ids.count(token) == 0) {
 				bit_ids[token] = num_bits++;
 				bit_ids_r.push_back(token);
@@ -195,13 +184,6 @@ void read_input(std::istream &f, std::string filename)
 			assert(segptr != nullptr);
 
 			f >> token;
-
-			if (exclude_tags.find(token) == exclude_tags.end()) {
-				// Consume the rest of the line.
-				f >> token;
-				continue;
-			}
-
 			if (tag_ids.count(token) == 0) {
 				tag_ids[token] = num_tags++;
 				tag_ids_r.push_back(token);
@@ -253,19 +235,6 @@ int main(int argc, char **argv)
 	gflags::SetUsageMessage(
 			absl::StrCat("Usage: ", argv[0], " [options] file.."));
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
-
-	if (!FLAGS_database_path.empty()) {
-		prjxray::Database database(FLAGS_database_path);
-
-		if (FLAGS_exclude_known) {
-			for (auto& segbits : database.segbits()) {
-				for (auto tag_bit : *segbits) {
-					exclude_tags.emplace(tag_bit.tag());
-					exclude_bits.emplace(tag_bit.bit());
-				}
-			}
-		}
-	}
 
 	if (argc > 1) {
 		for (int optind = 1; optind < argc; optind++) {
