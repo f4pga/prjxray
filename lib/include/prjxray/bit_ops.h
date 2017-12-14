@@ -31,10 +31,10 @@ constexpr UInt bit_field_get(UInt value, const int top_bit, const int bottom_bit
 	return (value & bit_mask_range<UInt>(top_bit, bottom_bit)) >> bottom_bit;
 }
 
-template<typename UInt>
+template<typename UInt, typename ValueType>
 constexpr UInt bit_field_set(const UInt reg_value,
 			     const int top_bit, const int bottom_bit,
-			     const UInt field_value) {
+			     const ValueType field_value) {
 	return ((reg_value & ~bit_mask_range<UInt>(top_bit, bottom_bit)) |
 		((static_cast<UInt>(field_value) << bottom_bit) &
 		 bit_mask_range<UInt>(top_bit, bottom_bit)));
