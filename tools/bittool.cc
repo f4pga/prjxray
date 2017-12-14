@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include <absl/strings/str_cat.h>
@@ -103,11 +104,60 @@ int DumpDebugbitstreamFrameAddresses(int argc, char *argv[]) {
 	return 0;
 }
 
+int GetDeviceId(int argc, char *argv[]) {
+	if (argc < 1) {
+		std::cerr << "ERROR: no input specified" << std::endl;
+		std::cerr << "Usage: " << argv[0]
+			  << "get_device_id <bit_file>"
+			  << std::endl;
+		return 1;
+	}
+
+	auto in_file_name = argv[0];
+	auto in_file = prjxray::MemoryMappedFile::InitWithFile(in_file_name);
+	if (!in_file) {
+		std::cerr << "Unable to open bit file: " << in_file_name
+			  << std::endl;
+		return 1;
+	}
+
+	auto in_bytes = absl::Span<uint8_t>(
+			static_cast<uint8_t*>(in_file->data()),
+			in_file->size());
+	auto reader = xc7series::BitstreamReader::InitWithBytes(in_bytes);
+	if (!reader) {
+		std::cerr << "Input doesn't look like a bitstream"
+			  << std::endl;
+		return 1;
+	}
+
+	auto idcode_packet = std::find_if(
+		reader->begin(), reader->end(),
+		[](const xc7series::ConfigurationPacket &packet) {
+			return (packet.opcode() ==
+				xc7series::ConfigurationPacket::Opcode::Write) &&
+			       (packet.address() ==
+				xc7series::ConfigurationRegister::IDCODE);
+		});
+	if (idcode_packet != reader->end()) {
+		if (idcode_packet->data().size() != 1) {
+			std::cerr << "Write to IDCODE with word_count != 1"
+				  << std::endl;
+			return 1;
+		}
+
+		std::cout << "0x" << std::hex << idcode_packet->data()[0]
+			  << std::endl;
+	}
+
+	return 0;
+}
 int main(int argc, char *argv[]) {
 	Action actions[] = {
 		{ "list_config_packets", ListConfigPackets },
 		{ "dump_debugbitstream_frame_addresses",
 			DumpDebugbitstreamFrameAddresses },
+		{ "get_device_id", GetDeviceId },
 	};
 
 	gflags::SetUsageMessage(
