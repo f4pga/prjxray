@@ -29,7 +29,7 @@ running any other commands:
 Creating HTML documentation:
 
     cd htmlgen
-    python3 htmlgen
+    python3 htmlgen.py
 
 (Re-)creating parts of the database, for example LUT init bits:
 
