@@ -135,7 +135,7 @@ for clbi in range(CLBN):
                 params += ', .N_%s(1)' % bel
             else:
                 bel = random.choice(multi_bels_by)
-                if multis == 0:
+                if multis % 4 == 0:
                     # Force an all LUT6 SLICE
                     bel = 'LUT6'
                 params += ', .%c_%s(1)' % (belc, bel)
