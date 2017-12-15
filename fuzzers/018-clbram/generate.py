@@ -51,7 +51,8 @@ for l in f:
             WA7USED, WA8USED
         '''
         which = 'D'
-        if 0:
+        if 1:
+            print(loc, 1)
             segmk.addtag(loc, "WA7USED", 1)
             segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
     else:
@@ -75,8 +76,10 @@ for l in f:
             # Only valid in D
             if which == 'D':
                 segmk.addtag(loc, "%sLUT.RAM" % which, bel in ('RAM32X1S', 'RAM64X1S'))
-        if 0:
+        if 1:
             segmk.addtag(loc, "WA7USED", 0)
+            #segmk.addtag(loc, "WA7USED", 1)
+            print(loc, 0)
             segmk.addtag(loc, "WA8USED", 0)
             segmk.addtag(loc, "WEMUX.CE", bels != ['LUT6', 'LUT6', 'LUT6', 'LUT6'])
 
