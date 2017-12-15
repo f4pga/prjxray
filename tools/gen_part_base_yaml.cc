@@ -1,24 +1,18 @@
 #include <libgen.h>
 
-#include <iomanip>
 #include <iostream>
-#include <sstream>
+#include <vector>
 
 #include <absl/types/optional.h>
 #include <absl/types/span.h>
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
 #include <prjxray/xilinx/xc7series/configuration_frame_address.h>
+#include <prjxray/xilinx/xc7series/configuration_frame_range.h>
+#include <prjxray/xilinx/xc7series/part.h>
 #include <yaml-cpp/yaml.h>
 
 namespace xc7series = prjxray::xilinx::xc7series;
-
-template<typename T>
-std::string HexString(T value) {
-	std::ostringstream out;
-	out << "0x" << std::hex << value;
-	return out.str();
-}
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -83,15 +77,11 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	YAML::Node config_yaml;
-	config_yaml.SetTag("xilinx/xc7series/part");
-	config_yaml["idcode"] = HexString(*idcode);
-
 	// So far, the addresses appear to be written in increasing order but
 	// there is no guarantee.  Sort them just in case.
 	std::sort(frame_addresses.begin(), frame_addresses.end());
 
-	YAML::Node regions = config_yaml["configuration_regions"];
+	std::vector<xc7series::ConfigurationFrameRange> ranges;
 	for (auto start_of_range = frame_addresses.begin();
 	     start_of_range != frame_addresses.end();
 	     ) {
@@ -101,17 +91,14 @@ int main(int argc, char *argv[]) {
 			++end_of_range;
 		}
 
-		YAML::Node region;
-		region["start"] =
-			xc7series::ConfigurationFrameAddress(*start_of_range);
-		region["end"] =
-			xc7series::ConfigurationFrameAddress(*end_of_range);
-		regions.push_back(region);
+		ranges.push_back(
+			xc7series::ConfigurationFrameRange(*start_of_range,
+							   *end_of_range+1));
 
 		start_of_range = ++end_of_range;
 	}
 
-	std::cout << config_yaml << std::endl;
+	std::cout << YAML::Node(xc7series::Part(*idcode, ranges)) << std::endl;
 
 	return 0;
 }
