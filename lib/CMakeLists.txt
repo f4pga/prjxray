@@ -8,6 +8,7 @@ add_library(libprjxray
 	xilinx/xc7series/configuration_frame_range.cc
 	xilinx/xc7series/configuration_packet.cc
 	xilinx/xc7series/configuration_register.cc
+	xilinx/xc7series/part.cc
 )
 target_include_directories(libprjxray PUBLIC "include")
 target_link_libraries(libprjxray absl::optional absl::strings absl::span yaml-cpp)
@@ -62,4 +63,11 @@ if (PRJXRAY_BUILD_TESTING)
 		libprjxray gtest_main)
 	add_test(NAME xilinx_xc7series_configuration_packet_test
 		 COMMAND xilinx_xc7series_configuration_packet_test)
+
+	add_executable(xilinx_xc7series_part_test
+		xilinx/xc7series/part_test.cc)
+	target_link_libraries(xilinx_xc7series_part_test
+		libprjxray gtest_main)
+	add_test(NAME xilinx_xc7series_part_test
+		 COMMAND xilinx_xc7series_part_test)
 endif()
