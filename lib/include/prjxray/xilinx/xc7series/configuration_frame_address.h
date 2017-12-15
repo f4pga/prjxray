@@ -12,6 +12,9 @@ namespace xc7series {
 
 class ConfigurationFrameAddress {
  public:
+	ConfigurationFrameAddress()
+		: address_(0) {}
+
 	ConfigurationFrameAddress(uint32_t address)
 		: address_(address) {};
 
