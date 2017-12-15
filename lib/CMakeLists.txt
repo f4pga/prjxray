@@ -5,6 +5,7 @@ add_library(libprjxray
 	xilinx/xc7series/bitstream_reader.cc
 	xilinx/xc7series/block_type.cc
 	xilinx/xc7series/configuration_frame_address.cc
+	xilinx/xc7series/configuration_frame_range.cc
 	xilinx/xc7series/configuration_packet.cc
 	xilinx/xc7series/configuration_register.cc
 )
