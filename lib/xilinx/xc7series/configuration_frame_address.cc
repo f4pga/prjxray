@@ -66,12 +66,21 @@ bool convert<xc7series::ConfigurationFrameAddress>::decode(
 	    !node["column"] ||
 	    !node["minor"]) return false;
 
+	bool row_half;
+	if (node["row_half"].as<std::string>() == "top") {
+		row_half = false;
+	} else if (node["row_half"].as<std::string>() == "bottom") {
+		row_half = true;
+	} else {
+		return false;
+	}
+
 	lhs = prjxray::xilinx::xc7series::ConfigurationFrameAddress(
 			node["block_type"].as<xc7series::BlockType>(),
-			node["row_half"].as<bool>(),
-			node["row"].as<uint8_t>(),
-			node["column"].as<uint32_t>(),
-			node["minor"].as<uint32_t>());
+			row_half,
+			node["row"].as<unsigned int>(),
+			node["column"].as<unsigned int>(),
+			node["minor"].as<unsigned int>());
 	return true;
 }
 
