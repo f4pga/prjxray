@@ -43,19 +43,87 @@ endmodule
 
 //Activate W*MUX
 module roi(input clk, input [255:0] din, output [255:0] dout);
+    /*
+    seg SEG_CLBLM_L_X10Y100
+    bit 00_40
+    bit 01_23
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    bit 31_47
+    */
     my_RAM128X1D #(.LOC("SLICE_X12Y100"))
             c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
     /*
     my_RAM128X1D_2 #(.LOC("SLICE_X12Y101"))
             c1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
     */
+    /*
+    seg SEG_CLBLM_L_X10Y102
+    bit 00_40
+    bit 01_23
+    bit 31_46
+    bit 31_47
+    */
     my_RAM128X1S #(.LOC("SLICE_X12Y102"))
             c2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    /*
+    seg SEG_CLBLM_L_X10Y103
+    bit 00_40
+    bit 01_23
+    bit 01_27
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    bit 31_47
+    */
     my_RAM256X1S #(.LOC("SLICE_X12Y103"))
             c3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    /*
+    seg SEG_CLBLM_L_X10Y104
+    bit 00_00
+    bit 01_23
+    bit 31_16
+    bit 31_47
+    */
+    my_RAM64X1S_2 #(.LOC("SLICE_X12Y104"))
+            c4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
 endmodule
 
+//It created a LUT instead of aggregating using WA7MUX
+module my_RAM64X1S_2 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
 
+    assign dout[0] = din[0] ? oa : ob;
+
+    (* LOC=LOC, KEEP, DONT_TOUCH *)
+    RAM64X1S #(
+        ) ramb (
+            .O(ob),
+            .A0(din[0]),
+            .A1(din[0]),
+            .A2(din[0]),
+            .A3(din[0]),
+            .A4(din[0]),
+            .A5(din[0]),
+            .D(din[0]),
+            .WCLK(clk),
+            .WE(din[0]));
+
+    (* LOC=LOC, KEEP, DONT_TOUCH *)
+    RAM64X1S #(
+        ) rama (
+            .O(oa),
+            .A0(din[0]),
+            .A1(din[0]),
+            .A2(din[0]),
+            .A3(din[0]),
+            .A4(din[0]),
+            .A5(din[0]),
+            .D(din[0]),
+            .WCLK(clk),
+            .WE(din[0]));
+endmodule
 
 //Try to get a conflict on memory LUT vs LUT6_2
 module roi_lkjsadfsdf(input clk, input [255:0] din, output [255:0] dout);
@@ -865,7 +933,7 @@ hmm?
 
 CRITICAL WARNING: [Constraints 18-5] Cannot loc instance 'roi/c1/lutb/DP.HIGH' at site SLICE_X12Y101,
 Instance roi/c1/lutb/SP.HIGH can not be placed in C6LUT of site SLICE_X12Y101
-because the bel is occupied by roi/c1/luta/SP.HIGH(port:). 
+because the bel is occupied by roi/c1/luta/SP.HIGH(port:).
 This could be caused by bel constraint conflict
 */
 module my_RAM128X1D_2 (input clk, input [7:0] din, output [7:0] dout);
