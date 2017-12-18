@@ -114,9 +114,9 @@ for clbi in range(CLBN):
 
         # Pick one un-LOCable and then fill in with LOCable
         '''
-        CRITICAL WARNING: [Constraints 18-5] Cannot loc instance '\''roi/clb_2/lutd'\'' 
-        at site SLICE_X12Y102, Instance roi/clb_2/lutd can not be placed in D6LUT 
-        of site SLICE_X12Y102 because the bel is occupied by roi/clb_2/RAM64X1S/SP(port:). 
+        CRITICAL WARNING: [Constraints 18-5] Cannot loc instance '\''roi/clb_2/lutd'\''
+        at site SLICE_X12Y102, Instance roi/clb_2/lutd can not be placed in D6LUT
+        of site SLICE_X12Y102 because the bel is occupied by roi/clb_2/RAM64X1S/SP(port:).
         This could be caused by bel constraint conflict
 
         Hmm I guess they have to go in LUTD after all
@@ -135,7 +135,7 @@ for clbi in range(CLBN):
                 params += ', .N_%s(1)' % bel
             else:
                 bel = random.choice(multi_bels_by)
-                if multis % 4 == 0:
+                if multis == 0:
                     # Force an all LUT6 SLICE
                     bel = 'LUT6'
                 params += ', .%c_%s(1)' % (belc, bel)
@@ -149,7 +149,8 @@ for clbi in range(CLBN):
     # For solving muxes vs previous results
     else:
         module = random.choice(greedy_modules)
-        params = ''
+        ff = random.randint(0, 1)
+        params = ',.FF(%d)' % ff
         cparams = ',,,,'
 
     print('    %s' % module)
@@ -190,7 +191,7 @@ module my_ram_N (input clk, input [7:0] din, output [7:0] dout);
 
     parameter N_RAM32X1S=0;
     parameter N_RAM64X1S=0;
-    
+
     parameter SRLINIT = 32'h00000000;
     //parameter LUTINIT6 = 64'h0000_0000_0000_0000;
     parameter LUTINIT6 = 64'hFFFF_FFFF_FFFF_FFFF;
@@ -476,30 +477,55 @@ endmodule
 //***************************************************************
 //WA*USED
 
+module maybe_ff (input clk, din, dout);
+    parameter FF = 0;
+
+    generate
+        if (FF) begin
+            reg r;
+            assign dout = r;
+            always @(posedge clk) begin
+                r = din;
+            end
+        end else begin
+            assign dout = din;
+        end
+    endgenerate
+endmodule
+
 //Dedicated LOC
 module my_RAM128X1D (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
+    parameter FF = 0;
+
+    wire dpo, spo;
 
     (* LOC=LOC, KEEP, DONT_TOUCH *)
     RAM128X1D #(
             .INIT(128'h0),
             .IS_WCLK_INVERTED(1'b0)
         ) RAM128X1D (
-            .DPO(dout[0]),
-            .SPO(dout[1]),
+            .DPO(dpo),
+            .SPO(spo),
             .D(din[0]),
             .WCLK(clk),
             .WE(din[2]));
+
+    maybe_ff #(.FF(FF)) ff0 (.clk(clk), .din(dpo), .dout(dout[0]));
+    maybe_ff #(.FF(FF)) ff1 (.clk(clk), .din(spo), .dout(dout[1]));
 endmodule
 
 //Dedicated LOC
 module my_RAM128X1S (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
+    parameter FF = 0;
+
+    wire o;
 
     (* LOC=LOC, KEEP, DONT_TOUCH *)
     RAM128X1S #(
         ) RAM128X1S (
-            .O(dout[0]),
+            .O(o),
             .A0(din[0]),
             .A1(din[1]),
             .A2(din[2]),
@@ -510,20 +536,27 @@ module my_RAM128X1S (input clk, input [7:0] din, output [7:0] dout);
             .D(din[7]),
             .WCLK(din[0]),
             .WE(din[1]));
+
+    maybe_ff #(.FF(FF)) ff (.clk(clk), .din(o), .dout(dout[0]));
 endmodule
 
 //Dedicated LOC
 module my_RAM256X1S (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
+    parameter FF = 0;
+
+    wire o;
 
     (* LOC=LOC, KEEP, DONT_TOUCH *)
     RAM256X1S #(
         ) RAM256X1S (
-            .O(dout[0]),
+            .O(o),
             .A({din[0], din[7:0]}),
             .D(din[0]),
             .WCLK(din[1]),
             .WE(din[2]));
+
+    maybe_ff #(.FF(FF)) ff (.clk(clk), .din(o), .dout(dout[0]));
 endmodule
 ''')
 
