@@ -48,6 +48,13 @@ if (PRJXRAY_BUILD_TESTING)
 	add_test(NAME xilinx_xc7series_block_type_test
 		 COMMAND xilinx_xc7series_block_type_test)
 
+	add_executable(xilinx_xc7series_configuration_frame_address_test
+		xilinx/xc7series/configuration_frame_address_test.cc)
+	target_link_libraries(xilinx_xc7series_configuration_frame_address_test
+		libprjxray gtest_main absl::span)
+	add_test(NAME xilinx_xc7series_configuration_frame_address_test
+		 COMMAND xilinx_xc7series_configuration_frame_address_test)
+
 	add_executable(xilinx_xc7series_configuration_packet_test
 		xilinx/xc7series/configuration_packet_test.cc)
 	target_link_libraries(xilinx_xc7series_configuration_packet_test

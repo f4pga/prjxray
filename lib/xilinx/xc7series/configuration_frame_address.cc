@@ -43,8 +43,10 @@ uint8_t ConfigurationFrameAddress::minor_address() const {
 
 namespace YAML {
 
-Node convert<prjxray::xilinx::xc7series::ConfigurationFrameAddress>::encode(
-		const prjxray::xilinx::xc7series::ConfigurationFrameAddress &rhs) {
+namespace xc7series = prjxray::xilinx::xc7series;
+
+Node convert<xc7series::ConfigurationFrameAddress>::encode(
+		const xc7series::ConfigurationFrameAddress &rhs) {
 	Node node;
 	node.SetTag("xilinx/xc7series/configuration_frame_address");
 	node["block_type"] = rhs.block_type();
@@ -55,8 +57,8 @@ Node convert<prjxray::xilinx::xc7series::ConfigurationFrameAddress>::encode(
 	return node;
 }
 
-bool convert<prjxray::xilinx::xc7series::ConfigurationFrameAddress>::decode(
-		const Node &node, prjxray::xilinx::xc7series::ConfigurationFrameAddress &lhs) {
+bool convert<xc7series::ConfigurationFrameAddress>::decode(
+		const Node &node, xc7series::ConfigurationFrameAddress &lhs) {
 	if (node.Tag() != "xilinx/xc7series/configuration_frame_address" ||
 	    !node["block_type"] ||
 	    !node["row_half"] ||
@@ -65,7 +67,7 @@ bool convert<prjxray::xilinx::xc7series::ConfigurationFrameAddress>::decode(
 	    !node["minor"]) return false;
 
 	lhs = prjxray::xilinx::xc7series::ConfigurationFrameAddress(
-			node["block_type"].as<prjxray::xilinx::xc7series::BlockType>(),
+			node["block_type"].as<xc7series::BlockType>(),
 			node["row_half"].as<bool>(),
 			node["row"].as<uint8_t>(),
 			node["column"].as<uint32_t>(),
