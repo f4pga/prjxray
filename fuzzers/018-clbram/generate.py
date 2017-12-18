@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+wip = 0
+
 import sys, re
 
 sys.path.append("../../../utils/")
@@ -51,7 +53,7 @@ for l in f:
             WA7USED, WA8USED
         '''
         which = 'D'
-        if 1:
+        if wip:
             print(loc, 1)
             segmk.addtag(loc, "WA7USED", 1)
             segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
@@ -76,7 +78,7 @@ for l in f:
             # Only valid in D
             if which == 'D':
                 segmk.addtag(loc, "%sLUT.RAM" % which, bel in ('RAM32X1S', 'RAM64X1S'))
-        if 1:
+        if wip:
             segmk.addtag(loc, "WA7USED", 0)
             #segmk.addtag(loc, "WA7USED", 1)
             print(loc, 0)
