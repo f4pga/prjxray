@@ -41,6 +41,13 @@ if (PRJXRAY_BUILD_TESTING)
 	add_test(NAME xilinx_xc7series_bitstream_reader_test
 		 COMMAND xilinx_xc7series_bitstream_reader_test)
 
+	add_executable(xilinx_xc7series_block_type_test
+		xilinx/xc7series/block_type_test.cc)
+	target_link_libraries(xilinx_xc7series_block_type_test
+		libprjxray gtest_main)
+	add_test(NAME xilinx_xc7series_block_type_test
+		 COMMAND xilinx_xc7series_block_type_test)
+
 	add_executable(xilinx_xc7series_configuration_packet_test
 		xilinx/xc7series/configuration_packet_test.cc)
 	target_link_libraries(xilinx_xc7series_configuration_packet_test
