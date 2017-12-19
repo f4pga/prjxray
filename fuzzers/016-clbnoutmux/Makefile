@@ -4,15 +4,13 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o seg_clblx.segbits $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
-	cat seg_clblx.segbits |grep -v O6 >tmp.segbits
-	cat tmp.segbits o6.segbits >seg_clblx.segbits
 
 pushdb:
 	${XRAY_MERGEDB} clbll_l seg_clblx.segbits
 	${XRAY_MERGEDB} clbll_r seg_clblx.segbits
 	${XRAY_MERGEDB} clblm_l seg_clblx.segbits
 	${XRAY_MERGEDB} clblm_r seg_clblx.segbits
-	${$XRAY_DBFIXUP}
+	${XRAY_DBFIXUP}
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
