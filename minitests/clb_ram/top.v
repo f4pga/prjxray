@@ -40,6 +40,27 @@ module top(input clk, stb, di, output do);
 	);
 endmodule
 
+module roi(input clk, input [255:0] din, output [255:0] dout);
+    //RAM32X1D 32-Deep by 1-Wide Static Dual Port Synchronous RAM
+    my_RAM32X1D #(.LOC("SLICE_X12Y100"))
+            c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+
+    //RAM64X1D 64-Deep by 1-Wide Dual Port Static Synchronous RAM
+    //2LUT
+    my_RAM64X1D #(.LOC("SLICE_X12Y101"))
+            c1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    //4LUT
+    my_RAM64X1D_2 #(.LOC("SLICE_X12Y102"))
+            c2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+
+    //RAM128X1D 128-Deep by 1-Wide Dual Port Random Access Memory (Select RAM)
+    my_RAM128X1D #(.LOC("SLICE_X12Y103"))
+            c3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+endmodule
+
+
+
+
 
 //Activate W*MUX
 module roi_sdffd(input clk, input [255:0] din, output [255:0] dout);
@@ -522,7 +543,7 @@ module roi_asdsdaf(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 //One of each
-module roi(input clk, input [255:0] din, output [255:0] dout);
+module roi_one(input clk, input [255:0] din, output [255:0] dout);
     //4LUT
     /*
     seg SEG_CLBLM_L_X10Y100
@@ -530,7 +551,7 @@ module roi(input clk, input [255:0] din, output [255:0] dout);
     bit 31_17
     bit 31_46
     */
-    my_RAM64X1D2 #(.LOC("SLICE_X12Y100"))
+    my_RAM64X1D_2 #(.LOC("SLICE_X12Y100"))
             c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
     //1LUT
     /*
@@ -721,13 +742,13 @@ module roi2(input clk, input [255:0] din, output [255:0] dout);
     bit 31_47
     */
     /*
-    my_RAM64X1D2 #(.LOC("SLICE_X6Y100"))
+    my_RAM64X1D_2 #(.LOC("SLICE_X6Y100"))
             dut0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    my_RAM64X1D2 #(.LOC("SLICE_X6Y127"))
+    my_RAM64X1D_2 #(.LOC("SLICE_X6Y127"))
             dut1(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    my_RAM64X1D2 #(.LOC("SLICE_X12Y100"))
+    my_RAM64X1D_2 #(.LOC("SLICE_X12Y100"))
             dut2(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
-    my_RAM64X1D2 #(.LOC("SLICE_X12Y127"))
+    my_RAM64X1D_2 #(.LOC("SLICE_X12Y127"))
             dut3(.clk(clk), .din(din[  128 +: 8]), .dout(dout[  128 +: 8]));
     */
 
@@ -787,7 +808,7 @@ module roi2(input clk, input [255:0] din, output [255:0] dout);
     */
 endmodule
 
-module my_RAM64X1D2 (input clk, input [7:0] din, output [7:0] dout);
+module my_RAM64X1D_2 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
 
     (* LOC=LOC, KEEP, DONT_TOUCH *)

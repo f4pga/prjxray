@@ -84,7 +84,7 @@ module roi(input clk, input [255:0] din, output [255:0] dout);
             my4(.clk(clk), .din(din[  160 +: 8]), .dout(dout[  160 +: 8]));
 
     //Sets rarely seen mux position
-    my_RAM64X1D2 #(.LOC("SLICE_X14Y100"))
+    my_RAM64X1D_2 #(.LOC("SLICE_X14Y100"))
             c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 `endif
 
@@ -151,7 +151,7 @@ module my_NDI1MUX_NI_NMC31 (input clk, input [7:0] din, output [7:0] dout);
             .D(lutd[0]));
 endmodule
 
-module my_RAM64X1D2 (input clk, input [7:0] din, output [7:0] dout);
+module my_RAM64X1D_2 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
 
     (* LOC=LOC, KEEP, DONT_TOUCH *)
