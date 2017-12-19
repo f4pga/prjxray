@@ -10,7 +10,7 @@ pushdb:
 	${XRAY_MERGEDB} clbll_r seg_clblx.segbits
 	${XRAY_MERGEDB} clblm_l seg_clblx.segbits
 	${XRAY_MERGEDB} clblm_r seg_clblx.segbits
-	${$XRAY_DBFIXUP}
+	${XRAY_DBFIXUP}
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
