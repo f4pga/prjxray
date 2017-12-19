@@ -4,9 +4,11 @@ Can either be an external signal, another LUT's data input, or another LUT's car
 Note: mux input pattern is irregular
 
 Result:
-Neither external input nor carry input set any unknown bits
-Unclear what is going on
-Maybe an earlier test incorrectly set these?
-Additionally, I could not get BDI1 to activate
-Maybe should do a closer pass on BI/DI, which may be easier to trigger
+The following bits are set for NI but not NMC31:
+bit 00_00 ADI1MUX.AI
+bit 00_20 BDI1MUX.BI
+bit 01_43 BDI1MUX.CI
+
+Additionally, test with unknown DI mux bits don't appear near NI bits
+There is something strange going on
 
