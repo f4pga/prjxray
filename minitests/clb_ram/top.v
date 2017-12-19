@@ -42,7 +42,7 @@ endmodule
 
 
 //Activate W*MUX
-module roi(input clk, input [255:0] din, output [255:0] dout);
+module roi_sdffd(input clk, input [255:0] din, output [255:0] dout);
     /*
     seg SEG_CLBLM_L_X10Y100
     bit 00_40
@@ -86,8 +86,10 @@ module roi(input clk, input [255:0] din, output [255:0] dout);
     bit 31_16
     bit 31_47
     */
+    /*
     my_RAM64X1S_2 #(.LOC("SLICE_X12Y104"))
             c4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    */
 endmodule
 
 //It created a LUT instead of aggregating using WA7MUX
@@ -520,47 +522,114 @@ module roi_asdsdaf(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 //One of each
-module roi_asdfsadf(input clk, input [255:0] din, output [255:0] dout);
+module roi(input clk, input [255:0] din, output [255:0] dout);
     //4LUT
+    /*
+    seg SEG_CLBLM_L_X10Y100
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    */
     my_RAM64X1D2 #(.LOC("SLICE_X12Y100"))
             c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
     //1LUT
+    /*
+    seg SEG_CLBLM_L_X10Y101
+    bit 00_00
+    */
     my_SRLC32E #(.LOC("SLICE_X12Y101"))
             c1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
     //1LUT
+    /*
+    No unknown bits
+    */
     my_SRL16E #(.LOC("SLICE_X12Y102"))
             c2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
     //4LUT
+    /*
+    seg SEG_CLBLM_L_X10Y103
+    bit 00_00
+    bit 00_20
+    bit 01_43
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    */
     my_RAM64M #(.LOC("SLICE_X12Y103"))
             c3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
     //1LUT
+    /*
+    No unknown bits
+    */
     my_RAM64X1S #(.LOC("SLICE_X12Y104"))
             c4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
     //1LUT
+    /*
+    No unknown bits
+    */
     my_RAM64X1S_1 #(.LOC("SLICE_X12Y105"))
             c5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
     //2LUT
+    /*
+    seg SEG_CLBLM_L_X10Y106
+    bit 01_43
+    bit 31_46
+    */
     my_RAM64X2S #(.LOC("SLICE_X12Y106"))
             c6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
     //2LUT
+    /*
+    seg SEG_CLBLM_L_X10Y107
+    bit 31_46
+    */
     my_RAM64X1D #(.LOC("SLICE_X12Y107"))
             c7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
     //4LUT
+    /*
+    seg SEG_CLBLM_L_X10Y108
+    bit 00_40
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    */
     my_RAM128X1D #(.LOC("SLICE_X12Y108"))
             c8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
     //4LUT
+    /*
+    seg SEG_CLBLM_L_X10Y109
+    bit 00_00
+    bit 00_20
+    bit 01_43
+    bit 31_16
+    bit 31_17
+    bit 31_46
+    */
     my_RAM32M #(.LOC("SLICE_X12Y109"))
             c9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
     //2LUT
+    /*
+    seg SEG_CLBLM_L_X10Y110
+    bit 31_46
+    */
     my_RAM32X1D #(.LOC("SLICE_X12Y110"))
             c10(.clk(clk), .din(din[  80 +: 8]), .dout(dout[  80 +: 8]));
     //1LUT
+    /*
+    No bits
+    */
     my_RAM32X1S #(.LOC("SLICE_X12Y111"))
             c11(.clk(clk), .din(din[  88 +: 8]), .dout(dout[  88 +: 8]));
     //1LUT
+    /*
+    No bits
+    */
     my_RAM32X1S_1 #(.LOC("SLICE_X12Y112"))
             c12(.clk(clk), .din(din[  96 +: 8]), .dout(dout[  96 +: 8]));
     //2LUT
+    /*
+    seg SEG_CLBLM_L_X10Y113
+    bit 31_46
+    */
     my_RAM32X2S #(.LOC("SLICE_X12Y113"))
             c13(.clk(clk), .din(din[  104 +: 8]), .dout(dout[  104 +: 8]));
 endmodule

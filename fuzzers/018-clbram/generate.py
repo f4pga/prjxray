@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
-wip = 0
+# FIXME: getting two bits
+# 00_40 31_46
+# Can we find instance where they are not aliased?
+WA7USED = 0
 
-import sys, re
+import sys, re, os
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -53,10 +56,8 @@ for l in f:
             WA7USED, WA8USED
         '''
         which = 'D'
-        if wip:
-            print(loc, 1)
-            segmk.addtag(loc, "WA7USED", 1)
-            segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
+        WA7USED and segmk.addtag(loc, "WA7USED", 1)
+        segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
     else:
         '''
         LUTD
@@ -72,19 +73,21 @@ for l in f:
         31_47: RAM mode
         '''
         for which, bel in zip('ABCD', bels):
-            print(which, bel)
             segmk.addtag(loc, "%sLUT.SMALL" % which, bel in ('SRL16E', 'RAM32X1S'))
             segmk.addtag(loc, "%sLUT.SRL" % which, bel in ('SRL16E', 'SRLC32E'))
             # Only valid in D
             if which == 'D':
                 segmk.addtag(loc, "%sLUT.RAM" % which, bel in ('RAM32X1S', 'RAM64X1S'))
-        if wip:
-            segmk.addtag(loc, "WA7USED", 0)
-            #segmk.addtag(loc, "WA7USED", 1)
-            print(loc, 0)
-            segmk.addtag(loc, "WA8USED", 0)
-            segmk.addtag(loc, "WEMUX.CE", bels != ['LUT6', 'LUT6', 'LUT6', 'LUT6'])
+        WA7USED and segmk.addtag(loc, "WA7USED", 0)
+        segmk.addtag(loc, "WA8USED", 0)
+        segmk.addtag(loc, "WEMUX.CE", bels != ['LUT6', 'LUT6', 'LUT6', 'LUT6'])
 
-segmk.compile()
+def bitfilter(frame_idx, bit_idx):
+    # Hack to remove aliased PIP bits
+    # We should either mix up routing more or exclude previous DB entries
+    assert os.getenv("XRAY_DATABASE") == "artix7"
+    return (frame_idx, bit_idx) not in [(0, 27), (1, 25), (1, 26), (1, 29)]
+
+segmk.compile(bitfilter=bitfilter)
 segmk.write()
 
