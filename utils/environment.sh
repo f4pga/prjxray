@@ -10,8 +10,11 @@ export XRAY_DIR="$( dirname "$XRAY_UTILS_DIR" )"
 export XRAY_DATABASE_DIR="${XRAY_DIR}/database"
 export XRAY_TOOLS_DIR="${XRAY_DIR}/build/tools"
 
+export XRAY_PART_YAML="${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/${XRAY_PART}.yaml"
+
+
 export XRAY_GENHEADER="${XRAY_UTILS_DIR}/genheader.sh"
-export XRAY_BITREAD="${XRAY_TOOLS_DIR}/bitread"
+export XRAY_BITREAD="${XRAY_TOOLS_DIR}/bitread --part_file ${XRAY_PART_YAML}"
 export XRAY_MERGEDB="bash ${XRAY_UTILS_DIR}/mergedb.sh"
 export XRAY_DBFIXUP="python3 ${XRAY_UTILS_DIR}/dbfixup.py"
 export XRAY_DBCHECK="bash ${XRAY_UTILS_DIR}/dbcheck.sh"
