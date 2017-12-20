@@ -3,8 +3,6 @@ Project X-Ray
 
 Documenting the Xilinx 7-series bit-stream format.
 
-See [wiki](https://github.com/cliffordwolf/prjxray/wiki) for more information.
-
 
 Quickstart Guide:
 -----------------
