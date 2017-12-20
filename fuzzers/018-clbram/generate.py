@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# FIXME: getting two bits
-# 00_40 31_46
-# Can we find instance where they are not aliased?
-WA7USED = 0
-
 import sys, re, os
 
 sys.path.append("../../../utils/")
@@ -35,55 +30,103 @@ greedy_modules = [
 print("Loading tags")
 '''
 module,loc,bela,belb,belc,beld
-my_ram_N,SLICE_X12Y100,SRL16E,SRLC32E,SRLC32E,SRLC32E
-my_ram_N,SLICE_X12Y101,SRLC32E,SRL16E,SRL16E,SRLC32E
-my_ram_N,SLICE_X12Y102,SRLC32E,SRL16E,SRLC32E,RAM32X1S
-my_RAM256X1S,SLICE_X12Y103,,,,
+my_ram_N,SLICE_X12Y100,SRLC32E,SRL16E,SRLC32E,LUT6
+my_ram_N,SLICE_X12Y101,SRLC32E,SRLC32E,SRLC32E,SRLC32E
+my_RAM256X1S,SLICE_X12Y102,None,0,,
 '''
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
     l = l.strip()
-    module,loc,bela,belb,belc,beld = l.split(',')
-    bels = [bela,belb,belc,beld]
-    if module in greedy_modules:
-        '''
-        my_RAM128X1D #(.LOC("SLICE_X12Y100"))
-            WA7USED
-        my_RAM128X1S #(.LOC("SLICE_X12Y102"))
-            WA7USED
-        my_RAM256X1S #(.LOC("SLICE_X12Y103"))
-            WA7USED, WA8USED
-        '''
-        which = 'D'
-        WA7USED and segmk.addtag(loc, "WA7USED", 1)
-        segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
-    else:
-        '''
-        LUTD
-                    01_23   01_59   30_47   31_47
-        SRL16E      1       1       1
-        SRLC32E     1               1
-        RAM32X1S    1       1               1
-        RAM64X1S    1                       1
+    module,loc,p0,p1,p2,p3 = l.split(',')
 
-        01_23: WEMUX.CE (more info needed)
-        01_59: half sized memory
-        30_47: SRL mode
-        31_47: RAM mode
-        '''
-        for which, bel in zip('ABCD', bels):
-            segmk.addtag(loc, "%sLUT.SMALL" % which, bel in ('SRL16E', 'RAM32X1S'))
-            segmk.addtag(loc, "%sLUT.SRL" % which, bel in ('SRL16E', 'SRLC32E'))
-            # Only valid in D
-            if which == 'D':
-                segmk.addtag(loc, "%sLUT.RAM" % which, bel in ('RAM32X1S', 'RAM64X1S'))
-        WA7USED and segmk.addtag(loc, "WA7USED", 0)
-        segmk.addtag(loc, "WA8USED", 0)
+    segmk.addtag(loc, "WA7USED", module in ('my_RAM128X1D', 'my_RAM128X1S', 'my_RAM256X1S'))
+    segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
+
+    # (a, b, c, d)
+    # Size set for RAM32X1S, RAM32X1D, and SRL16E
+    size = [0, 0, 0, 0]
+    # SRL set for SRL* primitives
+    srl = [0, 0, 0, 0]
+    # RAM set for RAM* primitives
+    ram = [0, 0, 0, 0]
+
+    if module == 'my_ram_N':
+        # Each one of: SRL16E, SRLC32E, LUT6
+        bels = [p0,p1,p2,p3]
+
+        # Clock Enable (CE) clock gate only enabled if we have clocked elements
+        # A pure LUT6 does not, but everything else should
         segmk.addtag(loc, "WEMUX.CE", bels != ['LUT6', 'LUT6', 'LUT6', 'LUT6'])
 
+        beli = 0
+        for which, bel in zip('ABCD', bels):
+            if bel == 'SRL16E':
+                size[beli] = 1
+            if bel in ('SRL16E', 'SRLC32E'):
+                srl[beli] = 1
+            beli += 1
+    else:
+        n = p0
+        if n:
+            n = int(n)
+        # Unused. Just to un-alias mux
+        #_ff = int(p1)
+
+        # Can pack 4 into a CLB
+        # D is always occupied first (due to WA/A sharing on D)
+        # TODO: maybe investigate ROM primitive for completeness
+        pack4 = [
+            # (a, b, c, d)
+            (0, 0, 0, 1),
+            (1, 0, 0, 1),
+            (1, 1, 0, 1),
+            (1, 1, 1, 1),
+            ]
+        # Uses CD first
+        pack2 = [
+            (0, 0, 1, 1),
+            (1, 1, 1, 1),
+            ]
+
+        # Always use all 4 sites
+        if module in ('my_RAM32M', 'my_RAM64M', 'my_RAM128X1D', 'my_RAM256X1S'):
+            ram = [1, 1, 1, 1]
+        # Only can occupy CD I guess
+        elif module == 'my_RAM32X1D':
+            ram = [0, 0, 1, 1]
+        # Uses 2 sites at a time
+        elif module in ('my_RAM64X1D_N', 'my_RAM128X1S_N'):
+            ram = pack2[n - 1]
+        # Uses 1 site at a time
+        elif module in ('my_RAM32X1S_N', 'my_RAM64X1S_N'):
+            ram = pack4[n - 1]
+        else:
+            assert(0)
+
+        # All entries here requiare D
+        assert(ram[3])
+
+        if module == 'my_RAM32X1D':
+            # Occupies CD 
+            size[2] = 1
+            size[3] = 1
+        elif module == 'my_RAM32M':
+            size = [1, 1, 1, 1]
+        elif module == 'my_RAM32X1S_N':
+            size = pack4[n - 1]
+        else:
+            assert(not module.startswith('my_RAM32'))
+
+    # Now commit bits after marking 1's
+    for beli, bel in enumerate('ABCD'):
+        segmk.addtag(loc, "%sLUT.RAM" % bel, ram[beli])
+        segmk.addtag(loc, "%sLUT.SRL" % bel, srl[beli])
+        # FIXME
+        module == segmk.addtag(loc, "%sLUT.SMALL" % bel, size[beli])
+
 def bitfilter(frame_idx, bit_idx):
-    # Hack to remove aliased PIP bits
+    # Hack to remove aliased PIP bits on CE
     # We should either mix up routing more or exclude previous DB entries
     assert os.getenv("XRAY_DATABASE") == "artix7"
     return (frame_idx, bit_idx) not in [(0, 27), (1, 25), (1, 26), (1, 29)]
