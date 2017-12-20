@@ -355,9 +355,33 @@ function oml() {
                         m = re.search(r"(.)LUT.INIT\[(..)\]", bit_name)
                         label = m.group(1) + m.group(2)
 
-                    if re.search(r"\.[ABCD]5?FF\.", bit_name):
+                    m = re.search(r"\.([ABCD])LUT\.([A-Z]+)$", bit_name)
+                    if m:
+                        bgcolor = "#ffffaa"
+                        if m.group(2) == "RAM":
+                            label = m.group(1) + "LR"
+                        elif m.group(2) == "SMALL":
+                            label = m.group(1) + "LS"
+                        elif m.group(2) == "SRL":
+                            label = m.group(1) + "SR"
+                        else:
+                            bgcolor = "#ff0000"
+
+                    m = re.search(r"\.([ABCD])LUT\.([A-Z]+)$", bit_name)
+                    if m:
+                        bgcolor = "#ffffaa"
+                        if m.group(2) == "RAM":
+                            label = m.group(1) + "LR"
+                        elif m.group(2) == "SMALL":
+                            label = m.group(1) + "LS"
+                        elif m.group(2) == "SRL":
+                            label = m.group(1) + "SR"
+                        else:
+                            bgcolor = "#ff0000"
+
+                    m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+(\.A|\.B)?)$", bit_name)
+                    if m:
                         bgcolor = "#aaffaa"
-                        m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+(\.A|\.B)?)$", bit_name)
                         if m.group(2) == "ZINI":
                             label = m.group(1) + "ZI"
                         elif m.group(2) == "ZRST":
@@ -369,9 +393,23 @@ function oml() {
                         else:
                             bgcolor = "#ff0000"
 
-                    if re.search(r"\.CARRY4\.([A-Z0-9]+)$", bit_name):
-                        m = re.search(r"\.CARRY4\.([A-Z0-9]+)$", bit_name)
-                        bgcolor = "##88cc00"
+                    m = re.search(r"\.([ABCD])DI1MUX\.", bit_name)
+                    if m:
+                        bgcolor = "#ffffaa"
+                        label = m.group(1) + "DI1"
+
+                    m = re.search(r"\.(WA[78])USED$", bit_name)
+                    if m:
+                        bgcolor = "#ffffaa"
+                        label = m.group(1)
+
+                    if ".WEMUX." in bit_name:
+                        bgcolor = "#ffffaa"
+                        label = "WE"
+
+                    m = re.search(r"\.CARRY4\.([A-Z0-9]+)$", bit_name)
+                    if m:
+                        bgcolor = "#88cc00"
                         label = m.group(1)
 
                     if re.search(r"\.LATCH$", bit_name):
