@@ -40,7 +40,71 @@ module top(input clk, stb, di, output do);
 	);
 endmodule
 
+/*
+Using UG474 recommended primitives
+*/
 module roi(input clk, input [255:0] din, output [255:0] dout);
+    my_RAM32X1S #(.LOC("SLICE_X12Y100"))
+            c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    my_RAM32X1D #(.LOC("SLICE_X12Y101"))
+            c1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    my_RAM32M #(.LOC("SLICE_X12Y102"))
+            c2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    my_RAM64X1S #(.LOC("SLICE_X12Y103"))
+            c3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    my_RAM64X1D #(.LOC("SLICE_X12Y104"))
+            c4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    my_RAM64M #(.LOC("SLICE_X12Y105"))
+            c5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
+    my_RAM128X1S #(.LOC("SLICE_X12Y106"))
+            c6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
+    my_RAM128X1D #(.LOC("SLICE_X12Y107"))
+            c7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
+    my_RAM256X1S #(.LOC("SLICE_X12Y108"))
+            c8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
+
+    //Multi-packing
+    my_RAM32X1S_2 #(.LOC("SLICE_X12Y110"))
+            m0(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
+    my_RAM32X1S_3 #(.LOC("SLICE_X12Y111"))
+            m1(.clk(clk), .din(din[  80 +: 8]), .dout(dout[  80 +: 8]));
+    my_RAM32X1S_4 #(.LOC("SLICE_X12Y112"))
+            m2(.clk(clk), .din(din[  88 +: 8]), .dout(dout[  88 +: 8]));
+    my_RAM64X1D_2 #(.LOC("SLICE_X12Y113"))
+            m3(.clk(clk), .din(din[  96 +: 8]), .dout(dout[  96 +: 8]));
+    //next round
+    my_RAM64X1S_2 #(.LOC("SLICE_X12Y114"))
+            m4(.clk(clk), .din(din[  104 +: 8]), .dout(dout[  104 +: 8]));
+    my_RAM64X1S_3 #(.LOC("SLICE_X12Y115"))
+            m5(.clk(clk), .din(din[  112 +: 8]), .dout(dout[  112 +: 8]));
+    my_RAM64X1S_4 #(.LOC("SLICE_X12Y116"))
+            m6(.clk(clk), .din(din[  120 +: 8]), .dout(dout[  120 +: 8]));
+    //...and out of bits
+    my_RAM128X1S_2 #(.LOC("SLICE_X12Y117"))
+            m7(.clk(clk), .din(din[  200 +: 8]), .dout(dout[  200 +: 8]));
+
+    my_SRLC32E #(.LOC("SLICE_X14Y100"), .BEL("A6LUT"))
+            s0(.clk(clk), .din(din[  128 +: 8]), .dout(dout[  128 +: 8]));
+    my_SRLC32E #(.LOC("SLICE_X14Y101"), .BEL("B6LUT"))
+            s1(.clk(clk), .din(din[  136 +: 8]), .dout(dout[  136 +: 8]));
+    my_SRLC32E #(.LOC("SLICE_X14Y102"), .BEL("C6LUT"))
+            s2(.clk(clk), .din(din[  144 +: 8]), .dout(dout[  144 +: 8]));
+    my_SRLC32E #(.LOC("SLICE_X14Y103"), .BEL("D6LUT"))
+            s3(.clk(clk), .din(din[  152 +: 8]), .dout(dout[  152 +: 8]));
+    my_SRL16E #(.LOC("SLICE_X14Y104"), .BEL("A6LUT"))
+            s4(.clk(clk), .din(din[  160 +: 8]), .dout(dout[  160 +: 8]));
+    my_SRL16E #(.LOC("SLICE_X14Y105"), .BEL("B6LUT"))
+            s5(.clk(clk), .din(din[  168 +: 8]), .dout(dout[  168 +: 8]));
+    my_SRL16E #(.LOC("SLICE_X14Y106"), .BEL("C6LUT"))
+            s6(.clk(clk), .din(din[  176 +: 8]), .dout(dout[  176 +: 8]));
+    my_SRL16E #(.LOC("SLICE_X14Y107"), .BEL("D6LUT"))
+            s7(.clk(clk), .din(din[  184 +: 8]), .dout(dout[  184 +: 8]));
+    //my_SRL16E_8 #(.LOC("SLICE_X14Y108"))
+    //        s8(.clk(clk), .din(din[  192 +: 8]), .dout(dout[  192 +: 8]));
+endmodule
+
+
+module roi_asdfsdf(input clk, input [255:0] din, output [255:0] dout);
     //RAM32X1D 32-Deep by 1-Wide Static Dual Port Synchronous RAM
     my_RAM32X1D #(.LOC("SLICE_X12Y100"))
             c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
@@ -76,10 +140,6 @@ module roi_sdffd(input clk, input [255:0] din, output [255:0] dout);
     my_RAM128X1D #(.LOC("SLICE_X12Y100"))
             c0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
     /*
-    my_RAM128X1D_2 #(.LOC("SLICE_X12Y101"))
-            c1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    */
-    /*
     seg SEG_CLBLM_L_X10Y102
     bit 00_40
     bit 01_23
@@ -114,7 +174,7 @@ module roi_sdffd(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 //It created a LUT instead of aggregating using WA7MUX
-module my_RAM64X1S_2 (input clk, input [7:0] din, output [7:0] dout);
+module my_RAM64X1S_2_mux (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
 
     assign dout[0] = din[0] ? oa : ob;
@@ -282,6 +342,33 @@ module my_SRL16E_4 (input clk, input [7:0] din, output [7:0] dout);
             .D(din[6]));
 endmodule
 
+module my_SRL16E_8 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC, BEL="D6LUT" *)
+    SRL16E #(
+        ) lutd2 (
+            .Q(dout[7]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .CE(din[4]),
+            .CLK(din[5]),
+            .D(din[6]));
+    (* LOC=LOC, BEL="D6LUT" *)
+    SRL16E #(
+        ) lutd1 (
+            .Q(dout[6]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .CE(din[4]),
+            .CLK(din[5]),
+            .D(din[6]));
+endmodule
+
 module my_SRLC32E_4 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
 
@@ -332,6 +419,79 @@ module my_SRLC32E_4 (input clk, input [7:0] din, output [7:0] dout);
             .CE(din[5]),
             .CLK(din[6]),
             .D(din[7]));
+endmodule
+
+module my_RAM32X1S_2 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC *)
+    RAM32X1S #(
+        ) lutd (
+            .O(dout[3]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .D(din[5]),
+            .WCLK(din[6]),
+            .WE(din[7]));
+
+    (* LOC=LOC *)
+    RAM32X1S #(
+        ) lutc (
+            .O(dout[2]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .D(din[5]),
+            .WCLK(din[6]),
+            .WE(din[7]));
+endmodule
+
+module my_RAM32X1S_3 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC *)
+    RAM32X1S #(
+        ) lutd (
+            .O(dout[3]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .D(din[5]),
+            .WCLK(din[6]),
+            .WE(din[7]));
+
+    (* LOC=LOC *)
+    RAM32X1S #(
+        ) lutc (
+            .O(dout[2]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .D(din[5]),
+            .WCLK(din[6]),
+            .WE(din[7]));
+
+    (* LOC=LOC *)
+    RAM32X1S #(
+        ) lutb (
+            .O(dout[1]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .D(din[5]),
+            .WCLK(din[6]),
+            .WE(din[7]));
 endmodule
 
 module my_RAM32X1S_4 (input clk, input [7:0] din, output [7:0] dout);
@@ -388,6 +548,84 @@ module my_RAM32X1S_4 (input clk, input [7:0] din, output [7:0] dout);
             .D(din[5]),
             .WCLK(din[6]),
             .WE(din[7]));
+endmodule
+
+module my_RAM64X1S_2 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC *)
+    RAM64X1S #(
+        ) lutd (
+            .O(dout[3]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .A5(din[5]),
+            .D(din[6]),
+            .WCLK(clk),
+            .WE(din[0]));
+
+    (* LOC=LOC *)
+    RAM64X1S #(
+        ) lutc (
+            .O(dout[2]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .A5(din[5]),
+            .D(din[6]),
+            .WCLK(clk),
+            .WE(din[0]));
+endmodule
+
+module my_RAM64X1S_3 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC *)
+    RAM64X1S #(
+        ) lutd (
+            .O(dout[3]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .A5(din[5]),
+            .D(din[6]),
+            .WCLK(clk),
+            .WE(din[0]));
+
+    (* LOC=LOC *)
+    RAM64X1S #(
+        ) lutc (
+            .O(dout[2]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .A5(din[5]),
+            .D(din[6]),
+            .WCLK(clk),
+            .WE(din[0]));
+
+    (* LOC=LOC *)
+    RAM64X1S #(
+        ) lutb (
+            .O(dout[1]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .A5(din[5]),
+            .D(din[6]),
+            .WCLK(clk),
+            .WE(din[0]));
 endmodule
 
 module my_RAM64X1S_4 (input clk, input [7:0] din, output [7:0] dout);
@@ -1018,46 +1256,45 @@ module my_RAM128X1D (input clk, input [7:0] din, output [7:0] dout);
             .WE(din[2]));
 endmodule
 
-/*
-hmm?
-
-CRITICAL WARNING: [Constraints 18-5] Cannot loc instance 'roi/c1/lutb/DP.HIGH' at site SLICE_X12Y101,
-Instance roi/c1/lutb/SP.HIGH can not be placed in C6LUT of site SLICE_X12Y101
-because the bel is occupied by roi/c1/luta/SP.HIGH(port:).
-This could be caused by bel constraint conflict
-*/
-module my_RAM128X1D_2 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "";
-
-    (* LOC=LOC, KEEP, DONT_TOUCH *)
-    RAM128X1D #(
-            .INIT(128'h0),
-            .IS_WCLK_INVERTED(1'b0)
-        ) lutb (
-            .DPO(dout[3]),
-            .SPO(dout[2]),
-            .D(din[0]),
-            .WCLK(clk),
-            .WE(din[2]));
-
-    (* LOC=LOC, KEEP, DONT_TOUCH *)
-    RAM128X1D #(
-            .INIT(128'h0),
-            .IS_WCLK_INVERTED(1'b0)
-        ) luta (
-            .DPO(dout[0]),
-            .SPO(dout[1]),
-            .D(din[0]),
-            .WCLK(clk),
-            .WE(din[2]));
-endmodule
-
 module my_RAM128X1S (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
 
     (* LOC=LOC, KEEP, DONT_TOUCH *)
     RAM128X1S #(
         ) RAM128X1S (
+            .O(dout[0]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .A5(din[5]),
+            .A6(din[6]),
+            .D(din[7]),
+            .WCLK(din[0]),
+            .WE(din[1]));
+endmodule
+
+module my_RAM128X1S_2 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC, KEEP, DONT_TOUCH *)
+    RAM128X1S #(
+        ) lutb (
+            .O(dout[1]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .A5(din[5]),
+            .A6(din[6]),
+            .D(din[7]),
+            .WCLK(din[0]),
+            .WE(din[1]));
+    (* LOC=LOC, KEEP, DONT_TOUCH *)
+    RAM128X1S #(
+        ) luta (
             .O(dout[0]),
             .A0(din[0]),
             .A1(din[1]),
@@ -1128,6 +1365,52 @@ module my_RAM32X1D (input clk, input [7:0] din, output [7:0] dout);
             .WCLK(din[3]),
             .WE(din[4]));
 endmodule
+
+/*
+Invalid
+It tries to place both at D6LUT
+module my_RAM32X1D_2 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC = "";
+
+    (* LOC=LOC, KEEP, DONT_TOUCH *)
+    RAM32X1D #(
+        ) lutb (
+            .DPO(dout[3]),
+            .SPO(dout[2]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .D(din[5]),
+            .DPRA0(din[6]),
+            .DPRA1(din[7]),
+            .DPRA2(din[0]),
+            .DPRA3(din[1]),
+            .DPRA4(din[2]),
+            .WCLK(din[3]),
+            .WE(din[4]));
+
+    (* LOC=LOC, KEEP, DONT_TOUCH *)
+    RAM32X1D #(
+        ) luta (
+            .DPO(dout[1]),
+            .SPO(dout[0]),
+            .A0(din[0]),
+            .A1(din[1]),
+            .A2(din[2]),
+            .A3(din[3]),
+            .A4(din[4]),
+            .D(din[5]),
+            .DPRA0(din[6]),
+            .DPRA1(din[7]),
+            .DPRA2(din[0]),
+            .DPRA3(din[1]),
+            .DPRA4(din[2]),
+            .WCLK(din[3]),
+            .WE(din[4]));
+endmodule
+*/
 
 module my_RAM32X1S (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
