@@ -2,6 +2,51 @@
 
 import os, sys, json, re
 
+import argparse
+
+parser = argparse.ArgumentParser(
+    description="Generate a pretty HTML version of the documentation.")
+parser.add_argument(
+    '--output', default=os.path.join(os.path.curdir, 'html'),
+    help='Put the generated files in this directory (default current dir).')
+parser.add_argument(
+    '--settings', default=None,
+    help='Read the settings from file (default to environment).')
+
+args = parser.parse_args()
+
+if args.settings:
+    settings_filename = args.settings
+
+    settings = {
+        'XRAY_DATABASE_DIR': os.path.abspath(
+            os.path.join(os.path.dirname(settings_filename), '..')),
+    }
+    with open(settings_filename) as f:
+        for line in f:
+            line = line.strip()
+            if not line.startswith("export "):
+                continue
+            key, value = line[7:].split('=', 1)
+            settings[key] = value[1:-1]
+
+    def get_setting(name):
+        return settings[name]
+else:
+    def get_setting(name):
+        return os.getenv(name)
+
+db_dir = os.path.join(get_setting("XRAY_DATABASE_DIR"), get_setting("XRAY_DATABASE"))
+def db_open(fn):
+    return open(os.path.join(db_dir, fn))
+
+def out_open(fn):
+    out_dir = os.path.join(args.output, get_setting("XRAY_DATABASE"))
+    os.makedirs(out_dir, exist_ok=True)
+    fp = os.path.join(out_dir, fn)
+    print("Writing %s" % fp)
+    return open(fp, "w")
+
 clb_bitgroups_db = [
     # copy&paste from zero_db in dbfixup.py
     "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
@@ -93,8 +138,9 @@ routebits = dict()
 routezbits = dict()
 maskbits = dict()
 
+
 print("Loading tilegrid.")
-with open("../database/%s/tilegrid.json" % os.getenv("XRAY_DATABASE"), "r") as f:
+with db_open("tilegrid.json") as f:
     grid = json.load(f)
 
 for segname, segdata in grid["segments"].items():
@@ -132,7 +178,7 @@ for segname, segdata in grid["segments"].items():
 
         if segtype not in ["hclk_l", "hclk_r"]:
             print("Loading %s segbits." % segtype)
-            with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
+            with db_open("segbits_%s.db" % segtype) as f:
                 for line in f:
                     if re.search(r"(\.[ABCD]MUX\.)|(\.PRECYINIT\.)", line):
                         add_pip_bits(line)
@@ -140,7 +186,7 @@ for segname, segdata in grid["segments"].items():
                         add_single_bit(line)
 
         print("Loading %s segbits." % re.sub("clbl[lm]", "int", segtype))
-        with open("../database/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE"), re.sub("clbl[lm]", "int", segtype))) as f:
+        with db_open("segbits_%s.db" % re.sub("clbl[lm]", "int", segtype)) as f:
             for line in f:
                 if segtype in ["hclk_l", "hclk_r"] and ".ENABLE_BUFFER." in line:
                     add_single_bit(line)
@@ -148,7 +194,7 @@ for segname, segdata in grid["segments"].items():
                     add_pip_bits(line)
 
         print("Loading %s maskbits." % segtype)
-        with open("../database/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE"), segtype)) as f:
+        with db_open("mask_%s.db" % segtype) as f:
             for line in f:
                 _, bit = line.split()
                 maskbits[segtype].add(bit)
@@ -160,13 +206,11 @@ for segname, segdata in grid["segments"].items():
 grid_range = None
 grid_map = dict()
 
-print("Writing %s/index.html." % os.getenv("XRAY_DATABASE"))
-os.makedirs(os.getenv("XRAY_DATABASE"), exist_ok=True)
-with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
-    print("<html><title>X-Ray %s Database</title><body>" % os.getenv("XRAY_DATABASE").upper(), file=f)
-    print("<h3>X-Ray %s Database</h3>" % os.getenv("XRAY_DATABASE").upper(), file=f)
+with out_open("index.html") as f:
+    print("<html><title>X-Ray %s Database</title><body>" % get_setting("XRAY_DATABASE").upper(), file=f)
+    print("<h3>X-Ray %s Database</h3>" % get_setting("XRAY_DATABASE").upper(), file=f)
 
-    print("<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" % (os.getenv("XRAY_PART"), os.getenv("XRAY_ROI"), os.getenv("XRAY_ROI_FRAMES")), file=f)
+    print("<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" % (get_setting("XRAY_PART"), get_setting("XRAY_ROI"), get_setting("XRAY_ROI_FRAMES")), file=f)
 
     for tilename, tiledata in grid["tiles"].items():
         grid_x = tiledata["grid_x"]
@@ -197,7 +241,7 @@ with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
             if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor="#aaffaa"
 
             title = [tilename]
-            
+
             if "segment" in tiledata:
                 segdata = grid["segments"][tiledata["segment"]]
                 title.append(tiledata["segment"])
@@ -229,13 +273,12 @@ with open("%s/index.html" % os.getenv("XRAY_DATABASE"), "w") as f:
 # Create Segment Pages
 
 for segtype in sorted(segbits.keys()):
-    print("Writing %s/seg_%s.html." % (os.getenv("XRAY_DATABASE"), segtype))
-    with open("%s/seg_%s.html" % (os.getenv("XRAY_DATABASE"), segtype), "w") as f:
-        print("<html><title>X-Ray %s Database: %s</title><body>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
+    with out_open("seg_%s.html" % segtype) as f:
+        print("<html><title>X-Ray %s Database: %s</title><body>" % (get_setting("XRAY_DATABASE").upper(), segtype.upper()), file=f)
         if segtype in ["hclk_l", "hclk_r"]:
-            print("<h3>X-Ray %s Database: %s Segment</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper()), file=f)
+            print("<h3>X-Ray %s Database: %s Segment</h3>" % (get_setting("XRAY_DATABASE").upper(), segtype.upper()), file=f)
         else:
-            print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (os.getenv("XRAY_DATABASE").upper(), segtype.upper(),
+            print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (get_setting("XRAY_DATABASE").upper(), segtype.upper(),
                     segtype.upper(), re.sub("clbl[lm]", "int", segtype).upper()), file=f)
 
         print("""
@@ -583,7 +626,7 @@ function oml() {
             print("<table cellspacing=0>", file=f)
             print("<tr><th width=\"500\" align=\"left\">PIP</th><th>Type</th></tr>", file=f)
             trstyle = ""
-            with open("../database/%s/ppips_%s.db" % (os.getenv("XRAY_DATABASE"), tile_type.lower())) as fi:
+            with db_open("ppips_%s.db" % tile_type.lower()) as fi:
                 for line in fi:
                     pip_name, pip_type = line.split()
                     trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
@@ -592,4 +635,3 @@ function oml() {
 
         print("</div>", file=f)
         print("</body></html>", file=f)
-
