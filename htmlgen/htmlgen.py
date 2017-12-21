@@ -305,7 +305,7 @@ function ome(bit) {
             if (!(b in highlight_cache)) {
                 el = document.getElementById("bit" + b);
                 highlight_cache[b] = el.bgColor;
-                el.bgColor = "#ffffff"
+                el.bgColor = "#ffffff";
                 highlight_bits.push(b);
             }
         }
