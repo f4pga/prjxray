@@ -293,6 +293,7 @@ for segtype in sorted(segbits.keys()):
 var grp2bits = { };
 var bit2grp = { }
 var highlight_bits = [ ];
+var highlight_cache = { };
 
 function ome(bit) {
     // console.log("ome: " + bit);
@@ -301,9 +302,12 @@ function ome(bit) {
         for (i in grp2bits[grp]) {
             b = grp2bits[grp][i];
             // console.log("  -> " + b);
-            el = document.getElementById("bit" + b);
-            el.style.fontWeight = "bold";
-            highlight_bits.push(b);
+            if (!(b in highlight_cache)) {
+                el = document.getElementById("bit" + b);
+                highlight_cache[b] = el.bgColor;
+                el.bgColor = "#ffffff"
+                highlight_bits.push(b);
+            }
         }
     }
 }
@@ -313,6 +317,8 @@ function oml() {
     for (i in highlight_bits) {
         b = highlight_bits[i];
         el = document.getElementById("bit" + b);
+        el.bgColor = highlight_cache[b];
+        delete highlight_cache[b];
         el.style.fontWeight = "normal";
     }
     highlight_bits.length = 0;
