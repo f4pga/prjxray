@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os, sys, json, re
+from io import StringIO
 
 import argparse
 
@@ -40,7 +41,7 @@ db_dir = os.path.join(get_setting("XRAY_DATABASE_DIR"), get_setting("XRAY_DATABA
 def db_open(fn):
     filename = os.path.join(db_dir, fn)
     if not os.path.exists(filename):
-        return open("/dev/null")
+        return StringIO("")
     return open(os.path.join(db_dir, fn))
 
 def out_open(fn):
@@ -144,7 +145,20 @@ maskbits = dict()
 
 print("Loading tilegrid.")
 with db_open("tilegrid.json") as f:
-    grid = json.load(f)
+    data = f.read()
+    if not data:
+        grid = {
+            "segments": {},
+            "tiles": {
+                "NULL": {
+                    "grid_x": 0,
+                    "grid_y":0,
+                    "type":"NULL",
+                }
+            }
+        }
+    else:
+        grid = json.loads(data)
 
 for segname, segdata in grid["segments"].items():
     segtype = segdata["type"].lower()
