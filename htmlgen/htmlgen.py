@@ -38,6 +38,9 @@ else:
 
 db_dir = os.path.join(get_setting("XRAY_DATABASE_DIR"), get_setting("XRAY_DATABASE"))
 def db_open(fn):
+    filename = os.path.join(db_dir, fn)
+    if not os.path.exists(filename):
+        return open("/dev/null")
     return open(os.path.join(db_dir, fn))
 
 def out_open(fn):
@@ -233,6 +236,7 @@ with out_open("index.html") as f:
         for grid_x in range(grid_range[0], grid_range[2]+1):
             tilename = grid_map[(grid_x, grid_y)]
             tiledata = grid["tiles"][tilename]
+            segdata = None
 
             bgcolor = "#aaaaaa"
             if tiledata["type"] in ["INT_L", "INT_R"]: bgcolor="#aaaaff"
@@ -253,7 +257,10 @@ with out_open("index.html") as f:
                     title.append("%s site: %s" % (sitetype, sitename))
 
             if "segment" in tiledata:
-                title.append("Baseaddr: %s %d" % tuple(segdata["baseaddr"]))
+                if "baseaddr" in segdata:
+                    title.append("Baseaddr: %s %d" % tuple(segdata["baseaddr"]))
+                else:
+                    print("Warning: no baseaddr in segment %s (via tile %s)." % (tiledata["segment"], tilename))
 
             print("<td bgcolor=\"%s\" align=\"center\" title=\"%s\"><span style=\"font-size:10px\">" % (bgcolor, "\n".join(title)), file=f)
             if "segment" in tiledata:
@@ -286,6 +293,7 @@ for segtype in sorted(segbits.keys()):
 var grp2bits = { };
 var bit2grp = { }
 var highlight_bits = [ ];
+var highlight_cache = { };
 
 function ome(bit) {
     // console.log("ome: " + bit);
@@ -294,9 +302,12 @@ function ome(bit) {
         for (i in grp2bits[grp]) {
             b = grp2bits[grp][i];
             // console.log("  -> " + b);
-            el = document.getElementById("bit" + b);
-            el.style.fontWeight = "bold";
-            highlight_bits.push(b);
+            if (!(b in highlight_cache)) {
+                el = document.getElementById("bit" + b);
+                highlight_cache[b] = el.bgColor;
+                el.bgColor = "#ffffff";
+                highlight_bits.push(b);
+            }
         }
     }
 }
@@ -306,6 +317,8 @@ function oml() {
     for (i in highlight_bits) {
         b = highlight_bits[i];
         el = document.getElementById("bit" + b);
+        el.bgColor = highlight_cache[b];
+        delete highlight_cache[b];
         el.style.fontWeight = "normal";
     }
     highlight_bits.length = 0;
