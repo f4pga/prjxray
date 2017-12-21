@@ -42,6 +42,9 @@ class segmaker:
 
             segdata = self.grid["segments"][tiledata["segment"]]
 
+            if "baseaddr" not in segdata:
+                continue
+
             if segdata["type"] not in self.segments_by_type:
                 self.segments_by_type[segdata["type"]] = dict()
             segments = self.segments_by_type[segdata["type"]]
