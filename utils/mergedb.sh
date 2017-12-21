@@ -48,7 +48,7 @@ case "$1" in
 esac
 
 touch "$db"
-sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2"
+sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2" || true
 mv "$tmp2" "$db"
 rm -f "$tmp1"
 
