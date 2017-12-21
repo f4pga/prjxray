@@ -13,8 +13,10 @@ Pull submodules:
 
 Get a head start by downloading current database:
 
-    # Give argument `https` if you want to use to use the https protocol
-    # instead.
+    # Give the argument;
+    # - https if you to use the https protocol (default)
+    # - git+ssh if you want to use git+ssh protocol
+    # - git if you want to use the git protocol
     ./download-latest-db.sh
 
 Install CMake and build the C++ tools:
