@@ -164,6 +164,8 @@ for segname, segdata in grid["segments"].items():
     segtype = segdata["type"].lower()
 
     if segtype not in segbits:
+        print("Loading data for %s segments:" % segtype)
+
         segbits[segtype] = dict()
         segbits_r[segtype] = dict()
         routebits[segtype] = dict()
@@ -194,7 +196,7 @@ for segname, segdata in grid["segments"].items():
             segbits_r[segtype][bit_pos] = bit_name
 
         if segtype not in ["hclk_l", "hclk_r"]:
-            print("Loading %s segbits." % segtype)
+            print("  loading %s segbits." % segtype)
             with db_open("segbits_%s.db" % segtype) as f:
                 for line in f:
                     if re.search(r"(\.[ABCD]MUX\.)|(\.PRECYINIT\.)", line):
@@ -202,15 +204,17 @@ for segname, segdata in grid["segments"].items():
                     else:
                         add_single_bit(line)
 
-        print("Loading %s segbits." % re.sub("clbl[lm]", "int", segtype))
-        with db_open("segbits_%s.db" % re.sub("clbl[lm]", "int", segtype)) as f:
+        int_tile_type = re.sub("clbl[lm]|bram[0-4]|dsp[0-4]", "int", segtype)
+
+        print("  loading %s segbits." % int_tile_type)
+        with db_open("segbits_%s.db" % int_tile_type) as f:
             for line in f:
                 if segtype in ["hclk_l", "hclk_r"] and ".ENABLE_BUFFER." in line:
                     add_single_bit(line)
                 else:
                     add_pip_bits(line)
 
-        print("Loading %s maskbits." % segtype)
+        print("  loading %s maskbits." % segtype)
         with db_open("mask_%s.db" % segtype) as f:
             for line in f:
                 _, bit = line.split()
@@ -310,7 +314,7 @@ for segtype in sorted(segbits.keys()):
             print("<h3>X-Ray %s Database: %s Segment</h3>" % (get_setting("XRAY_DATABASE").upper(), segtype.upper()), file=f)
         else:
             print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (get_setting("XRAY_DATABASE").upper(), segtype.upper(),
-                    segtype.upper(), re.sub("clbl[lm]", "int", segtype).upper()), file=f)
+                    segtype.upper(), re.sub("clbl[lm]|bram[0-4]|dsp[0-4]", "int", segtype).upper()), file=f)
 
         print("""
 <script><!--
