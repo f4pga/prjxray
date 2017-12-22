@@ -24,8 +24,11 @@ $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
+run:
+	+set -ex; make clean; make; make pushdb
+
 clean:
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits mask_clbl[lm]_[lr].segbits
 
-.PHONY: database pushdb clean
+.PHONY: database pushdb run clean
 
