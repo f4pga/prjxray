@@ -12,8 +12,7 @@ set_property EXCLUDE_PLACEMENT 1 [get_pblocks roi]
 add_cells_to_pblock [get_pblocks roi] [get_cells roi]
 # Need to go outside
 # SLICE_X12Y100:SLICE_X27Y149
-# resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
-resize_pblock [get_pblocks roi] -add "SLICE_X6Y100:SLICE_X27Y149"
+resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
 
 set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
