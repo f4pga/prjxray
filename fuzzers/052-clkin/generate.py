@@ -59,7 +59,7 @@ for tile, pips_srcs_dsts in tiledata.items():
             segmk.addtag(tile, "%s.%s" % (dst, src), 0)
 
 def bitfilter(frame_idx, bit_idx):
-    assert os.getenv("XRAY_DATABASE") == "artix7"
+    assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
     if frame_idx == 0 and bit_idx == 48:
         return False
     if frame_idx == 1 and bit_idx == 31:
