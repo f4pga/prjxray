@@ -7,6 +7,12 @@ bit-stream format of Xilinx 7-series FPGAs.
 
 # Quickstart Guide
 
+Install Vivado 2017.2 (2017.3 has a known compatibility issue, see
+https://github.com/SymbiFlow/prjxray/issues/14). Then source the settings
+script, ie
+
+    source /opt/Xilinx/Vivado/2017.2/settings64.sh
+
 Pull submodules:
 
     git submodule update --init --recursive
