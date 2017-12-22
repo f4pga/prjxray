@@ -88,15 +88,13 @@ def update_mask(mask_db, *src_dbs):
     bits = set()
     mask_db_file = "%s/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), mask_db)
 
-    if not os.path.exists(mask_db_file):
-        return
-
-    with open(mask_db_file, "r") as f:
-        for line in f:
-            line = line.split()
-            assert len(line) == 2
-            assert line[0] == "bit"
-            bits.add(line[1])
+    if os.path.exists(mask_db_file):
+        with open(mask_db_file, "r") as f:
+            for line in f:
+                line = line.split()
+                assert len(line) == 2
+                assert line[0] == "bit"
+                bits.add(line[1])
 
     for src_db in src_dbs:
         seg_db_file = "%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), src_db)
@@ -111,9 +109,10 @@ def update_mask(mask_db, *src_dbs):
                     if bit[0] != "!":
                         bits.add(bit)
 
-    with open(mask_db_file, "w") as f:
-        for bit in sorted(bits):
-            print("bit %s" % bit, file=f)
+    if len(bits) > 0:
+        with open(mask_db_file, "w") as f:
+            for bit in sorted(bits):
+                print("bit %s" % bit, file=f)
 
 add_zero_bits("int_l")
 add_zero_bits("int_r")
@@ -128,4 +127,10 @@ update_mask("clblm_l", "clblm_l", "int_l")
 update_mask("clblm_r", "clblm_r", "int_r")
 update_mask("hclk_l", "hclk_l")
 update_mask("hclk_r", "hclk_r")
+
+for k in range(5):
+    update_mask("bram%d_l" % k, "bram%d_l" % k, "int_l")
+    update_mask("bram%d_r" % k, "bram%d_r" % k, "int_r")
+    update_mask("dsp%d_l" % k, "dsp%d_l" % k, "int_l")
+    update_mask("dsp%d_r" % k, "dsp%d_r" % k, "int_r")
 

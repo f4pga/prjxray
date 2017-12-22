@@ -109,7 +109,7 @@ for tile_name, tile_data in database["tiles"].items():
             database["segments"][segment_name] = dict()
             database["segments"][segment_name]["type"] = segtype
             database["segments"][segment_name]["frames"] = 28
-            database["segments"][segment_name]["words"] = 1
+            database["segments"][segment_name]["words"] = 2
 
             if k == 0:
                 database["segments"][segment_name]["tiles"] = [tile_name, interface_tile_name, int_tile_name]
@@ -158,7 +158,7 @@ for segment_name in database["segments"].keys():
         if "baseaddr" in database["segments"][seg]:
             assert database["segments"][seg]["baseaddr"] == [framebase, wordbase]
         else:
-            database["segments"][seg]["baseaddr"] = (framebase, wordbase)
+            database["segments"][seg]["baseaddr"] = [framebase, wordbase]
 
 
 #######################################

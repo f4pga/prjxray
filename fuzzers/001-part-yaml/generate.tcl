@@ -10,6 +10,7 @@ set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_03) IOSTANDARD LVCMOS33" [get_po
 
 set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_param tcl.collectionResultDisplayLimit 0
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 
