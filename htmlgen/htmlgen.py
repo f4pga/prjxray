@@ -258,6 +258,12 @@ with out_open("index.html") as f:
             if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]: bgcolor="#ffaaaa"
             if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor="#aaffaa"
 
+            if tiledata["type"] in ["BRAM_INT_INTERFACE_L", "BRAM_L"]: bgcolor="#aaffff"
+            if tiledata["type"] in ["BRAM_INT_INTERFACE_R", "BRAM_R"]: bgcolor="#aaffff"
+
+            if tiledata["type"] in ["INT_INTERFACE_L", "DSP_L"]: bgcolor="#ffaaff"
+            if tiledata["type"] in ["INT_INTERFACE_R", "DSP_R"]: bgcolor="#ffaaff"
+
             title = [tilename]
 
             if "segment" in tiledata:
@@ -275,6 +281,10 @@ with out_open("index.html") as f:
                     title.append("Baseaddr: %s %d" % tuple(segdata["baseaddr"]))
                 else:
                     print("Warning: no baseaddr in segment %s (via tile %s)." % (tiledata["segment"], tilename))
+
+            tilename = tilename.replace("INT_INTERFACE_", "INTF_")
+            tilename = tilename.replace("_X", "<br/>X")
+            tilename = tilename.replace("B_TERM", "B<br/>TERM")
 
             print("<td bgcolor=\"%s\" align=\"center\" title=\"%s\"><span style=\"font-size:10px\">" % (bgcolor, "\n".join(title)), file=f)
             if "segment" in tiledata:

@@ -32,10 +32,14 @@ zero_db = [
 ]
 
 def add_zero_bits(tile_type):
-    assert os.getenv("XRAY_DATABASE") == "artix7"
+    assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
     dbfile = "%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), tile_type)
     new_lines = set()
     llast = None
+
+    if not os.path.exists(dbfile):
+        return
+
     with open(dbfile, "r") as f:
         for line in f:
             # Hack: skip duplicate lines
@@ -75,26 +79,39 @@ def add_zero_bits(tile_type):
                             bits.add("!" + bit)
             new_lines.add(" ".join([tag] + sorted(bits)))
             llast = line
+
     with open(dbfile, "w") as f:
         for line in sorted(new_lines):
             print(line, file=f)
 
 def update_mask(mask_db, *src_dbs):
     bits = set()
-    with open("%s/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), mask_db), "r") as f:
+    mask_db_file = "%s/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), mask_db)
+
+    if not os.path.exists(mask_db_file):
+        return
+
+    with open(mask_db_file, "r") as f:
         for line in f:
             line = line.split()
             assert len(line) == 2
             assert line[0] == "bit"
             bits.add(line[1])
+
     for src_db in src_dbs:
-        with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), src_db), "r") as f:
+        seg_db_file = "%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), src_db)
+
+        if not os.path.exists(seg_db_file):
+            continue
+
+        with open(seg_db_file, "r") as f:
             for line in f:
                 line = line.split()
                 for bit in line[1:]:
                     if bit[0] != "!":
                         bits.add(bit)
-    with open("%s/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), mask_db), "w") as f:
+
+    with open(mask_db_file, "w") as f:
         for bit in sorted(bits):
             print("bit %s" % bit, file=f)
 
