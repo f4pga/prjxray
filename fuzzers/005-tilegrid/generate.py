@@ -158,7 +158,7 @@ for segment_name in database["segments"].keys():
         if "baseaddr" in database["segments"][seg]:
             assert database["segments"][seg]["baseaddr"] == [framebase, wordbase]
         else:
-            database["segments"][seg]["baseaddr"] = (framebase, wordbase)
+            database["segments"][seg]["baseaddr"] = [framebase, wordbase]
 
 
 #######################################
