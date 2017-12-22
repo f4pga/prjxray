@@ -90,7 +90,7 @@ for tile_name, tile_data in database["tiles"].items():
         database["segments"][segment_name] = dict()
         database["segments"][segment_name]["tiles"] = [tile_name]
         database["segments"][segment_name]["type"] = segtype
-        database["segments"][segment_name]["frames"] = 36
+        database["segments"][segment_name]["frames"] = 26
         database["segments"][segment_name]["words"] = 1
         database["tiles"][tile_name]["segment"] = segment_name
 
