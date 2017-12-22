@@ -34,6 +34,9 @@ if 0 {
 	set grid_max_y $::env(XRAY_ROI_GRID_Y2)
 }
 
+# LOC one LUT (a "selected_lut") into each CLB segment configuration column (ie 50 per column)
+# Also, if GRID_MIN/MAX is not defined, automatically create it based on used CLBs
+# See caveat in README on automatic creation
 foreach lut $luts {
 	set tile [get_tile -of_objects $lut]
 	set grid_x [get_property GRID_POINT_X $tile]
@@ -45,6 +48,7 @@ foreach lut $luts {
 	if [expr $grid_min_y < 0 || $grid_y < $grid_min_y] {set grid_min_y $grid_y}
 	if [expr $grid_max_y < 0 || $grid_y > $grid_max_y] {set grid_max_y $grid_y}
 
+	# 50 per column => 50, 100, 150, etc
 	if [regexp "Y(0|[0-9]*[05]0)/" $lut] {
 		set cell [get_cells roi/is[$lut_index].lut]
 		set_property LOC [get_sites -of_objects $lut] $cell
@@ -59,8 +63,10 @@ route_design
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
 
+# Get all tiles in ROI, ie not just the selected LUTs
 set tiles [get_tiles -filter "GRID_POINT_X >= $grid_min_x && GRID_POINT_X <= $grid_max_x && GRID_POINT_Y >= $grid_min_y && GRID_POINT_Y <= $grid_max_y"]
 
+# Write tiles.txt with site metadata
 set fp [open "tiles.txt" w]
 foreach tile $tiles {
 	set type [get_property TYPE $tile]
@@ -80,9 +86,11 @@ foreach tile $tiles {
 }
 close $fp
 
+# Toggle one bit in each selected LUT to generate base addresses
 for {set i 0} {$i < $lut_index} {incr i} {
 	set cell [get_cells roi/is[$i].lut]
 	set orig_init [get_property INIT $cell]
+	# Flip a bit by changing MSB 0 => 1
 	set new_init [regsub "h8" $orig_init "h0"]
 	set_property INIT $new_init $cell
 	write_bitstream -force design_[get_sites -of_objects [lindex $selected_luts $i]].bit
