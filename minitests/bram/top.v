@@ -33,6 +33,19 @@ module top(input clk, stb, di, output do);
 	);
 endmodule
 
+//HCK test
+module roi_(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y24"), .INIT({256{1'b1}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y25"), .INIT({256{1'b1}}))
+            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    //HCK
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y26"), .INIT({256{1'b1}}))
+            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y27"), .INIT({256{1'b1}}))
+            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+endmodule
+
 /*
 One BRAM per tile
 */
@@ -42,7 +55,21 @@ module roi(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y44"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));    
+            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y46"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y48"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y50"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y52"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y54"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y56"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y58"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
 endmodule
 
 /*
