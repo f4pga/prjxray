@@ -1,3 +1,4 @@
+//Need at least one LUT per frame base address we want
 `define N 100
 
 module top(input clk, stb, di, output do);
