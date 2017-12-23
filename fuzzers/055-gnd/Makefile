@@ -22,10 +22,13 @@ todo.txt:
 	echo "INT_R.GFAN0.GND_WIRE" >> todo.txt
 	echo "INT_R.GFAN1.GND_WIRE" >> todo.txt
 
+run:
+	+set -ex; make clean; make; make pushdb
+
 clean:
 	rm -rf .Xil/ .cache/ filtered_seg_int_[lr].segbits
 	rm -rf todo.txt vivado* piplist/ piplist.dcp pattern_[lr].txt pips_int_[lr].txt
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits mask_clbl[lm]_[lr].segbits
 
-.PHONY: database pushdb clean
+.PHONY: database pushdb run clean
 

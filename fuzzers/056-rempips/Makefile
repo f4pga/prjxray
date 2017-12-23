@@ -20,10 +20,13 @@ todo.txt:
 	vivado -mode batch -source piplist.tcl
 	python3 maketodo.py | sort -R | head -n10 > todo.txt
 
+run:
+	+set -ex; while make clean; make todo.txt; test -s todo.txt; do if make; then make pushdb; fi; done; true
+
 clean:
 	rm -rf .Xil/ .cache/ filtered_seg_int_[lr].segbits
 	rm -rf todo.txt vivado* piplist/ piplist.dcp pattern_[lr].txt pips_int_[lr].txt
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits
 
-.PHONY: database pushdb clean
+.PHONY: database pushdb run clean
 
