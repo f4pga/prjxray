@@ -21,7 +21,7 @@ todo.txt:
 	python3 maketodo.py | sort -R | head -n10 > todo.txt
 
 run:
-	+set -ex; while make clean; make todo.txt; test -s todo.txt; do make; make pushdb; done; true
+	+set -ex; while make clean; make todo.txt; test -s todo.txt; do if make; then make pushdb; fi; done; true
 
 clean:
 	rm -rf .Xil/ .cache/ filtered_seg_int_[lr].segbits
