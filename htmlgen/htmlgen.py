@@ -481,21 +481,26 @@ function oml() {
                         bgcolor = "#0000ff"
                         label = "R"
                         for bn in sorted(routebits[segtype][bit_pos]):
-                            if re.match("^INT_[LR].[SNWE][SNWE]", bn):
-                                bgcolor = "#aa88ff"
-                                label = "SNWE"
+                            if re.match("^INT_[LR].[SNWE][SNWERL]", bn):
+                                if bn[8] == "1":
+                                    bgcolor = "#4466bb"
+                                elif bn[8] == "2":
+                                    bgcolor = "#aa88ff"
+                                elif bn[6:9] in "SS6 SE6 NN6 NW6".split():
+                                    bgcolor = "#7755ff"
+                                else:
+                                    bgcolor = "#88aaff"
+                                label = bn[6:9]
                             elif re.match("^INT_[LR].IMUX", bn):
+                                m = re.match("^INT_[LR].IMUX(_L)?(\d+)", bn)
                                 bgcolor = "#88aaff"
-                                label = "IMUX"
+                                label = "IM" + m.group(2)
                             elif re.match("^INT_[LR].BYP_ALT", bn):
                                 bgcolor = "#7755ff"
-                                label = "BALT"
+                                label = "BA" + bn[13]
                             elif re.match("^INT_[LR].FAN_ALT", bn):
                                 bgcolor = "#4466bb"
-                                label = "FALT"
-                            elif re.match("^INT_[LR].[SNWE][RL]", bn):
-                                bgcolor = "#4466bb"
-                                label = "RL"
+                                label = "FA" + bn[13]
                             elif re.match("^INT_[LR].CLK", bn):
                                 bgcolor = "#4466bb"
                                 label = "CLK"
