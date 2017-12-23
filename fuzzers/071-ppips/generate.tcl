@@ -27,7 +27,10 @@ proc write_clb_ppips_db {filename tile} {
 
 	foreach pip [get_pips -of_objects $tile] {
 		set dst_wire [get_wires -downhill -of_objects $pip]
-		if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+		if {[get_property IS_PSEUDO $pip]} {
+			set src_wire [get_wires -uphill -of_objects $pip]
+			puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] hint"
+		} elseif {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
 			set src_wire [get_wires -uphill -of_objects $pip]
 			puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
 		}
