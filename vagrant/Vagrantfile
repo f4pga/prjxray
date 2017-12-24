@@ -1,0 +1,59 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+
+  config.vm.network "private_network", type: "dhcp"
+
+  # Share an additional folder to the guest VM. The first argument is
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+  config.vm.synced_folder "..", "/prjxray", type: "nfs"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
+  end
+
+  # Base boxes are almost always server installs.  Install the desktop
+  # components along with the C++ build tools.
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y ubuntu-desktop build-essential git cmake
+  SHELL
+
+  # Strangely, headless Vivado installs still require a running X server.
+  # Turn on auto-login so the user's X server is active.
+  config.vm.provision "shell", inline: <<-SHELL
+    mkdir -p /etc/lightdm/
+    echo "[Seat:*]" > /etc/lightdm/lightdm.conf
+    echo "autologin-user=vagrant" >> /etc/lightdm/lightdm.conf
+    systemctl start lightdm
+  SHELL
+
+  # Install Vivado.
+  config.vm.provision "shell", inline: <<-SHELL
+    if [ ! -d /vagrant/Vivado ]; then
+      echo "No Vivado download found.  Skipping install."
+    else
+      echo "Installing Vivado.  This takes a while.  I suggest going for a walk."
+      export DISPLAY=:0
+      /vagrant/Vivado/xsetup --agree 3rdPartyEULA,WebTalkTerms,XilinxEULA --batch Install -e "Vivado HL WebPACK" --location "/opt/Xilinx"
+      cp /vagrant/profile.d/* /etc/profile.d/
+    fi
+  SHELL
+
+  # Turn off idle screen locking and screensaver password.
+  config.vm.provision "shell" do |s|
+    s.privileged = false
+    s.inline = <<-SHELL
+      export DISPLAY=:0
+      dconf write /org/gnome/desktop/screensaver/idle-activation-enabled false
+      dconf write /org/gnome/desktop/screensaver/lock-enabled false 
+    SHELL
+  end
+
+  config.vm.provision :reload
+end
