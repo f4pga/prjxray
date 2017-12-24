@@ -13,7 +13,5 @@ export XRAY_PIN_03="D21"
 export XRAY_PIN_04="G21"
 export XRAY_PIN_05="G22"
 export XRAY_PIN_06="F21"
-export XRAY_HCLK_L="HCLK_L_X36Y130"
-export XRAY_HCLK_R="HCLK_R_X37Y130"
 
 source $(dirname ${BASH_SOURCE[0]})/../../utils/environment.sh

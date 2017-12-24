@@ -20,6 +20,8 @@ route_design
 write_checkpoint -force design.dcp
 # write_bitstream -force design.bit
 
+source ../../../utils/utils.tcl
+
 proc print_tile_pair {fp t1 t2} {
 	set t1 [get_tiles $t1]
 	set t2 [get_tiles $t2]
@@ -47,11 +49,7 @@ proc print_tile_pair {fp t1 t2} {
 	}
 }
 
-set tiles [get_tiles -filter "GRID_POINT_X >= $::env(XRAY_ROI_GRID_X1) && \
-		GRID_POINT_X < $::env(XRAY_ROI_GRID_X2) && \
-		GRID_POINT_Y >= $::env(XRAY_ROI_GRID_Y1) && \
-		GRID_POINT_Y < $::env(XRAY_ROI_GRID_Y2)"]
-
+set tiles [roi_tiles]
 set horz_cache [dict create]
 set vert_cache [dict create]
 
