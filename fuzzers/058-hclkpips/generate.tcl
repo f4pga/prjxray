@@ -21,8 +21,8 @@ write_checkpoint -force design.dcp
 
 source ../../../utils/utils.tcl
 
-if [regexp "_001$" [pwd]] {set tile [get_tiles HCLK_L_X36Y130]}
-if [regexp "_002$" [pwd]] {set tile [get_tiles HCLK_R_X37Y130]}
+if [regexp "_001$" [pwd]] {set tile [lindex [filter [roi_tiles] {TILE_TYPE == HCLK_L}] 0]}
+if [regexp "_002$" [pwd]] {set tile [lindex [filter [roi_tiles] {TILE_TYPE == HCLK_R}] 0]}
 
 set net [get_nets o_OBUF]
 set pips [get_pips -of_objects $tile]

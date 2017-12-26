@@ -20,6 +20,8 @@ route_design
 write_checkpoint -force design.dcp
 # write_bitstream -force design.bit
 
+source ../../../utils/utils.tcl
+
 proc print_tile_pair {fp t1 t2} {
 	set t1 [get_tiles $t1]
 	set t2 [get_tiles $t2]
@@ -47,41 +49,31 @@ proc print_tile_pair {fp t1 t2} {
 	}
 }
 
-proc print_tile_pairs {fp lst} {
-	for {set i 1} {$i < [llength $lst]} {incr i} {
-		print_tile_pair $fp [lindex $lst [expr $i - 1]] [lindex $lst $i]
-	}
-}
+set tiles [roi_tiles]
+set horz_cache [dict create]
+set vert_cache [dict create]
 
 set fp [open "tilepairs.txt" w]
-if {$::env(XRAY_DATABASE) == "artix7"} {
-	# horizontal pairs
-	print_tile_pairs $fp "INT_R_X13Y114 CLBLL_R_X13Y114 CLBLL_L_X14Y114 INT_L_X14Y114 INT_R_X15Y114"
-	print_tile_pairs $fp "VBRK_X29Y125 CLBLM_L_X10Y120 INT_L_X10Y120 INT_R_X11Y120 CLBLM_R_X11Y120 VBRK_X34Y125 CLBLL_L_X12Y120"
-	print_tile_pairs $fp "CLBLL_R_X17Y113 VFRAME_X47Y118"
-	print_tile_pairs $fp "HCLK_VBRK_X29Y130 HCLK_CLB_X30Y130 HCLK_L_X31Y130 HCLK_R_X32Y130 HCLK_CLB_X33Y130 HCLK_VBRK_X34Y130 HCLK_CLB_X35Y130"
-	print_tile_pairs $fp "HCLK_CLB_X46Y130 HCLK_VFRAME_X47Y130"
-	print_tile_pairs $fp "T_TERM_INT_X31Y156 T_TERM_INT_X32Y156"
-	print_tile_pairs $fp "BRKH_CLB_X10Y99 BRKH_INT_X10Y99 BRKH_INT_X11Y99 BRKH_CLB_X11Y99"
-	print_tile_pairs $fp "BRKH_B_TERM_INT_X36Y104 BRKH_B_TERM_INT_X37Y104"
+foreach tile $tiles {
+	set tile_type [get_property TILE_TYPE $tile]
+	set grid_x [get_property GRID_POINT_X $tile]
+	set grid_y [get_property GRID_POINT_Y $tile]
 
-	# vertical pairs
-	print_tile_pairs $fp "CLBLM_L_X10Y115 CLBLM_L_X10Y114"
-	print_tile_pairs $fp "INT_L_X10Y115 INT_L_X10Y114"
-	print_tile_pairs $fp "INT_R_X11Y115 INT_R_X11Y114"
-	print_tile_pairs $fp "CLBLM_R_X11Y115 CLBLM_R_X11Y114"
-	print_tile_pairs $fp "VBRK_X34Y120 VBRK_X34Y119"
-	print_tile_pairs $fp "CLBLL_L_X12Y115 CLBLL_L_X12Y114"
-	print_tile_pairs $fp "CLBLL_R_X13Y115 CLBLL_R_X13Y115"
-	print_tile_pairs $fp "VFRAME_X47Y120 VFRAME_X47Y119"
-	print_tile_pairs $fp "T_TERM_INT_X31Y156 INT_L_X10Y149"
-	print_tile_pairs $fp "T_TERM_INT_X32Y156 INT_R_X11Y149"
-	print_tile_pairs $fp "CLBLM_L_X10Y100 BRKH_CLB_X10Y99"
-	print_tile_pairs $fp "INT_L_X10Y100 BRKH_INT_X10Y99"
-	print_tile_pairs $fp "INT_R_X11Y100 BRKH_INT_X11Y99"
-	print_tile_pairs $fp "CLBLM_R_X11Y100 BRKH_CLB_X11Y99"
-	print_tile_pairs $fp "INT_L_X12Y100 BRKH_B_TERM_INT_X36Y104"
-	print_tile_pairs $fp "INT_R_X13Y100 BRKH_B_TERM_INT_X37Y104"
+	set horz_tile [get_tiles -filter "GRID_POINT_X == [expr $grid_x + 1] && GRID_POINT_Y == $grid_y"]
+	set vert_tile [get_tiles -filter "GRID_POINT_Y == [expr $grid_y + 1] && GRID_POINT_X == $grid_x"]
+
+	set horz_type [get_property TILE_TYPE $horz_tile]
+	set vert_type [get_property TILE_TYPE $vert_tile]
+
+	if {! [dict exists $horz_cache $tile_type.$horz_type]} {
+		dict append horz_cache $tile_type.$horz_type
+		print_tile_pair $fp $tile $horz_tile
+	}
+
+	if {! [dict exists $vert_cache $tile_type.$vert_type]} {
+		dict append vert_cache $tile_type.$vert_type
+		print_tile_pair $fp $tile $vert_tile
+	}
 }
 close $fp
 

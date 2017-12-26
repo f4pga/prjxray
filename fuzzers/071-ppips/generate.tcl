@@ -60,10 +60,11 @@ proc write_int_ppips_db {filename tile} {
 	close $fp
 }
 
-write_clb_ppips_db "ppips_clblm_l.txt" CLBLM_L_X10Y115
-write_clb_ppips_db "ppips_clblm_r.txt" CLBLM_R_X11Y115
-write_clb_ppips_db "ppips_clbll_l.txt" CLBLL_L_X12Y115
-write_clb_ppips_db "ppips_clbll_r.txt" CLBLL_R_X13Y115
-write_int_ppips_db "ppips_int_l.txt" INT_L_X12Y115
-write_int_ppips_db "ppips_int_r.txt" INT_R_X13Y115
+foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R INT_L INT_R} {
+	set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+	if {[llength $tiles] != 0} {
+		set tile [lindex $tiles 0]
+		write_clb_ppips_db "ppips_[string tolower $tile_type].txt" $tile
+	}
+}
 

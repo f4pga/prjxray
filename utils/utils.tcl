@@ -55,6 +55,13 @@ proc randplace_pblock {num pblock} {
 	}
 }
 
+proc roi_tiles {} {
+	return [get_tiles -filter "GRID_POINT_X >= $::env(XRAY_ROI_GRID_X1) && \
+			GRID_POINT_X < $::env(XRAY_ROI_GRID_X2) && \
+			GRID_POINT_Y >= $::env(XRAY_ROI_GRID_Y1) && \
+			GRID_POINT_Y < $::env(XRAY_ROI_GRID_Y2)"]
+}
+
 proc pblock_tiles {pblock} {
 	set clb_tiles [get_tiles -of_objects [get_sites -of_objects [get_pblocks $pblock]]]
 	set int_tiles [get_tiles [regsub -all {CLBL[LM]} $clb_tiles INT]]
