@@ -2,37 +2,64 @@
 
 import os, sys, json, re
 
+tilenodes = dict()
+grid2tile = dict()
 database = dict()
 
 print("Loading %s grid." % os.getenv("XRAY_DATABASE"))
 with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")), "r") as f:
     grid = json.load(f)
 
-print("Loading tilepairs.txt.")
-with open("tilepairs.txt") as f:
+for tile, tiledata in grid["tiles"].items():
+    grid_xy = (tiledata["grid_x"], tiledata["grid_y"])
+    grid2tile[grid_xy] = tile
+
+print("Loading nodewires.txt.")
+with open("nodewires.txt") as f:
     for line in f:
-        w1, w2 = line.split()
-        t1, w1 = w1.split("/")
-        t2, w2 = w2.split("/")
+        node, *wires = line.split()
+        for wire in wires:
+            wire_tile, wire_name = wire.split("/")
+            if wire_tile not in tilenodes:
+                tilenodes[wire_tile] = dict()
+            tilenodes[wire_tile][node] = wire_name
 
-        t1_type = grid["tiles"][t1]["type"]
-        t1_grid_x = grid["tiles"][t1]["grid_x"]
-        t1_grid_y = grid["tiles"][t1]["grid_y"]
+def handle_pair(tile1, tile2):
+    if tile1 not in tilenodes: return
+    if tile2 not in tilenodes: return
 
-        t2_type = grid["tiles"][t2]["type"]
-        t2_grid_x = grid["tiles"][t2]["grid_x"]
-        t2_grid_y = grid["tiles"][t2]["grid_y"]
+    tile1data = grid["tiles"][tile1]
+    tile2data = grid["tiles"][tile2]
 
-        if (t1_grid_x < t2_grid_x) or ((t1_grid_x == t2_grid_x) and (t1_grid_y < t2_grid_y)):
-            key = (t1_type, t2_type, t2_grid_x-t1_grid_x, t2_grid_y-t1_grid_y)
-            if key not in database:
-                database[key] = set()
-            database[key].add((w1, w2))
-        else:
-            key = (t2_type, t1_type, t1_grid_x-t2_grid_x, t1_grid_y-t2_grid_y)
-            if key not in database:
-                database[key] = set()
-            database[key].add((w2, w1))
+    grid1_xy = (tile1data["grid_x"], tile1data["grid_y"])
+    grid2_xy = (tile2data["grid_x"], tile2data["grid_y"])
+
+    if grid1_xy > grid2_xy:
+        return handle_pair(tile2, tile1)
+
+    key = (tile1data["type"], tile2data["type"], grid2_xy[0] - grid1_xy[0], grid2_xy[1] - grid1_xy[1])
+
+    wire_pairs = set()
+
+    for node, wire1 in tilenodes[tile1].items():
+        if node in tilenodes[tile2]:
+            wire2 = tilenodes[tile2][node]
+            wire_pairs.add((wire1, wire2))
+
+    if key not in database:
+        database[key] = wire_pairs
+    else:
+        database[key] &= wire_pairs
+
+for tile, tiledata in grid["tiles"].items():
+    grid_right_xy = (tiledata["grid_x"]+1, tiledata["grid_y"])
+    grid_below_xy = (tiledata["grid_x"], tiledata["grid_y"]+1)
+
+    if grid_right_xy in grid2tile:
+        handle_pair(tile, grid2tile[grid_right_xy])
+
+    if grid_below_xy in grid2tile:
+        handle_pair(tile, grid2tile[grid_below_xy])
 
 print("Converting database.")
 json_db = list()
@@ -42,7 +69,8 @@ for key in sorted(database.keys()):
     entry["tile_types"] = [t1, t2]
     entry["grid_deltas"] = [dx, dy]
     entry["wire_pairs"] = list(sorted(database[key]))
-    json_db.append(entry)
+    if len(entry["wire_pairs"]):
+        json_db.append(entry)
 
 print("Writing tileconn.json.")
 with open("tileconn.json", "w") as f:
