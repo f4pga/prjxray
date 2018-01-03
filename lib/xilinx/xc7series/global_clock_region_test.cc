@@ -1,10 +1,10 @@
-#include <prjxray/xilinx/xc7series/part.h>
+#include <prjxray/xilinx/xc7series/global_clock_region.h>
 
 #include <gtest/gtest.h>
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
-TEST(PartTest, IsValidFrameAddress) {
+TEST(GlobalClockRegionTest, IsValidFrameAddress) {
 	std::vector<xc7series::FrameAddress> addresses;
 	addresses.push_back(xc7series::FrameAddress(
 	    xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 0));
@@ -24,37 +24,39 @@ TEST(PartTest, IsValidFrameAddress) {
 	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 0));
 	addresses.push_back(xc7series::FrameAddress(
 	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 1));
-	addresses.push_back(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 0));
-	addresses.push_back(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 1));
 
-	xc7series::Part part(0x1234, addresses.begin(), addresses.end());
+	xc7series::GlobalClockRegion global_clock_region(addresses.begin(),
+	                                                 addresses.end());
 
-	EXPECT_TRUE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 0)));
-	EXPECT_TRUE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 0, 1, 0)));
-	EXPECT_TRUE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::BLOCK_RAM, false, 0, 0, 2)));
-	EXPECT_TRUE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 0)));
-	EXPECT_TRUE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 0)));
+	EXPECT_TRUE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 0)));
+	EXPECT_TRUE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 0, 1, 0)));
+	EXPECT_TRUE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::BLOCK_RAM, false, 0, 0, 2)));
+	EXPECT_TRUE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 0)));
 
-	EXPECT_FALSE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 2)));
-	EXPECT_FALSE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 0, 2, 0)));
-	EXPECT_FALSE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 2, 0, 0)));
-	EXPECT_FALSE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CFG_CLB, false, 0, 0, 2)));
-	EXPECT_FALSE(part.IsValidFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 1, 0)));
+	EXPECT_FALSE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 2)));
+	EXPECT_FALSE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 0, 2, 0)));
+	EXPECT_FALSE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 2, 0, 0)));
+	EXPECT_FALSE(
+	    global_clock_region.IsValidFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CFG_CLB, false, 0, 0, 2)));
 }
 
-TEST(PartTest, GetNextFrameAddressYieldNextAddressInPart) {
+TEST(GlobalClockRegionTest,
+     GetNextFrameAddressYieldNextAddressInGlobalClockRegion) {
 	std::vector<xc7series::FrameAddress> addresses;
 	addresses.push_back(xc7series::FrameAddress(
 	    xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 0));
@@ -74,50 +76,45 @@ TEST(PartTest, GetNextFrameAddressYieldNextAddressInPart) {
 	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 0));
 	addresses.push_back(xc7series::FrameAddress(
 	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 1));
-	addresses.push_back(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 0));
-	addresses.push_back(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 1));
 
-	xc7series::Part part(0x1234, addresses.begin(), addresses.end());
+	xc7series::GlobalClockRegion global_clock_region(addresses.begin(),
+	                                                 addresses.end());
 
-	auto next_address = part.GetNextFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 0));
+	auto next_address =
+	    global_clock_region.GetNextFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 0));
 	ASSERT_TRUE(next_address);
 	EXPECT_EQ(*next_address,
 	          xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK,
 	                                  false, 0, 0, 1));
 
-	next_address = part.GetNextFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 1));
+	next_address =
+	    global_clock_region.GetNextFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 1));
 	ASSERT_TRUE(next_address);
 	EXPECT_EQ(*next_address,
 	          xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK,
 	                                  false, 0, 1, 0));
 
-	next_address = part.GetNextFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 0, 1, 1));
+	next_address =
+	    global_clock_region.GetNextFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 0, 1, 1));
 	ASSERT_TRUE(next_address);
 	EXPECT_EQ(*next_address,
 	          xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK,
 	                                  false, 1, 0, 0));
 
-	next_address = part.GetNextFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 1));
-	ASSERT_TRUE(next_address);
-	EXPECT_EQ(*next_address,
-	          xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK,
-	                                  true, 0, 0, 0));
-
-	next_address = part.GetNextFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 1));
+	next_address =
+	    global_clock_region.GetNextFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::BLOCK_RAM, false, 0, 0, 1));
 	ASSERT_TRUE(next_address);
 	EXPECT_EQ(*next_address,
 	          xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM,
-	                                  false, 0, 0, 0));
+	                                  false, 0, 0, 2));
 }
 
-TEST(PartTest, GetNextFrameAddressYieldNothingAtEndOfPart) {
+TEST(GlobalClockRegionTest,
+     GetNextFrameAddressYieldNothingAtEndOfGlobalClockRegion) {
 	std::vector<xc7series::FrameAddress> addresses;
 	addresses.push_back(xc7series::FrameAddress(
 	    xc7series::BlockType::CLB_IO_CLK, false, 0, 0, 0));
@@ -137,13 +134,14 @@ TEST(PartTest, GetNextFrameAddressYieldNothingAtEndOfPart) {
 	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 0));
 	addresses.push_back(xc7series::FrameAddress(
 	    xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 1));
-	addresses.push_back(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 0));
-	addresses.push_back(xc7series::FrameAddress(
-	    xc7series::BlockType::CLB_IO_CLK, true, 0, 0, 1));
 
-	xc7series::Part part(0x1234, addresses.begin(), addresses.end());
+	xc7series::GlobalClockRegion global_clock_region(addresses.begin(),
+	                                                 addresses.end());
 
-	EXPECT_FALSE(part.GetNextFrameAddress(xc7series::FrameAddress(
-	    xc7series::BlockType::BLOCK_RAM, false, 0, 0, 2)));
+	EXPECT_FALSE(
+	    global_clock_region.GetNextFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::CLB_IO_CLK, false, 1, 0, 1)));
+	EXPECT_FALSE(
+	    global_clock_region.GetNextFrameAddress(xc7series::FrameAddress(
+	        xc7series::BlockType::BLOCK_RAM, false, 0, 0, 2)));
 }

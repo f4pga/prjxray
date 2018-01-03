@@ -1,6 +1,7 @@
 #include <prjxray/xilinx/xc7series/configuration.h>
 
 #include <cstdint>
+#include <iostream>
 #include <vector>
 
 #include <absl/types/span.h>
@@ -8,16 +9,18 @@
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/configuration_packet.h>
 #include <prjxray/xilinx/xc7series/configuration_register.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
 #include <prjxray/xilinx/xc7series/part.h>
+#include <yaml-cpp/yaml.h>
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
 TEST(ConfigurationTest, ConstructFromPacketsWithSingleFrame) {
-	std::vector<xc7series::ConfigurationFrameRange> test_part_ranges;
-	test_part_ranges.push_back(
-	    xc7series::ConfigurationFrameRange(0x4567, 0x4568));
+	std::vector<xc7series::FrameAddress> test_part_addresses;
+	test_part_addresses.push_back(0x4567);
+	test_part_addresses.push_back(0x4568);
 
-	xc7series::Part test_part(0x1234, test_part_ranges);
+	xc7series::Part test_part(0x1234, test_part_addresses);
 
 	std::vector<uint32_t> idcode{0x1234};
 	std::vector<uint32_t> cmd{0x0001};
@@ -61,13 +64,15 @@ TEST(ConfigurationTest, ConstructFromPacketsWithSingleFrame) {
 }
 
 TEST(ConfigurationTest, ConstructFromPacketsWithAutoincrement) {
-	std::vector<xc7series::ConfigurationFrameRange> test_part_ranges;
-	test_part_ranges.push_back(
-	    xc7series::ConfigurationFrameRange(0x4560, 0x4570));
-	test_part_ranges.push_back(
-	    xc7series::ConfigurationFrameRange(0x4580, 0x4590));
+	std::vector<xc7series::FrameAddress> test_part_addresses;
+	for (int ii = 0x4560; ii < 0x4570; ++ii) {
+		test_part_addresses.push_back(ii);
+	}
+	for (int ii = 0x4580; ii < 0x4590; ++ii) {
+		test_part_addresses.push_back(ii);
+	}
 
-	xc7series::Part test_part(0x1234, test_part_ranges);
+	xc7series::Part test_part(0x1234, test_part_addresses);
 
 	std::vector<uint32_t> idcode{0x1234};
 	std::vector<uint32_t> cmd{0x0001};
