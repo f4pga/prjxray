@@ -112,20 +112,25 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 			// 7-series frames are 101-words long.  Writes to this
 			// register can be multiples of that to do
 			// auto-incrementing block writes.
-			int frames_written = packet.data().size() /
-					kWordsPerFrame;
-
-			for (int ii = 0; ii < frames_written; ++ii) {
+			for (size_t ii = 0;
+			     ii < packet.data().size();
+			     ii += kWordsPerFrame) {
 				frames[current_frame_address] =
 					packet.data().subspan(
-						ii * kWordsPerFrame,
-						kWordsPerFrame);
+							ii, kWordsPerFrame);
+
 				auto next_address =
 					part.GetNextConfigurationFrameAddress(
 						current_frame_address);
-				if (next_address) {
-					current_frame_address = *next_address;
+				if (!next_address) break;
+
+				// Bitstreams appear to have 2 frames of
+				// padding between rows.
+				if (next_address->row_address() !=
+				    current_frame_address.row_address()) {
+					ii += 2 * kWordsPerFrame;
 				}
+				current_frame_address = *next_address;
 			}
 			break;
 		}
