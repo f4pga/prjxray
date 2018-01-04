@@ -62,7 +62,8 @@ if (PRJXRAY_BUILD_TESTING)
 	target_link_libraries(xilinx_xc7series_configuration_test
 		libprjxray gtest_main absl::span)
 	add_test(NAME xilinx_xc7series_configuration_test
-		 COMMAND xilinx_xc7series_configuration_test)
+		 COMMAND xilinx_xc7series_configuration_test
+		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 
 	add_executable(xilinx_xc7series_configuration_packet_test
 		xilinx/xc7series/configuration_packet_test.cc)
