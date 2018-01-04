@@ -21,10 +21,11 @@ todo.txt:
 	python3 maketodo.py | sort -R | head -n5 > todo.txt
 
 run:
-	+set -ex; while make clean; make todo.txt; test -s todo.txt; do make; make pushdb; done; true
+	+set -ex; while make clean; make todo.txt; test -s todo.txt; do make database; make pushdb; done; true
+	touch run.ok
 
 clean:
-	rm -rf .Xil/ .cache/ vivado* todo.txt
+	rm -rf .Xil/ .cache/ vivado* todo.txt run.ok
 	rm -rf bipiplist/ bipiplist.dcp bipips_int_[lr].txt
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits
 

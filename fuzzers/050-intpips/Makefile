@@ -25,10 +25,13 @@ $(SPECIMENS_OK):
 	touch $@
 
 run:
-	+set -ex; make clean; make; make pushdb
+	$(MAKE) clean
+	$(MAKE) database
+	$(MAKE) pushdb
+	touch run.ok
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits mask_clbl[lm]_[lr].segbits
+	rm -rf specimen_[0-9][0-9][0-9]/ seg_int_[lr].segbits mask_clbl[lm]_[lr].segbits run.ok
 
 .PHONY: database pushdb run clean
 
