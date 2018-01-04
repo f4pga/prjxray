@@ -2,6 +2,7 @@
 #define PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_FRAME_ADDRESS_H_
 
 #include <cstdint>
+#include <ostream>
 
 #include <prjxray/xilinx/xc7series/block_type.h>
 #include <yaml-cpp/yaml.h>
@@ -33,6 +34,9 @@ class ConfigurationFrameAddress {
  private:
 	uint32_t address_;
 };
+
+std::ostream &operator<<(
+		std::ostream &o, const ConfigurationFrameAddress& addr);
 
 }  // namespace xc7series
 }  // namespace xilinx

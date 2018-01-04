@@ -1,5 +1,7 @@
 #include <prjxray/xilinx/xc7series/configuration_frame_address.h>
 
+#include <iomanip>
+
 #include <prjxray/bit_ops.h>
 
 namespace prjxray {
@@ -35,6 +37,27 @@ uint16_t ConfigurationFrameAddress::column_address() const {
 
 uint8_t ConfigurationFrameAddress::minor_address() const {
 	return bit_field_get(address_, 6, 0);
+}
+
+std::ostream &operator<<(
+		std::ostream &o, const ConfigurationFrameAddress& addr) {
+	o << "["
+          << std::hex << std::showbase << std::setw(10)
+	  << static_cast<uint32_t>(addr)
+	  << "] "
+	  << (addr.is_bottom_half_rows() ?  "BOTTOM" : "TOP")
+	  << " Row="
+	  << std::setw(2) << std::dec
+	  << static_cast<unsigned int>(addr.row_address())
+	  << " Column="
+	  << std::setw(2) << std::dec
+	  << addr.column_address()
+	  << " Minor="
+	  << std::setw(2) << std::dec
+	  << static_cast<unsigned int>(addr.minor_address())
+	  << " Type="
+	  << addr.block_type();
+	return o;
 }
 
 }  // namespace xc7series
