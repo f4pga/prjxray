@@ -6,7 +6,7 @@
 #include <absl/types/span.h>
 #include <prjxray/bit_ops.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
-#include <prjxray/xilinx/xc7series/configuration_frame_address.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
 #include <prjxray/xilinx/xc7series/part.h>
 
 namespace prjxray {
@@ -15,7 +15,7 @@ namespace xc7series {
 
 class Configuration {
  public:
-	using FrameMap = std::map<ConfigurationFrameAddress,
+	using FrameMap = std::map<FrameAddress,
 				  absl::Span<uint32_t>>;
 
 	template<typename Collection>
@@ -46,7 +46,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 
 	// Internal state machine for writes.
 	bool start_new_write = false;
-	ConfigurationFrameAddress current_frame_address = 0;
+	FrameAddress current_frame_address = 0;
 
 	Configuration::FrameMap frames;
 	for (auto packet : packets) {
@@ -119,8 +119,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 					packet.data().subspan(
 							ii, kWordsPerFrame);
 
-				auto next_address =
-					part.GetNextConfigurationFrameAddress(
+				auto next_address = part.GetNextFrameAddress(
 						current_frame_address);
 				if (!next_address) break;
 

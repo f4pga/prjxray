@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include <prjxray/xilinx/xc7series/configuration_frame_address.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 	for (uint32_t frame_address_raw;
 	     (*input_stream) >> std::setbase(0) >> frame_address_raw;
 	     ) {
-		xc7series::ConfigurationFrameAddress frame_address(frame_address_raw);
+		xc7series::FrameAddress frame_address(frame_address_raw);
 		std::cout << "["
 			  << std::hex << std::showbase << std::setw(10)
 			  << frame_address_raw

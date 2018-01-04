@@ -7,7 +7,6 @@
 #include <absl/types/span.h>
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
-#include <prjxray/xilinx/xc7series/configuration_frame_address.h>
 #include <prjxray/xilinx/xc7series/configuration_frame_range.h>
 #include <prjxray/xilinx/xc7series/part.h>
 #include <yaml-cpp/yaml.h>

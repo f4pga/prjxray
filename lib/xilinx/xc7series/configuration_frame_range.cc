@@ -4,8 +4,7 @@ namespace prjxray {
 namespace xilinx {
 namespace xc7series {
 
-bool ConfigurationFrameRange::Contains(
-		ConfigurationFrameAddress address) const {
+bool ConfigurationFrameRange::Contains(FrameAddress address) const {
 	return address >= begin_ && address < end_;
 }
 
@@ -34,8 +33,8 @@ bool convert<xc7series::ConfigurationFrameRange>::decode(
 	    !node["end"]) return false;
 
 	lhs = xc7series::ConfigurationFrameRange(
-		node["begin"].as<xc7series::ConfigurationFrameAddress>(),
-		node["end"].as<xc7series::ConfigurationFrameAddress>());
+		node["begin"].as<xc7series::FrameAddress>(),
+		node["end"].as<xc7series::FrameAddress>());
 	return true;
 }
 
