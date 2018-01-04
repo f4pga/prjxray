@@ -78,10 +78,8 @@ int main(int argc, char **argv) {
 		std::cout << "Bitstream size: " << in_file->size() << " bytes"
 	    		  << std::endl;
 
-		auto in_bytes = absl::Span<uint8_t>(
-				static_cast<uint8_t*>(in_file->data()),
-				in_file->size());
-		reader = xc7series::BitstreamReader::InitWithBytes(in_bytes);
+		reader = xc7series::BitstreamReader::InitWithBytes(
+				in_file->as_bytes());
 	} else {
 		std::vector<uint8_t> bitdata;
 		while (1) {

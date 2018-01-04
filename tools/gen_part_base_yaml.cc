@@ -31,10 +31,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	auto in_bytes = absl::Span<uint8_t>(
-			static_cast<uint8_t*>(in_file->data()),
-			in_file->size());
-	auto reader = xc7series::BitstreamReader::InitWithBytes(in_bytes);
+	auto reader = xc7series::BitstreamReader::InitWithBytes(
+			in_file->as_bytes());
 	if (!reader) {
 		std::cerr << "Input doesn't look like a bitstream"
 			  << std::endl;
