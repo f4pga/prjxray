@@ -1,5 +1,7 @@
 define fuzzer
 all:: $(1)/run.ok
+clean::
+	$(MAKE) -C $(1) clean
 $(1)/run.ok: $(addsuffix /run.ok,$(2))
 	$(MAKE) -C $(1) run
 endef
