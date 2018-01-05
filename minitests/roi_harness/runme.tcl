@@ -15,6 +15,7 @@ set PITCH 3
 # SLICE_X12Y100:SLICE_X27Y149
 # set X_BASE 12
 set XRAY_ROI_X0 [lindex [split [lindex [split "$::env(XRAY_ROI)" Y] 0] X] 1]
+set XRAY_ROI_X1 [lindex [split [lindex [split "$::env(XRAY_ROI)" X] 2] Y] 0]
 set XRAY_ROI_Y0 [lindex [split [lindex [split "$::env(XRAY_ROI)" Y] 1] :] 0]
 set XRAY_ROI_Y1 [lindex [split "$::env(XRAY_ROI)" Y] 2]
 
@@ -64,7 +65,7 @@ if {$part eq "xc7a50tfgg484-1"} {
     set net2pin(clk) $pin
 
     # DIN
-    for {set i 0} {$j < $DIN_N} {incr i} {
+    for {set i 0} {$i < $DIN_N} {incr i} {
         set pin [lindex $bank_16 $banki]
         incr banki
         set net2pin(din[$i]) $pin
@@ -74,9 +75,33 @@ if {$part eq "xc7a50tfgg484-1"} {
     for {set i 0} {$i < $DOUT_N} {incr i} {
         set pin [lindex $bank_16 $banki]
         incr banki
-        set net2pin(dout[$j]) $pin
+        set net2pin(dout[$i]) $pin
+   }
+# Arty A7 switch, button, and LED
+} elseif {$part eq "xc7a35tcsg324-1"} {
+    # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
+    # 4 switches then 4 buttons
+    set sw_but "A8 C11 C10 A10  D9 C9 B9 B8"
+    # 4 LEDs then 4 RGB LEDs (green only)
+    set leds "H5 J5 T9 T10  F6 J4 J2 H6"
+
+    # 100 MHz CLK onboard
+    set pin "E3"
+    set net2pin(clk) $pin
+
+    # DIN
+    for {set i 0} {$i < $DIN_N} {incr i} {
+        set pin [lindex $sw_but $i]
+        set net2pin(din[$i]) $pin
+    }
+
+    # DOUT
+    for {set i 0} {$i < $DOUT_N} {incr i} {
+        set pin [lindex $leds $i]
+        set net2pin(dout[$i]) $pin
    }
 # Arty A7 pmod
+# Disabled per above
 } elseif {$part eq "xc7a35tcsg324-1"} {
     # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
     set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
@@ -138,13 +163,13 @@ proc loc_roi_clk_left {ff_x ff_y} {
     set_property BEL AFF $cell
 }
 
-proc loc_roi_in_left {index lut_x y} {
-    # Place an ROI input on the left edge of the ROI
+proc loc_lut_in {index lut_x lut_y} {
+    # Place a lut at specified coordinates in BEL A
     # index: input bus index
-    # lut_x: ROI SLICE X position. FF position is implicit to left
-    # y: row primitives will be placed at
+    # lut_x: SLICE X position
+    # lut_y: SLICE Y position
 
-    set slice_lut "SLICE_X${lut_x}Y${y}"
+    set slice_lut "SLICE_X${lut_x}Y${lut_y}"
 
     # Fix LUTs near the edge
     set cell [get_cells "roi/ins[$index].lut"]
@@ -152,13 +177,13 @@ proc loc_roi_in_left {index lut_x y} {
     set_property BEL A6LUT $cell
 }
 
-proc loc_roi_out_left {index lut_x y} {
-    # Place an ROI output on the left edge of the ROI
+proc loc_lut_out {index lut_x lut_y} {
+    # Place a lut at specified coordinates in BEL A
     # index: input bus index
-    # lut_x: ROI SLICE X position. FF position is implicit to left
-    # y: row primitives will be placed at
+    # lut_x: SLICE X position
+    # lut_y: SLICE Y position
 
-    set slice_lut "SLICE_X${lut_x}Y${y}"
+    set slice_lut "SLICE_X${lut_x}Y${lut_y}"
 
     # Fix LUTs near the edge
     set cell [get_cells "roi/outs[$index].lut"]
@@ -166,7 +191,26 @@ proc loc_roi_out_left {index lut_x y} {
     set_property BEL A6LUT $cell
 }
 
+proc net_bank_left {net} {
+    # return 1 if net goes to a leftmost die IO bank
+    # return 0 if net goes to a rightmost die IO bank
 
+    set bank [get_property IOBANK [get_ports $net]]
+    set left_banks "14 15 16"
+    set right_banks "34 35"
+
+    # left
+    if {[lsearch -exact $left_banks $bank] >= 0} {
+        return 1
+    # right
+    } elseif {[lsearch -exact $right_banks $bank] >= 0} {
+        return 0
+    } else {
+        error "Bad bank $bank"
+    }
+}
+
+# Manual placement
 if {1} {
     set x $X_BASE
 
@@ -178,7 +222,7 @@ if {1} {
     puts "Placing ROI inputs"
     set y $Y_DIN_BASE
     for {set i 0} {$i < $DIN_N} {incr i} {
-        loc_roi_in_left $i $x $y
+        loc_lut_in $i $x $y
         set y [expr {$y + $PITCH}]
     }
 
@@ -186,7 +230,11 @@ if {1} {
     set y $Y_DOUT_BASE
     puts "Placing ROI outputs"
     for {set i 0} {$i < $DOUT_N} {incr i} {
-        loc_roi_out_left $i $x $y
+        if {[net_bank_left "dout[$i]"]} {
+            loc_lut_out $i $XRAY_ROI_X0 $y
+        } else {
+            loc_lut_out $i $XRAY_ROI_X1 $y
+        }
         set y [expr {$y + $PITCH}]
     }
 }
@@ -246,6 +294,7 @@ proc route_via2 {net nodes} {
 # XXX: maybe add IOB?
 set fp [open "design.txt" w]
 puts $fp "name node pin"
+# Manual routing
 if {1} {
     set x $X_BASE
 
@@ -279,17 +328,23 @@ if {1} {
     # Arbitrary offset as observed
     set y [expr {$Y_DOUT_BASE + 0}]
     for {set i 0} {$i < $DOUT_N} {incr i} {
-        # XXX: find a better solution if we need harness long term
-        # works on 50t but not 35t
-        if {$part eq "xc7a50tfgg484-1"} {
-            set node "INT_L_X10Y${y}/WW2BEG0"
-            route_via2 "roi/dout[$i]" "$node"
-        # works on 35t but not 50t
-        } elseif {$part eq "xc7a35tcsg324-1"} {
-            set node "INT_L_X10Y${y}/SW6BEG0"
-            route_via2 "roi/dout[$i]" "$node"
+        if {[net_bank_left "dout[$i]"]} {
+            # XXX: find a better solution if we need harness long term
+            # works on 50t but not 35t
+            if {$part eq "xc7a50tfgg484-1"} {
+                set node "INT_L_X10Y${y}/WW2BEG0"
+                route_via2 "roi/dout[$i]" "$node"
+            # works on 35t but not 50t
+            } elseif {$part eq "xc7a35tcsg324-1"} {
+                set node "INT_L_X10Y${y}/SW6BEG0"
+                route_via2 "roi/dout[$i]" "$node"
+            } else {
+                error "Unsupported part $part"
+            }
+        # XXX: only care about right ports on Arty
         } else {
-            error "Unsupported part $part"
+            set node "INT_R_X17Y${y}/SE6BEG0"
+            route_via2 "roi/dout[$i]" "$node"
         }
         set net "dout[$i]"
         set pin "$net2pin($net)"
