@@ -24,6 +24,22 @@ with open("nodewires.txt") as f:
                 tilenodes[wire_tile] = dict()
             tilenodes[wire_tile][node] = wire_name
 
+def filter_pair(type1, type2, wire1, wire2, delta_x, delta_y):
+    if type1 in ["HCLK_L", "HCLK_R"]:
+        is_vertical_wire = False
+        if wire1.startswith("HCLK_S"): is_vertical_wire = True
+        if wire1.startswith("HCLK_N"): is_vertical_wire = True
+        if wire1.startswith("HCLK_W"): is_vertical_wire = True
+        if wire1.startswith("HCLK_E"): is_vertical_wire = True
+        if wire1.startswith("HCLK_LV"): is_vertical_wire = True
+        if wire1.startswith("HCLK_BYP"): is_vertical_wire = True
+        if wire1.startswith("HCLK_FAN"): is_vertical_wire = True
+        if wire1.startswith("HCLK_LEAF_CLK_"): is_vertical_wire = True
+        if is_vertical_wire and delta_y == 0: return True
+        if not is_vertical_wire and delta_x == 0: return True
+
+    return False
+
 def handle_pair(tile1, tile2):
     if tile1 not in tilenodes: return
     if tile2 not in tilenodes: return
@@ -44,6 +60,10 @@ def handle_pair(tile1, tile2):
     for node, wire1 in tilenodes[tile1].items():
         if node in tilenodes[tile2]:
             wire2 = tilenodes[tile2][node]
+            if filter_pair(key[0], key[1], wire1, wire2, key[2], key[3]):
+                continue
+            if filter_pair(key[1], key[0], wire2, wire1, -key[2], -key[3]):
+                continue
             wire_pairs.add((wire1, wire2))
 
     if key not in database:
