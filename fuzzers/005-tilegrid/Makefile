@@ -13,8 +13,14 @@ $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
-clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ tilegrid.json
+run:
+	$(MAKE) clean
+	$(MAKE) database
+	$(MAKE) pushdb
+	touch run.ok
 
-.PHONY: database pushdb clean
+clean:
+	rm -rf specimen_[0-9][0-9][0-9]/ tilegrid.json run.ok
+
+.PHONY: database pushdb clean run
 

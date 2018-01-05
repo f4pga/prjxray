@@ -14,10 +14,13 @@ $(SPECIMENS_OK):
 	touch $@
 
 run:
-	+set -ex; make clean; make; make pushdb
+	$(MAKE) clean
+	$(MAKE) database
+	$(MAKE) pushdb
+	touch run.ok
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ tileconn.json
+	rm -rf specimen_[0-9][0-9][0-9]/ tileconn.json run.ok
 
 .PHONY: database pushdb run clean
 
