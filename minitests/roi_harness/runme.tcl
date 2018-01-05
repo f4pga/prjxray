@@ -32,9 +32,12 @@ read_verilog top.v
 # synth_design -top top -flatten_hierarchy none -no_lc -keep_equivalent_registers -resource_sharing off
 synth_design -top top -flatten_hierarchy none -verilog_define DIN_N=$DIN_N -verilog_define DOUT_N=$DOUT_N
 
-# TODO: find a way to more automatically assign these?
-# Sequential I/O Bank 16 layout
+# Map of top level net names to IOB pin names
+array set net2pin [list]
+
+# Create pin assignments based on what we are targetting
 set part "$::env(XRAY_PART)"
+# A50T I/O Bank 16 sequential layout
 if {$part eq "xc7a50tfgg484-1"} {
     # Partial list, expand as needed
     set bank_16 "F21 G22 G21 D21 E21 D22 E22 A21 B21 B22 C22 C20 D20 F20 F19 A19 A18"
@@ -43,22 +46,22 @@ if {$part eq "xc7a50tfgg484-1"} {
     # CLK
     set pin [lindex $bank_16 $banki]
     incr banki
-    set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" [get_ports "clk"]
+    set net2pin(clk) $pin
 
     # DIN
-    for {set j 0} {$j < $DIN_N} {incr j} {
+    for {set i 0} {$j < $DIN_N} {incr i} {
         set pin [lindex $bank_16 $banki]
         incr banki
-        set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" [get_ports "din[$j]"]
+        set net2pin(din[$i]) $pin
     }
 
     # DOUT
-    for {set j 0} {$j < $DOUT_N} {incr j} {
+    for {set i 0} {$i < $DOUT_N} {incr i} {
         set pin [lindex $bank_16 $banki]
         incr banki
-        set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" [get_ports "dout[$j]"]
+        set net2pin(dout[$j]) $pin
    }
-# Arty A7 optimized I/O layout
+# Arty A7 pmod
 } elseif {$part eq "xc7a35tcsg324-1"} {
     # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
     set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
@@ -67,21 +70,28 @@ if {$part eq "xc7a50tfgg484-1"} {
 
     # CLK on Pmod JA
     set pin [lindex $pmod_ja 0]
-    set_property -dict "PACKAGE_PIN G13 IOSTANDARD LVCMOS33" [get_ports "clk"]
+    set net2pin(clk) $pin
 
     # DIN on Pmod JB
     for {set i 0} {$i < $DIN_N} {incr i} {
         set pin [lindex $pmod_jb $i]
-        set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" [get_ports "din[$i]"]
+        set net2pin(din[$i]) $pin
     }
 
     # DOUT on Pmod JC
     for {set i 0} {$i < $DOUT_N} {incr i} {
         set pin [lindex $pmod_jc $i]
-        set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" [get_ports "dout[$i]"]
+        set net2pin(dout[$i]) $pin
    }
 } else {
     error "Unsupported part $part"
+}
+
+# Now actually apply the pin definitions
+puts "Applying pin definitions"
+foreach {net pin} [array get net2pin] {
+    puts "  Net $net to pin $pin"
+    set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" [get_ports $net]
 }
 
 create_pblock roi
@@ -220,12 +230,16 @@ proc route_via2 {net nodes} {
 
 # XXX: maybe add IOB?
 set fp [open "design.txt" w]
-puts $fp "name node"
+puts $fp "name node pin"
 if {1} {
     set x $X_BASE
 
-    # Nothing needed for clk
+    # No routing needed for clk
     # It will go to high level interconnect that goes everywhere
+    set net "clk"
+    set node "N/A"
+    set pin "$net2pin($net)"
+    puts $fp "$net $node $pin"
 
     puts "Routing ROI inputs"
     # Arbitrary offset as observed
@@ -238,8 +252,9 @@ if {1} {
         set x_NE2BEG3 9
         set node "INT_R_X${x_NE2BEG3}Y${y}/NE2BEG3"
         route_via2 "din_IBUF[$i]" "INT_R_X${x_EE2BEG3}Y${y}/EE2BEG3 $node"
-        puts $fp "din[$i] $node"
-
+        set net "din[$i]"
+        set pin "$net2pin($net)"
+        puts $fp "$net $node $pin"
         set y [expr {$y + 1}]
     }
 
@@ -259,7 +274,9 @@ if {1} {
         } else {
             error "Unsupported part $part"
         }
-        puts $fp "dout[$i] $node"
+        set net "dout[$i]"
+        set pin "$net2pin($net)"
+        puts $fp "$net $node $pin"
         set y [expr {$y + 1}]
     }
 }
