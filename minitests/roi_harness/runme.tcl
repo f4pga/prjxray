@@ -234,10 +234,13 @@ puts $fp "name node pin"
 if {1} {
     set x $X_BASE
 
-    # No routing needed for clk
+    # No routing strictly needed for clk
     # It will go to high level interconnect that goes everywhere
+    # But we still need to record something, so lets force a route
+    # FIXME: very ROI specific
+    set node "CLK_HROW_TOP_R_X60Y130/CLK_HROW_CK_BUFHCLK_L0"
+    route_via2 "clk_IBUF_BUFG" "$node"
     set net "clk"
-    set node "N/A"
     set pin "$net2pin($net)"
     puts $fp "$net $node $pin"
 
@@ -245,7 +248,6 @@ if {1} {
     # Arbitrary offset as observed
     set y [expr {$Y_DIN_BASE - 1}]
     for {set i 0} {$i < $DIN_N} {incr i} {
-        #route_via2 "din_IBUF[$i]" "INT_R_X9Y${y}/NE2BEG3"
         # needed to force routes away to avoid looping into ROI
         #set x_EE2BEG3 [expr {$x - 2}]
         set x_EE2BEG3 7
