@@ -36,46 +36,15 @@ if (PRJXRAY_BUILD_TESTING)
 		 COMMAND segbits_file_reader_test
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 
-	add_executable(xilinx_xc7series_bitstream_reader_test
-		xilinx/xc7series/bitstream_reader_test.cc)
-	target_link_libraries(xilinx_xc7series_bitstream_reader_test
-		libprjxray gtest_main)
-	add_test(NAME xilinx_xc7series_bitstream_reader_test
-		 COMMAND xilinx_xc7series_bitstream_reader_test)
-
-	add_executable(xilinx_xc7series_block_type_test
-		xilinx/xc7series/block_type_test.cc)
-	target_link_libraries(xilinx_xc7series_block_type_test
-		libprjxray gtest_main)
-	add_test(NAME xilinx_xc7series_block_type_test
-		 COMMAND xilinx_xc7series_block_type_test)
-
-	add_executable(xilinx_xc7series_frame_address_test
-		xilinx/xc7series/frame_address_test.cc)
-	target_link_libraries(xilinx_xc7series_frame_address_test
-		libprjxray gtest_main absl::span)
-	add_test(NAME xilinx_xc7series_frame_address_test
-		 COMMAND xilinx_xc7series_frame_address_test)
-
-	add_executable(xilinx_xc7series_configuration_test
-		xilinx/xc7series/configuration_test.cc)
-	target_link_libraries(xilinx_xc7series_configuration_test
-		libprjxray gtest_main absl::span)
-	add_test(NAME xilinx_xc7series_configuration_test
-		 COMMAND xilinx_xc7series_configuration_test
-		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
-
-	add_executable(xilinx_xc7series_configuration_packet_test
-		xilinx/xc7series/configuration_packet_test.cc)
-	target_link_libraries(xilinx_xc7series_configuration_packet_test
-		libprjxray gtest_main)
-	add_test(NAME xilinx_xc7series_configuration_packet_test
-		 COMMAND xilinx_xc7series_configuration_packet_test)
-
-	add_executable(xilinx_xc7series_part_test
+	add_executable(xilinx_xc7series_test
+		xilinx/xc7series/bitstream_reader_test.cc
+		xilinx/xc7series/block_type_test.cc
+		xilinx/xc7series/frame_address_test.cc
+		xilinx/xc7series/configuration_test.cc
+		xilinx/xc7series/configuration_packet_test.cc
 		xilinx/xc7series/part_test.cc)
-	target_link_libraries(xilinx_xc7series_part_test
-		libprjxray gtest_main)
-	add_test(NAME xilinx_xc7series_part_test
-		 COMMAND xilinx_xc7series_part_test)
+	target_link_libraries(xilinx_xc7series_test libprjxray gtest_main)
+	add_test(NAME xilinx_xc7series_test
+		 COMMAND xilinx_xc7series_test
+		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 endif()
