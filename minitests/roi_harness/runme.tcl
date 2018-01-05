@@ -1,20 +1,35 @@
 # WARNING: this is somewhat paramaterized, but is only tested on A50T/A35T with the traditional ROI
 # Your ROI should at least have a SLICEL on the left
 
+# Number of package inputs going to ROI
 set DIN_N 8
+# Number of ROI outputs going to package
 set DOUT_N 8
+# How many rows between pins
+# Reduces routing pressure
+set PITCH 3
+
 # X12 in the ROI, X10 just to the left
 # Start at bottom left of ROI and work up
 # (IOs are to left)
 # SLICE_X12Y100:SLICE_X27Y149
 # set X_BASE 12
-set X_BASE [lindex [split [lindex [split "$::env(XRAY_ROI)" Y] 0] X] 1]
-set Y_BASE [lindex [split [lindex [split "$::env(XRAY_ROI)" Y] 1] :] 0]
+set XRAY_ROI_X0 [lindex [split [lindex [split "$::env(XRAY_ROI)" Y] 0] X] 1]
+set XRAY_ROI_Y0 [lindex [split [lindex [split "$::env(XRAY_ROI)" Y] 1] :] 0]
+set XRAY_ROI_Y1 [lindex [split "$::env(XRAY_ROI)" Y] 2]
+
+set X_BASE $XRAY_ROI_X0
+set Y_BASE $XRAY_ROI_Y0
+
 # set Y_DIN_BASE 100
 set Y_CLK_BASE $Y_BASE 
 # Clock lut in middle
 set Y_DIN_BASE [expr "$Y_CLK_BASE + 1"]
-set Y_DOUT_BASE [expr "$Y_DIN_BASE + $DIN_N"]
+# Sequential
+# set Y_DOUT_BASE [expr "$Y_DIN_BASE + $DIN_N"]
+# At top. This relieves routing pressure by spreading things out
+# Note: can actually go up one more if we want
+set Y_DOUT_BASE [expr "$XRAY_ROI_Y1 - $DIN_N * $PITCH"]
 
 puts "Environment"
 puts "  XRAY_ROI: $::env(XRAY_ROI)"
@@ -164,7 +179,7 @@ if {1} {
     set y $Y_DIN_BASE
     for {set i 0} {$i < $DIN_N} {incr i} {
         loc_roi_in_left $i $x $y
-        set y [expr {$y + 1}]
+        set y [expr {$y + $PITCH}]
     }
 
     # Place ROI outputs
@@ -172,7 +187,7 @@ if {1} {
     puts "Placing ROI outputs"
     for {set i 0} {$i < $DOUT_N} {incr i} {
         loc_roi_out_left $i $x $y
-        set y [expr {$y + 1}]
+        set y [expr {$y + $PITCH}]
     }
 }
 
@@ -257,7 +272,7 @@ if {1} {
         set net "din[$i]"
         set pin "$net2pin($net)"
         puts $fp "$net $node $pin"
-        set y [expr {$y + 1}]
+        set y [expr {$y + $PITCH}]
     }
 
     puts "Routing ROI outputs"
@@ -279,7 +294,7 @@ if {1} {
         set net "dout[$i]"
         set pin "$net2pin($net)"
         puts $fp "$net $node $pin"
-        set y [expr {$y + 1}]
+        set y [expr {$y + $PITCH}]
     }
 }
 close $fp
