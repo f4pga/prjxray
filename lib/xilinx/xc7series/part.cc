@@ -16,16 +16,16 @@ absl::optional<Part> Part::FromFile(const std::string &path) {
 	}
 }
 
-absl::optional<ConfigurationFrameAddress>
-Part::GetNextConfigurationFrameAddress(ConfigurationFrameAddress address) const {
+absl::optional<FrameAddress>
+Part::GetNextFrameAddress(FrameAddress address) const {
 	// Start with the next linear address.
-	ConfigurationFrameAddress target_address(address + 1);
+	FrameAddress target_address(address + 1);
 
 	// The address space is non-continguous.  If the next linear address
 	// happens to fall in a valid range, that's the next address.
 	// Otherwise, find the closest valid range and use it's beginning
 	// address.
-	absl::optional<ConfigurationFrameAddress> closest_address;
+	absl::optional<FrameAddress> closest_address;
 	int32_t closest_distance;
 	for (auto iter = frame_ranges_.begin();
 	     iter != frame_ranges_.end();

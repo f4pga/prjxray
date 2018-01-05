@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <absl/types/optional.h>
-#include <prjxray/xilinx/xc7series/configuration_frame_address.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
 #include <prjxray/xilinx/xc7series/configuration_frame_range.h>
 
 namespace prjxray {
@@ -28,9 +28,8 @@ class Part {
 	const std::vector<ConfigurationFrameRange>&
 	configuration_frame_ranges() const { return frame_ranges_; }
 
-	absl::optional<ConfigurationFrameAddress>
-	GetNextConfigurationFrameAddress(
-			ConfigurationFrameAddress address) const;
+	absl::optional<FrameAddress>
+	GetNextFrameAddress(FrameAddress address) const;
 
  private:
   uint32_t idcode_;

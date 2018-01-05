@@ -6,7 +6,7 @@
 #include <absl/types/span.h>
 #include <prjxray/bit_ops.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
-#include <prjxray/xilinx/xc7series/configuration_frame_address.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
 #include <prjxray/xilinx/xc7series/part.h>
 
 namespace prjxray {
@@ -15,7 +15,7 @@ namespace xc7series {
 
 class Configuration {
  public:
-	using FrameMap = std::map<ConfigurationFrameAddress,
+	using FrameMap = std::map<FrameAddress,
 				  absl::Span<uint32_t>>;
 
 	template<typename Collection>
@@ -46,7 +46,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 
 	// Internal state machine for writes.
 	bool start_new_write = false;
-	ConfigurationFrameAddress current_frame_address = 0;
+	FrameAddress current_frame_address = 0;
 
 	Configuration::FrameMap frames;
 	for (auto packet : packets) {
@@ -112,20 +112,24 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 			// 7-series frames are 101-words long.  Writes to this
 			// register can be multiples of that to do
 			// auto-incrementing block writes.
-			int frames_written = packet.data().size() /
-					kWordsPerFrame;
-
-			for (int ii = 0; ii < frames_written; ++ii) {
+			for (size_t ii = 0;
+			     ii < packet.data().size();
+			     ii += kWordsPerFrame) {
 				frames[current_frame_address] =
 					packet.data().subspan(
-						ii * kWordsPerFrame,
-						kWordsPerFrame);
-				auto next_address =
-					part.GetNextConfigurationFrameAddress(
+							ii, kWordsPerFrame);
+
+				auto next_address = part.GetNextFrameAddress(
 						current_frame_address);
-				if (next_address) {
-					current_frame_address = *next_address;
+				if (!next_address) break;
+
+				// Bitstreams appear to have 2 frames of
+				// padding between rows.
+				if (next_address->row_address() !=
+				    current_frame_address.row_address()) {
+					ii += 2 * kWordsPerFrame;
 				}
+				current_frame_address = *next_address;
 			}
 			break;
 		}
