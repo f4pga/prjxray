@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <prjxray/xilinx/xc7series/configuration_frame_address.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
 #include <yaml-cpp/yaml.h>
 
 namespace prjxray {
@@ -14,21 +14,20 @@ class ConfigurationFrameRange {
  public:
 	ConfigurationFrameRange() : begin_(0), end_(0) {}
 
-	ConfigurationFrameRange(ConfigurationFrameAddress begin,
-				ConfigurationFrameAddress end)
+	ConfigurationFrameRange(FrameAddress begin, FrameAddress end)
 		: begin_(begin), end_(end) {};
 
-	ConfigurationFrameAddress begin() const { return begin_; }
-	ConfigurationFrameAddress end() const { return end_; }
+	FrameAddress begin() const { return begin_; }
+	FrameAddress end() const { return end_; }
 
 	size_t size() const { return end_ - begin_; }
 	bool empty() const { return size() == 0; }
 
-	bool Contains(ConfigurationFrameAddress address) const;
+	bool Contains(FrameAddress address) const;
 
  private:
-	ConfigurationFrameAddress begin_;
-	ConfigurationFrameAddress end_;
+	FrameAddress begin_;
+	FrameAddress end_;
 };
 
 }  // namespace xc7series

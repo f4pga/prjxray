@@ -47,7 +47,7 @@ class BitstreamReader {
 	// Construct a `BitstreamReader` from a Container of bytes.
 	// Any bytes preceding an initial sync word are ignored.
 	template<typename T>
-	static absl::optional<BitstreamReader> InitWithBytes(T &bitstream);
+	static absl::optional<BitstreamReader> InitWithBytes(T bitstream);
 
 	const std::vector<uint32_t> &words() { return words_; };
 
@@ -62,7 +62,7 @@ class BitstreamReader {
 };
 
 template<typename T>
-absl::optional<BitstreamReader> BitstreamReader::InitWithBytes(T &bitstream) {
+absl::optional<BitstreamReader> BitstreamReader::InitWithBytes(T bitstream) {
 	// If this is really a Xilinx 7-Series bitstream, there will be a sync
 	// word somewhere toward the beginning.
 	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),

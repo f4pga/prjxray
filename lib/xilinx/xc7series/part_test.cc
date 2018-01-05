@@ -11,7 +11,7 @@ TEST(PartTest, GetNextAddressWhereNextIsInValidRange) {
 
 	xc7series::Part part(0x1234, ranges);
 
-	auto next_address = part.GetNextConfigurationFrameAddress(0x4);
+	auto next_address = part.GetNextFrameAddress(0x4);
 	EXPECT_TRUE(next_address);
 	EXPECT_EQ(static_cast<uint32_t>(0x5), *next_address);
 }
@@ -23,7 +23,7 @@ TEST(PartTest, GetNextAddressWhereNextIsBetweenRanges) {
 
 	xc7series::Part part(0x1234, ranges);
 
-	auto next_address = part.GetNextConfigurationFrameAddress(0xF);
+	auto next_address = part.GetNextFrameAddress(0xF);
 	EXPECT_TRUE(next_address);
 	EXPECT_EQ(static_cast<uint32_t>(0x20), *next_address);
 }
@@ -35,6 +35,6 @@ TEST(PartTest, GetNextAddressWhereNextWouldBePastLastRange) {
 
 	xc7series::Part part(0x1234, ranges);
 
-	auto next_address = part.GetNextConfigurationFrameAddress(0x2F);
+	auto next_address = part.GetNextFrameAddress(0x2F);
 	EXPECT_FALSE(next_address);
 }
