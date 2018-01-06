@@ -45,10 +45,15 @@ Creating HTML documentation:
     cd htmlgen
     python3 htmlgen.py
 
+(Re-)creating the database:
+
+    cd fuzzers
+    make -j$(nproc)
+
 (Re-)creating parts of the database, for example LUT init bits:
 
     cd fuzzers/010-lutinit
-    make
+    make -j$(nproc) run
 
 
 # Process
