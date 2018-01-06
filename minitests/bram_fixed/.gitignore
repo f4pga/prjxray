@@ -1,0 +1,10 @@
+/.Xil/
+/design_*/
+/design_*.dcp
+/design_*.bit
+/design_*.bits
+/design_*.segd
+/fixed.xdc
+/usage_statistics_webtalk.*
+/vivado*
+/*.seg
