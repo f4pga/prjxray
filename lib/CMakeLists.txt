@@ -3,6 +3,7 @@ add_library(libprjxray
 	memory_mapped_file.cc
 	segbits_file_reader.cc
 	xilinx/xc7series/bitstream_reader.cc
+	xilinx/xc7series/bitstream_writer.cc
 	xilinx/xc7series/block_type.cc
 	xilinx/xc7series/configuration_bus.cc
 	xilinx/xc7series/configuration_column.cc
@@ -41,6 +42,7 @@ if (PRJXRAY_BUILD_TESTING)
 
 	add_executable(xilinx_xc7series_test
 		xilinx/xc7series/bitstream_reader_test.cc
+		xilinx/xc7series/bitstream_writer_test.cc
 		xilinx/xc7series/block_type_test.cc
 		xilinx/xc7series/frame_address_test.cc
 		xilinx/xc7series/configuration_bus_test.cc
