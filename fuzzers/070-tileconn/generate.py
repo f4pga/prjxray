@@ -35,8 +35,21 @@ def filter_pair(type1, type2, wire1, wire2, delta_x, delta_y):
         if wire1.startswith("HCLK_BYP"): is_vertical_wire = True
         if wire1.startswith("HCLK_FAN"): is_vertical_wire = True
         if wire1.startswith("HCLK_LEAF_CLK_"): is_vertical_wire = True
+
+        is_horizontal_wire = False
+        if wire1.startswith("HCLK_CK_"): is_horizontal_wire = True
+        if wire1.startswith("HCLK_INT_"): is_horizontal_wire = True
+
+        assert is_vertical_wire != is_horizontal_wire
         if is_vertical_wire and delta_y == 0: return True
-        if not is_vertical_wire and delta_x == 0: return True
+        if is_horizontal_wire and delta_x == 0: return True
+
+    if type1 in ["INT_L", "INT_R"]:
+        # the wires with underscore after BEG/END all connect vertically
+        if (("BEG_" in wire1) or ("END_" in wire1)) and delta_y == 0: return True
+
+    if type1 in ["BRKH_INT", "BRKH_B_TERM_INT", "T_TERM_INT"]:
+        if delta_y == 0: return True
 
     return False
 
