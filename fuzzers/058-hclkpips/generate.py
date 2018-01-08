@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import sys, os, re
+import sys
+import os
+import re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -50,4 +52,3 @@ for arg in sys.argv[1:]:
 
     segmk.compile()
     segmk.write(arg)
-

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import sys, re
+import sys
+import re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -19,4 +20,3 @@ with open("design.txt", "r") as f:
 
 segmk.compile()
 segmk.write()
-
