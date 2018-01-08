@@ -2,24 +2,32 @@ language: cpp
 
 matrix:
   include:
+    # Job 1) Test C++ w/ GCC
     - os: linux
       dist: trusty
-      compiler: gcc
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
             - g++-6
-      env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-
-before_install:
-  - eval "${MATRIX_EVAL}"
-
-script:
-  - mkdir -p build
-  - cd build
-  - cmake -DPRJXRAY_BUILD_TESTING=ON ..
-  - make -j 4
-  - ctest
+      script:
+        - export CC=gcc-6
+        - export CXX=g++-6
+        - mkdir -p build
+        - pushd build
+        - cmake -DPRJXRAY_BUILD_TESTING=ON ..
+        - make -j 4
+        - ctest
+    # Job 2) Lint checks on Python and C++
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          packages:
+            - clang-format-3.9
+      install:
+        - pip install --user -r requirements.txt
+      script:
+        - make format
+        - test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; } 
