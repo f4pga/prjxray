@@ -11,24 +11,21 @@ LDPE Primitive: Transparent Data Latch with Asynchronous Preset and Gate Enable
 
 from prims import *
 
-import sys
-import re
+import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
 
 segmk = segmaker("design.bits")
 
-
 def ones(l):
-    # return l + [x + '_1' for x in l]
-    # return sorted(l + [x + '_1' for x in l])
+    #return l + [x + '_1' for x in l]
+    #return sorted(l + [x + '_1' for x in l])
     ret = []
     for x in l:
         ret.append(x)
         ret.append(x + '_1')
     return ret
-
 
 def loadtop():
     '''
@@ -42,19 +39,16 @@ def loadtop():
     f.readline()
     ret = {}
     for l in f:
-        i, prim, loc, bel, init = l.split(",")
+        i,prim,loc,bel,init = l.split(",")
         i = int(i)
         init = int(init)
-        ret[loc] = (i, prim, loc, bel, init)
+        ret[loc] = (i,prim,loc,bel,init)
     return ret
-
 
 top = loadtop()
 
-
 def vs2i(s):
     return {"1'b0": 0, "1'b1": 1}[s]
-
 
 print("Loading tags from design.txt")
 with open("design.txt", "r") as f:
@@ -105,7 +99,7 @@ with open("design.txt", "r") as f:
             # Synchronous vs asynchronous FF
             # Unlike most bits, shared between all CLB FFs
             segmk.addtag(site, "FFSYNC",
-                         cel_prim in ('FDSE', 'FDRE'))
+                    cel_prim in ('FDSE', 'FDRE'))
 
             # Latch bit
             # Only applies to LUT6 (non-5) FF's
@@ -119,7 +113,8 @@ with open("design.txt", "r") as f:
             Z => inversion
             '''
             segmk.addtag(site, "%s.ZRST" % ff_name,
-                         cel_prim in ('FDRE', 'FDCE', 'LDCE'))
+                cel_prim in ('FDRE', 'FDCE', 'LDCE'))
 
 segmk.compile()
 segmk.write()
+

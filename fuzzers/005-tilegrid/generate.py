@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import json
-import re
+import os, sys, json, re
 
 
 #######################################
@@ -21,7 +18,7 @@ for arg in sys.argv[1:]:
     with open(arg) as f:
         line = f.read().strip()
         site = arg[7:-6]
-        frame = int(line[5:5 + 8], 16)
+        frame = int(line[5:5+8], 16)
         site_baseaddr[site] = "0x%08x" % (frame & ~0x7f)
 
 
@@ -48,7 +45,7 @@ for record in tiles:
 
     if len(record) > 4:
         for i in range(4, len(record), 2):
-            site_type, site_name = record[i:i + 2]
+            site_type, site_name = record[i:i+2]
             if site_name in site_baseaddr:
                 framebaseaddr = site_baseaddr[site_name]
             database["tiles"][tile_name]["sites"][site_name] = site_type
@@ -67,16 +64,15 @@ for tile_name, tile_data in database["tiles"].items():
 
     if tile_type in ["CLBLL_L", "CLBLL_R", "CLBLM_L", "CLBLM_R"]:
         if tile_type in ["CLBLL_L", "CLBLM_L"]:
-            int_tile_name = tiles_by_grid[(grid_x + 1, grid_y)]
+            int_tile_name = tiles_by_grid[(grid_x+1, grid_y)]
         else:
-            int_tile_name = tiles_by_grid[(grid_x - 1, grid_y)]
+            int_tile_name = tiles_by_grid[(grid_x-1, grid_y)]
 
         segment_name = "SEG_" + tile_name
         segtype = tile_type.lower()
 
         database["segments"][segment_name] = dict()
-        database["segments"][segment_name]["tiles"] = [
-            tile_name, int_tile_name]
+        database["segments"][segment_name]["tiles"] = [tile_name, int_tile_name]
         database["segments"][segment_name]["type"] = segtype
         database["segments"][segment_name]["frames"] = 36
         database["segments"][segment_name]["words"] = 2
@@ -101,11 +97,11 @@ for tile_name, tile_data in database["tiles"].items():
     if tile_type in ["BRAM_L", "DSP_L", "BRAM_R", "DSP_R"]:
         for k in range(5):
             if tile_type in ["BRAM_L", "DSP_L"]:
-                interface_tile_name = tiles_by_grid[(grid_x + 1, grid_y - k)]
-                int_tile_name = tiles_by_grid[(grid_x + 2, grid_y - k)]
+                interface_tile_name = tiles_by_grid[(grid_x+1, grid_y-k)]
+                int_tile_name = tiles_by_grid[(grid_x+2, grid_y-k)]
             else:
-                interface_tile_name = tiles_by_grid[(grid_x - 1, grid_y - k)]
-                int_tile_name = tiles_by_grid[(grid_x - 2, grid_y - k)]
+                interface_tile_name = tiles_by_grid[(grid_x-1, grid_y-k)]
+                int_tile_name = tiles_by_grid[(grid_x-2, grid_y-k)]
 
             segment_name = "SEG_" + tile_name.replace("_", "%d_" % k, 1)
             segtype = tile_type.lower().replace("_", "%d_" % k, 1)
@@ -116,14 +112,12 @@ for tile_name, tile_data in database["tiles"].items():
             database["segments"][segment_name]["words"] = 2
 
             if k == 0:
-                database["segments"][segment_name]["tiles"] = [
-                    tile_name, interface_tile_name, int_tile_name]
+                database["segments"][segment_name]["tiles"] = [tile_name, interface_tile_name, int_tile_name]
                 database["tiles"][tile_name]["segment"] = segment_name
                 database["tiles"][interface_tile_name]["segment"] = segment_name
                 database["tiles"][int_tile_name]["segment"] = segment_name
             else:
-                database["segments"][segment_name]["tiles"] = [
-                    interface_tile_name, int_tile_name]
+                database["segments"][segment_name]["tiles"] = [interface_tile_name, int_tile_name]
                 database["tiles"][interface_tile_name]["segment"] = segment_name
                 database["tiles"][int_tile_name]["segment"] = segment_name
 
@@ -134,8 +128,7 @@ for tile_name, tile_data in database["tiles"].items():
 for segment_name in database["segments"].keys():
     if "baseaddr" in database["segments"][segment_name]:
         framebase, wordbase = database["segments"][segment_name]["baseaddr"]
-        inttile = [tile for tile in database["segments"][segment_name]["tiles"]
-                   if database["tiles"][tile]["type"] in ["INT_L", "INT_R"]][0]
+        inttile = [tile for tile in database["segments"][segment_name]["tiles"] if database["tiles"][tile]["type"] in ["INT_L", "INT_R"]][0]
         grid_x = database["tiles"][inttile]["grid_x"]
         grid_y = database["tiles"][inttile]["grid_y"]
 
@@ -163,8 +156,7 @@ for segment_name in database["segments"].keys():
         seg = database["tiles"][tile]["segment"]
 
         if "baseaddr" in database["segments"][seg]:
-            assert database["segments"][seg]["baseaddr"] == [
-                framebase, wordbase]
+            assert database["segments"][seg]["baseaddr"] == [framebase, wordbase]
         else:
             database["segments"][seg]["baseaddr"] = [framebase, wordbase]
 
@@ -180,8 +172,7 @@ for segment_name in database["segments"].keys():
 
 for segment_name in start_segments:
     framebase, wordbase = database["segments"][segment_name]["baseaddr"]
-    inttile = [tile for tile in database["segments"][segment_name]["tiles"]
-               if database["tiles"][tile]["type"] in ["INT_L", "INT_R"]][0]
+    inttile = [tile for tile in database["segments"][segment_name]["tiles"] if database["tiles"][tile]["type"] in ["INT_L", "INT_R"]][0]
     grid_x = database["tiles"][inttile]["grid_x"]
     grid_y = database["tiles"][inttile]["grid_y"]
 
@@ -201,3 +192,4 @@ for segment_name in start_segments:
 # Write
 
 print(json.dumps(database, sort_keys=True, indent="\t"))
+

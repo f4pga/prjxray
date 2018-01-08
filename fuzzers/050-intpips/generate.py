@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import re
+import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -64,3 +63,4 @@ for tile, pips_srcs_dsts in tiledata.items():
 
 segmk.compile()
 segmk.write()
+

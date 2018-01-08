@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-import re
+import sys, os, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -42,11 +40,10 @@ for tile, pips_nodes in tiledata.items():
         elif dst not in nodes and src not in nodes:
             segmk.addtag(tile, "%s.%s" % (dst, src), 0)
 
-
 def bitfilter(frame_idx, bit_idx):
     assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
     return frame_idx in [0, 1]
 
-
 segmk.compile(bitfilter=bitfilter)
 segmk.write()
+

@@ -1,7 +1,4 @@
-import os
-import json
-import re
-
+import os, json, re
 
 class segmaker:
     def __init__(self, bitsfile):
@@ -27,8 +24,7 @@ class segmaker:
                 if bit_wordidx not in self.bits[base_frame]:
                     self.bits[base_frame][bit_wordidx] = set()
 
-                self.bits[base_frame][bit_wordidx].add(
-                    (bit_frame, bit_wordidx, bit_bitidx))
+                self.bits[base_frame][bit_wordidx].add((bit_frame, bit_wordidx, bit_bitidx))
 
     def addtag(self, site, name, value):
         if site not in self.tags:
@@ -54,35 +50,30 @@ class segmaker:
             segments = self.segments_by_type[segdata["type"]]
 
             tile_type = tiledata["type"]
-            segname = "%s_%03d" % (
-                segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
+            segname = "%s_%03d" % (segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
 
             def add_segbits():
                 if not segname in segments:
-                    segments[segname] = {"bits": set(), "tags": dict()}
+                    segments[segname] = { "bits": set(), "tags": dict() }
 
                     base_frame = int(segdata["baseaddr"][0][2:], 16)
-                    for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1] + segdata["words"]):
+                    for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1]+segdata["words"]):
                         if base_frame not in self.bits:
                             continue
                         if wordidx not in self.bits[base_frame]:
                             continue
                         for bit_frame, bit_wordidx, bit_bitidx in self.bits[base_frame][wordidx]:
                             bitname_frame = bit_frame - base_frame
-                            bitname_bit = 32 * \
-                                (bit_wordidx -
-                                 segdata["baseaddr"][1]) + bit_bitidx
+                            bitname_bit = 32*(bit_wordidx - segdata["baseaddr"][1]) + bit_bitidx
                             if bitfilter is None or bitfilter(bitname_frame, bitname_bit):
-                                bitname = "%02d_%02d" % (
-                                    bitname_frame, bitname_bit)
+                                bitname = "%02d_%02d" % (bitname_frame, bitname_bit)
                                 segments[segname]["bits"].add(bitname)
 
             if tilename in self.tags:
                 add_segbits()
 
                 for name, value in self.tags[tilename].items():
-                    tag = "%s.%s" % (
-                        re.sub("(LL|LM)?_[LR]$", "", tile_type), name)
+                    tag = "%s.%s" % (re.sub("(LL|LM)?_[LR]$", "", tile_type), name)
                     segments[segname]["tags"][tag] = value
 
             for site in tiledata["sites"]:
@@ -99,8 +90,7 @@ class segmaker:
                     assert 0
 
                 for name, value in self.tags[site].items():
-                    tag = "%s.%s.%s" % (
-                        re.sub("(LL|LM)?_[LR]$", "", tile_type), sitekey, name)
+                    tag = "%s.%s.%s" % (re.sub("(LL|LM)?_[LR]$", "", tile_type), sitekey, name)
                     tag = tag.replace(".SLICEM.", ".")
                     tag = tag.replace(".SLICEL.", ".")
                     segments[segname]["tags"][tag] = value
@@ -129,5 +119,5 @@ class segmaker:
                         for bitname in sorted(segdata["bits"]):
                             print("bit %s_%s" % (segname, bitname), file=f)
                         for tagname, tagval in sorted(segdata["tags"].items()):
-                            print("tag %s_%s %d" %
-                                  (segname, tagname, tagval), file=f)
+                            print("tag %s_%s %d" % (segname, tagname, tagval), file=f)
+

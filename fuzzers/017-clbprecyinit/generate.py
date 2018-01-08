@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-import re
+import sys, os, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -13,7 +11,7 @@ print("Loading tags")
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
-    module, loc, loc2 = l.split(',')
+    module,loc,loc2 = l.split(',')
     # clb_PRECYINIT_AX => AX
     src = module.replace('clb_PRECYINIT_', '')
 
@@ -31,3 +29,4 @@ for l in f:
 
 segmk.compile()
 segmk.write()
+

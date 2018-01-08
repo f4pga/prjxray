@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import json
-import re
+import os, sys, json, re
 
 tilenodes = dict()
 grid2tile = dict()
@@ -27,56 +24,38 @@ with open("nodewires.txt") as f:
                 tilenodes[wire_tile] = dict()
             tilenodes[wire_tile][node] = wire_name
 
-
 def filter_pair(type1, type2, wire1, wire2, delta_x, delta_y):
     if type1 in ["HCLK_L", "HCLK_R"]:
         is_vertical_wire = False
-        if wire1.startswith("HCLK_S"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_N"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_W"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_E"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_LV"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_BYP"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_FAN"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_LEAF_CLK_"):
-            is_vertical_wire = True
+        if wire1.startswith("HCLK_S"): is_vertical_wire = True
+        if wire1.startswith("HCLK_N"): is_vertical_wire = True
+        if wire1.startswith("HCLK_W"): is_vertical_wire = True
+        if wire1.startswith("HCLK_E"): is_vertical_wire = True
+        if wire1.startswith("HCLK_LV"): is_vertical_wire = True
+        if wire1.startswith("HCLK_BYP"): is_vertical_wire = True
+        if wire1.startswith("HCLK_FAN"): is_vertical_wire = True
+        if wire1.startswith("HCLK_LEAF_CLK_"): is_vertical_wire = True
 
         is_horizontal_wire = False
-        if wire1.startswith("HCLK_CK_"):
-            is_horizontal_wire = True
-        if wire1.startswith("HCLK_INT_"):
-            is_horizontal_wire = True
+        if wire1.startswith("HCLK_CK_"): is_horizontal_wire = True
+        if wire1.startswith("HCLK_INT_"): is_horizontal_wire = True
 
         assert is_vertical_wire != is_horizontal_wire
-        if is_vertical_wire and delta_y == 0:
-            return True
-        if is_horizontal_wire and delta_x == 0:
-            return True
+        if is_vertical_wire and delta_y == 0: return True
+        if is_horizontal_wire and delta_x == 0: return True
 
     if type1 in ["INT_L", "INT_R"]:
         # the wires with underscore after BEG/END all connect vertically
-        if (("BEG_" in wire1) or ("END_" in wire1)) and delta_y == 0:
-            return True
+        if (("BEG_" in wire1) or ("END_" in wire1)) and delta_y == 0: return True
 
     if type1 in ["BRKH_INT", "BRKH_B_TERM_INT", "T_TERM_INT"]:
-        if delta_y == 0:
-            return True
+        if delta_y == 0: return True
 
     return False
 
-
 def handle_pair(tile1, tile2):
-    if tile1 not in tilenodes:
-        return
-    if tile2 not in tilenodes:
-        return
+    if tile1 not in tilenodes: return
+    if tile2 not in tilenodes: return
 
     tile1data = grid["tiles"][tile1]
     tile2data = grid["tiles"][tile2]
@@ -87,8 +66,7 @@ def handle_pair(tile1, tile2):
     if grid1_xy > grid2_xy:
         return handle_pair(tile2, tile1)
 
-    key = (tile1data["type"], tile2data["type"],
-           grid2_xy[0] - grid1_xy[0], grid2_xy[1] - grid1_xy[1])
+    key = (tile1data["type"], tile2data["type"], grid2_xy[0] - grid1_xy[0], grid2_xy[1] - grid1_xy[1])
 
     wire_pairs = set()
 
@@ -106,10 +84,9 @@ def handle_pair(tile1, tile2):
     else:
         database[key] &= wire_pairs
 
-
 for tile, tiledata in grid["tiles"].items():
-    grid_right_xy = (tiledata["grid_x"] + 1, tiledata["grid_y"])
-    grid_below_xy = (tiledata["grid_x"], tiledata["grid_y"] + 1)
+    grid_right_xy = (tiledata["grid_x"]+1, tiledata["grid_y"])
+    grid_below_xy = (tiledata["grid_x"], tiledata["grid_y"]+1)
 
     if grid_right_xy in grid2tile:
         handle_pair(tile, grid2tile[grid_right_xy])
@@ -131,3 +108,4 @@ for key in sorted(database.keys()):
 print("Writing tileconn.json.")
 with open("tileconn.json", "w") as f:
     print(json.dumps(json_db, sort_keys=True, indent="\t"), file=f)
+

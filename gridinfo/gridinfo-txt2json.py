@@ -13,19 +13,16 @@ db_site_prop = dict()
 db_site_tile = dict()
 db_site_bit = dict()
 
-
 def add_tile(tile):
     if tile not in db_tiles:
         db_tiles.add(tile)
         db_tile_prop[tile] = dict()
         db_tile_sites[tile] = list()
 
-
 def add_site(site):
     if site not in db_sites:
         db_sites.add(site)
         db_site_prop[site] = dict()
-
 
 with open("%s.txt" % sys.argv[1]) as f:
     for line in f:
@@ -92,36 +89,34 @@ for site, bit in db_site_bit.items():
 
     for i in range(50):
         m = re.match("(.*)Y([0-9]+)", site)
-        this_site = "%sY%d" % (m.group(1), int(m.group(2)) + i)
+        this_site = "%sY%d" % (m.group(1), int(m.group(2))+i)
 
         tile = db_site_tile[this_site]
 
-        word = bit_word + 2 * i
-        if word >= 50:
-            word += 1
+        word = bit_word + 2*i
+        if word >= 50: word += 1
 
         entry = dict()
-        entry["BASE_FRAMEID"] = "0x%08x" % ((bit_type << 23) | (
-            bit_half << 22) | (bit_row << 17) | (bit_col << 7))
+        entry["BASE_FRAMEID"] = "0x%08x" % ((bit_type << 23) | (bit_half << 22) | (bit_row << 17) | (bit_col << 7))
         entry["FRAME_TYPE"] = bit_type
         entry["FRAME_HALF"] = bit_half
         entry["FRAME_ROW"] = bit_row
         entry["FRAME_COLUMN"] = bit_col
-        entry["WORDS"] = [word, word + 1]
+        entry["WORDS"] = [word, word+1]
 
         database["tiles"][tile]["cfgcol"] = entry
 
         if database["tiles"][tile]["props"]["TILE_TYPE"] in ("CLBLL_L", "CLBLM_L"):
             col = int(db_tile_prop[tile]["COLUMN"])
             row = int(db_tile_prop[tile]["ROW"])
-            right_tile = loc_to_tile[(col + 1, row)]
+            right_tile = loc_to_tile[(col+1, row)]
 
             database["tiles"][right_tile]["cfgcol"] = entry
 
         if database["tiles"][tile]["props"]["TILE_TYPE"] in ("CLBLL_R", "CLBLM_R"):
             col = int(db_tile_prop[tile]["COLUMN"])
             row = int(db_tile_prop[tile]["ROW"])
-            left_tile = loc_to_tile[(col - 1, row)]
+            left_tile = loc_to_tile[(col-1, row)]
 
             database["tiles"][left_tile]["cfgcol"] = entry
 
@@ -138,3 +133,4 @@ print("Number of tiles with assigned column: %d" % tile_cfgcol_count)
 
 with open("%s.json" % sys.argv[1], "w") as f:
     print(json.dumps(database, sort_keys=True, indent="\t"), file=f)
+

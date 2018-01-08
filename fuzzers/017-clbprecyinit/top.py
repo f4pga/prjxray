@@ -3,16 +3,13 @@ random.seed(0)
 import os
 import re
 
-
 def slice_xy():
     '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for xrange)'''
     # SLICE_X12Y100:SLICE_X27Y149
     # Note XRAY_ROI_GRID_* is something else
-    m = re.match(
-        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
+    m = re.match(r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
     ms = [int(m.group(i + 1)) for i in range(4)]
     return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
-
 
 CLBN = 400
 SLICEX, SLICEY = slice_xy()
@@ -25,14 +22,11 @@ print('//Requested CLBs: %s' % str(CLBN))
 
 # Rearranged to sweep Y so that carry logic is easy to allocate
 # XXX: careful...if odd number of Y in ROI will break carry
-
-
 def gen_slices():
     for slicex in range(*SLICEX):
         for slicey in range(*SLICEY):
             # caller may reject position if needs more room
             yield ("SLICE_X%dY%d" % (slicex, slicey), (slicex, slicey))
-
 
 DIN_N = CLBN * 8
 DOUT_N = CLBN * 8
@@ -70,8 +64,7 @@ endmodule
 f = open('params.csv', 'w')
 f.write('module,loc,loc2\n')
 slices = gen_slices()
-print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (
-    DIN_N - 1, DOUT_N - 1))
+print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
 for i in range(CLBN):
     # Don't have an O6 example
     modules = ['clb_PRECYINIT_' + x for x in ['0', '1', 'AX', 'CIN']]
@@ -95,8 +88,7 @@ for i in range(CLBN):
 
     print('    %s' % module)
     print('            #(%s)' % (params))
-    print(
-        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
+    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
 
     f.write('%s,%s\n' % (module, paramsc))
 f.close()
@@ -142,3 +134,4 @@ module clb_PRECYINIT_CIN (input clk, input [7:0] din, output [7:0] dout);
     CARRY4 carry4_ci(.O(), .CO(co), .DI(din[3:0]), .S(din[7:4]), .CYINIT(1'b0), .CI());
 endmodule
 ''')
+

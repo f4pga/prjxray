@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-import sys
-import re
+import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
 
 pipdata = dict()
 ignpip = set()
-
 
 def handle_design(prefix, second_pass):
     segmk = segmaker(prefix + ".bits")
@@ -75,7 +73,6 @@ def handle_design(prefix, second_pass):
         segmk.compile()
         segmk.write(prefix[7:])
 
-
 for arg in sys.argv[1:]:
     prefix = arg[0:-4]
     handle_design(prefix, False)
@@ -83,3 +80,4 @@ for arg in sys.argv[1:]:
 for arg in sys.argv[1:]:
     prefix = arg[0:-4]
     handle_design(prefix, True)
+

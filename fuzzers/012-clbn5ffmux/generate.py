@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import re
+import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -18,7 +17,7 @@ clb_N5FFMUX,SLICE_X14Y100,3,1
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
-    module, loc, n, def_a = l.split(',')
+    module,loc,n,def_a = l.split(',')
     def_a = int(def_a)
     n = int(n)
     #which = chr(ord('A') + n)
@@ -31,3 +30,4 @@ for l in f:
         segmk.addtag(loc, "%c5FF.MUX.B" % which, 1 ^ def_a ^ inv)
 segmk.compile()
 segmk.write()
+

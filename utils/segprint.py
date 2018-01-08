@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-import getopt
-import sys
-import os
-import json
-import re
+import getopt, sys, os, json, re
 
 flag_z = False
 flag_b = False
 flag_d = False
 flag_D = False
-
 
 def usage():
     print("Usage: %s [options] <bits_file> [segments/tiles]" % sys.argv[0])
@@ -28,7 +23,6 @@ def usage():
     print("    decode known segment bits and omit them in the output")
     print("")
     sys.exit(0)
-
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "zbdD")
@@ -73,7 +67,6 @@ with open(args[0], "r") as f:
 
 segbitsdb = dict()
 
-
 def get_database(segtype):
     if segtype in segbitsdb:
         return segbitsdb[segtype]
@@ -92,17 +85,16 @@ def get_database(segtype):
 
     return segbitsdb[segtype]
 
-
 def handle_segment(segname):
     if segname is None:
         segframes = dict()
         for segname, segdata in grid["segments"].items():
             framebase = int(segdata["baseaddr"][0], 16)
             for i in range(segdata["frames"]):
-                if (framebase + i) not in segframes:
-                    segframes[framebase + i] = set()
+                if (framebase+i) not in segframes:
+                    segframes[framebase+i] = set()
                 for j in range(segdata["baseaddr"][1], segdata["baseaddr"][1] + segdata["words"]):
-                    segframes[framebase + i].add(j)
+                    segframes[framebase+i].add(j)
         for frame in sorted(bitdata.keys()):
             for wordidx in sorted(bitdata[frame].keys()):
                 if frame in segframes and wordidx in segframes[frame]:
@@ -159,15 +151,14 @@ def handle_segment(segname):
     segbits = set()
     segtags = set()
 
-    for frame in range(baseframe, baseframe + numframes):
+    for frame in range(baseframe, baseframe+numframes):
         if frame not in bitdata:
             continue
-        for wordidx in range(basewordidx, basewordidx + numwords):
+        for wordidx in range(basewordidx, basewordidx+numwords):
             if wordidx not in bitdata[frame]:
                 continue
             for bitidx in bitdata[frame][wordidx]:
-                segbits.add("%02d_%02d" % (frame - baseframe,
-                                           32 * (wordidx - basewordidx) + bitidx))
+                segbits.add("%02d_%02d" % (frame - baseframe, 32*(wordidx - basewordidx) + bitidx))
 
     if flag_d or flag_D:
         for entry in get_database(seginfo["type"]):
@@ -194,7 +185,6 @@ def handle_segment(segname):
     for tag in sorted(segtags):
         print("tag %s" % tag)
 
-
 if flag_b:
     handle_segment(None)
 
@@ -207,3 +197,4 @@ if len(args) == 1:
 else:
     for arg in args[1:]:
         handle_segment(arg)
+

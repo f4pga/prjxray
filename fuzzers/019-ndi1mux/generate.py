@@ -5,9 +5,7 @@
 # Can we find instance where they are not aliased?
 WA7USED = 0
 
-import sys
-import re
-import os
+import sys, re, os
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -25,7 +23,7 @@ f = open('params.csv', 'r')
 f.readline()
 for l in f:
     l = l.strip()
-    module, loc, c31, b31, a31 = l.split(',')
+    module,loc,c31,b31,a31 = l.split(',')
     c31 = int(c31)
     b31 = int(b31)
     a31 = int(a31)
@@ -35,3 +33,4 @@ for l in f:
 
 segmk.compile()
 segmk.write()
+
