@@ -16,18 +16,18 @@ enum class BlockType : unsigned int {
 	/* reserved = 0x3, */
 };
 
-std::ostream &operator<<(std::ostream &o, BlockType value);
+std::ostream& operator<<(std::ostream& o, BlockType value);
 
 }  // namespace xc7series
 }  // namespace xilinx
 }  // namespace prjxray
 
 namespace YAML {
-template<>
+template <>
 struct convert<prjxray::xilinx::xc7series::BlockType> {
-	static Node encode(const prjxray::xilinx::xc7series::BlockType &rhs);
+	static Node encode(const prjxray::xilinx::xc7series::BlockType& rhs);
 	static bool decode(const Node& node,
-			   prjxray::xilinx::xc7series::BlockType &lhs);
+	                   prjxray::xilinx::xc7series::BlockType& lhs);
 };
 }  // namespace YAML
 

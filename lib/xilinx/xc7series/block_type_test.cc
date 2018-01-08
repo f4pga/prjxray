@@ -22,9 +22,9 @@ TEST(BlockTypeTest, YamlDecode) {
 	node.push_back("CLB_IO_CLK");
 
 	EXPECT_EQ(node[0].as<xc7series::BlockType>(),
-		  xc7series::BlockType::CFG_CLB);
+	          xc7series::BlockType::CFG_CLB);
 	EXPECT_EQ(node[1].as<xc7series::BlockType>(),
-		  xc7series::BlockType::BLOCK_RAM);
+	          xc7series::BlockType::BLOCK_RAM);
 	EXPECT_EQ(node[2].as<xc7series::BlockType>(),
-		  xc7series::BlockType::CLB_IO_CLK);
+	          xc7series::BlockType::CLB_IO_CLK);
 }

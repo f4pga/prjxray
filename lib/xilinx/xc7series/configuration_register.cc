@@ -4,7 +4,7 @@ namespace prjxray {
 namespace xilinx {
 namespace xc7series {
 
-std::ostream& operator<<(std::ostream &o, const ConfigurationRegister &value) {
+std::ostream& operator<<(std::ostream& o, const ConfigurationRegister& value) {
 	switch (value) {
 		case ConfigurationRegister::CRC:
 			return o << "CRC";
@@ -50,7 +50,6 @@ std::ostream& operator<<(std::ostream &o, const ConfigurationRegister &value) {
 			return o << "Unknown";
 	}
 };
-
 
 }  // namespace xc7series
 }  // namespace xilinx

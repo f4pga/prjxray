@@ -10,39 +10,41 @@
 namespace prjxray {
 
 class SegbitsFileReader {
- public:
+       public:
 	class value_type {
-	 public:
+	       public:
 		absl::string_view tag() const { return tag_; }
 		absl::string_view bit() const { return bit_; }
 
-	 private:
+	       private:
 		friend SegbitsFileReader;
 
-		value_type(const absl::string_view &view);
+		value_type(const absl::string_view& view);
 
 		absl::string_view tag_;
 		absl::string_view bit_;
 	};
 
 	class iterator
-		: public std::iterator<std::input_iterator_tag, value_type> {
-	 public:
+	    : public std::iterator<std::input_iterator_tag, value_type> {
+	       public:
 		iterator& operator++();
 
 		bool operator==(iterator other) const {
-			return view_ == other.view_; }
+			return view_ == other.view_;
+		}
 		bool operator!=(iterator other) const {
-			return !(*this == other);}
+			return !(*this == other);
+		}
 
 		const value_type& operator*() const { return value_; }
 		const value_type* operator->() const { return &value_; }
 
-	 protected:
+	       protected:
 		explicit iterator(absl::string_view view)
-			: view_(view), value_(view) {}
+		    : view_(view), value_(view) {}
 
-	 private:
+	       private:
 		friend SegbitsFileReader;
 
 		absl::string_view view_;
@@ -50,18 +52,18 @@ class SegbitsFileReader {
 	};
 
 	static std::unique_ptr<SegbitsFileReader> InitWithFile(
-		const std::string &path);
+	    const std::string& path);
 
 	iterator begin();
 	iterator end();
 
- private:
-	SegbitsFileReader(std::unique_ptr<MemoryMappedFile> &&mapped_file)
-		: mapped_file_(std::move(mapped_file)) {};
+       private:
+	SegbitsFileReader(std::unique_ptr<MemoryMappedFile>&& mapped_file)
+	    : mapped_file_(std::move(mapped_file)){};
 
 	std::unique_ptr<MemoryMappedFile> mapped_file_;
 };
 
-} // namespace prjxray
+}  // namespace prjxray
 
 #endif  // PRJXRAY_LIB_SEGBITS_FILE_READER_H

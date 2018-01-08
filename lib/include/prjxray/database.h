@@ -10,16 +10,15 @@
 namespace prjxray {
 
 class Database {
- public:
-	Database(const std::string &path)
-		: db_path_(path) {}
+       public:
+	Database(const std::string& path) : db_path_(path) {}
 
 	std::vector<std::unique_ptr<SegbitsFileReader>> segbits() const;
 
- private:
+       private:
 	std::string db_path_;
 };
 
 }  // namespace prjxray
 
-#endif // PRJXRAY_LIB_DATABASE_H
+#endif  // PRJXRAY_LIB_DATABASE_H

@@ -1,20 +1,23 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <unistd.h>
 #include <assert.h>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <numeric>
+#include <stdint.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <numeric>
 #include <set>
+#include <string>
+#include <vector>
 
 #include <absl/strings/str_cat.h>
 #include <gflags/gflags.h>
 
-DEFINE_int32(c, 4, "threshold under which candidates are output. set to -1 to output all.");
+DEFINE_int32(
+    c,
+    4,
+    "threshold under which candidates are output. set to -1 to output all.");
 DEFINE_bool(i, false, "add inverted tags");
 DEFINE_int32(m, 0, "min number of set/cleared samples each");
 DEFINE_int32(M, 0, "min number of set/cleared samples total");
@@ -22,9 +25,9 @@ DEFINE_string(o, "", "set output file");
 DEFINE_string(k, "", "set output mask file");
 
 using std::map;
+using std::string;
 using std::tuple;
 using std::vector;
-using std::string;
 
 int num_bits = 0, num_tags = 0;
 map<string, int> bit_ids, tag_ids;
@@ -76,51 +79,40 @@ struct bool_vec
 	}
 };
 #else
-struct bool_vec
-{
+struct bool_vec {
 	vector<uint64_t> data;
 
-	bool_vec(int n = 0, bool initval = false) :
-		data((n+63)/64, initval ? ~uint64_t(0) : uint64_t(0))
-	{
-		for (int i = data.size()*64-1; i >= n; i--)
+	bool_vec(int n = 0, bool initval = false)
+	    : data((n + 63) / 64, initval ? ~uint64_t(0) : uint64_t(0)) {
+		for (int i = data.size() * 64 - 1; i >= n; i--)
 			data[n / 64] &= ~(uint64_t(1) << (n % 64));
 	}
 
-	void set(int n)
-	{
-		if (int(data.size()*64) <= n)
-			data.resize((n+64) / 64);
+	void set(int n) {
+		if (int(data.size() * 64) <= n)
+			data.resize((n + 64) / 64);
 		data[n / 64] |= uint64_t(1) << (n % 64);
 	}
 
-	bool get(int n)
-	{
-		return (data[n / 64] >> (n % 64)) & 1;
-	}
+	bool get(int n) { return (data[n / 64] >> (n % 64)) & 1; }
 
-	void resize(int n)
-	{
-		data.resize((n+63) / 64);
-	}
+	void resize(int n) { data.resize((n + 63) / 64); }
 
-	int count()
-	{
+	int count() {
 		int sum = 0;
-		for (int i = 0; i < 64*int(data.size()); i++)
-			if (get(i)) sum++;
+		for (int i = 0; i < 64 * int(data.size()); i++)
+			if (get(i))
+				sum++;
 		return sum;
 	}
 
-	void apply_and(const bool_vec &other)
-	{
+	void apply_and(const bool_vec& other) {
 		assert(data.size() == other.data.size());
 		for (int i = 0; i < int(data.size()); i++)
 			data[i] &= other.data[i];
 	}
 
-	void apply_andc(const bool_vec &other)
-	{
+	void apply_andc(const bool_vec& other) {
 		assert(data.size() == other.data.size());
 		for (int i = 0; i < int(data.size()); i++)
 			data[i] &= ~other.data[i];
@@ -134,19 +126,22 @@ map<string, segdata_t> segdata;
 
 map<string, int> segnamecnt;
 
-static inline bool_vec &segdata_bits(segdata_t &sd) { return std::get<0>(sd); }
-static inline bool_vec &segdata_tags1(segdata_t &sd) { return std::get<1>(sd); }
-static inline bool_vec &segdata_tags0(segdata_t &sd) { return std::get<2>(sd); }
+static inline bool_vec& segdata_bits(segdata_t& sd) {
+	return std::get<0>(sd);
+}
+static inline bool_vec& segdata_tags1(segdata_t& sd) {
+	return std::get<1>(sd);
+}
+static inline bool_vec& segdata_tags0(segdata_t& sd) {
+	return std::get<2>(sd);
+}
 
-void read_input(std::istream &f, std::string filename)
-{
+void read_input(std::istream& f, std::string filename) {
 	string token;
-	segdata_t *segptr = nullptr;
+	segdata_t* segptr = nullptr;
 
-	while (f >> token)
-	{
-		if (token == "seg")
-		{
+	while (f >> token) {
+		if (token == "seg") {
 			f >> token;
 			token = filename + ":" + token;
 			while (segdata.count(token)) {
@@ -162,8 +157,7 @@ void read_input(std::istream &f, std::string filename)
 			continue;
 		}
 
-		if (token == "bit")
-		{
+		if (token == "bit") {
 			assert(segptr != nullptr);
 
 			f >> token;
@@ -173,14 +167,13 @@ void read_input(std::istream &f, std::string filename)
 			}
 
 			int bit_idx = bit_ids.at(token);
-			auto &bits = segdata_bits(*segptr);
+			auto& bits = segdata_bits(*segptr);
 
 			bits.set(bit_idx);
 			continue;
 		}
 
-		if (token == "tag")
-		{
+		if (token == "tag") {
 			assert(segptr != nullptr);
 
 			f >> token;
@@ -194,13 +187,15 @@ void read_input(std::istream &f, std::string filename)
 			f >> token;
 			assert(token == "0" || token == "1");
 
-			auto &tags = token == "1" ? segdata_tags1(*segptr) : segdata_tags0(*segptr);
+			auto& tags = token == "1" ? segdata_tags1(*segptr)
+			                          : segdata_tags0(*segptr);
 
 			tags.set(tag_idx);
 
-			if (FLAGS_i)
-			{
-				auto &inv_tags = token == "1" ? segdata_tags0(*segptr) : segdata_tags1(*segptr);
+			if (FLAGS_i) {
+				auto& inv_tags = token == "1"
+				                     ? segdata_tags0(*segptr)
+				                     : segdata_tags1(*segptr);
 
 				token = tag_ids_r.at(tag_idx) + "__INV";
 
@@ -223,17 +218,16 @@ void read_input(std::istream &f, std::string filename)
 	// printf("Number of bits: %d\n", num_bits);
 	// printf("Number of tags: %d\n", num_tags);
 
-	for (auto &segdat : segdata) {
+	for (auto& segdat : segdata) {
 		segdata_bits(segdat.second).resize(num_bits);
 		segdata_tags1(segdat.second).resize(num_tags);
 		segdata_tags0(segdat.second).resize(num_tags);
 	}
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
 	gflags::SetUsageMessage(
-			absl::StrCat("Usage: ", argv[0], " [options] file.."));
+	    absl::StrCat("Usage: ", argv[0], " [options] file.."));
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
 	if (argc > 1) {
@@ -253,7 +247,7 @@ int main(int argc, char **argv)
 	printf("#of bits: %d\n", num_bits);
 	printf("#of tags: %d\n", num_tags);
 
-	FILE *f = stdout;
+	FILE* f = stdout;
 
 	if (!FLAGS_o.empty()) {
 		f = fopen(FLAGS_o.c_str(), "w");
@@ -269,14 +263,12 @@ int main(int argc, char **argv)
 
 	std::vector<std::string> out_lines;
 
-	for (int tag_idx = 0; tag_idx < num_tags; tag_idx++)
-	{
+	for (int tag_idx = 0; tag_idx < num_tags; tag_idx++) {
 		bool_vec mask(num_bits, true);
 		int count1 = 0, count0 = 0;
 
-		for (auto &segdat : segdata)
-		{
-			auto &sd = segdat.second;
+		for (auto& segdat : segdata) {
+			auto& sd = segdat.second;
 			bool tag1 = segdata_tags1(sd).get(tag_idx);
 			bool tag0 = segdata_tags0(sd).get(tag_idx);
 
@@ -331,25 +323,28 @@ int main(int argc, char **argv)
 		int num_candidates = mask.count();
 
 		if (count0) {
-			min_candidates = std::min(min_candidates, num_candidates);
-			max_candidates = std::max(max_candidates, num_candidates);
+			min_candidates =
+			    std::min(min_candidates, num_candidates);
+			max_candidates =
+			    std::max(max_candidates, num_candidates);
 			avg_candidates += num_candidates;
 			cnt_candidates += 1;
 		}
 
 		if (FLAGS_c < 0 ||
-		    (0 < num_candidates &&
-		     num_candidates <= FLAGS_c)) {
+		    (0 < num_candidates && num_candidates <= FLAGS_c)) {
 			std::vector<std::string> out_tags;
 			for (int bit_idx = 0; bit_idx < num_bits; bit_idx++)
 				if (mask.get(bit_idx))
-					out_tags.push_back(bit_ids_r.at(bit_idx));
+					out_tags.push_back(
+					    bit_ids_r.at(bit_idx));
 			std::sort(out_tags.begin(), out_tags.end());
-			for (auto &tag : out_tags)
+			for (auto& tag : out_tags)
 				out_line += " " + tag;
 		} else {
 			char buffer[64];
-			snprintf(buffer, 64, " <%d candidates>", num_candidates);
+			snprintf(buffer, 64, " <%d candidates>",
+			         num_candidates);
 			out_line += buffer;
 		}
 
@@ -358,7 +353,7 @@ int main(int argc, char **argv)
 
 	std::sort(out_lines.begin(), out_lines.end());
 
-	for (auto &line : out_lines)
+	for (auto& line : out_lines)
 		fprintf(f, "%s\n", line.c_str());
 
 	if (cnt_candidates)
@@ -383,4 +378,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

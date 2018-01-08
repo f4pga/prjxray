@@ -16,24 +16,24 @@ namespace xilinx {
 namespace xc7series {
 
 class BitstreamReader {
- public:
+       public:
 	using value_type = ConfigurationPacket;
 
 	class iterator
-		: public std::iterator<std::input_iterator_tag, value_type> {
-	 public:
+	    : public std::iterator<std::input_iterator_tag, value_type> {
+	       public:
 		iterator& operator++();
 
-		bool operator==(const iterator &other) const;
-		bool operator!=(const iterator &other) const;
+		bool operator==(const iterator& other) const;
+		bool operator!=(const iterator& other) const;
 
 		const value_type& operator*() const;
 		const value_type* operator->() const;
 
-	 protected:
+	       protected:
 		explicit iterator(absl::Span<uint32_t> words);
 
-	 private:
+	       private:
 		friend BitstreamReader;
 
 		ConfigurationPacket::ParseResult parse_result_;
@@ -42,31 +42,32 @@ class BitstreamReader {
 
 	// Construct a reader from a collection of 32-bit, big-endian words.
 	// Assumes that any sync word has already been removed.
-	BitstreamReader(std::vector<uint32_t> &&words);
+	BitstreamReader(std::vector<uint32_t>&& words);
 
 	// Construct a `BitstreamReader` from a Container of bytes.
 	// Any bytes preceding an initial sync word are ignored.
-	template<typename T>
+	template <typename T>
 	static absl::optional<BitstreamReader> InitWithBytes(T bitstream);
 
-	const std::vector<uint32_t> &words() { return words_; };
+	const std::vector<uint32_t>& words() { return words_; };
 
 	// Returns an iterator that yields `ConfigurationPackets`
 	// as read from the bitstream.
 	iterator begin();
 	iterator end();
- private:
+
+       private:
 	static std::array<uint8_t, 4> kSyncWord;
 
 	std::vector<uint32_t> words_;
 };
 
-template<typename T>
+template <typename T>
 absl::optional<BitstreamReader> BitstreamReader::InitWithBytes(T bitstream) {
 	// If this is really a Xilinx 7-Series bitstream, there will be a sync
 	// word somewhere toward the beginning.
 	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),
-				    kSyncWord.begin(), kSyncWord.end());
+	                            kSyncWord.begin(), kSyncWord.end());
 	if (sync_pos == bitstream.end()) {
 		return absl::optional<BitstreamReader>();
 	}
@@ -74,13 +75,13 @@ absl::optional<BitstreamReader> BitstreamReader::InitWithBytes(T bitstream) {
 
 	// Wrap the provided container in a span that strips off the preamble.
 	absl::Span<typename T::value_type> bitstream_span(bitstream);
-	auto config_packets = bitstream_span.subspan(
-			sync_pos - bitstream.begin());
+	auto config_packets =
+	    bitstream_span.subspan(sync_pos - bitstream.begin());
 
 	// Convert the bytes into 32-bit, big-endian words.
 	auto big_endian_reader = make_big_endian_span<uint32_t>(config_packets);
 	std::vector<uint32_t> words{big_endian_reader.begin(),
-				    big_endian_reader.end()};
+	                            big_endian_reader.end()};
 
 	return BitstreamReader(std::move(words));
 }
