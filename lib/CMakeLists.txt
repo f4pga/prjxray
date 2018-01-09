@@ -6,7 +6,6 @@ add_library(libprjxray
 	xilinx/xc7series/block_type.cc
 	xilinx/xc7series/configuration_bus.cc
 	xilinx/xc7series/configuration_column.cc
-	xilinx/xc7series/configuration_frame_range.cc
 	xilinx/xc7series/configuration_packet.cc
 	xilinx/xc7series/configuration_register.cc
 	xilinx/xc7series/frame_address.cc
