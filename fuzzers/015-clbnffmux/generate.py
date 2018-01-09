@@ -18,12 +18,11 @@ clb_NFFMUX_O6,SLICE_X14Y100,3
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
-    module,loc,n = l.split(',')
+    module, loc, n = l.split(',')
     n = int(n)
     which = chr(ord('A') + n)
     # clb_NFFMUX_AX => AX
     src = module.replace('clb_NFFMUX_', '')
-
     '''
     AFFMUX
             30_00   30_01   30_02   30_03
@@ -69,11 +68,12 @@ for loc, muxes in cache.items():
             tag = "%sFF.DMUX.%s" % (which, src)
             segmk.addtag(loc, tag, 0)
 
+
 # we know that all bits for those MUXes are in frames 30 and 31, so filter all other bits
 def bitfilter(frame_idx, bit_idx):
     assert os.getenv("XRAY_DATABASE") == "artix7"
     return frame_idx in [30, 31]
 
+
 segmk.compile(bitfilter=bitfilter)
 segmk.write()
-

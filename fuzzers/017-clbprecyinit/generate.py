@@ -11,10 +11,9 @@ print("Loading tags")
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
-    module,loc,loc2 = l.split(',')
+    module, loc, loc2 = l.split(',')
     # clb_PRECYINIT_AX => AX
     src = module.replace('clb_PRECYINIT_', '')
-
     '''
     PRECYINIT
                 00_12   30_14   30_13
@@ -29,4 +28,3 @@ for l in f:
 
 segmk.compile()
 segmk.write()
-

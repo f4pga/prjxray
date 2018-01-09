@@ -22,11 +22,7 @@ with open("design.txt", "r") as f:
         pdir = int(pdir)
 
         if tile not in tiledata:
-            tiledata[tile] = {
-                "pips": set(),
-                "srcs": set(),
-                "dsts": set()
-            }
+            tiledata[tile] = {"pips": set(), "srcs": set(), "dsts": set()}
 
         if pip in pipdata:
             assert pipdata[pip] == (src, dst)
@@ -63,4 +59,3 @@ for tile, pips_srcs_dsts in tiledata.items():
 
 segmk.compile()
 segmk.write()
-

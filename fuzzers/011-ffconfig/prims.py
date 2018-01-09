@@ -7,8 +7,10 @@ def ones(l):
         ret.append(x + '_1')
     return ret
 
+
 # The complete primitive sets
-ffprims_fall = ones([
+ffprims_fall = ones(
+    [
         'FD',
         'FDC',
         'FDCE',
@@ -19,46 +21,48 @@ ffprims_fall = ones([
         'FDRE',
         'FDS',
         'FDSE',
-        ])
+    ])
 ffprims_lall = ones([
-        'LDC',
-        'LDCE',
-        'LDE',
-        'LDPE',
-        'LDP',
-        ])
+    'LDC',
+    'LDCE',
+    'LDE',
+    'LDPE',
+    'LDP',
+])
 
 # Base primitives
 ffprims_f = [
-        'FDRE',
-        'FDSE',
-        'FDCE',
-        'FDPE',
-        ]
+    'FDRE',
+    'FDSE',
+    'FDCE',
+    'FDPE',
+]
 ffprims_l = [
-        'LDCE',
-        'LDPE',
-        ]
+    'LDCE',
+    'LDPE',
+]
 ffprims = ffprims_f + ffprims_l
+
 
 def isff(prim):
     return prim.startswith("FD")
 
+
 def isl(prim):
     return prim.startswith("LD")
 
+
 ff_bels_5 = [
-        'A5FF',
-        'B5FF',
-        'C5FF',
-        'D5FF',
-        ]
+    'A5FF',
+    'B5FF',
+    'C5FF',
+    'D5FF',
+]
 ff_bels_ffl = [
-        'AFF',
-        'BFF',
-        'CFF',
-        'DFF',
-        ]
+    'AFF',
+    'BFF',
+    'CFF',
+    'DFF',
+]
 ff_bels = ff_bels_ffl + ff_bels_5
 #ff_bels = ff_bels_ffl
-

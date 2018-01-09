@@ -3,13 +3,17 @@ random.seed(0)
 import os
 import re
 
+
 def slice_xy():
     '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for xrange)'''
     # SLICE_X12Y100:SLICE_X27Y149
     # Note XRAY_ROI_GRID_* is something else
-    m = re.match(r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
+    m = re.match(
+        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)',
+        os.getenv('XRAY_ROI'))
     ms = [int(m.group(i + 1)) for i in range(4)]
     return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
+
 
 CLBN = 50
 SLICEX, SLICEY = slice_xy()
@@ -19,6 +23,7 @@ print('//SLICEX: %s' % str(SLICEX))
 print('//SLICEY: %s' % str(SLICEY))
 print('//SLICEN: %s' % str(SLICEN))
 print('//Requested CLBs: %s' % str(CLBN))
+
 
 # Rearranged to sweep Y so that carry logic is easy to allocate
 # XXX: careful...if odd number of Y in ROI will break carry
@@ -33,7 +38,7 @@ def gen_slicems():
         x = 6, 8, 10, 12, 14
     '''
     # TODO: generate this from DB
-    assert((12, 28) == SLICEX)
+    assert ((12, 28) == SLICEX)
     for slicex in (12, 14):
         for slicey in range(*SLICEY):
             # caller may reject position if needs more room
@@ -44,7 +49,8 @@ def gen_slicems():
 DIN_N = CLBN * 8
 DOUT_N = CLBN * 8
 
-print('''
+print(
+    '''
 module top(input clk, stb, di, output do);
     localparam integer DIN_N = %d;
     localparam integer DOUT_N = %d;
@@ -77,7 +83,9 @@ endmodule
 f = open('params.csv', 'w')
 f.write('module,loc,c31,b31,a31\n')
 slices = gen_slicems()
-print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
+print(
+    'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
+    (DIN_N - 1, DOUT_N - 1))
 multis = 0
 for clbi in range(CLBN):
     loc = next(slices)
@@ -87,18 +95,24 @@ for clbi in range(CLBN):
     a31 = random.randint(0, 1)
 
     print('    %s' % module)
-    print('           #(.LOC("%s"), .C31(%d), .B31(%d), .A31(%d))' % (loc, c31, b31, a31))
-    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (clbi, 8 * clbi, 8 * clbi))
+    print(
+        '           #(.LOC("%s"), .C31(%d), .B31(%d), .A31(%d))' %
+        (loc, c31, b31, a31))
+    print(
+        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
+        % (clbi, 8 * clbi, 8 * clbi))
 
     f.write('%s,%s,%d,%d,%d\n' % (module, loc, c31, b31, a31))
 f.close()
-print('''endmodule
+print(
+    '''endmodule
 
 // ---------------------------------------------------------------------
 
 ''')
 
-print('''
+print(
+    '''
 module my_NDI1MUX_NI_NMC31 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "SLICE_X6Y100";
     parameter C31 = 0;
@@ -159,4 +173,3 @@ module my_NDI1MUX_NI_NMC31 (input clk, input [7:0] din, output [7:0] dout);
             .D(lutd[0]));
 endmodule
 ''')
-

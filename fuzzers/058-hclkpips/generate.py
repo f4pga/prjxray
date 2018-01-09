@@ -50,4 +50,3 @@ for arg in sys.argv[1:]:
 
     segmk.compile()
     segmk.write(arg)
-

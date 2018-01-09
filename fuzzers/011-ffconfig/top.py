@@ -5,13 +5,17 @@ import re
 
 from prims import *
 
+
 def slice_xy():
     '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for xrange)'''
     # SLICE_X12Y100:SLICE_X27Y149
     # Note XRAY_ROI_GRID_* is something else
-    m = re.match(r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
+    m = re.match(
+        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)',
+        os.getenv('XRAY_ROI'))
     ms = [int(m.group(i + 1)) for i in range(4)]
     return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
+
 
 CLBN = 600
 SLICEX, SLICEY = slice_xy()
@@ -25,15 +29,18 @@ print('//Requested CLBs: %s' % str(CLBN))
 f = open("top.txt", "w")
 f.write("i,prim,loc,bel,init\n")
 
+
 def gen_slices():
     for slicey in range(*SLICEY):
         for slicex in range(*SLICEX):
             yield "SLICE_X%dY%d" % (slicex, slicey)
 
+
 DIN_N = CLBN * 4
 DOUT_N = CLBN * 1
 
-print('''
+print(
+    '''
 module top(input clk, stb, di, output do);
 	localparam integer DIN_N = %d;
 	localparam integer DOUT_N = %d;
@@ -64,7 +71,9 @@ endmodule
 ''' % (DIN_N, DOUT_N))
 
 slices = gen_slices()
-print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
+print(
+    'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
+    (DIN_N - 1, DOUT_N - 1))
 for i in range(CLBN):
     ffprim = random.choice(ones(ffprims))
     # clb_FD clb_FD (.clk(clk), .din(din[  0 +: 4]), .dout(dout[  0]));
@@ -78,16 +87,21 @@ for i in range(CLBN):
     init = random.choice((0, 1))
     #bel = "AFF"
     print('    clb_%s' % ffprim)
-    print('            #(.LOC("%s"), .BEL("%s"), .INIT(%d))' % (loc, bel, init))
-    print('            clb_%d (.clk(clk), .din(din[  %d +: 4]), .dout(dout[  %d]));' % (i, 4 * i, 1 * i))
+    print(
+        '            #(.LOC("%s"), .BEL("%s"), .INIT(%d))' % (loc, bel, init))
+    print(
+        '            clb_%d (.clk(clk), .din(din[  %d +: 4]), .dout(dout[  %d]));'
+        % (i, 4 * i, 1 * i))
     f.write("%d,%s,%s,%s,%d\n" % (i, ffprim, loc, bel, init))
-print('''endmodule
+print(
+    '''endmodule
 
 // ---------------------------------------------------------------------
 
 ''')
 
-print('''
+print(
+    '''
 module clb_FD (input clk, input [3:0] din, output dout);
     parameter LOC="SLICE_X16Y100";
     parameter BEL="AFF";
@@ -488,4 +502,3 @@ module clb_LDPE_1 (input clk, input [3:0] din, output dout);
 	endmodule
 
 ''')
-

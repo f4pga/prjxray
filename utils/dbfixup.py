@@ -31,9 +31,11 @@ zero_db = [
     "30_53 31_53 31_56 31_57",
 ]
 
+
 def add_zero_bits(tile_type):
     assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
-    dbfile = "%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), tile_type)
+    dbfile = "%s/%s/segbits_%s.db" % (
+        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), tile_type)
     new_lines = set()
     llast = None
 
@@ -84,9 +86,11 @@ def add_zero_bits(tile_type):
         for line in sorted(new_lines):
             print(line, file=f)
 
+
 def update_mask(mask_db, *src_dbs):
     bits = set()
-    mask_db_file = "%s/%s/mask_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), mask_db)
+    mask_db_file = "%s/%s/mask_%s.db" % (
+        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), mask_db)
 
     if os.path.exists(mask_db_file):
         with open(mask_db_file, "r") as f:
@@ -97,7 +101,8 @@ def update_mask(mask_db, *src_dbs):
                 bits.add(line[1])
 
     for src_db in src_dbs:
-        seg_db_file = "%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), src_db)
+        seg_db_file = "%s/%s/segbits_%s.db" % (
+            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), src_db)
 
         if not os.path.exists(seg_db_file):
             continue
@@ -113,6 +118,7 @@ def update_mask(mask_db, *src_dbs):
         with open(mask_db_file, "w") as f:
             for bit in sorted(bits):
                 print("bit %s" % bit, file=f)
+
 
 add_zero_bits("int_l")
 add_zero_bits("int_r")
@@ -133,4 +139,3 @@ for k in range(5):
     update_mask("bram%d_r" % k, "bram%d_r" % k, "int_r")
     update_mask("dsp%d_l" % k, "dsp%d_l" % k, "int_l")
     update_mask("dsp%d_r" % k, "dsp%d_r" % k, "int_r")
-

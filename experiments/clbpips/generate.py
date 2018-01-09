@@ -19,4 +19,3 @@ with open("design.txt", "r") as f:
 
 segmk.compile()
 segmk.write()
-

@@ -22,4 +22,3 @@ with open("design_%s.txt" % sys.argv[1], "r") as f:
 
 segmk.compile()
 segmk.write(sys.argv[1])
-

@@ -22,11 +22,7 @@ with open("design.txt", "r") as f:
         pdir = int(pdir)
 
         if tile not in tiledata:
-            tiledata[tile] = {
-                "pips": set(),
-                "srcs": set(),
-                "dsts": set()
-            }
+            tiledata[tile] = {"pips": set(), "srcs": set(), "dsts": set()}
 
         if pip in pipdata:
             assert pipdata[pip] == (src, dst)
@@ -58,12 +54,13 @@ for tile, pips_srcs_dsts in tiledata.items():
         elif src_dst[1] not in dsts:
             segmk.addtag(tile, "%s.%s" % (dst, src), 0)
 
+
 def bitfilter(frame_idx, bit_idx):
     assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
     if (frame_idx, bit_idx) in [(0, 48), (1, 31), (0, 32), (1, 35)]:
         return False
     return frame_idx in [0, 1]
 
+
 segmk.compile(bitfilter=bitfilter)
 segmk.write()
-
