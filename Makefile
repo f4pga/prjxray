@@ -10,4 +10,4 @@ go:
 format:
 	find . -name \*.cc -and -not -path './third_party/*' -exec $(CLANG_FORMAT) -style=file -i {} \;
 	find . -name \*.h -and -not -path './third_party/*' -exec $(CLANG_FORMAT) -style=file -i {} \;
-	find . -name \*.py -and -not -path './third_party/*' -exec autopep8 -i {} \;
+	find . -name \*.py -and -not -path './third_party/*' -exec yapf -p -i {} \;
