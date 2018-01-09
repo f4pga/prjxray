@@ -3,18 +3,20 @@ cmake_minimum_required(VERSION 3.5.0)
 project(prjxray)
 option(PRJXRAY_BUILD_TESTING "" OFF)
 
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release CACHE STRING
+		"Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+		FORCE)
+endif()
+
 set(CMAKE_CXX_STANDARD 14)
 add_compile_options(-Wall -Werror)
 
 # Hack for missing option in cctz
 option(BUILD_TESTING "" OFF)
 
-
 if(PRJXRAY_BUILD_TESTING)
 	enable_testing()
-	add_compile_options(-O0 -g)
-else()
-	add_compile_options(-O3)
 endif()
 
 add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
