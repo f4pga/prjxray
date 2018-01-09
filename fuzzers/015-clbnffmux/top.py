@@ -3,13 +3,16 @@ random.seed(0)
 import os
 import re
 
+
 def slice_xy():
     '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for xrange)'''
     # SLICE_X12Y100:SLICE_X27Y149
     # Note XRAY_ROI_GRID_* is something else
-    m = re.match(r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
+    m = re.match(
+        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
     ms = [int(m.group(i + 1)) for i in range(4)]
     return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
+
 
 CLBN = 400
 SLICEX, SLICEY = slice_xy()
@@ -20,10 +23,12 @@ print('//SLICEY: %s' % str(SLICEY))
 print('//SLICEN: %s' % str(SLICEN))
 print('//Requested CLBs: %s' % str(CLBN))
 
+
 def gen_slices():
     for slicey in range(*SLICEY):
         for slicex in range(*SLICEX):
             yield "SLICE_X%dY%d" % (slicex, slicey)
+
 
 DIN_N = CLBN * 8
 DOUT_N = CLBN * 8
@@ -61,9 +66,11 @@ endmodule
 f = open('params.csv', 'w')
 f.write('module,loc,n\n')
 slices = gen_slices()
-print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (DIN_N - 1, DOUT_N - 1))
+print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (
+    DIN_N - 1, DOUT_N - 1))
 for i in range(CLBN):
-    modules = ['clb_NFFMUX_' + x for x in ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR']]
+    modules = ['clb_NFFMUX_' +
+               x for x in ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR']]
     module = random.choice(modules)
 
     if module == 'clb_NFFMUX_F78':
@@ -75,7 +82,8 @@ for i in range(CLBN):
 
     print('    %s' % module)
     print('            #(.LOC("%s"), .N(%d))' % (loc, n))
-    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
+    print(
+        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
 
     f.write('%s,%s,%s\n' % (module, loc, n))
 f.close()
@@ -330,4 +338,3 @@ module clb_NFFMUX_XOR (input clk, input [7:0] din, output [7:0] dout);
             .ff_d(caro));
 endmodule
 ''')
-

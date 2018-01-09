@@ -12,14 +12,16 @@ namespace xilinx {
 namespace xc7series {
 
 class FrameAddress {
- public:
+       public:
 	FrameAddress() : address_(0) {}
 
-	FrameAddress(uint32_t address)
-		: address_(address) {};
+	FrameAddress(uint32_t address) : address_(address){};
 
-	FrameAddress(BlockType block_type, bool is_bottom_half_rows,
-		     uint8_t row, uint16_t column, uint8_t minor);
+	FrameAddress(BlockType block_type,
+	             bool is_bottom_half_rows,
+	             uint8_t row,
+	             uint16_t column,
+	             uint8_t minor);
 
 	operator uint32_t() const { return address_; }
 
@@ -29,22 +31,22 @@ class FrameAddress {
 	uint16_t column_address() const;
 	uint8_t minor_address() const;
 
- private:
+       private:
 	uint32_t address_;
 };
 
-std::ostream &operator<<(std::ostream &o, const FrameAddress& addr);
+std::ostream& operator<<(std::ostream& o, const FrameAddress& addr);
 
 }  // namespace xc7series
 }  // namespace xilinx
 }  // namespace prjxray
 
 namespace YAML {
-template<>
+template <>
 struct convert<prjxray::xilinx::xc7series::FrameAddress> {
-	static Node encode(const prjxray::xilinx::xc7series::FrameAddress &rhs);
+	static Node encode(const prjxray::xilinx::xc7series::FrameAddress& rhs);
 	static bool decode(const Node& node,
-			   prjxray::xilinx::xc7series::FrameAddress &lhs);
+	                   prjxray::xilinx::xc7series::FrameAddress& lhs);
 };
-} // namespace YAML
+}  // namespace YAML
 #endif  // PRJXRAY_LIB_XILINX_XC7SERIES_FRAME_ADDRESS_H_

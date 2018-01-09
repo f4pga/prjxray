@@ -8,8 +8,11 @@ namespace prjxray {
 namespace xilinx {
 namespace xc7series {
 
-FrameAddress::FrameAddress(BlockType block_type, bool is_bottom_half_rows,
-			   uint8_t row, uint16_t column, uint8_t minor) {
+FrameAddress::FrameAddress(BlockType block_type,
+                           bool is_bottom_half_rows,
+                           uint8_t row,
+                           uint16_t column,
+                           uint8_t minor) {
 	address_ = bit_field_set(0, 25, 23, block_type);
 	address_ = bit_field_set(address_, 22, 22, is_bottom_half_rows);
 	address_ = bit_field_set(address_, 21, 17, row);
@@ -37,23 +40,16 @@ uint8_t FrameAddress::minor_address() const {
 	return bit_field_get(address_, 6, 0);
 }
 
-std::ostream &operator<<(std::ostream &o, const FrameAddress& addr) {
-	o << "["
-          << std::hex << std::showbase << std::setw(10)
-	  << static_cast<uint32_t>(addr)
-	  << "] "
-	  << (addr.is_bottom_half_rows() ?  "BOTTOM" : "TOP")
-	  << " Row="
-	  << std::setw(2) << std::dec
+std::ostream& operator<<(std::ostream& o, const FrameAddress& addr) {
+	o << "[" << std::hex << std::showbase << std::setw(10)
+	  << static_cast<uint32_t>(addr) << "] "
+	  << (addr.is_bottom_half_rows() ? "BOTTOM" : "TOP")
+	  << " Row=" << std::setw(2) << std::dec
 	  << static_cast<unsigned int>(addr.row_address())
-	  << " Column="
-	  << std::setw(2) << std::dec
-	  << addr.column_address()
-	  << " Minor="
-	  << std::setw(2) << std::dec
+	  << " Column=" << std::setw(2) << std::dec << addr.column_address()
+	  << " Minor=" << std::setw(2) << std::dec
 	  << static_cast<unsigned int>(addr.minor_address())
-	  << " Type="
-	  << addr.block_type();
+	  << " Type=" << addr.block_type();
 	return o;
 }
 
@@ -66,7 +62,7 @@ namespace YAML {
 namespace xc7series = prjxray::xilinx::xc7series;
 
 Node convert<xc7series::FrameAddress>::encode(
-		const xc7series::FrameAddress &rhs) {
+    const xc7series::FrameAddress& rhs) {
 	Node node;
 	node.SetTag("xilinx/xc7series/frame_address");
 	node["block_type"] = rhs.block_type();
@@ -77,15 +73,13 @@ Node convert<xc7series::FrameAddress>::encode(
 	return node;
 }
 
-bool convert<xc7series::FrameAddress>::decode(
-		const Node &node, xc7series::FrameAddress &lhs) {
+bool convert<xc7series::FrameAddress>::decode(const Node& node,
+                                              xc7series::FrameAddress& lhs) {
 	if (!(node.Tag() == "xilinx/xc7series/frame_address" ||
 	      node.Tag() == "xilinx/xc7series/configuration_frame_address") ||
-	    !node["block_type"] ||
-	    !node["row_half"] ||
-	    !node["row"] ||
-	    !node["column"] ||
-	    !node["minor"]) return false;
+	    !node["block_type"] || !node["row_half"] || !node["row"] ||
+	    !node["column"] || !node["minor"])
+		return false;
 
 	bool row_half;
 	if (node["row_half"].as<std::string>() == "top") {
@@ -97,12 +91,10 @@ bool convert<xc7series::FrameAddress>::decode(
 	}
 
 	lhs = prjxray::xilinx::xc7series::FrameAddress(
-			node["block_type"].as<xc7series::BlockType>(),
-			row_half,
-			node["row"].as<unsigned int>(),
-			node["column"].as<unsigned int>(),
-			node["minor"].as<unsigned int>());
+	    node["block_type"].as<xc7series::BlockType>(), row_half,
+	    node["row"].as<unsigned int>(), node["column"].as<unsigned int>(),
+	    node["minor"].as<unsigned int>());
 	return true;
 }
 
-}  // namespace YAML;
+}  // namespace YAML

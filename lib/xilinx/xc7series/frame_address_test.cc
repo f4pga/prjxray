@@ -5,8 +5,8 @@
 namespace xc7series = prjxray::xilinx::xc7series;
 
 TEST(FrameAddressTest, YamlEncode) {
-	xc7series::FrameAddress address(xc7series::BlockType::BLOCK_RAM,
-					false, 10, 0, 5);
+	xc7series::FrameAddress address(xc7series::BlockType::BLOCK_RAM, false,
+	                                10, 0, 5);
 
 	YAML::Node node(address);
 
@@ -27,8 +27,7 @@ TEST(FrameAddressTest, YamlDecode) {
 	node["column"] = "5";
 	node["minor"] = "11";
 
-	xc7series::FrameAddress address =
-			node.as<xc7series::FrameAddress>();
+	xc7series::FrameAddress address = node.as<xc7series::FrameAddress>();
 	EXPECT_EQ(address.block_type(), xc7series::BlockType::BLOCK_RAM);
 	EXPECT_TRUE(address.is_bottom_half_rows());
 	EXPECT_EQ(address.row_address(), 0);

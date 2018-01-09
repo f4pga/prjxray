@@ -3,26 +3,26 @@
 namespace prjxray {
 
 std::unique_ptr<SegbitsFileReader> SegbitsFileReader::InitWithFile(
-	const std::string &path) {
-
+    const std::string& path) {
 	auto mapped_file = MemoryMappedFile::InitWithFile(path);
-	if (!mapped_file) return nullptr;
+	if (!mapped_file)
+		return nullptr;
 
 	return std::unique_ptr<SegbitsFileReader>(
-		new SegbitsFileReader(std::move(mapped_file)));
+	    new SegbitsFileReader(std::move(mapped_file)));
 }
 
 SegbitsFileReader::iterator SegbitsFileReader::begin() {
-	return iterator(absl::string_view(
-			static_cast<const char*>(mapped_file_->data()),
-			mapped_file_->size()));
+	return iterator(
+	    absl::string_view(static_cast<const char*>(mapped_file_->data()),
+	                      mapped_file_->size()));
 }
 
 SegbitsFileReader::iterator SegbitsFileReader::end() {
 	return iterator(absl::string_view());
 }
 
-SegbitsFileReader::value_type::value_type(const absl::string_view &view) {
+SegbitsFileReader::value_type::value_type(const absl::string_view& view) {
 	size_t separator_start = view.find_first_of(" \t");
 	if (separator_start == absl::string_view::npos) {
 		tag_ = view;
@@ -54,6 +54,5 @@ SegbitsFileReader::iterator& SegbitsFileReader::iterator::operator++() {
 	value_ = value_type(view_);
 	return *this;
 }
-
 
 }  // namespace prjxray

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import os, re
+import os
+import re
+
 
 def maketodo(pipfile, dbfile):
     todos = set()
@@ -16,6 +18,8 @@ def maketodo(pipfile, dbfile):
         if not line.endswith(".VCC_WIRE"):
             print(line)
 
-maketodo("pips_int_l.txt", "%s/%s/segbits_int_l.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")))
-maketodo("pips_int_r.txt", "%s/%s/segbits_int_r.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")))
 
+maketodo("pips_int_l.txt", "%s/%s/segbits_int_l.db" %
+         (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")))
+maketodo("pips_int_r.txt", "%s/%s/segbits_int_r.db" %
+         (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")))

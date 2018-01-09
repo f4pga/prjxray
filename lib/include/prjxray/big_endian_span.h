@@ -8,9 +8,9 @@
 
 namespace prjxray {
 
-template<typename WordType, typename ByteType>
+template <typename WordType, typename ByteType>
 class BigEndianSpan {
- public:
+       public:
 	constexpr static size_t kBytesPerElement = sizeof(WordType);
 
 	using byte_type = ByteType;
@@ -18,43 +18,45 @@ class BigEndianSpan {
 	using size_type = std::size_t;
 
 	class value_type {
-	 public:
+	       public:
 		operator WordType() const {
 			WordType word = 0;
-			for(size_t ii = 0; ii < kBytesPerElement; ++ii) {
-				word |= (static_cast<WordType>(bytes_[ii]) << ((kBytesPerElement - 1 - ii) * 8));
+			for (size_t ii = 0; ii < kBytesPerElement; ++ii) {
+				word |= (static_cast<WordType>(bytes_[ii])
+				         << ((kBytesPerElement - 1 - ii) * 8));
 			}
 			return word;
 		}
 
 		value_type& operator=(WordType word) {
 			for (size_t ii = 0; ii < kBytesPerElement; ++ii) {
-				bytes_[ii] = ((word >> ((kBytesPerElement - 1 - ii) * 8)) & 0xFF);
+				bytes_[ii] =
+				    ((word >>
+				      ((kBytesPerElement - 1 - ii) * 8)) &
+				     0xFF);
 			}
 			return *this;
 		}
 
-	 protected:
+	       protected:
 		friend class BigEndianSpan<WordType, ByteType>;
 
-		value_type(absl::Span<ByteType> bytes) : bytes_(bytes) {};
+		value_type(absl::Span<ByteType> bytes) : bytes_(bytes){};
 
-	 private:
+	       private:
 		absl::Span<ByteType> bytes_;
 	};
 
 	class iterator
-		: public std::iterator<std::input_iterator_tag, value_type> {
-	 public:
-		value_type operator*() const {
-			return value_type(bytes_);
-		}
+	    : public std::iterator<std::input_iterator_tag, value_type> {
+	       public:
+		value_type operator*() const { return value_type(bytes_); }
 
-		bool operator==(const iterator &other) const {
+		bool operator==(const iterator& other) const {
 			return bytes_ == other.bytes_;
 		}
 
-		bool operator!=(const iterator &other) const {
+		bool operator!=(const iterator& other) const {
 			return bytes_ != other.bytes_;
 		}
 
@@ -63,20 +65,19 @@ class BigEndianSpan {
 			return *this;
 		}
 
-	 protected:
+	       protected:
 		friend class BigEndianSpan<WordType, ByteType>;
 
-		iterator(absl::Span<ByteType> bytes) : bytes_(bytes) {};
+		iterator(absl::Span<ByteType> bytes) : bytes_(bytes){};
 
-	 private:
+	       private:
 		absl::Span<ByteType> bytes_;
 	};
-
 
 	using pointer = value_type*;
 	using reference = value_type&;
 
-	BigEndianSpan(absl::Span<ByteType> bytes) : bytes_(bytes) {};
+	BigEndianSpan(absl::Span<ByteType> bytes) : bytes_(bytes){};
 
 	constexpr size_type size() const noexcept {
 		return bytes_.size() / kBytesPerElement;
@@ -88,7 +89,7 @@ class BigEndianSpan {
 
 	value_type operator[](size_type pos) const {
 		assert(pos >= 0 && pos < size());
-		return value_type(bytes_.subspan((pos*kBytesPerElement)));
+		return value_type(bytes_.subspan((pos * kBytesPerElement)));
 	}
 
 	constexpr reference at(size_type pos) const {
@@ -98,16 +99,15 @@ class BigEndianSpan {
 	iterator begin() const { return iterator(bytes_); }
 	iterator end() const { return iterator({}); }
 
- private:
-
+       private:
 	absl::Span<ByteType> bytes_;
 };
 
-template<typename WordType, typename Container>
+template <typename WordType, typename Container>
 BigEndianSpan<WordType, typename Container::value_type> make_big_endian_span(
-		Container &bytes) {
+    Container& bytes) {
 	return BigEndianSpan<WordType, typename Container::value_type>(
-			absl::Span<typename Container::value_type>(bytes));
+	    absl::Span<typename Container::value_type>(bytes));
 }
 
 }  // namespace prjxray

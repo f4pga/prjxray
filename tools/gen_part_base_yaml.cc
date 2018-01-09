@@ -13,12 +13,11 @@
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 	if (argc < 2) {
 		std::cerr << "ERROR: no input specified" << std::endl;
-		std::cerr << "Usage: " << basename(argv[0])
-			  << " <bit_file>"
-			  << std::endl;
+		std::cerr << "Usage: " << basename(argv[0]) << " <bit_file>"
+		          << std::endl;
 		return 1;
 	}
 
@@ -26,15 +25,14 @@ int main(int argc, char *argv[]) {
 	auto in_file = prjxray::MemoryMappedFile::InitWithFile(in_file_name);
 	if (!in_file) {
 		std::cerr << "Unable to open bit file: " << in_file_name
-			  << std::endl;
+		          << std::endl;
 		return 1;
 	}
 
-	auto reader = xc7series::BitstreamReader::InitWithBytes(
-			in_file->as_bytes());
+	auto reader =
+	    xc7series::BitstreamReader::InitWithBytes(in_file->as_bytes());
 	if (!reader) {
-		std::cerr << "Input doesn't look like a bitstream"
-			  << std::endl;
+		std::cerr << "Input doesn't look like a bitstream" << std::endl;
 		return 1;
 	}
 
@@ -43,7 +41,7 @@ int main(int argc, char *argv[]) {
 	absl::optional<uint32_t> idcode;
 	for (auto packet : *reader) {
 		if (packet.opcode() !=
-		     xc7series::ConfigurationPacket::Opcode::Write) {
+		    xc7series::ConfigurationPacket::Opcode::Write) {
 			continue;
 		}
 
@@ -51,13 +49,13 @@ int main(int argc, char *argv[]) {
 		    xc7series::ConfigurationRegister::FDRI) {
 			found_fdri_write = true;
 		} else if ((packet.address() ==
-			    xc7series::ConfigurationRegister::IDCODE) &&
-			   packet.data().size() == 1) {
+		            xc7series::ConfigurationRegister::IDCODE) &&
+		           packet.data().size() == 1) {
 			idcode = packet.data()[0];
 		} else if (found_fdri_write &&
-			   (packet.address() ==
-			    xc7series::ConfigurationRegister::LOUT) &&
-			   packet.data().size() == 1) {
+		           (packet.address() ==
+		            xc7series::ConfigurationRegister::LOUT) &&
+		           packet.data().size() == 1) {
 			frame_addresses.push_back(packet.data()[0]);
 		}
 	}
@@ -69,8 +67,8 @@ int main(int argc, char *argv[]) {
 
 	if (frame_addresses.empty()) {
 		std::cerr << "No LOUT writes found.  Was "
-			  << "BITSTREAM.GENERAL.DEBUGBITSTREAM set to YES?"
-			  << std::endl;
+		          << "BITSTREAM.GENERAL.DEBUGBITSTREAM set to YES?"
+		          << std::endl;
 		return 1;
 	}
 
@@ -80,17 +78,15 @@ int main(int argc, char *argv[]) {
 
 	std::vector<xc7series::ConfigurationFrameRange> ranges;
 	for (auto start_of_range = frame_addresses.begin();
-	     start_of_range != frame_addresses.end();
-	     ) {
+	     start_of_range != frame_addresses.end();) {
 		auto end_of_range = start_of_range;
 		while (end_of_range + 1 != frame_addresses.end() &&
 		       *(end_of_range + 1) == *end_of_range + 1) {
 			++end_of_range;
 		}
 
-		ranges.push_back(
-			xc7series::ConfigurationFrameRange(*start_of_range,
-							   *end_of_range+1));
+		ranges.push_back(xc7series::ConfigurationFrameRange(
+		    *start_of_range, *end_of_range + 1));
 
 		start_of_range = ++end_of_range;
 	}

@@ -17,7 +17,7 @@ namespace xc7series = prjxray::xilinx::xc7series;
 namespace YAML {
 
 Node convert<xc7series::ConfigurationFrameRange>::encode(
-		const xc7series::ConfigurationFrameRange &rhs) {
+    const xc7series::ConfigurationFrameRange& rhs) {
 	Node node;
 	node.SetTag("xilinx/xc7series/configuration_frame_range");
 	node["begin"] = rhs.begin();
@@ -26,16 +26,16 @@ Node convert<xc7series::ConfigurationFrameRange>::encode(
 }
 
 bool convert<xc7series::ConfigurationFrameRange>::decode(
-		const Node &node,
-		xc7series::ConfigurationFrameRange &lhs) {
+    const Node& node,
+    xc7series::ConfigurationFrameRange& lhs) {
 	if (node.Tag() != "xilinx/xc7series/configuration_frame_range" ||
-	    !node["begin"] ||
-	    !node["end"]) return false;
+	    !node["begin"] || !node["end"])
+		return false;
 
 	lhs = xc7series::ConfigurationFrameRange(
-		node["begin"].as<xc7series::FrameAddress>(),
-		node["end"].as<xc7series::FrameAddress>());
+	    node["begin"].as<xc7series::FrameAddress>(),
+	    node["end"].as<xc7series::FrameAddress>());
 	return true;
 }
 
-}  // namespace YAML;
+}  // namespace YAML

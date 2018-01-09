@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import sys, re
+import sys
+import re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -17,7 +18,7 @@ clb_NCY0_O5,SLICE_X17Y100,A6LUT,2
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
-    module,loc,bel,n = l.split(',')
+    module, loc, bel, n = l.split(',')
     n = int(n)
     # A, B, etc
     which = bel[0]
@@ -26,4 +27,3 @@ for l in f:
     segmk.addtag(loc, "CARRY4.%cCY0" % which, module == 'clb_NCY0_O5')
 segmk.compile()
 segmk.write()
-

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import os, sys, json
+import os
+import sys
+import json
 
 if len(sys.argv) != 3:
     print("Usage example: python3 %s HCLK_R HCLK_SW6E3" % sys.argv[0])
@@ -26,9 +28,11 @@ for entry in tileconn:
         if wire_pair[this_idx] != sys.argv[2]:
             continue
 
-        outdata.append((delta_x, delta_y, entry["tile_types"][other_idx], wire_pair[other_idx]))
-        max_tiletype_len = max(max_tiletype_len, len(entry["tile_types"][other_idx]))
+        outdata.append(
+            (delta_x, delta_y, entry["tile_types"][other_idx], wire_pair[other_idx]))
+        max_tiletype_len = max(max_tiletype_len, len(
+            entry["tile_types"][other_idx]))
 
 for entry in outdata:
-    print("%3d %3d  %-*s  %s" % (entry[0], entry[1], max_tiletype_len, entry[2], entry[3]))
-
+    print("%3d %3d  %-*s  %s" %
+          (entry[0], entry[1], max_tiletype_len, entry[2], entry[3]))

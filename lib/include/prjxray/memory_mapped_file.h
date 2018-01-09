@@ -9,11 +9,11 @@
 namespace prjxray {
 
 class MemoryMappedFile {
- public:
+       public:
 	~MemoryMappedFile();
 
 	static std::unique_ptr<MemoryMappedFile> InitWithFile(
-			const std::string &path);
+	    const std::string& path);
 
 	void* const data() const { return data_; }
 	const size_t size() const { return size_; }
@@ -22,14 +22,13 @@ class MemoryMappedFile {
 		return {static_cast<uint8_t*>(data_), size_};
 	}
 
- private:
-	MemoryMappedFile(void *data, size_t size)
-		: data_(data), size_(size) {};
+       private:
+	MemoryMappedFile(void* data, size_t size) : data_(data), size_(size){};
 
-	void *data_;
+	void* data_;
 	size_t size_;
 };
 
-} // namespace prjxray
+}  // namespace prjxray
 
 #endif  // PRJXRAY_LIB_MEMORY_MAPPED_FILE

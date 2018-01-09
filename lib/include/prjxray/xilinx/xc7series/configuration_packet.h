@@ -12,10 +12,10 @@ namespace xilinx {
 namespace xc7series {
 
 class ConfigurationPacket {
- public:
+       public:
 	typedef std::pair<absl::Span<uint32_t>,
-		          absl::optional<ConfigurationPacket>>
-		ParseResult;
+	                  absl::optional<ConfigurationPacket>>
+	    ParseResult;
 
 	enum Opcode {
 		NOP = 0,
@@ -24,11 +24,14 @@ class ConfigurationPacket {
 		/* reserved = 3 */
 	};
 
-	ConfigurationPacket(unsigned int header_type, Opcode opcode,
-			    ConfigurationRegister address,
-			    const absl::Span<uint32_t> &data)
-		: header_type_(header_type), opcode_(opcode),
-		  address_(address), data_(std::move(data)) {}
+	ConfigurationPacket(unsigned int header_type,
+	                    Opcode opcode,
+	                    ConfigurationRegister address,
+	                    const absl::Span<uint32_t>& data)
+	    : header_type_(header_type),
+	      opcode_(opcode),
+	      address_(address),
+	      data_(std::move(data)) {}
 
 	// Attempt to read a configuration packet from a sequence of
 	// 32-bit, big-endian words. If successful, returns the packet read and
@@ -38,22 +41,22 @@ class ConfigurationPacket {
 	// packet is produced.  If no valid header is found, an empty span is
 	// returned.
 	static ParseResult InitWithWords(
-			absl::Span<uint32_t> words,
-			const ConfigurationPacket *previous_packet = nullptr);
+	    absl::Span<uint32_t> words,
+	    const ConfigurationPacket* previous_packet = nullptr);
 
 	unsigned int header_type() const { return header_type_; }
 	const Opcode opcode() const { return opcode_; }
 	const ConfigurationRegister address() const { return address_; }
-	const absl::Span<uint32_t> &data() const { return data_; }
+	const absl::Span<uint32_t>& data() const { return data_; }
 
- private:
+       private:
 	unsigned int header_type_;
 	Opcode opcode_;
 	ConfigurationRegister address_;
 	absl::Span<uint32_t> data_;
 };
 
-std::ostream& operator<<(std::ostream& o, const ConfigurationPacket &packet);
+std::ostream& operator<<(std::ostream& o, const ConfigurationPacket& packet);
 
 }  // namespace xc7series
 }  // namespace xilinx

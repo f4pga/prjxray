@@ -7,7 +7,7 @@ namespace prjxray {
 namespace xilinx {
 namespace xc7series {
 
-absl::optional<Part> Part::FromFile(const std::string &path) {
+absl::optional<Part> Part::FromFile(const std::string& path) {
 	try {
 		YAML::Node yaml = YAML::LoadFile(path);
 		return yaml.as<Part>();
@@ -16,8 +16,8 @@ absl::optional<Part> Part::FromFile(const std::string &path) {
 	}
 }
 
-absl::optional<FrameAddress>
-Part::GetNextFrameAddress(FrameAddress address) const {
+absl::optional<FrameAddress> Part::GetNextFrameAddress(
+    FrameAddress address) const {
 	// Start with the next linear address.
 	FrameAddress target_address(address + 1);
 
@@ -27,8 +27,7 @@ Part::GetNextFrameAddress(FrameAddress address) const {
 	// address.
 	absl::optional<FrameAddress> closest_address;
 	int32_t closest_distance;
-	for (auto iter = frame_ranges_.begin();
-	     iter != frame_ranges_.end();
+	for (auto iter = frame_ranges_.begin(); iter != frame_ranges_.end();
 	     ++iter) {
 		if (iter->Contains(target_address)) {
 			return target_address;
@@ -36,8 +35,7 @@ Part::GetNextFrameAddress(FrameAddress address) const {
 
 		int32_t distance = iter->begin() - target_address;
 		if (distance > 0 &&
-		    (!closest_address ||
-		     distance < closest_distance)) {
+		    (!closest_address || distance < closest_distance)) {
 			closest_address = iter->begin();
 			closest_distance = distance;
 		}
@@ -54,7 +52,7 @@ namespace xc7series = prjxray::xilinx::xc7series;
 
 namespace YAML {
 
-Node convert<xc7series::Part>::encode(const xc7series::Part &rhs) {
+Node convert<xc7series::Part>::encode(const xc7series::Part& rhs) {
 	Node node;
 	node.SetTag("xilinx/xc7series/part");
 
@@ -66,17 +64,16 @@ Node convert<xc7series::Part>::encode(const xc7series::Part &rhs) {
 	return node;
 }
 
-bool convert<xc7series::Part>::decode(const Node &node, xc7series::Part &lhs) {
-	if (node.Tag() != "xilinx/xc7series/part" ||
-	    !node["idcode"] ||
-	    !node["configuration_ranges"]) return false;
+bool convert<xc7series::Part>::decode(const Node& node, xc7series::Part& lhs) {
+	if (node.Tag() != "xilinx/xc7series/part" || !node["idcode"] ||
+	    !node["configuration_ranges"])
+		return false;
 
 	lhs = xc7series::Part(
-		node["idcode"].as<uint32_t>(),
-		node["configuration_ranges"].as<
-			std::vector<xc7series::ConfigurationFrameRange>>());
+	    node["idcode"].as<uint32_t>(),
+	    node["configuration_ranges"]
+	        .as<std::vector<xc7series::ConfigurationFrameRange>>());
 	return true;
 }
 
-}  // namespace YAML;
-
+}  // namespace YAML

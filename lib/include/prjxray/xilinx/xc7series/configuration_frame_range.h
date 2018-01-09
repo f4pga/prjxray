@@ -11,11 +11,11 @@ namespace xilinx {
 namespace xc7series {
 
 class ConfigurationFrameRange {
- public:
+       public:
 	ConfigurationFrameRange() : begin_(0), end_(0) {}
 
 	ConfigurationFrameRange(FrameAddress begin, FrameAddress end)
-		: begin_(begin), end_(end) {};
+	    : begin_(begin), end_(end){};
 
 	FrameAddress begin() const { return begin_; }
 	FrameAddress end() const { return end_; }
@@ -25,7 +25,7 @@ class ConfigurationFrameRange {
 
 	bool Contains(FrameAddress address) const;
 
- private:
+       private:
 	FrameAddress begin_;
 	FrameAddress end_;
 };
@@ -35,13 +35,13 @@ class ConfigurationFrameRange {
 }  // namespace prjxray
 
 namespace YAML {
-template<>
+template <>
 struct convert<prjxray::xilinx::xc7series::ConfigurationFrameRange> {
 	static Node encode(
-		const prjxray::xilinx::xc7series::ConfigurationFrameRange &rhs);
+	    const prjxray::xilinx::xc7series::ConfigurationFrameRange& rhs);
 	static bool decode(
-		const Node& node,
-		prjxray::xilinx::xc7series::ConfigurationFrameRange &lhs);
+	    const Node& node,
+	    prjxray::xilinx::xc7series::ConfigurationFrameRange& lhs);
 };
-} // namespace YAML
+}  // namespace YAML
 #endif  // PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_FRAME_RANGE_H_

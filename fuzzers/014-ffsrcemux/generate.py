@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import sys, re
+import sys
+import re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -17,7 +18,7 @@ clb_FDRE,SLICE_X14Y100,1,1
 f = open('params.csv', 'r')
 f.readline()
 for l in f:
-    name,site,ce,r = l.split(',')
+    name, site, ce, r = l.split(',')
     ce = int(ce)
     r = int(r)
 
@@ -30,4 +31,3 @@ for l in f:
     segmk.addtag(site, "SRUSEDMUX", r)
 segmk.compile()
 segmk.write()
-
