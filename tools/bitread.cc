@@ -159,11 +159,11 @@ int main(int argc, char** argv) {
 			    static_cast<uint32_t>(it.first),
 			    static_cast<unsigned int>(it.first.block_type()),
 			    it.first.is_bottom_half_rows() ? 1 : 0,
-			    it.first.row_address(), it.first.column_address(),
-			    it.first.minor_address());
+			    it.first.row(), it.first.column(),
+			    it.first.minor());
 
 		if (FLAGS_p) {
-			if (it.first.minor_address() == 0 && !pgmdata.empty())
+			if (it.first.minor() == 0 && !pgmdata.empty())
 				pgmsep.push_back(pgmdata.size());
 
 			pgmdata.push_back(std::vector<bool>());
@@ -195,12 +195,9 @@ int main(int argc, char** argv) {
 							    it.first.is_bottom_half_rows()
 							        ? 1
 							        : 0,
-							    it.first
-							        .row_address(),
-							    it.first
-							        .column_address(),
-							    it.first
-							        .minor_address());
+							    it.first.row(),
+							    it.first.column(),
+							    it.first.minor());
 						else
 							fprintf(f,
 							        "bit_%08x_%03d_"

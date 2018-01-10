@@ -27,9 +27,9 @@ class FrameAddress {
 
 	BlockType block_type() const;
 	bool is_bottom_half_rows() const;
-	uint8_t row_address() const;
-	uint16_t column_address() const;
-	uint8_t minor_address() const;
+	uint8_t row() const;
+	uint16_t column() const;
+	uint8_t minor() const;
 
        private:
 	uint32_t address_;
