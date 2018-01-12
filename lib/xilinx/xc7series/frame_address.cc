@@ -28,15 +28,15 @@ bool FrameAddress::is_bottom_half_rows() const {
 	return bit_field_get(address_, 22, 22);
 }
 
-uint8_t FrameAddress::row_address() const {
+uint8_t FrameAddress::row() const {
 	return bit_field_get(address_, 21, 17);
 }
 
-uint16_t FrameAddress::column_address() const {
+uint16_t FrameAddress::column() const {
 	return bit_field_get(address_, 16, 7);
 }
 
-uint8_t FrameAddress::minor_address() const {
+uint8_t FrameAddress::minor() const {
 	return bit_field_get(address_, 6, 0);
 }
 
@@ -45,10 +45,9 @@ std::ostream& operator<<(std::ostream& o, const FrameAddress& addr) {
 	  << static_cast<uint32_t>(addr) << "] "
 	  << (addr.is_bottom_half_rows() ? "BOTTOM" : "TOP")
 	  << " Row=" << std::setw(2) << std::dec
-	  << static_cast<unsigned int>(addr.row_address())
-	  << " Column=" << std::setw(2) << std::dec << addr.column_address()
-	  << " Minor=" << std::setw(2) << std::dec
-	  << static_cast<unsigned int>(addr.minor_address())
+	  << static_cast<unsigned int>(addr.row()) << " Column=" << std::setw(2)
+	  << std::dec << addr.column() << " Minor=" << std::setw(2) << std::dec
+	  << static_cast<unsigned int>(addr.minor())
 	  << " Type=" << addr.block_type();
 	return o;
 }
@@ -67,9 +66,9 @@ Node convert<xc7series::FrameAddress>::encode(
 	node.SetTag("xilinx/xc7series/frame_address");
 	node["block_type"] = rhs.block_type();
 	node["row_half"] = (rhs.is_bottom_half_rows() ? "bottom" : "top");
-	node["row"] = static_cast<unsigned int>(rhs.row_address());
-	node["column"] = static_cast<unsigned int>(rhs.column_address());
-	node["minor"] = static_cast<unsigned int>(rhs.minor_address());
+	node["row"] = static_cast<unsigned int>(rhs.row());
+	node["column"] = static_cast<unsigned int>(rhs.column());
+	node["minor"] = static_cast<unsigned int>(rhs.minor());
 	return node;
 }
 

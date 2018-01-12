@@ -1,13 +1,17 @@
 #include <libgen.h>
 
+#include <algorithm>
 #include <iostream>
+#include <map>
+#include <memory>
 #include <vector>
 
 #include <absl/types/optional.h>
 #include <absl/types/span.h>
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
-#include <prjxray/xilinx/xc7series/configuration_frame_range.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
+#include <prjxray/xilinx/xc7series/global_clock_region.h>
 #include <prjxray/xilinx/xc7series/part.h>
 #include <yaml-cpp/yaml.h>
 
@@ -37,7 +41,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	bool found_fdri_write = false;
-	std::vector<uint32_t> frame_addresses;
+	std::vector<xc7series::FrameAddress> frame_addresses;
 	absl::optional<uint32_t> idcode;
 	for (auto packet : *reader) {
 		if (packet.opcode() !=
@@ -72,26 +76,9 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	// So far, the addresses appear to be written in increasing order but
-	// there is no guarantee.  Sort them just in case.
-	std::sort(frame_addresses.begin(), frame_addresses.end());
-
-	std::vector<xc7series::ConfigurationFrameRange> ranges;
-	for (auto start_of_range = frame_addresses.begin();
-	     start_of_range != frame_addresses.end();) {
-		auto end_of_range = start_of_range;
-		while (end_of_range + 1 != frame_addresses.end() &&
-		       *(end_of_range + 1) == *end_of_range + 1) {
-			++end_of_range;
-		}
-
-		ranges.push_back(xc7series::ConfigurationFrameRange(
-		    *start_of_range, *end_of_range + 1));
-
-		start_of_range = ++end_of_range;
-	}
-
-	std::cout << YAML::Node(xc7series::Part(*idcode, ranges)) << std::endl;
+	auto part = xc7series::Part(*idcode, frame_addresses.begin(),
+	                            frame_addresses.end());
+	std::cout << YAML::Node(part) << std::endl;
 
 	return 0;
 }

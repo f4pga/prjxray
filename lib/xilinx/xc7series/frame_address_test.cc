@@ -30,7 +30,7 @@ TEST(FrameAddressTest, YamlDecode) {
 	xc7series::FrameAddress address = node.as<xc7series::FrameAddress>();
 	EXPECT_EQ(address.block_type(), xc7series::BlockType::BLOCK_RAM);
 	EXPECT_TRUE(address.is_bottom_half_rows());
-	EXPECT_EQ(address.row_address(), 0);
-	EXPECT_EQ(address.column_address(), 5);
-	EXPECT_EQ(address.minor_address(), 11);
+	EXPECT_EQ(address.row(), 0);
+	EXPECT_EQ(address.column(), 5);
+	EXPECT_EQ(address.minor(), 11);
 }
