@@ -55,6 +55,22 @@ Creating HTML documentation:
     cd fuzzers/010-lutinit
     make -j$(nproc) run
 
+Tests are not built by default.  Setting the PRJXRAY\_BUILD\_TESTING option to
+ON when running cmake will include them:
+
+    cmake -DPRJXRAY_BUILD_TESTING=ON ..
+    make
+
+The default C++ build configuration is for releases (optimizations enabled, no
+debug info). A build configuration for debugging (no optimizations, debug info)
+can be chosen via the CMAKE\_BUILD\_TYPE option:
+
+    cmake -DCMAKE_BUILD_TYPE=Debug ..
+    make
+
+The options to build tests and use a debug build configuration are independent
+to allow testing that optimizations do not cause bugs.  The build configuration
+and build tests options may be combined to allow all permutations.
 
 # Process
 
