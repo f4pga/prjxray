@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import json
-import re
+import os, sys, json, re
 
 tilenodes = dict()
 grid2tile = dict()
 database = dict()
 
 print("Loading %s grid." % os.getenv("XRAY_DATABASE"))
-with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")), "r") as f:
+with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
+                                   os.getenv("XRAY_DATABASE")), "r") as f:
     grid = json.load(f)
 
 for tile, tiledata in grid["tiles"].items():
@@ -31,34 +29,22 @@ with open("nodewires.txt") as f:
 def filter_pair(type1, type2, wire1, wire2, delta_x, delta_y):
     if type1 in ["HCLK_L", "HCLK_R"]:
         is_vertical_wire = False
-        if wire1.startswith("HCLK_S"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_N"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_W"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_E"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_LV"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_BYP"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_FAN"):
-            is_vertical_wire = True
-        if wire1.startswith("HCLK_LEAF_CLK_"):
-            is_vertical_wire = True
+        if wire1.startswith("HCLK_S"): is_vertical_wire = True
+        if wire1.startswith("HCLK_N"): is_vertical_wire = True
+        if wire1.startswith("HCLK_W"): is_vertical_wire = True
+        if wire1.startswith("HCLK_E"): is_vertical_wire = True
+        if wire1.startswith("HCLK_LV"): is_vertical_wire = True
+        if wire1.startswith("HCLK_BYP"): is_vertical_wire = True
+        if wire1.startswith("HCLK_FAN"): is_vertical_wire = True
+        if wire1.startswith("HCLK_LEAF_CLK_"): is_vertical_wire = True
 
         is_horizontal_wire = False
-        if wire1.startswith("HCLK_CK_"):
-            is_horizontal_wire = True
-        if wire1.startswith("HCLK_INT_"):
-            is_horizontal_wire = True
+        if wire1.startswith("HCLK_CK_"): is_horizontal_wire = True
+        if wire1.startswith("HCLK_INT_"): is_horizontal_wire = True
 
         assert is_vertical_wire != is_horizontal_wire
-        if is_vertical_wire and delta_y == 0:
-            return True
-        if is_horizontal_wire and delta_x == 0:
-            return True
+        if is_vertical_wire and delta_y == 0: return True
+        if is_horizontal_wire and delta_x == 0: return True
 
     if type1 in ["INT_L", "INT_R"]:
         # the wires with underscore after BEG/END all connect vertically
@@ -66,17 +52,14 @@ def filter_pair(type1, type2, wire1, wire2, delta_x, delta_y):
             return True
 
     if type1 in ["BRKH_INT", "BRKH_B_TERM_INT", "T_TERM_INT"]:
-        if delta_y == 0:
-            return True
+        if delta_y == 0: return True
 
     return False
 
 
 def handle_pair(tile1, tile2):
-    if tile1 not in tilenodes:
-        return
-    if tile2 not in tilenodes:
-        return
+    if tile1 not in tilenodes: return
+    if tile2 not in tilenodes: return
 
     tile1data = grid["tiles"][tile1]
     tile2data = grid["tiles"][tile2]
@@ -87,8 +70,9 @@ def handle_pair(tile1, tile2):
     if grid1_xy > grid2_xy:
         return handle_pair(tile2, tile1)
 
-    key = (tile1data["type"], tile2data["type"],
-           grid2_xy[0] - grid1_xy[0], grid2_xy[1] - grid1_xy[1])
+    key = (
+        tile1data["type"], tile2data["type"], grid2_xy[0] - grid1_xy[0],
+        grid2_xy[1] - grid1_xy[1])
 
     wire_pairs = set()
 

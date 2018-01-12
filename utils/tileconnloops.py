@@ -3,14 +3,14 @@
 # Produces a complete database of wires in the ROI and their connections and tests if each
 # routing node is a tree (i.e. fails with an error when a loop is found).
 
-import os
-import sys
-import json
+import os, sys, json
 
-with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")), "r") as f:
+with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
+                                   os.getenv("XRAY_DATABASE")), "r") as f:
     tilegrid = json.load(f)["tiles"]
 
-with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")), "r") as f:
+with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
+                                   os.getenv("XRAY_DATABASE")), "r") as f:
     tileconn = json.load(f)
 
 grid = dict()
@@ -25,12 +25,14 @@ for tilename, tiledata in tilegrid.items():
 def check_tileconn_entry(tilename, tiledata, entry, idx):
     if idx == 0:
         otheridx = 1
-        otherxy = (tiledata["grid_x"] + entry["grid_deltas"]
-                   [0], tiledata["grid_y"] + entry["grid_deltas"][1])
+        otherxy = (
+            tiledata["grid_x"] + entry["grid_deltas"][0],
+            tiledata["grid_y"] + entry["grid_deltas"][1])
     else:
         otheridx = 0
-        otherxy = (tiledata["grid_x"] - entry["grid_deltas"]
-                   [0], tiledata["grid_y"] - entry["grid_deltas"][1])
+        otherxy = (
+            tiledata["grid_x"] - entry["grid_deltas"][0],
+            tiledata["grid_y"] - entry["grid_deltas"][1])
 
     if otherxy not in grid:
         return
@@ -41,8 +43,10 @@ def check_tileconn_entry(tilename, tiledata, entry, idx):
     if othertiledata["type"] != entry["tile_types"][otheridx]:
         return
 
-    print("  Found relevant entry (%s %s %d %d): %s" % (entry["tile_types"][0], entry["tile_types"][1],
-                                                        entry["grid_deltas"][0], entry["grid_deltas"][1], othertilename))
+    print(
+        "  Found relevant entry (%s %s %d %d): %s" % (
+            entry["tile_types"][0], entry["tile_types"][1],
+            entry["grid_deltas"][0], entry["grid_deltas"][1], othertilename))
 
     for pair in entry["wire_pairs"]:
         wirename = "%s/%s" % (tilename, pair[idx])

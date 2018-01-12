@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 '''
 FDCE Primitive: D Flip-Flop with Clock Enable and Asynchronous Clear
 FDPE Primitive: D Flip-Flop with Clock Enable and Asynchronous Preset
@@ -11,8 +10,7 @@ LDPE Primitive: Transparent Data Latch with Asynchronous Preset and Gate Enable
 
 from prims import *
 
-import sys
-import re
+import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -21,8 +19,8 @@ segmk = segmaker("design.bits")
 
 
 def ones(l):
-    # return l + [x + '_1' for x in l]
-    # return sorted(l + [x + '_1' for x in l])
+    #return l + [x + '_1' for x in l]
+    #return sorted(l + [x + '_1' for x in l])
     ret = []
     for x in l:
         ret.append(x)
@@ -104,22 +102,21 @@ with open("design.txt", "r") as f:
 
             # Synchronous vs asynchronous FF
             # Unlike most bits, shared between all CLB FFs
-            segmk.addtag(site, "FFSYNC",
-                         cel_prim in ('FDSE', 'FDRE'))
+            segmk.addtag(site, "FFSYNC", cel_prim in ('FDSE', 'FDRE'))
 
             # Latch bit
             # Only applies to LUT6 (non-5) FF's
             if not is5:
                 segmk.addtag(site, "LATCH", isl(cel_prim))
-
             '''
             On name:
             The primitives you listed have a control input to set the FF value to zero (clear/reset),
             the other three primitives have a control input that sets the FF value to one.
             Z => inversion
             '''
-            segmk.addtag(site, "%s.ZRST" % ff_name,
-                         cel_prim in ('FDRE', 'FDCE', 'LDCE'))
+            segmk.addtag(
+                site, "%s.ZRST" % ff_name,
+                cel_prim in ('FDRE', 'FDCE', 'LDCE'))
 
 segmk.compile()
 segmk.write()

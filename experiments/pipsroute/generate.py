@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import re
+import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -27,11 +26,7 @@ def handle_design(prefix, second_pass):
             pdir = int(pdir)
 
             if tile not in tiledata:
-                tiledata[tile] = {
-                    "pips": set(),
-                    "srcs": set(),
-                    "dsts": set()
-                }
+                tiledata[tile] = {"pips": set(), "srcs": set(), "dsts": set()}
 
             if pip in pipdata:
                 assert pipdata[pip] == (src, dst)

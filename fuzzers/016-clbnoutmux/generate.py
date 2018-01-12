@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-import re
+import sys, os, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -25,7 +23,6 @@ for l in f:
     which = chr(ord('A') + n)
     # clb_NFFMUX_AX => AX
     src = module.replace('clb_NOUTMUX_', '')
-
     '''
     BOUTMUX
             30_20   30_21    30_22   30_23
@@ -65,12 +62,9 @@ for l in f:
 for loc, muxes in cache.items():
     for which in muxes:
         for src in "F7 F8 CY O5 XOR O6 5Q".split():
-            if src == "F7" and which not in "AC":
-                continue
-            if src == "F8" and which not in "B":
-                continue
-            if src == "5Q":
-                src = which + "5Q"
+            if src == "F7" and which not in "AC": continue
+            if src == "F8" and which not in "B": continue
+            if src == "5Q": src = which + "5Q"
             tag = "%sMUX.%s" % (which, src)
             segmk.addtag(loc, tag, 0)
 
@@ -82,10 +76,14 @@ def bitfilter(frame_idx, bit_idx):
     # in this fuzzer we get some aliasing with those bits, so we have to manually exclude
     # them. (Maybe FIXME: read the bit locations from the database files)
     if (frame_idx, bit_idx) in [
-            (30, 55), (31, 55),  # D5MA
-        (31, 44), (31, 45),  # C5MA
-        (30, 19), (31, 19),  # B5MA
-        (30,  9), (31,  8),  # A5MA
+        (30, 55),
+        (31, 55),  # D5MA
+        (31, 44),
+        (31, 45),  # C5MA
+        (30, 19),
+        (31, 19),  # B5MA
+        (30, 9),
+        (31, 8),  # A5MA
     ]:
         return False
 

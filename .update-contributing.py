@@ -18,7 +18,8 @@ for line in open('README.md'):
             found = True
 
 # Footer
-contrib.append("""\
+contrib.append(
+    """\
 
 
 

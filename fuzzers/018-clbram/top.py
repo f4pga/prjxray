@@ -26,7 +26,8 @@ def slice_xy():
     # SLICE_X12Y100:SLICE_X27Y149
     # Note XRAY_ROI_GRID_* is something else
     m = re.match(
-        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
+        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)',
+        os.getenv('XRAY_ROI'))
     ms = [int(m.group(i + 1)) for i in range(4)]
     return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
 
@@ -40,10 +41,9 @@ print('//SLICEY: %s' % str(SLICEY))
 print('//SLICEN: %s' % str(SLICEN))
 print('//Requested CLBs: %s' % str(CLBN))
 
+
 # Rearranged to sweep Y so that carry logic is easy to allocate
 # XXX: careful...if odd number of Y in ROI will break carry
-
-
 def gen_slicems():
     '''
     SLICEM at the following:
@@ -55,18 +55,19 @@ def gen_slicems():
         x = 6, 8, 10, 12, 14
     '''
     # TODO: generate this from DB
-    assert((12, 28) == SLICEX)
+    assert ((12, 28) == SLICEX)
     for slicex in (12, 14):
         for slicey in range(*SLICEY):
             # caller may reject position if needs more room
-            # yield ("SLICE_X%dY%d" % (slicex, slicey), (slicex, slicey))
+            #yield ("SLICE_X%dY%d" % (slicex, slicey), (slicex, slicey))
             yield "SLICE_X%dY%d" % (slicex, slicey)
 
 
 DIN_N = CLBN * 8
 DOUT_N = CLBN * 8
 
-print('''
+print(
+    '''
 module top(input clk, stb, di, output do);
     localparam integer DIN_N = %d;
     localparam integer DOUT_N = %d;
@@ -99,8 +100,9 @@ endmodule
 f = open('params.csv', 'w')
 f.write('module,loc,bela,belb,belc,beld\n')
 slices = gen_slicems()
-print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (
-    DIN_N - 1, DOUT_N - 1))
+print(
+    'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
+    (DIN_N - 1, DOUT_N - 1))
 randluts = 0
 for clbi in range(CLBN):
     loc = next(slices)
@@ -141,15 +143,15 @@ for clbi in range(CLBN):
     else:
         modules = [
             # (module,          N max, FF opt)
-            ('my_RAM32X1S_N',   4,      0),
-            ('my_RAM32X1D',     None,   0),
-            ('my_RAM32M',       None,   0),
-            ('my_RAM64X1S_N',   4,      0),
-            ('my_RAM64X1D_N',   2,      0),
-            ('my_RAM64M',       None,   0),
-            ('my_RAM128X1S_N',  2,      1),
-            ('my_RAM128X1D',    None,   1),
-            ('my_RAM256X1S',    None,   1),
+            ('my_RAM32X1S_N', 4, 0),
+            ('my_RAM32X1D', None, 0),
+            ('my_RAM32M', None, 0),
+            ('my_RAM64X1S_N', 4, 0),
+            ('my_RAM64X1D_N', 2, 0),
+            ('my_RAM64M', None, 0),
+            ('my_RAM128X1S_N', 2, 1),
+            ('my_RAM128X1D', None, 1),
+            ('my_RAM256X1S', None, 1),
         ]
 
         module, nmax, ff_param = random.choice(modules)
@@ -171,18 +173,21 @@ for clbi in range(CLBN):
 
     print('    %s' % module)
     print('            #(.LOC("%s")%s)' % (loc, params))
-    print('            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (
-        clbi, 8 * clbi, 8 * clbi))
+    print(
+        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
+        % (clbi, 8 * clbi, 8 * clbi))
 
     f.write('%s,%s%s\n' % (module, loc, cparams))
 f.close()
-print('''endmodule
+print(
+    '''endmodule
 
 // ---------------------------------------------------------------------
 
 ''')
 
-print('''
+print(
+    '''
 
 //***************************************************************
 //Basic

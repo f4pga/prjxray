@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import os
-import json
-import re
+import os, json, re
 
 #################################################
 # Loading Raw Source Data
@@ -13,7 +11,8 @@ luts = dict()
 carry = dict()
 
 print("Loading grid.")
-with open("../../../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"), "r") as f:
+with open("../../../gridinfo/grid-%s-db.json" % os.getenv("XRAY_PART"),
+          "r") as f:
     grid = json.load(f)
 
 print("Loading bits.")
@@ -54,12 +53,13 @@ with open("carrydata.txt", "r") as f:
         line = line.split()
         assert line[0] not in carry
         carry[line[0]] = dict()
-        for i, n in enumerate("CYINIT:ZRO:ONE:AX:CIN DI0:AX:O5 DI1:AX:O5 DI2:AX:O5 DI3:AX:O5".split()):
+        for i, n in enumerate(
+                "CYINIT:ZRO:ONE:AX:CIN DI0:AX:O5 DI1:AX:O5 DI2:AX:O5 DI3:AX:O5".
+                split()):
             n = n.split(":")
             for k in n[1:]:
                 carry[line[0]]["CARRY_%s_MUX_%s" %
                                (n[0], k)] = line[1 + i].upper() == k
-
 
 #################################################
 # Group per Segment
@@ -78,7 +78,8 @@ for tilename, tiledata in grid["tiles"].items():
         continue
 
     segname = "%s_%02x" % (
-        tiledata["cfgcol"]["BASE_FRAMEID"][2:], min(tiledata["cfgcol"]["WORDS"]))
+        tiledata["cfgcol"]["BASE_FRAMEID"][2:],
+        min(tiledata["cfgcol"]["WORDS"]))
 
     if not segname in segments:
         segments[segname] = {"bits": list(), "tags": dict()}
@@ -99,7 +100,8 @@ for tilename, tiledata in grid["tiles"].items():
                 tile_type = tiledata["props"]["TYPE"]
 
                 # LUT init bits are in the same position for all CLBL[LM]_[LR] tiles
-                if re.match("^CLBL[LM]_[LR]", tile_type) and "LUT.INIT" in name:
+                if re.match("^CLBL[LM]_[LR]",
+                            tile_type) and "LUT.INIT" in name:
                     tile_type = "CLBLX_X"
 
                 segments[segname]["tags"]["%s.%s.%s" %
@@ -118,11 +120,13 @@ for tilename, tiledata in grid["tiles"].items():
         if wordidx not in bits[base_frame]:
             continue
         for bit_frame, bit_wordidx, bit_bitidx in bits[base_frame][wordidx]:
-            segments[segname]["bits"].append("%02x_%02x_%02x" % (
-                bit_frame - base_frame, bit_wordidx - min(tiledata["cfgcol"]["WORDS"]), bit_bitidx))
+            segments[segname]["bits"].append(
+                "%02x_%02x_%02x" % (
+                    bit_frame - base_frame,
+                    bit_wordidx - min(tiledata["cfgcol"]["WORDS"]),
+                    bit_bitidx))
 
     segments[segname]["bits"].sort()
-
 
 #################################################
 # Print

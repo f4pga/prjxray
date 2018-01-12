@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import re
+import sys, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -23,11 +22,7 @@ with open("design.txt", "r") as f:
         pdir = int(pdir)
 
         if tile not in tiledata:
-            tiledata[tile] = {
-                "pips": set(),
-                "srcs": set(),
-                "dsts": set()
-            }
+            tiledata[tile] = {"pips": set(), "srcs": set(), "dsts": set()}
 
         if pip in pipdata:
             assert pipdata[pip] == (src, dst)

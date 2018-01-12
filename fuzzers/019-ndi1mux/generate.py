@@ -5,9 +5,7 @@
 # Can we find instance where they are not aliased?
 WA7USED = 0
 
-import sys
-import re
-import os
+import sys, re, os
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
