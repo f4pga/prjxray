@@ -1,12 +1,11 @@
-import os
-import json
-import re
+import os, json, re
 
 
 class segmaker:
     def __init__(self, bitsfile):
         print("Loading %s grid." % os.getenv("XRAY_DATABASE"))
-        with open("../../../database/%s/tilegrid.json" % os.getenv("XRAY_DATABASE"), "r") as f:
+        with open("../../../database/%s/tilegrid.json" %
+                  os.getenv("XRAY_DATABASE"), "r") as f:
             self.grid = json.load(f)
 
         self.bits = dict()
@@ -62,17 +61,21 @@ class segmaker:
                     segments[segname] = {"bits": set(), "tags": dict()}
 
                     base_frame = int(segdata["baseaddr"][0][2:], 16)
-                    for wordidx in range(segdata["baseaddr"][1], segdata["baseaddr"][1] + segdata["words"]):
+                    for wordidx in range(
+                            segdata["baseaddr"][1],
+                            segdata["baseaddr"][1] + segdata["words"]):
                         if base_frame not in self.bits:
                             continue
                         if wordidx not in self.bits[base_frame]:
                             continue
-                        for bit_frame, bit_wordidx, bit_bitidx in self.bits[base_frame][wordidx]:
+                        for bit_frame, bit_wordidx, bit_bitidx in self.bits[
+                                base_frame][wordidx]:
                             bitname_frame = bit_frame - base_frame
-                            bitname_bit = 32 * \
-                                (bit_wordidx -
-                                 segdata["baseaddr"][1]) + bit_bitidx
-                            if bitfilter is None or bitfilter(bitname_frame, bitname_bit):
+                            bitname_bit = 32 * (
+                                bit_wordidx - segdata["baseaddr"][1]
+                            ) + bit_bitidx
+                            if bitfilter is None or bitfilter(bitname_frame,
+                                                              bitname_bit):
                                 bitname = "%02d_%02d" % (
                                     bitname_frame, bitname_bit)
                                 segments[segname]["bits"].add(bitname)
@@ -129,5 +132,6 @@ class segmaker:
                         for bitname in sorted(segdata["bits"]):
                             print("bit %s_%s" % (segname, bitname), file=f)
                         for tagname, tagval in sorted(segdata["tags"].items()):
-                            print("tag %s_%s %d" %
-                                  (segname, tagname, tagval), file=f)
+                            print(
+                                "tag %s_%s %d" % (segname, tagname, tagval),
+                                file=f)

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-import re
+import sys, os, re
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -16,7 +14,6 @@ for l in f:
     module, loc, loc2 = l.split(',')
     # clb_PRECYINIT_AX => AX
     src = module.replace('clb_PRECYINIT_', '')
-
     '''
     PRECYINIT
                 00_12   30_14   30_13

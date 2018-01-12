@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 
-import getopt
-import sys
-import os
-import json
-import re
+import getopt, sys, os, json, re
 
 flag_z = False
 flag_b = False
@@ -50,7 +46,8 @@ for o, a in opts:
     else:
         usage()
 
-with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE")), "r") as f:
+with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
+                                   os.getenv("XRAY_DATABASE")), "r") as f:
     grid = json.load(f)
 
 bitdata = dict()
@@ -80,12 +77,16 @@ def get_database(segtype):
 
     segbitsdb[segtype] = list()
 
-    with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype), "r") as f:
+    with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
+                                       os.getenv("XRAY_DATABASE"), segtype),
+              "r") as f:
         for line in f:
             line = line.split()
             segbitsdb[segtype].append(line)
 
-    with open("%s/%s/segbits_int_%s.db" % (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), segtype[-1]), "r") as f:
+    with open("%s/%s/segbits_int_%s.db" %
+              (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+               segtype[-1]), "r") as f:
         for line in f:
             line = line.split()
             segbitsdb[segtype].append(line)
@@ -101,7 +102,8 @@ def handle_segment(segname):
             for i in range(segdata["frames"]):
                 if (framebase + i) not in segframes:
                     segframes[framebase + i] = set()
-                for j in range(segdata["baseaddr"][1], segdata["baseaddr"][1] + segdata["words"]):
+                for j in range(segdata["baseaddr"][1],
+                               segdata["baseaddr"][1] + segdata["words"]):
                     segframes[framebase + i].add(j)
         for frame in sorted(bitdata.keys()):
             for wordidx in sorted(bitdata[frame].keys()):
@@ -166,8 +168,9 @@ def handle_segment(segname):
             if wordidx not in bitdata[frame]:
                 continue
             for bitidx in bitdata[frame][wordidx]:
-                segbits.add("%02d_%02d" % (frame - baseframe,
-                                           32 * (wordidx - basewordidx) + bitidx))
+                segbits.add(
+                    "%02d_%02d" %
+                    (frame - baseframe, 32 * (wordidx - basewordidx) + bitidx))
 
     if flag_d or flag_D:
         for entry in get_database(seginfo["type"]):

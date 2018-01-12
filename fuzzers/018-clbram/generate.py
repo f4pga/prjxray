@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import re
-import os
+import sys, re, os
 
 sys.path.append("../../../utils/")
 from segmaker import segmaker
@@ -42,8 +40,9 @@ for l in f:
     l = l.strip()
     module, loc, p0, p1, p2, p3 = l.split(',')
 
-    segmk.addtag(loc, "WA7USED", module in (
-        'my_RAM128X1D', 'my_RAM128X1S', 'my_RAM256X1S'))
+    segmk.addtag(
+        loc, "WA7USED",
+        module in ('my_RAM128X1D', 'my_RAM128X1S', 'my_RAM256X1S'))
     segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
 
     # (a, b, c, d)
@@ -93,7 +92,8 @@ for l in f:
         ]
 
         # Always use all 4 sites
-        if module in ('my_RAM32M', 'my_RAM64M', 'my_RAM128X1D', 'my_RAM256X1S'):
+        if module in ('my_RAM32M', 'my_RAM64M', 'my_RAM128X1D',
+                      'my_RAM256X1S'):
             ram = [1, 1, 1, 1]
         # Only can occupy CD I guess
         elif module == 'my_RAM32X1D':
@@ -105,10 +105,10 @@ for l in f:
         elif module in ('my_RAM32X1S_N', 'my_RAM64X1S_N'):
             ram = pack4[n - 1]
         else:
-            assert(0)
+            assert (0)
 
         # All entries here requiare D
-        assert(ram[3])
+        assert (ram[3])
 
         if module == 'my_RAM32X1D':
             # Occupies CD
@@ -119,7 +119,7 @@ for l in f:
         elif module == 'my_RAM32X1S_N':
             size = pack4[n - 1]
         else:
-            assert(not module.startswith('my_RAM32'))
+            assert (not module.startswith('my_RAM32'))
 
     # Now commit bits after marking 1's
     for beli, bel in enumerate('ABCD'):

@@ -1,6 +1,6 @@
 def ones(l):
-    # return l + [x + '_1' for x in l]
-    # return sorted(l + [x + '_1' for x in l])
+    #return l + [x + '_1' for x in l]
+    #return sorted(l + [x + '_1' for x in l])
     ret = []
     for x in l:
         ret.append(x)
@@ -9,18 +9,19 @@ def ones(l):
 
 
 # The complete primitive sets
-ffprims_fall = ones([
-    'FD',
-    'FDC',
-    'FDCE',
-    'FDE',
-    'FDP',
-    'FDPE',
-    'FDR',
-    'FDRE',
-    'FDS',
-    'FDSE',
-])
+ffprims_fall = ones(
+    [
+        'FD',
+        'FDC',
+        'FDCE',
+        'FDE',
+        'FDP',
+        'FDPE',
+        'FDR',
+        'FDRE',
+        'FDS',
+        'FDSE',
+    ])
 ffprims_lall = ones([
     'LDC',
     'LDCE',

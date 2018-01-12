@@ -9,7 +9,8 @@ def slice_xy():
     # SLICE_X12Y100:SLICE_X27Y149
     # Note XRAY_ROI_GRID_* is something else
     m = re.match(
-        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)', os.getenv('XRAY_ROI'))
+        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)',
+        os.getenv('XRAY_ROI'))
     ms = [int(m.group(i + 1)) for i in range(4)]
     return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
 
@@ -33,7 +34,8 @@ def gen_slices():
 DIN_N = CLBN * 8
 DOUT_N = CLBN * 8
 
-print('''
+print(
+    '''
 module top(input clk, stb, di, output do);
     localparam integer DIN_N = %d;
     localparam integer DOUT_N = %d;
@@ -66,11 +68,13 @@ endmodule
 f = open('params.csv', 'w')
 f.write('module,loc,n\n')
 slices = gen_slices()
-print('module roi(input clk, input [%d:0] din, output [%d:0] dout);' % (
-    DIN_N - 1, DOUT_N - 1))
+print(
+    'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
+    (DIN_N - 1, DOUT_N - 1))
 for i in range(CLBN):
-    modules = ['clb_NFFMUX_' +
-               x for x in ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR']]
+    modules = [
+        'clb_NFFMUX_' + x for x in ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR']
+    ]
     module = random.choice(modules)
 
     if module == 'clb_NFFMUX_F78':
@@ -83,17 +87,20 @@ for i in range(CLBN):
     print('    %s' % module)
     print('            #(.LOC("%s"), .N(%d))' % (loc, n))
     print(
-        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));' % (i, 8 * i, 8 * i))
+        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
+        % (i, 8 * i, 8 * i))
 
     f.write('%s,%s,%s\n' % (module, loc, n))
 f.close()
-print('''endmodule
+print(
+    '''endmodule
 
 // ---------------------------------------------------------------------
 
 ''')
 
-print('''
+print(
+    '''
 module myLUT8 (input clk, input [7:0] din,
         output lut8o, output lut7bo, output lut7ao,
         //caro: XOR additional result (main output)

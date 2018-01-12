@@ -1,8 +1,6 @@
 #/usr/bin/env python3
 
-import sys
-import os
-import re
+import sys, os, re
 
 zero_db = [
     "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
@@ -36,8 +34,8 @@ zero_db = [
 
 def add_zero_bits(tile_type):
     assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
-    dbfile = "%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
-                                      os.getenv("XRAY_DATABASE"), tile_type)
+    dbfile = "%s/%s/segbits_%s.db" % (
+        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), tile_type)
     new_lines = set()
     llast = None
 

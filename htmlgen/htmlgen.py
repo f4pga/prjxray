@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import json
-import re
+import os, sys, json, re
 from io import StringIO
 
 import argparse
@@ -11,10 +8,12 @@ import argparse
 parser = argparse.ArgumentParser(
     description="Generate a pretty HTML version of the documentation.")
 parser.add_argument(
-    '--output', default=os.path.join(os.path.curdir, 'html'),
+    '--output',
+    default=os.path.join(os.path.curdir, 'html'),
     help='Put the generated files in this directory (default current dir).')
 parser.add_argument(
-    '--settings', default=None,
+    '--settings',
+    default=None,
     help='Read the settings from file (default to environment).')
 
 args = parser.parse_args()
@@ -23,7 +22,8 @@ if args.settings:
     settings_filename = args.settings
 
     settings = {
-        'XRAY_DATABASE_DIR': os.path.abspath(
+        'XRAY_DATABASE_DIR':
+        os.path.abspath(
             os.path.join(os.path.dirname(settings_filename), '..')),
     }
     with open(settings_filename) as f:
@@ -37,11 +37,13 @@ if args.settings:
     def get_setting(name):
         return settings[name]
 else:
+
     def get_setting(name):
         return os.getenv(name)
 
-db_dir = os.path.join(get_setting("XRAY_DATABASE_DIR"),
-                      get_setting("XRAY_DATABASE"))
+
+db_dir = os.path.join(
+    get_setting("XRAY_DATABASE_DIR"), get_setting("XRAY_DATABASE"))
 
 
 def db_open(fn):
@@ -91,10 +93,12 @@ hclk_bitgroups_db = [
 
 # groupings for SNWE bits in frames 2..7
 for i in range(0, 64, 4):
-    clb_bitgroups_db.append("02_%02d 03_%02d 05_%02d 06_%02d 07_%02d|05_%02d 03_%02d 04_%02d 04_%02d" %
-                            (i + 1, i, i, i, i + 1, i + 3, i + 1, i + 1, i + 2))
-    clb_bitgroups_db.append("02_%02d 04_%02d 05_%02d 05_%02d 06_%02d|02_%02d 03_%02d 04_%02d 07_%02d" %
-                            (i + 2, i, i + 1, i + 2, i + 2, i + 3, i + 2, i + 3, i + 3))
+    clb_bitgroups_db.append(
+        "02_%02d 03_%02d 05_%02d 06_%02d 07_%02d|05_%02d 03_%02d 04_%02d 04_%02d"
+        % (i + 1, i, i, i, i + 1, i + 3, i + 1, i + 1, i + 2))
+    clb_bitgroups_db.append(
+        "02_%02d 04_%02d 05_%02d 05_%02d 06_%02d|02_%02d 03_%02d 04_%02d 07_%02d"
+        % (i + 2, i, i + 1, i + 2, i + 2, i + 3, i + 2, i + 3, i + 3))
 
 clb_left_bits = set()
 clb_right_bits = set()
@@ -150,7 +154,6 @@ segtiles = dict()
 routebits = dict()
 routezbits = dict()
 maskbits = dict()
-
 
 print("Loading tilegrid.")
 with db_open("tilegrid.json") as f:
@@ -218,7 +221,8 @@ for segname, segdata in grid["segments"].items():
         print("  loading %s segbits." % int_tile_type)
         with db_open("segbits_%s.db" % int_tile_type) as f:
             for line in f:
-                if segtype in ["hclk_l", "hclk_r"] and ".ENABLE_BUFFER." in line:
+                if segtype in ["hclk_l", "hclk_r"
+                               ] and ".ENABLE_BUFFER." in line:
                     add_single_bit(line)
                 else:
                     add_pip_bits(line)
@@ -229,7 +233,6 @@ for segname, segdata in grid["segments"].items():
                 _, bit = line.split()
                 maskbits[segtype].add(bit)
 
-
 #################################################
 # Create Tilegrid Page
 
@@ -237,13 +240,19 @@ grid_range = None
 grid_map = dict()
 
 with out_open("index.html") as f:
-    print("<html><title>X-Ray %s Database</title><body>" %
-          get_setting("XRAY_DATABASE").upper(), file=f)
-    print("<h3>X-Ray %s Database</h3>" %
-          get_setting("XRAY_DATABASE").upper(), file=f)
+    print(
+        "<html><title>X-Ray %s Database</title><body>" %
+        get_setting("XRAY_DATABASE").upper(),
+        file=f)
+    print(
+        "<h3>X-Ray %s Database</h3>" % get_setting("XRAY_DATABASE").upper(),
+        file=f)
 
-    print("<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" %
-          (get_setting("XRAY_PART"), get_setting("XRAY_ROI"), get_setting("XRAY_ROI_FRAMES")), file=f)
+    print(
+        "<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" % (
+            get_setting("XRAY_PART"), get_setting("XRAY_ROI"),
+            get_setting("XRAY_ROI_FRAMES")),
+        file=f)
 
     for tilename, tiledata in grid["tiles"].items():
         grid_x = tiledata["grid_x"]
@@ -269,14 +278,10 @@ with out_open("index.html") as f:
             segdata = None
 
             bgcolor = "#aaaaaa"
-            if tiledata["type"] in ["INT_L", "INT_R"]:
-                bgcolor = "#aaaaff"
-            if tiledata["type"] in ["CLBLL_L", "CLBLL_R"]:
-                bgcolor = "#ffffaa"
-            if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]:
-                bgcolor = "#ffaaaa"
-            if tiledata["type"] in ["HCLK_L", "HCLK_R"]:
-                bgcolor = "#aaffaa"
+            if tiledata["type"] in ["INT_L", "INT_R"]: bgcolor = "#aaaaff"
+            if tiledata["type"] in ["CLBLL_L", "CLBLL_R"]: bgcolor = "#ffffaa"
+            if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]: bgcolor = "#ffaaaa"
+            if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor = "#aaffaa"
 
             if tiledata["type"] in ["BRAM_INT_INTERFACE_L", "BRAM_L"]:
                 bgcolor = "#aaffff"
@@ -302,47 +307,64 @@ with out_open("index.html") as f:
 
             if "segment" in tiledata:
                 if "baseaddr" in segdata:
-                    title.append("Baseaddr: %s %d" %
-                                 tuple(segdata["baseaddr"]))
+                    title.append(
+                        "Baseaddr: %s %d" % tuple(segdata["baseaddr"]))
                 else:
-                    print("Warning: no baseaddr in segment %s (via tile %s)." %
-                          (tiledata["segment"], tilename))
+                    print(
+                        "Warning: no baseaddr in segment %s (via tile %s)." %
+                        (tiledata["segment"], tilename))
 
             tilename = tilename.replace("INT_INTERFACE_", "INTF_")
             tilename = tilename.replace("_X", "<br/>X")
             tilename = tilename.replace("B_TERM", "B<br/>TERM")
 
-            print("<td bgcolor=\"%s\" align=\"center\" title=\"%s\"><span style=\"font-size:10px\">" %
-                  (bgcolor, "\n".join(title)), file=f)
+            print(
+                "<td bgcolor=\"%s\" align=\"center\" title=\"%s\"><span style=\"font-size:10px\">"
+                % (bgcolor, "\n".join(title)),
+                file=f)
             if "segment" in tiledata:
                 segtype = segdata["type"].lower()
-                print("<a style=\"text-decoration: none; color: black\" href=\"seg_%s.html\">%s</a></span></td>" %
-                      (segtype, tilename.replace("_X", "<br/>X")), file=f)
+                print(
+                    "<a style=\"text-decoration: none; color: black\" href=\"seg_%s.html\">%s</a></span></td>"
+                    % (segtype, tilename.replace("_X", "<br/>X")),
+                    file=f)
             else:
-                print("%s</span></td>" % tilename.replace("_X",
-                                                          "<br/>X").replace("B_TERM", "B<br/>TERM"), file=f)
+                print(
+                    "%s</span></td>" % tilename.replace(
+                        "_X", "<br/>X").replace("B_TERM", "B<br/>TERM"),
+                    file=f)
 
         print("</tr>", file=f)
 
     print("</table>", file=f)
     print("</body></html>", file=f)
 
-
 #################################################
 # Create Segment Pages
 
 for segtype in sorted(segbits.keys()):
     with out_open("seg_%s.html" % segtype) as f:
-        print("<html><title>X-Ray %s Database: %s</title><body>" %
-              (get_setting("XRAY_DATABASE").upper(), segtype.upper()), file=f)
+        print(
+            "<html><title>X-Ray %s Database: %s</title><body>" %
+            (get_setting("XRAY_DATABASE").upper(), segtype.upper()),
+            file=f)
         if segtype in ["hclk_l", "hclk_r"]:
-            print("<h3>X-Ray %s Database: %s Segment</h3>" %
-                  (get_setting("XRAY_DATABASE").upper(), segtype.upper()), file=f)
+            print(
+                "<h3>X-Ray %s Database: %s Segment</h3>" %
+                (get_setting("XRAY_DATABASE").upper(), segtype.upper()),
+                file=f)
         else:
-            print("<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" % (get_setting("XRAY_DATABASE").upper(), segtype.upper(),
-                                                                                  segtype.upper(), re.sub("clbl[lm]|bram[0-4]|dsp[0-4]", "int", segtype).upper()), file=f)
+            print(
+                "<h3>X-Ray %s Database: %s Segment (%s Tile + %s Tile)</h3>" %
+                (
+                    get_setting("XRAY_DATABASE").upper(), segtype.upper(),
+                    segtype.upper(),
+                    re.sub("clbl[lm]|bram[0-4]|dsp[0-4]", "int",
+                           segtype).upper()),
+                file=f)
 
-        print("""
+        print(
+            """
 <script><!--
 var grp2bits = { };
 var bit2grp = { }
@@ -378,7 +400,8 @@ function oml() {
     highlight_bits.length = 0;
 }
 //--></script>
-        """, file=f)
+        """,
+            file=f)
 
         print("<table border>", file=f)
 
@@ -390,17 +413,23 @@ function oml() {
         print("<tr>", file=f)
         print("<th width=\"30\"></th>", file=f)
         for frameidx in range(segframes[segtype]):
-            print("<th width=\"30\"><span style=\"font-size:10px\">%d</span></th>" %
-                  frameidx, file=f)
+            print(
+                "<th width=\"30\"><span style=\"font-size:10px\">%d</span></th>"
+                % frameidx,
+                file=f)
         print("</tr>", file=f)
 
-        for bitidx in range(31 if (segtype in ["hclk_l", "hclk_r"]) else 63, -1, -1):
+        for bitidx in range(31 if (segtype in ["hclk_l", "hclk_r"]) else 63,
+                            -1, -1):
             print("<tr>", file=f)
             print(
-                "<th align=\"right\"><span style=\"font-size:10px\">%d</span></th>" % bitidx, file=f)
+                "<th align=\"right\"><span style=\"font-size:10px\">%d</span></th>"
+                % bitidx,
+                file=f)
             for frameidx in range(segframes[segtype]):
                 bit_pos = "%02d_%02d" % (frameidx, bitidx)
-                bit_name = segbits_r[segtype][bit_pos] if bit_pos in segbits_r[segtype] else None
+                bit_name = segbits_r[segtype][bit_pos] if bit_pos in segbits_r[
+                    segtype] else None
 
                 label = None
                 title = [bit_pos]
@@ -548,13 +577,19 @@ function oml() {
                         elif re.match("^INT_[LR].LH", bn):
                             bgcolor = "#4466bb"
                             label = "LH"
-                        elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX", bn):
+                        elif re.match(
+                                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX",
+                                bn):
                             bgcolor = "#88aaff"
                             label = "DMX"
-                        elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX", bn):
+                        elif re.match(
+                                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX",
+                                bn):
                             bgcolor = "#aa88ff"
                             label = "OMX"
-                        elif re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].PRECYINIT", bn):
+                        elif re.match(
+                                "^CLBL[LM]_[LR].SLICE[LM]_X[01].PRECYINIT",
+                                bn):
                             bgcolor = "#88aaff"
                             label = "CYI"
                         elif re.match("^HCLK_[LR]", bn) and "_B_BOT" in bn:
@@ -580,8 +615,12 @@ function oml() {
                 else:
                     known_bits += 1
 
-                print("<td id=\"bit%s\" onmouseenter=\"ome('%s');\" onmouseleave=\"oml();\" bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>" %
-                      (bit_pos, bit_pos, bgcolor, "\n".join(title), onclick, label), file=f)
+                print(
+                    "<td id=\"bit%s\" onmouseenter=\"ome('%s');\" onmouseleave=\"oml();\" bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>"
+                    % (
+                        bit_pos, bit_pos, bgcolor, "\n".join(title), onclick,
+                        label),
+                    file=f)
             print("</tr>", file=f)
         print("</table>", file=f)
 
@@ -590,10 +629,14 @@ function oml() {
         print("<h3>Segment Configuration Bits</h3>", file=f)
 
         if True:
-            print("  unused: %d, unknown: %d, known: %d, total: %d, percentage: %.2f%% (%.2f%%)" % (
-                unused_bits, unknown_bits, known_bits, unused_bits + unknown_bits + known_bits,
-                100 * known_bits / (unknown_bits + unused_bits + known_bits),
-                100 * (known_bits + unused_bits) / (unknown_bits + unused_bits + known_bits)))
+            print(
+                "  unused: %d, unknown: %d, known: %d, total: %d, percentage: %.2f%% (%.2f%%)"
+                % (
+                    unused_bits, unknown_bits, known_bits,
+                    unused_bits + unknown_bits + known_bits, 100 * known_bits /
+                    (unknown_bits + unused_bits + known_bits),
+                    100 * (known_bits + unused_bits) /
+                    (unknown_bits + unused_bits + known_bits)))
 
         bits_by_prefix = dict()
 
@@ -613,13 +656,16 @@ function oml() {
             print("<h4>%s</h4>" % prefix, file=f)
             print("<table cellspacing=0>", file=f)
             print(
-                "<tr><th width=\"400\" align=\"left\">Bit Name</th><th>Position</th></tr>", file=f)
+                "<tr><th width=\"400\" align=\"left\">Bit Name</th><th>Position</th></tr>",
+                file=f)
 
             trstyle = ""
             for bit_name, bit_pos in sorted(bits):
                 trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
-                print("<tr%s><td>%s</td><td>%s</td></tr>" %
-                      (trstyle, bit_name, bit_pos), file=f)
+                print(
+                    "<tr%s><td>%s</td><td>%s</td></tr>" %
+                    (trstyle, bit_name, bit_pos),
+                    file=f)
 
             print("</table>", file=f)
 
@@ -694,8 +740,10 @@ function oml() {
                 print("<a id=\"b%s\"/>" % bit, file=f)
 
             print("<script><!--", file=f)
-            print("grp2bits['%s'] = ['%s'];" %
-                  (grp_bits[0], "', '".join(grp_bits)), file=f)
+            print(
+                "grp2bits['%s'] = ['%s'];" %
+                (grp_bits[0], "', '".join(grp_bits)),
+                file=f)
             for bit in grp_bits:
                 print("bit2grp['%s'] = '%s';" % (bit, grp_bits[0]), file=f)
             print("//--></script>", file=f)
@@ -733,10 +781,13 @@ function oml() {
                 if len(shared_bits[bit]) > 1:
                     if first_note:
                         print("<p><b>Note(s):</b><br/>", file=f)
-                    print("Warning: Groups sharing bit %s: %s." %
-                          (bit, ", ".join(sorted(shared_bits[bit]))))
-                    print("Groups sharing bit <b>%s</b>: %s.<br/>" %
-                          (bit, ", ".join(sorted(shared_bits[bit]))), file=f)
+                    print(
+                        "Warning: Groups sharing bit %s: %s." %
+                        (bit, ", ".join(sorted(shared_bits[bit]))))
+                    print(
+                        "Groups sharing bit <b>%s</b>: %s.<br/>" %
+                        (bit, ", ".join(sorted(shared_bits[bit]))),
+                        file=f)
                     first_note = False
             if not first_note:
                 print("</p>", file=f)
@@ -745,14 +796,17 @@ function oml() {
             print("<h3>Tile %s Pseudo PIPs</h3>" % tile_type, file=f)
             print("<table cellspacing=0>", file=f)
             print(
-                "<tr><th width=\"500\" align=\"left\">PIP</th><th>Type</th></tr>", file=f)
+                "<tr><th width=\"500\" align=\"left\">PIP</th><th>Type</th></tr>",
+                file=f)
             trstyle = ""
             with db_open("ppips_%s.db" % tile_type.lower()) as fi:
                 for line in fi:
                     pip_name, pip_type = line.split()
                     trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
-                    print("<tr%s><td>%s</td><td>%s</td></tr>" %
-                          (trstyle, pip_name, pip_type), file=f)
+                    print(
+                        "<tr%s><td>%s</td><td>%s</td></tr>" %
+                        (trstyle, pip_name, pip_type),
+                        file=f)
             print("</table>", file=f)
 
         print("</div>", file=f)

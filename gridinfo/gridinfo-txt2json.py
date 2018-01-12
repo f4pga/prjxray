@@ -97,12 +97,12 @@ for site, bit in db_site_bit.items():
         tile = db_site_tile[this_site]
 
         word = bit_word + 2 * i
-        if word >= 50:
-            word += 1
+        if word >= 50: word += 1
 
         entry = dict()
-        entry["BASE_FRAMEID"] = "0x%08x" % ((bit_type << 23) | (
-            bit_half << 22) | (bit_row << 17) | (bit_col << 7))
+        entry["BASE_FRAMEID"] = "0x%08x" % (
+            (bit_type << 23) | (bit_half << 22) | (bit_row << 17) |
+            (bit_col << 7))
         entry["FRAME_TYPE"] = bit_type
         entry["FRAME_HALF"] = bit_half
         entry["FRAME_ROW"] = bit_row
@@ -111,14 +111,16 @@ for site, bit in db_site_bit.items():
 
         database["tiles"][tile]["cfgcol"] = entry
 
-        if database["tiles"][tile]["props"]["TILE_TYPE"] in ("CLBLL_L", "CLBLM_L"):
+        if database["tiles"][tile]["props"]["TILE_TYPE"] in ("CLBLL_L",
+                                                             "CLBLM_L"):
             col = int(db_tile_prop[tile]["COLUMN"])
             row = int(db_tile_prop[tile]["ROW"])
             right_tile = loc_to_tile[(col + 1, row)]
 
             database["tiles"][right_tile]["cfgcol"] = entry
 
-        if database["tiles"][tile]["props"]["TILE_TYPE"] in ("CLBLL_R", "CLBLM_R"):
+        if database["tiles"][tile]["props"]["TILE_TYPE"] in ("CLBLL_R",
+                                                             "CLBLM_R"):
             col = int(db_tile_prop[tile]["COLUMN"])
             row = int(db_tile_prop[tile]["ROW"])
             left_tile = loc_to_tile[(col - 1, row)]
