@@ -7,6 +7,7 @@ add_library(libprjxray
 	xilinx/xc7series/configuration_bus.cc
 	xilinx/xc7series/configuration_column.cc
 	xilinx/xc7series/configuration_packet.cc
+	xilinx/xc7series/configuration_packetizer.cc
 	xilinx/xc7series/configuration_register.cc
 	xilinx/xc7series/frame_address.cc
 	xilinx/xc7series/global_clock_region.cc
@@ -47,6 +48,7 @@ if (PRJXRAY_BUILD_TESTING)
 		xilinx/xc7series/configuration_column_test.cc
 		xilinx/xc7series/configuration_test.cc
 		xilinx/xc7series/configuration_packet_test.cc
+		xilinx/xc7series/configuration_packetizer_test.cc
 		xilinx/xc7series/global_clock_region_test.cc
 		xilinx/xc7series/part_test.cc
 		xilinx/xc7series/row_test.cc)
