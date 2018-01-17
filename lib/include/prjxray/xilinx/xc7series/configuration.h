@@ -6,6 +6,7 @@
 #include <absl/types/span.h>
 #include <prjxray/bit_ops.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
+#include <prjxray/xilinx/xc7series/configuration_packet.h>
 #include <prjxray/xilinx/xc7series/frame_address.h>
 #include <prjxray/xilinx/xc7series/part.h>
 
@@ -21,6 +22,15 @@ class Configuration {
 	static absl::optional<Configuration> InitWithPackets(
 	    const Part& part,
 	    Collection& packets);
+
+	Configuration(const Part& part,
+	              std::map<FrameAddress, std::vector<uint32_t>>* frames)
+	    : part_(part) {
+		for (auto& frame : *frames) {
+			frames_[frame.first] =
+			    absl::Span<uint32_t>(frame.second);
+		}
+	}
 
 	Configuration(const Part& part, const FrameMap& frames)
 	    : part_(part), frames_(std::move(frames)) {}
