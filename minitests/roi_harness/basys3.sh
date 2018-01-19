@@ -11,3 +11,4 @@ export XRAY_PIN_04="W15"
 export XRAY_PIN_05="V15"
 export XRAY_PIN_06="W14"
 
+export XRAY_BITREAD="$XRAY_DIR/build/tools/bitread -part_file $XRAY_DIR/database/artix7/xc7a35tcpg236-1.yaml"

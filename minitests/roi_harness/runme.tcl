@@ -53,6 +53,7 @@ puts "  Y_DOUT_BASE: $Y_DOUT_BASE"
 puts "  outdir: $outdir"
 
 file mkdir $outdir
+file link -symbolic out_last $outdir
 
 source ../../utils/utils.tcl
 
@@ -92,8 +93,8 @@ if {$part eq "xc7a50tfgg484-1"} {
         incr banki
         set net2pin(dout[$i]) $pin
    }
-# Arty A7 switch, button, and LED
 } elseif {$part eq "xc7a35tcsg324-1"} {
+    # Arty A7 switch, button, and LED
     if {$pincfg eq "ARTY-A7-SWBUT"} {
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         # 4 switches then 4 buttons
@@ -142,7 +143,6 @@ if {$part eq "xc7a50tfgg484-1"} {
     } else {
         error "Unsupported config $pincfg"
     }
-# Arty A7 switch, button, and LED
 } elseif {$part eq "xc7a35tcpg236-1"} {
     if {$pincfg eq "BASYS3-SWBUT"} {
         # https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Basys-3-Master.xdc
@@ -168,7 +168,7 @@ if {$part eq "xc7a50tfgg484-1"} {
        }
     } else {
         error "Unsupported config $pincfg"
-    }    
+    }
 } else {
     error "Pins: unsupported part $part"
 }

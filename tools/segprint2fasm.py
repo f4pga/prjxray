@@ -61,10 +61,11 @@ def tag2fasm(grid, seg, tag):
         'INT_L': intf,
         'INT_R': intf,
         'HCLK_L': intf,
+        'HCLK_R': intf,
     }
     f = tag2asm.get(tile_type, None)
     if f is None:
-        raise Exception("Unhandled segment type %s" % tilej['type'])
+        raise Exception("Unhandled segment type %s" % tile_type)
     return f(seg, tile, tag_post)
 
 
