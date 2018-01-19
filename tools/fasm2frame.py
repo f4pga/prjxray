@@ -231,8 +231,16 @@ if __name__ == '__main__':
         '--sparse', action='store_true', help="Don't zero fill all frames")
     parser.add_argument(
         '--debug', action='store_true', help="Print debug dump")
-    parser.add_argument('fn_in', help='Input FPGA assembly (.fasm) file')
-    parser.add_argument('fn_out', help='Output FPGA frame (.frm) file')
+    parser.add_argument(
+        'fn_in',
+        default='/dev/stdin',
+        nargs='?',
+        help='Input FPGA assembly (.fasm) file')
+    parser.add_argument(
+        'fn_out',
+        default='/dev/stdout',
+        nargs='?',
+        help='Output FPGA frame (.frm) file')
 
     args = parser.parse_args()
     run(
