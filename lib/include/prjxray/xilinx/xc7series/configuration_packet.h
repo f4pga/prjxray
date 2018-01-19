@@ -27,7 +27,7 @@ class ConfigurationPacket {
 	ConfigurationPacket(unsigned int header_type,
 	                    Opcode opcode,
 	                    ConfigurationRegister address,
-	                    const absl::Span<uint32_t>& data)
+	                    const absl::Span<const uint32_t>& data)
 	    : header_type_(header_type),
 	      opcode_(opcode),
 	      address_(address),
@@ -47,13 +47,13 @@ class ConfigurationPacket {
 	unsigned int header_type() const { return header_type_; }
 	const Opcode opcode() const { return opcode_; }
 	const ConfigurationRegister address() const { return address_; }
-	const absl::Span<uint32_t>& data() const { return data_; }
+	const absl::Span<const uint32_t>& data() const { return data_; }
 
        private:
 	unsigned int header_type_;
 	Opcode opcode_;
 	ConfigurationRegister address_;
-	absl::Span<uint32_t> data_;
+	absl::Span<const uint32_t> data_;
 };
 
 std::ostream& operator<<(std::ostream& o, const ConfigurationPacket& packet);

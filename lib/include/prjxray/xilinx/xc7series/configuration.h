@@ -16,7 +16,7 @@ namespace xc7series {
 
 class Configuration {
        public:
-	using FrameMap = std::map<FrameAddress, absl::Span<uint32_t>>;
+	using FrameMap = std::map<FrameAddress, absl::Span<const uint32_t>>;
 
 	template <typename Collection>
 	static absl::optional<Configuration> InitWithPackets(
@@ -28,7 +28,7 @@ class Configuration {
 	    : part_(part) {
 		for (auto& frame : *frames) {
 			frames_[frame.first] =
-			    absl::Span<uint32_t>(frame.second);
+			    absl::Span<const uint32_t>(frame.second);
 		}
 	}
 
