@@ -32,18 +32,33 @@ set Y_DIN_BASE [expr "$Y_CLK_BASE + 1"]
 # Note: can actually go up one more if we want
 set Y_DOUT_BASE [expr "$XRAY_ROI_Y1 - $DIN_N * $PITCH"]
 
+set part "$::env(XRAY_PART)"
+set pincfg ""
+if { [info exists ::env(XRAY_PINCFG) ] } {
+    set pincfg "$::env(XRAY_PINCFG)"
+}
+set roiv "roi_base.v"
+if { [info exists ::env(XRAY_ROIV) ] } {
+    set roiv "$::env(XRAY_ROIV)"
+}
+set roiv_trim [string map {.v v} $roiv]
+set outdir "out_${part}_${pincfg}_${roiv_trim}"
+
 puts "Environment"
 puts "  XRAY_ROI: $::env(XRAY_ROI)"
 puts "  X_BASE: $X_BASE"
 puts "  Y_DIN_BASE: $Y_DIN_BASE"
 puts "  Y_CLK_BASE: $Y_CLK_BASE"
 puts "  Y_DOUT_BASE: $Y_DOUT_BASE"
+puts "  outdir: $outdir"
+
+file mkdir $outdir
 
 source ../../utils/utils.tcl
 
 create_project -force -part $::env(XRAY_PART) design design
 read_verilog top.v
-read_verilog roi_base.v
+read_verilog $roiv
 # added flatten_hierarchy
 # dout_shr was getting folded into the pblock
 # synth_design -top top -flatten_hierarchy none -no_lc -keep_equivalent_registers -resource_sharing off
@@ -53,11 +68,6 @@ synth_design -top top -flatten_hierarchy none -verilog_define DIN_N=$DIN_N -veri
 array set net2pin [list]
 
 # Create pin assignments based on what we are targetting
-set part "$::env(XRAY_PART)"
-set pincfg ""
-if { [info exists ::env(XRAY_PINCFG) ] } {
-    set pincfg "$::env(XRAY_PINCFG)"
-}
 # A50T I/O Bank 16 sequential layout
 if {$part eq "xc7a50tfgg484-1"} {
     # Partial list, expand as needed
@@ -84,7 +94,7 @@ if {$part eq "xc7a50tfgg484-1"} {
    }
 # Arty A7 switch, button, and LED
 } elseif {$part eq "xc7a35tcsg324-1"} {
-    if {$pincfg eq "ARTY_A7_SWBUT"} {
+    if {$pincfg eq "ARTY-A7-SWBUT"} {
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         # 4 switches then 4 buttons
         set sw_but "A8 C11 C10 A10  D9 C9 B9 B8"
@@ -108,7 +118,7 @@ if {$part eq "xc7a50tfgg484-1"} {
        }
     # Arty A7 pmod
     # Disabled per above
-    } elseif {$pincfg eq "ARTY_A7_PMOD"} {
+    } elseif {$pincfg eq "ARTY-A7-PMOD"} {
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
         set pmod_jb "E15 E16 D15 C15  J17 J18 K15 J15"
@@ -134,7 +144,7 @@ if {$part eq "xc7a50tfgg484-1"} {
     }
 # Arty A7 switch, button, and LED
 } elseif {$part eq "xc7a35tcpg236-1"} {
-    if {$pincfg eq "BASYS3_SWBUT"} {
+    if {$pincfg eq "BASYS3-SWBUT"} {
         # https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Basys-3-Master.xdc
 
         # Slide switches
@@ -396,7 +406,7 @@ close $fp
 puts "routing design"
 route_design
 
-write_checkpoint -force design.dcp
+write_checkpoint -force $outdir/design.dcp
 set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
-write_bitstream -force design.bit
+write_bitstream -force $outdir/design.bit
 
