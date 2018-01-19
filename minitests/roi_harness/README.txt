@@ -12,8 +12,8 @@ Its expected the end user will rip out everything inside the ROI
 To target Arty A7 you should source the artix DB environment script then source arty.sh
 
 To build the baseline harness:
-make
+./runme.sh
 
 To build a sample design using the harness:
-XRAY_ROIV=roi_inv.v make
+XRAY_ROIV=roi_inv.v XRAY_FIXED_XDC=out_xc7a35tcpg236-1_BASYS3-SWBUT_roi_basev/fixed.xdc ./runme.sh 
 

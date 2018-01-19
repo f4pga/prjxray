@@ -60,10 +60,19 @@ source ../../utils/utils.tcl
 create_project -force -part $::env(XRAY_PART) design design
 read_verilog top.v
 read_verilog $roiv
+set fixed_xdc ""
+if { [info exists ::env(XRAY_FIXED_XDC) ] } {
+    set fixed_xdc "$::env(XRAY_FIXED_XDC)"
+}
+
 # added flatten_hierarchy
 # dout_shr was getting folded into the pblock
 # synth_design -top top -flatten_hierarchy none -no_lc -keep_equivalent_registers -resource_sharing off
 synth_design -top top -flatten_hierarchy none -verilog_define DIN_N=$DIN_N -verilog_define DOUT_N=$DOUT_N
+
+if {$fixed_xdc ne ""} {
+    read_xdc $fixed_xdc
+}
 
 # Map of top level net names to IOB pin names
 array set net2pin [list]
@@ -180,19 +189,22 @@ foreach {net pin} [array get net2pin] {
     set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" [get_ports $net]
 }
 
-create_pblock roi
-set_property EXCLUDE_PLACEMENT 1 [get_pblocks roi]
-add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
+if {$fixed_xdc eq ""} {
+    create_pblock roi
+    set_property EXCLUDE_PLACEMENT 1 [get_pblocks roi]
+    set_property CONTAIN_ROUTING true [get_pblocks roi]
+    set_property DONT_TOUCH true [get_cells roi]
+    add_cells_to_pblock [get_pblocks roi] [get_cells roi]
+    resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
 
-set_property CFGBVS VCCO [current_design]
-set_property CONFIG_VOLTAGE 3.3 [current_design]
-set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
+    set_property CFGBVS VCCO [current_design]
+    set_property CONFIG_VOLTAGE 3.3 [current_design]
+    set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
+    set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 
-#write_checkpoint -force synth.dcp
-
+    #write_checkpoint -force $outdir/synth.dcp
+}
 
 
 proc loc_roi_clk_left {ff_x ff_y} {
@@ -257,7 +269,7 @@ proc net_bank_left {net} {
 }
 
 # Manual placement
-if {1} {
+if {$fixed_xdc eq ""} {
     set x $X_BASE
 
     # Place ROI clock right after inputs
@@ -286,7 +298,7 @@ if {1} {
 }
 
 place_design
-#write_checkpoint -force placed.dcp
+#write_checkpoint -force $outdir/placed.dcp
 
 # Version with more error checking for missing end node
 # Will do best effort in this case
@@ -341,7 +353,7 @@ proc route_via2 {net nodes} {
 set fp [open "design.txt" w]
 puts $fp "name node pin"
 # Manual routing
-if {1} {
+if {$fixed_xdc eq ""} {
     set x $X_BASE
 
     # No routing strictly needed for clk
@@ -405,6 +417,15 @@ close $fp
 
 puts "routing design"
 route_design
+
+# Don't set for user designs
+# Makes things easier to debug
+if {$fixed_xdc eq ""} {
+    set_property IS_ROUTE_FIXED 1 [get_nets -hierarchical]
+    #set_property IS_LOC_FIXED 1 [get_cells -hierarchical]
+    #set_property IS_BEL_FIXED 1 [get_cells -hierarchical]
+    write_xdc -force $outdir/fixed.xdc
+}
 
 write_checkpoint -force $outdir/design.dcp
 set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
