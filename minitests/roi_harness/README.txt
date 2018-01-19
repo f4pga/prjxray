@@ -14,6 +14,6 @@ To target Arty A7 you should source the artix DB environment script then source 
 To build the baseline harness:
 ./runme.sh
 
-To build a sample design using the harness:
-XRAY_ROIV=roi_inv.v XRAY_FIXED_XDC=out_xc7a35tcpg236-1_BASYS3-SWBUT_roi_basev/fixed.xdc ./runme.sh 
-
+To build a sample Vivado design using the harness:
+XRAY_ROIV=roi_inv.v XRAY_FIXED_XDC=out_xc7a35tcpg236-1_BASYS3-SWBUT_roi_basev/fixed_noclk.xdc ./runme.sh
+Note: this was intended for verification only and not as an end user flow (they should use SymbiFlow)
