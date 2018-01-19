@@ -10,3 +10,10 @@ There is no logic outside of the ROI in order to keep IOB to ROI delays short
 Its expected the end user will rip out everything inside the ROI
 
 To target Arty A7 you should source the artix DB environment script then source arty.sh
+
+To build the baseline harness:
+make
+
+To build a sample design using the harness:
+XRAY_ROIV=roi_inv.v make
+
