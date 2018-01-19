@@ -178,6 +178,8 @@ def run(f_in, f_out, sparse=False, debug=False):
             return '%s.%s.%s' % (tilej['type'], suffix, value)
 
         tile2dbkey = {
+            'CLBLL_L': clb2dbkey,
+            'CLBLL_R': clb2dbkey,
             'CLBLM_L': clb2dbkey,
             'CLBLM_R': clb2dbkey,
             'INT_L': int2dbkey,
