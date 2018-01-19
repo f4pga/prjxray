@@ -43,6 +43,7 @@ source ../../utils/utils.tcl
 
 create_project -force -part $::env(XRAY_PART) design design
 read_verilog top.v
+read_verilog roi_base.v
 # added flatten_hierarchy
 # dout_shr was getting folded into the pblock
 # synth_design -top top -flatten_hierarchy none -no_lc -keep_equivalent_registers -resource_sharing off
@@ -53,6 +54,10 @@ array set net2pin [list]
 
 # Create pin assignments based on what we are targetting
 set part "$::env(XRAY_PART)"
+set pincfg ""
+if { [info exists ::env(XRAY_PINCFG) ] } {
+    set pincfg "$::env(XRAY_PINCFG)"
+}
 # A50T I/O Bank 16 sequential layout
 if {$part eq "xc7a50tfgg484-1"} {
     # Partial list, expand as needed
@@ -79,52 +84,83 @@ if {$part eq "xc7a50tfgg484-1"} {
    }
 # Arty A7 switch, button, and LED
 } elseif {$part eq "xc7a35tcsg324-1"} {
-    # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
-    # 4 switches then 4 buttons
-    set sw_but "A8 C11 C10 A10  D9 C9 B9 B8"
-    # 4 LEDs then 4 RGB LEDs (green only)
-    set leds "H5 J5 T9 T10  F6 J4 J2 H6"
+    if {$pincfg eq "ARTY_A7_SWBUT"} {
+        # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
+        # 4 switches then 4 buttons
+        set sw_but "A8 C11 C10 A10  D9 C9 B9 B8"
+        # 4 LEDs then 4 RGB LEDs (green only)
+        set leds "H5 J5 T9 T10  F6 J4 J2 H6"
 
-    # 100 MHz CLK onboard
-    set pin "E3"
-    set net2pin(clk) $pin
+        # 100 MHz CLK onboard
+        set pin "E3"
+        set net2pin(clk) $pin
 
-    # DIN
-    for {set i 0} {$i < $DIN_N} {incr i} {
-        set pin [lindex $sw_but $i]
-        set net2pin(din[$i]) $pin
+        # DIN
+        for {set i 0} {$i < $DIN_N} {incr i} {
+            set pin [lindex $sw_but $i]
+            set net2pin(din[$i]) $pin
+        }
+
+        # DOUT
+        for {set i 0} {$i < $DOUT_N} {incr i} {
+            set pin [lindex $leds $i]
+            set net2pin(dout[$i]) $pin
+       }
+    # Arty A7 pmod
+    # Disabled per above
+    } elseif {$pincfg eq "ARTY_A7_PMOD"} {
+        # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
+        set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
+        set pmod_jb "E15 E16 D15 C15  J17 J18 K15 J15"
+        set pmod_jc "U12 V12 V10 V11  U14 V14 T13 U13"
+
+        # CLK on Pmod JA
+        set pin [lindex $pmod_ja 0]
+        set net2pin(clk) $pin
+
+        # DIN on Pmod JB
+        for {set i 0} {$i < $DIN_N} {incr i} {
+            set pin [lindex $pmod_jb $i]
+            set net2pin(din[$i]) $pin
+        }
+
+        # DOUT on Pmod JC
+        for {set i 0} {$i < $DOUT_N} {incr i} {
+            set pin [lindex $pmod_jc $i]
+            set net2pin(dout[$i]) $pin
+       }
+    } else {
+        error "Unsupported config $pincfg"
     }
+# Arty A7 switch, button, and LED
+} elseif {$part eq "xc7a35tcpg236-1"} {
+    if {$pincfg eq "BASYS3_SWBUT"} {
+        # https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Basys-3-Master.xdc
 
-    # DOUT
-    for {set i 0} {$i < $DOUT_N} {incr i} {
-        set pin [lindex $leds $i]
-        set net2pin(dout[$i]) $pin
-   }
-# Arty A7 pmod
-# Disabled per above
-} elseif {$part eq "xc7a35tcsg324-1"} {
-    # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
-    set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
-    set pmod_jb "E15 E16 D15 C15  J17 J18 K15 J15"
-    set pmod_jc "U12 V12 V10 V11  U14 V14 T13 U13"
+        # Slide switches
+        set sws "V17 V16 W16 W17 W15 V15 W14 W13 V2 T3 T2 R3 W2 U1 T1 R2"
+        set leds "U16 E19 U19 V19 W18 U15 U14 V14 V13 V3 W3 U3 P3 N3 P1 L1"
 
-    # CLK on Pmod JA
-    set pin [lindex $pmod_ja 0]
-    set net2pin(clk) $pin
+        # 100 MHz CLK onboard
+        set pin "W5"
+        set net2pin(clk) $pin
 
-    # DIN on Pmod JB
-    for {set i 0} {$i < $DIN_N} {incr i} {
-        set pin [lindex $pmod_jb $i]
-        set net2pin(din[$i]) $pin
-    }
+        # DIN
+        for {set i 0} {$i < $DIN_N} {incr i} {
+            set pin [lindex $sws $i]
+            set net2pin(din[$i]) $pin
+        }
 
-    # DOUT on Pmod JC
-    for {set i 0} {$i < $DOUT_N} {incr i} {
-        set pin [lindex $pmod_jc $i]
-        set net2pin(dout[$i]) $pin
-   }
+        # DOUT
+        for {set i 0} {$i < $DOUT_N} {incr i} {
+            set pin [lindex $leds $i]
+            set net2pin(dout[$i]) $pin
+       }
+    } else {
+        error "Unsupported config $pincfg"
+    }    
 } else {
-    error "Unsupported part $part"
+    error "Pins: unsupported part $part"
 }
 
 # Now actually apply the pin definitions
@@ -338,8 +374,11 @@ if {1} {
             } elseif {$part eq "xc7a35tcsg324-1"} {
                 set node "INT_L_X10Y${y}/SW6BEG0"
                 route_via2 "roi/dout[$i]" "$node"
+            } elseif {$part eq "xc7a35tcpg236-1"} {
+                set node "INT_L_X10Y${y}/SW6BEG0"
+                route_via2 "roi/dout[$i]" "$node"
             } else {
-                error "Unsupported part $part"
+                error "Routing: unsupported part $part"
             }
         # XXX: only care about right ports on Arty
         } else {
@@ -358,5 +397,6 @@ puts "routing design"
 route_design
 
 write_checkpoint -force design.dcp
+set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
 write_bitstream -force design.bit
 
