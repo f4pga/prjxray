@@ -183,6 +183,7 @@ def run(f_in, f_out, sparse=False, debug=False):
             'INT_L': int2dbkey,
             'INT_R': int2dbkey,
             'HCLK_L': int2dbkey,
+            'HCLK_R': int2dbkey,
         }
 
         f = tile2dbkey.get(tilej['type'], None)
