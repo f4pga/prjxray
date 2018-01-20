@@ -92,7 +92,7 @@ for tile_type in ["int_l", "int_r"]:
                     node_node_pip[src_node] = dict()
                 if dst_node not in reverse_node_node:
                     reverse_node_node[dst_node] = set()
-                node_node_pip[src_node][dst_node] = "%s.%s.%s" % (tile, src, dst)
+                node_node_pip[src_node][dst_node] = "%s.%s.%s" % (tile, dst, src)
                 reverse_node_node[dst_node].add(src_node)
 
 for argidx in range((len(sys.argv)-1) // 2):
@@ -145,7 +145,14 @@ for argidx in range((len(sys.argv)-1) // 2):
         print("  %4d: %s" % (count, c))
 
 print("====")
-print("get_nodes -of_objects [get_wires {%s}]" % " ".join(["%s/%s" % n for n in sorted(blocked_nodes)]))
+pipnames = list()
+
+for pip in sorted(active_pips):
+    tile, dst, src = pip.split(".")
+    pipnames.append("%s/%s.%s->>%s" % (tile, tile[0:5], src, dst))
+
+print("highlight_objects -color orange [get_nodes -of_objects [get_wires {%s}]]" % " ".join(["%s/%s" % n for n in sorted(blocked_nodes)]))
+print("highlight_objects -color orange [get_pips {%s}]" % " ".join(pipnames))
 
 print("====")
 for pip in sorted(active_pips):
