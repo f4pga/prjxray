@@ -25,7 +25,11 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 			// NOPs.  Since Type 0 packets don't exist according to
 			// UG470 and they seem to be zero-filled, just consume
 			// the bytes without generating a packet.
-			return {words.subspan(1), {}};
+			return {words.subspan(1),
+			        {{header_type,
+			          Opcode::NOP,
+			          ConfigurationRegister::CRC,
+			          {}}}};
 		case 0x1: {
 			Opcode opcode = static_cast<Opcode>(
 			    bit_field_get(words[0], 28, 27));
@@ -73,6 +77,10 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 }
 
 std::ostream& operator<<(std::ostream& o, const ConfigurationPacket& packet) {
+	if (packet.header_type() == 0x0) {
+		return o << "[Zero-pad]" << std::endl;
+	}
+
 	switch (packet.opcode()) {
 		case ConfigurationPacket::Opcode::NOP:
 			o << "[NOP]" << std::endl;
