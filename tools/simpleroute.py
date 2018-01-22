@@ -2,14 +2,16 @@
 
 import getopt, sys, os, json, re
 
-
 if len(sys.argv) == 1 or (len(sys.argv) % 2) != 1:
     print()
     print("Usage: %s src1 dst1 [src2 dst2 [...]]" % sys.argv[0])
     print()
-    print("Example: %s VBRK_X29Y140/VBRK_ER1BEG2 VFRAME_X47Y113/VFRAME_EL1BEG2" % sys.argv[0])
+    print(
+        "Example: %s VBRK_X29Y140/VBRK_ER1BEG2 VFRAME_X47Y113/VFRAME_EL1BEG2" %
+        sys.argv[0])
     print()
     sys.exit(1)
+
 
 class MergeFind:
     def __init__(self):
@@ -39,7 +41,6 @@ with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                    os.getenv("XRAY_DATABASE")), "r") as f:
     tileconn = json.load(f)
 
-
 type_to_tiles = dict()
 grid_to_tile = dict()
 nodes = MergeFind()
@@ -50,7 +51,6 @@ for tile, tiledata in tiles.items():
     type_to_tiles[tiledata["type"]].append(tile)
     grid_to_tile[(tiledata["grid_x"], tiledata["grid_y"])] = tile
 
-
 print("Processing tileconn..")
 
 for entry in tileconn:
@@ -58,7 +58,9 @@ for entry in tileconn:
     for tile_a in type_to_tiles[type_a]:
         tiledata_a = tiles[tile_a]
         grid_a = (tiledata_a["grid_x"], tiledata_a["grid_y"])
-        grid_b = (grid_a[0]+entry["grid_deltas"][0], grid_a[1]+entry["grid_deltas"][1])
+        grid_b = (
+            grid_a[0] + entry["grid_deltas"][0],
+            grid_a[1] + entry["grid_deltas"][1])
 
         if grid_b not in grid_to_tile:
             continue
@@ -72,7 +74,6 @@ for entry in tileconn:
         for pair in entry["wire_pairs"]:
             nodes.merge((tile_a, pair[0]), (tile_b, pair[1]))
 
-
 print("Processing PIPs..")
 
 node_node_pip = dict()
@@ -82,7 +83,8 @@ active_pips = set()
 
 for tile_type in ["int_l", "int_r"]:
     with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
-                                       os.getenv("XRAY_DATABASE"), tile_type), "r") as f:
+                                       os.getenv("XRAY_DATABASE"), tile_type),
+              "r") as f:
         for line in f:
             _, dst, src = line.split()[0].split(".")
             for tile in type_to_tiles[tile_type.upper()]:
@@ -92,12 +94,13 @@ for tile_type in ["int_l", "int_r"]:
                     node_node_pip[src_node] = dict()
                 if dst_node not in reverse_node_node:
                     reverse_node_node[dst_node] = set()
-                node_node_pip[src_node][dst_node] = "%s.%s.%s" % (tile, dst, src)
+                node_node_pip[src_node][dst_node] = "%s.%s.%s" % (
+                    tile, dst, src)
                 reverse_node_node[dst_node].add(src_node)
 
-for argidx in range((len(sys.argv)-1) // 2):
-    src_tile, src_wire = sys.argv[2*argidx+1].split("/")
-    dst_tile, dst_wire = sys.argv[2*argidx+2].split("/")
+for argidx in range((len(sys.argv) - 1) // 2):
+    src_tile, src_wire = sys.argv[2 * argidx + 1].split("/")
+    dst_tile, dst_wire = sys.argv[2 * argidx + 2].split("/")
 
     src_node = nodes.find((src_tile, src_wire))
     dst_node = nodes.find((dst_tile, dst_wire))
@@ -118,7 +121,7 @@ for argidx in range((len(sys.argv)-1) // 2):
                 for nn in reverse_node_node[n]:
                     if nn not in node_scores and nn not in blocked_nodes:
                         next_nodes.add(nn)
-        write_scores(next_nodes, count+1)
+        write_scores(next_nodes, count + 1)
 
     write_scores(set([dst_node]), 1)
     print("  route length: %d" % node_scores[src_node])
@@ -151,10 +154,11 @@ for pip in sorted(active_pips):
     tile, dst, src = pip.split(".")
     pipnames.append("%s/%s.%s->>%s" % (tile, tile[0:5], src, dst))
 
-print("highlight_objects -color orange [get_nodes -of_objects [get_wires {%s}]]" % " ".join(["%s/%s" % n for n in sorted(blocked_nodes)]))
+print(
+    "highlight_objects -color orange [get_nodes -of_objects [get_wires {%s}]]"
+    % " ".join(["%s/%s" % n for n in sorted(blocked_nodes)]))
 print("highlight_objects -color orange [get_pips {%s}]" % " ".join(pipnames))
 
 print("====")
 for pip in sorted(active_pips):
     print(pip)
-
