@@ -4,15 +4,15 @@
 # ready for programming to a board.  For example, 'make
 # roi_noninv.hand_crafted.bit' will generate a bitstream that includes the
 # design from roi_noninv.fasm. 
-%.hand_crafted.bit: init_sequence.bit %.no_headers.bit final_sequence.bit
+%.hand_crafted.bit: init_sequence.bit %.no_headers.bin final_sequence.bin
 	cat $^ > $@
 
-%.no_headers.bit: %.patched.bit
+%.no_headers.bin: %.patched.bin
 	# WARNING: these values need to be tweaked if anything about the
 	# Vivado-generated design changes.
 	xxd -p -s 0x18 $< | xxd -r -p - $@
 
-%.patched.bit: %.frm harness_routed.bit
+%.patched.bin: %.frm harness_routed.bit
 	${XRAY_TOOLS_DIR}/xc7patch \
 		--part_file ${XRAY_PART_YAML} \
 		--bitstream_file harness_routed.bit \
@@ -28,7 +28,7 @@ init_sequence.bit: harness_routed.bit
 	# Vivado-generated design changes.
 	xxd -p -l 0x147 $< | xxd -r -p - $@
 
-final_sequence.bit: harness_routed.bit
+final_sequence.bin: harness_routed.bit
 	# WARNING: these values need to be tweaked if anything about the
 	# Vivado-generated design changes.
 	xxd -p -s 0x216abf $< | \
@@ -75,7 +75,7 @@ roi_inv_routed.dcp roi_inv_w_harness_routed.dcp harness_routed.dcp: harness.dcp 
 clean:
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit design.txt .Xil
 	rm -rf out_* *~
-	rm -rf *.frm *.segp *.packets
+	rm -rf *.frm *.segp *.packets *.bin
 	rm -rf harness_routed.fasm roi_inv_w_harness_routed.fasm
 	rm -rf hd_visual
 
