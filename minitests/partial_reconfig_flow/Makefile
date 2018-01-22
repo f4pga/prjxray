@@ -23,6 +23,16 @@
 # insufficient to program a device.  Grab the initialization and finalization
 # sequences from the harness bitstream so they can be tacked on to the
 # xc7patch-generated bitstream to create a programmable bitstream.
+#
+# The offsets used below were determined by manually inspecting
+# harness_routed.bit with a hex editor.  init_sequence.bit is the beginning of
+# the file until just before the actual frame data is sent via a write to FDRI.
+# final_sequence.bin is from just after the frame data write to the end of the
+# file.  Note that final_sequence.bin normally includes at least one CRC check.
+# The sed command replaces any CRC checks with a Reset CRC command which is the
+# same behavior as setting BITSTREAM.GENERAL.CRC to Disabled.  These offset
+# should not change unless you alter the bitstream format used (i.e. setting
+# BITSTREAM.GENERAL.DEBUGBITSTREAM or BITSTREAM.GENERAL.PERFRAMECRC to YES).
 init_sequence.bit: harness_routed.bit
 	# WARNING: these values need to be tweaked if anything about the
 	# Vivado-generated design changes.
@@ -69,6 +79,8 @@ roi_inv_routed.dcp roi_inv_w_harness_routed.dcp harness_routed.dcp: harness.dcp 
 %.frm: %.fasm
 	${XRAY_DIR}/tools/fasm2frame.py $< $@
 
+# This format is a human-readable representation of the configuration packets
+# used to interact with 7-series chips over JTAG.
 %.packets: %.bit
 	${XRAY_TOOLS_DIR}/bittool list_config_packets $< > $@
 
