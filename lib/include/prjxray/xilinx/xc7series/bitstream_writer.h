@@ -25,8 +25,8 @@ class BitstreamWriter {
 	typedef std::array<uint32_t, 6> header_t;
 	typedef std::vector<ConfigurationPacket> packets_t;
 	// Only defined if a packet exists
-	typedef absl::optional<absl::Span<uint32_t>> op_data_t;
-	typedef absl::Span<uint32_t>::iterator data_iterator_t;
+	typedef absl::optional<absl::Span<const uint32_t>> op_data_t;
+	typedef absl::Span<const uint32_t>::iterator data_iterator_t;
 	using itr_value_type = uint32_t;
 
 	class packet_iterator

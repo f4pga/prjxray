@@ -8,6 +8,6 @@ go:
 	cd build; cmake ..; make -j$(JOBS)
 
 format:
-	find . -name \*.cc -and -not -path './third_party/*' -exec $(CLANG_FORMAT) -style=file -i {} \;
-	find . -name \*.h -and -not -path './third_party/*' -exec $(CLANG_FORMAT) -style=file -i {} \;
-	find . -name \*.py -and -not -path './third_party/*' -exec yapf -p -i {} \;
+	find . -name \*.cc -and -not -path './third_party/*' -and -not -path './.git/*' -exec $(CLANG_FORMAT) -style=file -i {} \;
+	find . -name \*.h -and -not -path './third_party/*' -and -not -path './.git/*' -exec $(CLANG_FORMAT) -style=file -i {} \;
+	find . -name \*.py -and -not -path './third_party/*' -and -not -path './.git/*' -exec yapf -p -i {} \;

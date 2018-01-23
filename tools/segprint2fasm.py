@@ -37,6 +37,8 @@ def tag2fasm(grid, seg, tag):
         which = m.group(1)
         value = m.group(2)
         site = {
+            'clbll_l': 'CENTER_INTER_L',
+            'clbll_r': 'CENTER_INTER_R',
             'clblm_l': 'CENTER_INTER_L',
             'clblm_r': 'CENTER_INTER_R',
             'hclk_l': 'HCLK_L',
@@ -56,6 +58,8 @@ def tag2fasm(grid, seg, tag):
         raise Exception("Couldn't find tile type %s" % tile_type)
 
     tag2asm = {
+        'CLBLL_L': clbf,
+        'CLBLL_R': clbf,
         'CLBLM_L': clbf,
         'CLBLM_R': clbf,
         'INT_L': intf,
