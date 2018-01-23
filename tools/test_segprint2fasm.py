@@ -33,11 +33,11 @@ class TestStringMethods(unittest.TestCase):
 
     def test_lut_int(self):
         self.check_segprint_fasm_equiv(
-            'test_data/clb_lut/design.segp', 'test_data/lut_int.fasm')
+            'test_data/lut_int/design.segp', 'test_data/lut_int.fasm')
 
     def test_ff_int(self):
         self.check_segprint_fasm_equiv(
-            'test_data/clb_ff/design.segp', 'test_data/ff_int.fasm')
+            'test_data/ff_int/design.segp', 'test_data/ff_int.fasm')
 
 
 if __name__ == '__main__':

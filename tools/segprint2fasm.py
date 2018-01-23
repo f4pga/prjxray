@@ -11,25 +11,7 @@ def tag2fasm(grid, seg, tag):
     segj = grid['segments'][seg]
 
     def clbf(seg, tile, tag_post):
-        # seg: SEG_CLBLM_L_X10Y102
-        # tile_type: CLBLM_L
-        # tag_post: SLICEM_X0.ALUT.INIT[43]
-        # To: CLBLM_L_X10Y102.SLICE_X12Y102.ALUT.INIT[43] 1
-        m = re.match(r'(SLICE[LM])_X([01])[.](.*)', tag_post)
-        slicelm = m.group(1)
-        off01 = int(m.group(2))
-        post = m.group(3)
-
-        # xxx: actually this might not work on decimal overflow (9 => 10)
-        for site in grid['tiles'][tile]['sites'].keys():
-            m = re.match(r'SLICE_X(.*)Y.*', site)
-            sitex = int(m.group(1))
-            if sitex % 2 == off01:
-                break
-        else:
-            raise Exception("Failed to match site")
-
-        return '%s.%s.%s 1' % (tile, site, post)
+        return '%s.%s 1' % (tile, tag_post)
 
     def intf(seg, tile, tag_post):
         # Make the selection an argument of the configruation

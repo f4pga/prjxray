@@ -68,11 +68,11 @@ class TestStringMethods(unittest.TestCase):
 
     def test_lut_int(self):
         self.bitread_frm_equals(
-            'test_data/lut_int.fasm', 'test_data/clb_lut/design.bits')
+            'test_data/lut_int.fasm', 'test_data/lut_int/design.bits')
 
     def test_ff_int(self):
         self.bitread_frm_equals(
-            'test_data/ff_int.fasm', 'test_data/clb_ff/design.bits')
+            'test_data/ff_int.fasm', 'test_data/ff_int/design.bits')
 
     def test_sparse(self):
         '''Verify sparse equivilent to normal encoding'''

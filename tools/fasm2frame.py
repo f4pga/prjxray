@@ -144,34 +144,7 @@ def run(f_in, f_out, sparse=False, debug=False):
         segdb = get_database(segj['type'])
 
         def clb2dbkey(tile, tilej, site, suffix, value):
-            def slice_global2x01(tile_name, tile_type, site):
-                # SLICE_X12Y102 => SLICEL_X0
-                m = re.match(r'SLICE_X([0-9]+)Y[0-9]+', site)
-                xg = int(m.group(1))
-
-                prefix = {
-                    'CLBLL_L': {
-                        0: 'SLICEL',
-                        1: 'SLICEL'
-                    },
-                    'CLBLM_L': {
-                        0: 'SLICEM',
-                        1: 'SLICEL'
-                    },
-                    'CLBLL_R': {
-                        0: 'SLICEL',
-                        1: 'SLICEL'
-                    },
-                    'CLBLM_R': {
-                        0: 'SLICEM',
-                        1: 'SLICEL'
-                    },
-                }
-                x01 = xg % 2
-                return '%s_X%d' % (prefix[tile_type][x01], x01)
-
-            db_site = slice_global2x01(tile, tilej['type'], site)
-            db_k = '%s.%s.%s' % (tilej['type'], db_site, suffix)
+            db_k = '%s.%s.%s' % (tilej['type'], site, suffix)
             return db_k
 
         def int2dbkey(tile, tilej, site, suffix, value):
