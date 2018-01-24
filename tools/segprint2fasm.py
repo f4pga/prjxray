@@ -5,28 +5,49 @@ import re
 import sys
 import json
 
+enumdb = dict()
+
+
+def get_enums(segtype):
+    if segtype in enumdb:
+        return enumdb[segtype]
+
+    enumdb[segtype] = {}
+
+    def process(l):
+        l = l.strip()
+
+        # CLBLM_L.SLICEL_X1.ALUT.INIT[10] 29_14
+        parts = line.split()
+        name = parts[0]
+        bit_vals = parts[1:]
+
+        # Assumption
+        # only 1 bit => non-enumerated value
+        enumdb[segtype][name] = len(bit_vals) != 1
+
+    with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
+                                       os.getenv("XRAY_DATABASE"), segtype),
+              "r") as f:
+        for line in f:
+            process(line)
+
+    with open("%s/%s/segbits_int_%s.db" %
+              (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+               segtype[-1]), "r") as f:
+        for line in f:
+            process(line)
+
+    return enumdb[segtype]
+
+
+def isenum(segtype, tag):
+    return get_enums(segtype)[tag]
+
 
 def tag2fasm(grid, seg, tag):
     '''Given tilegrid, segment name and tag, return fasm directive'''
     segj = grid['segments'][seg]
-
-    def clbf(seg, tile, tag_post):
-        return '%s.%s 1' % (tile, tag_post)
-
-    def intf(seg, tile, tag_post):
-        # Make the selection an argument of the configruation
-        m = re.match(r'(.*)[.]([A-Za-z0-9_]+)', tag_post)
-        which = m.group(1)
-        value = m.group(2)
-        site = {
-            'clbll_l': 'CENTER_INTER_L',
-            'clbll_r': 'CENTER_INTER_R',
-            'clblm_l': 'CENTER_INTER_L',
-            'clblm_r': 'CENTER_INTER_R',
-            'hclk_l': 'HCLK_L',
-            'hclk_r': 'HCLK_R',
-        }[segj['type']]
-        return '%s.%s.%s %s' % (tile, site, which, value)
 
     m = re.match(r'([A-Za-z0-9_]+)[.](.*)', tag)
     tile_type = m.group(1)
@@ -39,20 +60,14 @@ def tag2fasm(grid, seg, tag):
     else:
         raise Exception("Couldn't find tile type %s" % tile_type)
 
-    tag2asm = {
-        'CLBLL_L': clbf,
-        'CLBLL_R': clbf,
-        'CLBLM_L': clbf,
-        'CLBLM_R': clbf,
-        'INT_L': intf,
-        'INT_R': intf,
-        'HCLK_L': intf,
-        'HCLK_R': intf,
-    }
-    f = tag2asm.get(tile_type, None)
-    if f is None:
-        raise Exception("Unhandled segment type %s" % tile_type)
-    return f(seg, tile, tag_post)
+    if not isenum(segj['type'], tag):
+        return '%s.%s 1' % (tile, tag_post)
+    else:
+        # Make the selection an argument of the configruation
+        m = re.match(r'(.*)[.]([A-Za-z0-9_]+)', tag_post)
+        which = m.group(1)
+        value = m.group(2)
+        return '%s.%s %s' % (tile, which, value)
 
 
 def run(f_in, f_out, sparse=False):

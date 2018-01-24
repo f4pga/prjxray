@@ -4,9 +4,36 @@ import os
 import re
 import sys
 import json
+import collections
 
-# Based on segprint function
-# Modified to return dict instead of list
+
+class FASMSyntaxError(Exception):
+    pass
+
+
+def parsebit(val):
+    '''Return "!012_23" => (12, 23, False)'''
+    isset = True
+    # Default is 0. Skip explicit call outs
+    if val[0] == '!':
+        isset = False
+        val = val[1:]
+    # 28_05 => 28, 05
+    seg_word_column, word_bit_n = val.split('_')
+    return int(seg_word_column), int(word_bit_n), isset
+
+
+'''
+Loosely based on segprint function
+Maybe better to return as two distinct dictionaries?
+
+{
+    'tile.meh': {
+            'O5': [(11, 2, False), (12, 2, True)],
+            'O6': [(11, 2, True), (12, 2, False)],
+    },
+}
+'''
 segbitsdb = dict()
 
 
@@ -16,25 +43,48 @@ def get_database(segtype):
 
     segbitsdb[segtype] = {}
 
+    def process(l):
+        l = l.strip()
+
+        # CLBLM_L.SLICEL_X1.ALUT.INIT[10] 29_14
+        parts = line.split()
+        name = parts[0]
+        bit_vals = parts[1:]
+
+        # Assumption
+        # only 1 bit => non-enumerated value
+        if len(bit_vals) == 1:
+            seg_word_column, word_bit_n, isset = parsebit(bit_vals[0])
+            if not isset:
+                raise Exception(
+                    "Expect single bit DB entries to be set, got %s" % l)
+            # Treat like an enumerated value with keys 0 or 1
+            segbitsdb[segtype][name] = {
+                '0': [(seg_word_column, word_bit_n, 0)],
+                '1': [(seg_word_column, word_bit_n, 1)],
+            }
+        else:
+            # An enumerated value
+            # Split the base name and selected key
+            m = re.match(r'(.+)[.](.+)', name)
+            name = m.group(1)
+            key = m.group(2)
+
+            # May or may not be the first key encountered
+            bits_map = segbitsdb[segtype].setdefault(name, {})
+            bits_map[key] = [parsebit(x) for x in bit_vals]
+
     with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE"), segtype),
               "r") as f:
         for line in f:
-            # CLBLM_L.SLICEL_X1.ALUT.INIT[10] 29_14
-            parts = line.split()
-            name = parts[0]
-            vals = parts[1:]
-            segbitsdb[segtype][name] = vals
+            process(line)
 
     with open("%s/%s/segbits_int_%s.db" %
               (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
                segtype[-1]), "r") as f:
         for line in f:
-            # CLBLM_L.SLICEL_X1.ALUT.INIT[10] 29_14
-            parts = line.split()
-            name = parts[0]
-            vals = parts[1:]
-            segbitsdb[segtype][name] = vals
+            process(line)
 
     return segbitsdb[segtype]
 
@@ -79,6 +129,10 @@ def dump_frm(f, frames):
 def run(f_in, f_out, sparse=False, debug=False):
     # address to array of 101 32 bit words
     frames = {}
+    # Directives we've seen so far
+    # Complain if there is a duplicate
+    # Contains line number of last entry
+    used_names = {}
 
     def frames_init():
         '''Set all frames to 0'''
@@ -97,6 +151,10 @@ def run(f_in, f_out, sparse=False, debug=False):
         '''Set given bit in given frame address and word'''
         frames[frame_addr][word_addr] |= 1 << bit_index
 
+    def frame_clear(frame_addr, word_addr, bit_index):
+        '''Set given bit in given frame address and word'''
+        frames[frame_addr][word_addr] &= 0xFFFFFFFF ^ (1 << bit_index)
+
     with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         grid = json.load(f)
@@ -105,7 +163,7 @@ def run(f_in, f_out, sparse=False, debug=False):
         # Initiaize bitstream to 0
         frames_init()
 
-    for l in f_in:
+    for line_number, l in enumerate(f_in, 1):
         # Comment
         # Remove all text including and after #
         i = l.rfind('#')
@@ -119,15 +177,21 @@ def run(f_in, f_out, sparse=False, debug=False):
 
         # tile.site.stuff value
         # INT_L_X10Y102.CENTER_INTER_L.IMUX_L1 EE2END0
-        m = re.match(
-            r'([a-zA-Z0-9_]+)[.]([a-zA-Z0-9_]+)[.]([a-zA-Z0-9_.\[\]]+)[ ](.+)',
-            l)
+        # Optional value
+        m = re.match(r'([a-zA-Z0-9_]+)[.]([a-zA-Z0-9_.\[\]]+)([ ](.+))?', l)
         if not m:
-            raise Exception("Bad line: %s" % l)
+            raise FASMSyntaxError("Bad line: %s" % l)
         tile = m.group(1)
-        site = m.group(2)
-        suffix = m.group(3)
+        name = m.group(2)
         value = m.group(4)
+
+        used_name = (tile, name)
+        old_line_number = used_names.get(used_name, None)
+        if old_line_number:
+            raise FASMSyntaxError(
+                "Duplicate name lines %d and %d, second line: %s" %
+                (old_line_number, line_number, l))
+        used_names[used_name] = line_number
 
         tilej = grid['tiles'][tile]
         seg = tilej['segment']
@@ -140,53 +204,46 @@ def run(f_in, f_out, sparse=False, debug=False):
         for coli in range(segj['frames']):
             frame_init(seg_baseaddr + coli)
 
-        # Now lets look up the bits we need frames for
-        segdb = get_database(segj['type'])
-
-        def clb2dbkey(tile, tilej, site, suffix, value):
-            db_k = '%s.%s.%s' % (tilej['type'], site, suffix)
-            return db_k
-
-        def int2dbkey(tile, tilej, site, suffix, value):
-            return '%s.%s.%s' % (tilej['type'], suffix, value)
-
-        tile2dbkey = {
-            'CLBLL_L': clb2dbkey,
-            'CLBLL_R': clb2dbkey,
-            'CLBLM_L': clb2dbkey,
-            'CLBLM_R': clb2dbkey,
-            'INT_L': int2dbkey,
-            'INT_R': int2dbkey,
-            'HCLK_L': int2dbkey,
-            'HCLK_R': int2dbkey,
-        }
-
-        f = tile2dbkey.get(tilej['type'], None)
-        if f is None:
-            raise Exception("Unhandled segment type %s" % tilej['type'])
-        db_k = f(tile, tilej, site, suffix, value)
-
-        try:
-            db_vals = segdb[db_k]
-        except KeyError:
-            raise Exception(
-                "Key %s (from line '%s') not found in segment DB %s" %
-                (db_k, l, segj['type']))
-
-        for val in db_vals:
-            # Default is 0. Skip explicit call outs
-            if val[0] == '!':
-                continue
-            # 28_05 => 28, 05
-            seg_word_column, word_bit_n = val.split('_')
-            seg_word_column, word_bit_n = int(seg_word_column), int(word_bit_n)
+        def update_segbit(seg_word_column, word_bit_n, isset):
+            '''Set  or clear a single bit in a segment at the given word column and word bit position'''
             # Now we have the word column and word bit index
             # Combine with the segments relative frame position to fully get the position
             frame_addr = seg_baseaddr + seg_word_column
             # 2 words per segment
             word_addr = seg_word_base + word_bit_n // 32
             bit_index = word_bit_n % 32
-            frame_set(frame_addr, word_addr, bit_index)
+            if isset:
+                frame_set(frame_addr, word_addr, bit_index)
+            else:
+                frame_clear(frame_addr, word_addr, bit_index)
+
+        # Now lets look up the bits we need frames for
+        segdb = get_database(segj['type'])
+
+        db_k = '%s.%s' % (tilej['type'], name)
+        try:
+            db_vals = segdb[db_k]
+        except KeyError:
+            raise FASMSyntaxError(
+                "Segment DB %s, key %s not found from line '%s'" %
+                (segj['type'], db_k, l))
+
+        if not value:
+            # If its binary, allow omitted value default to 1
+            if tuple(sorted(db_vals.keys())) == ('0', '1'):
+                value = '1'
+            else:
+                raise FASMSyntaxError(
+                    "Enumerable entry %s must have explicit value" % name)
+        # Get the specific entry we need
+        try:
+            db_vals = db_vals[value]
+        except KeyError:
+            raise FASMSyntaxError(
+                "Invalid entry %s. Valid entries are %s" %
+                (value, db_vals.keys()))
+        for seg_word_column, word_bit_n, isset in db_vals:
+            update_segbit(seg_word_column, word_bit_n, isset)
 
     if debug:
         #dump_frames_verbose(frames)
