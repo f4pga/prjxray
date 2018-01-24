@@ -28,7 +28,6 @@ Loosely based on segprint function
 Maybe better to return as two distinct dictionaries?
 
 {
-    'tile.blah': {None: (12, 23)},
     'tile.meh': {
             'O5': [(11, 2, False), (12, 2, True)],
             'O6': [(11, 2, True), (12, 2, False)],
@@ -59,22 +58,21 @@ def get_database(segtype):
             if not isset:
                 raise Exception(
                     "Expect single bit DB entries to be set, got %s" % l)
-            segbitsdb[segtype][name] = {None: (seg_word_column, word_bit_n)}
+            # Treat like an enumerated value with keys 0 or 1
+            segbitsdb[segtype][name] = {
+                '0': [(seg_word_column, word_bit_n, 0)],
+                '1': [(seg_word_column, word_bit_n, 1)],
+            }
         else:
             # An enumerated value
             # Split the base name and selected key
             m = re.match(r'(.+)[.](.+)', name)
             name = m.group(1)
             key = m.group(2)
+
             # May or may not be the first key encountered
-            m = segbitsdb[segtype].get(name, {})
-            segbitsdb[segtype][name] = m
-            l = []
-            m[key] = l
-            #print("Add %s.%s" % (name, key))
-            for bit_val in bit_vals:
-                seg_word_column, word_bit_n, isset = parsebit(bit_val)
-                l.append((seg_word_column, word_bit_n, isset))
+            bits_map = segbitsdb[segtype].setdefault(name, {})
+            bits_map[key] = [parsebit(x) for x in bit_vals]
 
     with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE"), segtype),
@@ -229,37 +227,23 @@ def run(f_in, f_out, sparse=False, debug=False):
             raise FASMSyntaxError(
                 "Segment DB %s, key %s not found from line '%s'" %
                 (segj['type'], db_k, l))
-        '''
-        Creating the key depends on whether its an enumerated or a fixed value
-        If its enumerated, the value forms part of the key
-        We'd also like to ideally identify if there is a syntax error
-        Ultimately probably easier to separate out these two cases
-        '''
-        # A single bit value?
-        if None in db_vals:
-            seg_word_column, word_bit_n = db_vals[None]
-            # Value optional, defaults to 1
-            isset = 1
-            if value:
-                isset = {'0': 0, '1': 1}.get(value, None)
-                if isset is None:
-                    raise FASMSyntaxError(
-                        "Bad binary value %s on line %s" % (value, l))
-            update_segbit(seg_word_column, word_bit_n, isset)
-        # An enumerated value
-        else:
-            if not value:
+
+        if not value:
+            # If its binary, allow omitted value default to 1
+            if tuple(sorted(db_vals.keys())) == ('0', '1'):
+                value = '1'
+            else:
                 raise FASMSyntaxError(
                     "Enumerable entry %s must have explicit value" % name)
-            # Get the specific entry we need
-            try:
-                db_vals = db_vals[value]
-            except KeyError:
-                raise FASMSyntaxError(
-                    "Invalid entry %s. Valid entries are %s" %
-                    (value, db_vals.keys()))
-            for seg_word_column, word_bit_n, isset in db_vals:
-                update_segbit(seg_word_column, word_bit_n, isset)
+        # Get the specific entry we need
+        try:
+            db_vals = db_vals[value]
+        except KeyError:
+            raise FASMSyntaxError(
+                "Invalid entry %s. Valid entries are %s" %
+                (value, db_vals.keys()))
+        for seg_word_column, word_bit_n, isset in db_vals:
+            update_segbit(seg_word_column, word_bit_n, isset)
 
     if debug:
         #dump_frames_verbose(frames)
