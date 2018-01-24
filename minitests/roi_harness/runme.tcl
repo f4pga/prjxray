@@ -199,7 +199,7 @@ if {$fixed_xdc eq ""} {
 
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]
-    set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
+    #set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 
@@ -428,6 +428,6 @@ if {$fixed_xdc eq ""} {
 }
 
 write_checkpoint -force $outdir/design.dcp
-set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
+#set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
 write_bitstream -force $outdir/design.bit
 
