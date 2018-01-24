@@ -1,3 +1,5 @@
+# TODO: need better coverage for different tile types
+
 import fasm2frame
 
 import unittest
@@ -68,11 +70,68 @@ class TestStringMethods(unittest.TestCase):
 
     def test_lut_int(self):
         self.bitread_frm_equals(
-            'test_data/lut_int.fasm', 'test_data/clb_lut/design.bits')
+            'test_data/lut_int.fasm', 'test_data/lut_int/design.bits')
 
     def test_ff_int(self):
         self.bitread_frm_equals(
-            'test_data/ff_int.fasm', 'test_data/clb_ff/design.bits')
+            'test_data/ff_int.fasm', 'test_data/ff_int/design.bits')
+
+    def test_ff_int_op1(self):
+        '''Omitted key set to '''
+        self.bitread_frm_equals(
+            'test_data/ff_int_op1.fasm', 'test_data/ff_int/design.bits')
+
+    # Same check as above, but isolated test case
+    def test_opkey_01_default(self):
+        '''Optional key with binary omitted value should produce valid result'''
+        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX")
+        fout = StringIO.StringIO()
+        fasm2frame.run(fin, fout)
+
+    def test_opkey_01_1(self):
+        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1")
+        fout = StringIO.StringIO()
+        fasm2frame.run(fin, fout)
+
+    def test_opkey_enum(self):
+        '''Optional key with enumerated value should produce syntax error'''
+        # CLBLM_L.SLICEM_X0.AMUX.O6 !30_06 !30_07 !30_08 30_11
+        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.AMUX.O6")
+        fout = StringIO.StringIO()
+        try:
+            fasm2frame.run(fin, fout)
+            self.fail("Expected syntax error")
+        except fasm2frame.FASMSyntaxError:
+            pass
+
+    def test_ff_int_0s(self):
+        '''Explicit 0 entries'''
+        self.bitread_frm_equals(
+            'test_data/ff_int_0s.fasm', 'test_data/ff_int/design.bits')
+
+    def test_badkey(self):
+        '''Bad key should throw syntax error'''
+        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 2")
+        fout = StringIO.StringIO()
+        try:
+            fasm2frame.run(fin, fout)
+            self.fail("Expected syntax error")
+        except fasm2frame.FASMSyntaxError:
+            pass
+
+    def test_dupkey(self):
+        '''Duplicate key should throw syntax error'''
+        fin = StringIO.StringIO(
+            """\
+CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 0
+CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1
+""")
+        fout = StringIO.StringIO()
+        try:
+            fasm2frame.run(fin, fout)
+            self.fail("Expected syntax error")
+        except fasm2frame.FASMSyntaxError:
+            pass
 
     def test_sparse(self):
         '''Verify sparse equivilent to normal encoding'''
