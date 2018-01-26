@@ -1,4 +1,4 @@
-open_checkpoint harness.dcp
+open_checkpoint harness_synth.dcp
 
 create_pblock roi
 add_cells_to_pblock [get_pblocks roi] [get_cells roi]
@@ -132,18 +132,13 @@ foreach {net pin} [array get net2pin] {
 
 set_property HD.RECONFIGURABLE TRUE [get_cells roi]
 
-read_checkpoint -cell roi roi_inv.dcp
+read_checkpoint -cell roi inv_synth.dcp
 
 opt_design
 place_design
 route_design
 
-write_checkpoint -force roi_inv_w_harness_routed.dcp
-
-# Routed design of roi cell only
-write_checkpoint -force -cell roi roi_inv_routed.dcp
-
 # Replace roi cell with a black box and write the rest of the design
 update_design -cell roi -black_box
 lock_design -level routing
-write_checkpoint -force harness_routed.dcp
+write_checkpoint -force harness_impl.dcp
