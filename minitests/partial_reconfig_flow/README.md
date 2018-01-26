@@ -37,8 +37,8 @@ if it doesn't already exist.  The following TCL will load the fully-routed
 harness, load your synthesized design, and generate a bitstream containing
 both:
 ```
-open_checkpoint -force harness_routed.dcp
-read_checkpoint -cell <design>.dcp
+open_checkpoint harness_routed.dcp
+read_checkpoint -cell roi <design>.dcp
 opt_design
 place_design
 route_design
