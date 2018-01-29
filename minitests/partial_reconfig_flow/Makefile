@@ -1,21 +1,23 @@
+.PRECIOUS: harness_impl.dcp %_impl.dcp %.bit
+
 # Top-level target for generating a programmable bitstream.  Given a .fasm
-# file, calling make with the .fasm extension replaced with .hand_crafted.bit
+# file, calling make with the .fasm extension replaced with _hand_crafted.bit
 # will generate a bitstream that includes both the harness and the .fasm design
-# ready for programming to a board.  For example, 'make
-# roi_noninv.hand_crafted.bit' will generate a bitstream that includes the
+# ready for programming to a board.  For example,
+# 'make inv_hand_crafted.bit' will generate a bitstream that includes the
 # design from roi_noninv.fasm. 
-%.hand_crafted.bit: init_sequence.bit %.no_headers.bin final_sequence.bin
+%_hand_crafted.bit: init_sequence.bit %_no_headers.bin final_sequence.bin
 	cat $^ > $@
 
-%.no_headers.bin: %.patched.bin
+%_no_headers.bin: %_patched.bin
 	# WARNING: these values need to be tweaked if anything about the
 	# Vivado-generated design changes.
 	xxd -p -s 0x18 $< | xxd -r -p - $@
 
-%.patched.bin: %.frm harness_routed.bit
+%_patched.bin: %_roi_partial.frm harness.bit
 	${XRAY_TOOLS_DIR}/xc7patch \
 		--part_file ${XRAY_PART_YAML} \
-		--bitstream_file harness_routed.bit \
+		--bitstream_file harness.bit \
 		--frm_file $< \
 		--output_file $@
 
@@ -25,7 +27,7 @@
 # xc7patch-generated bitstream to create a programmable bitstream.
 #
 # The offsets used below were determined by manually inspecting
-# harness_routed.bit with a hex editor.  init_sequence.bit is the beginning of
+# harness.bit with a hex editor.  init_sequence.bit is the beginning of
 # the file until just before the actual frame data is sent via a write to FDRI.
 # final_sequence.bin is from just after the frame data write to the end of the
 # file.  Note that final_sequence.bin normally includes at least one CRC check.
@@ -33,12 +35,12 @@
 # same behavior as setting BITSTREAM.GENERAL.CRC to Disabled.  These offset
 # should not change unless you alter the bitstream format used (i.e. setting
 # BITSTREAM.GENERAL.DEBUGBITSTREAM or BITSTREAM.GENERAL.PERFRAMECRC to YES).
-init_sequence.bit: harness_routed.bit
+init_sequence.bit: harness.bit
 	# WARNING: these values need to be tweaked if anything about the
 	# Vivado-generated design changes.
 	xxd -p -l 0x147 $< | xxd -r -p - $@
 
-final_sequence.bin: harness_routed.bit
+final_sequence.bin: harness.bit
 	# WARNING: these values need to be tweaked if anything about the
 	# Vivado-generated design changes.
 	xxd -p -s 0x216abf $< | \
@@ -48,29 +50,35 @@ final_sequence.bin: harness_routed.bit
 		xxd -r -p - $@
 
 # Generate a suitable harness by using Vivado's partial reconfiguration
-# feature.  roi_inv is used as a sample reconfiguration design as one is
+# feature.  inv.v is used as a sample reconfiguration design as one is
 # required to generate a partial reconfiguration design.
-harness.dcp: harness.tcl top.v roi_base.v
-	vivado -mode batch -source harness.tcl
+harness_synth.dcp: harness_synthesize.tcl harness.v
+	vivado -mode batch -source harness_synthesize.tcl
 
-roi_inv.dcp: roi_inv.tcl roi_inv.v
-	vivado -mode batch -source roi_inv.tcl
+harness_impl.dcp: harness_synth.dcp inv_synth.dcp harness_implement.tcl
+	vivado -mode batch -source harness_implement.tcl
 
-roi_inv_routed.dcp roi_inv_w_harness_routed.dcp harness_routed.dcp: harness.dcp roi_inv.dcp roi_inv_routed.tcl
-	vivado -mode batch -source roi_inv_routed.tcl
+# Synthesize an ROI design
+%_synth.dcp: %.v roi_synthesize.tcl
+	vivado -mode batch -source roi_synthesize.tcl -tclargs $< $@
+
+# Implement an ROI design
+%_impl.dcp: %_synth.dcp harness_impl.dcp roi_implement.tcl
+	vivado -mode batch -source roi_implement.tcl -tclargs $< $@
+
+# Generate bitstreams from an implemented design.  Two bitstreams are
+# generated: one containing a complete design including the harness (.bit) and
+# one that only contains the frames that implement the ROI design
+# (_roi_partial.bit).
+%.bit: %_impl.dcp write_bitstream.tcl
+	vivado -mode batch -source write_bitstream.tcl -tclargs $< $@
+%_roi_partial.bit: %.bit ;
 
 # Conversions between various formats.
-%.bit: %.dcp write_bitstream.tcl
-	vivado -mode batch -source write_bitstream.tcl -tclargs $< $@
-
 %.bits: %.bit
-	${XRAY_BITREAD} -y -o $@ $<
+	${XRAY_BITREAD} -z -y -o $@ $<
 
-# Extract only bits that are within the ROI.
-%.roi.bits: %.bit
-	${XRAY_BITREAD} -F ${XRAY_ROI_FRAMES} -z -y -o $@ $<
-
-%.segp: %.roi.bits
+%.segp: %.bits
 	${XRAY_SEGPRINT} -zd $< > $@
 
 %.fasm: %.segp
@@ -85,10 +93,8 @@ roi_inv_routed.dcp roi_inv_w_harness_routed.dcp harness_routed.dcp: harness.dcp 
 	${XRAY_TOOLS_DIR}/bittool list_config_packets $< > $@
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit design.txt .Xil
-	rm -rf out_* *~
-	rm -rf *.frm *.segp *.packets *.bin
-	rm -rf harness_routed.fasm roi_inv_w_harness_routed.fasm
+	rm -rf vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit design.txt .Xil
+	rm -rf *.frm *.segp *.packets *.bin *.fasm
 	rm -rf hd_visual
 
 .PHONY: clean
