@@ -350,7 +350,7 @@ proc route_via2 {net nodes} {
 }
 
 # XXX: maybe add IOB?
-set fp [open "design.txt" w]
+set fp [open "$outdir/design.txt" w]
 puts $fp "name node pin"
 # Manual routing
 if {$fixed_xdc eq ""} {
