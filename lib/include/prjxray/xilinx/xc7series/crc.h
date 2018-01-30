@@ -3,19 +3,25 @@
 
 #include <cstdint>
 
+constexpr uint32_t kCrc32CastagnoliPolynomial = 0x82F63B78;
+
 namespace prjxray {
 namespace xilinx {
 namespace xc7series {
 
-// Extend the current CRC value with one address (5bit) and data (32bit) 
-// pair and return the newly computed CRC value
+// The CRC is calculated from each written data word and the current
+// register address the data is written to.
+
+// Extend the current CRC value with one register address (5bit) and
+// frame data (32bit) pair and return the newly computed CRC value.
 
 uint32_t icap_crc(uint32_t addr, uint32_t data, uint32_t prev) {
-	uint64_t val = ((uint64_t)addr << 32) | data;
+	uint64_t poly = static_cast<uint64_t>(kCrc32CastagnoliPolynomial) << 1;
+	uint64_t val = (static_cast<uint64_t>(addr) << 32) | data;
 	uint64_t crc = prev;
-	uint64_t poly = 0x82F63B78L << 1;	// CRC-32C (Castagnoli)
+	constexpr int kFivePlusThrityTwo = 37;
 
-	for (int i = 0; i < 37; i++) {
+	for (int i = 0; i < kFivePlusThrityTwo; i++) {
 		if ((val & 1) != (crc & 1))
 			crc ^= poly;
 
