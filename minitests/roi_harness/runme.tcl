@@ -23,7 +23,7 @@ set X_BASE $XRAY_ROI_X0
 set Y_BASE $XRAY_ROI_Y0
 
 # set Y_DIN_BASE 100
-set Y_CLK_BASE $Y_BASE 
+set Y_CLK_BASE $Y_BASE
 # Clock lut in middle
 set Y_DIN_BASE [expr "$Y_CLK_BASE + 1"]
 # Sequential
@@ -306,47 +306,47 @@ proc route_via2 {net nodes} {
     # net: net as string
     # nodes: string list of one or more intermediate routing nodes to visit
 
-	set net [get_nets $net]
-	# Start at the net source
-	set fixed_route [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
-	# End at the net destination
-	# For sone reason this doesn't always show up
-	set site_pins [get_site_pins -filter {DIRECTION == IN} -of_objects $net]
+    set net [get_nets $net]
+    # Start at the net source
+    set fixed_route [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
+    # End at the net destination
+    # For sone reason this doesn't always show up
+    set site_pins [get_site_pins -filter {DIRECTION == IN} -of_objects $net]
     if {$site_pins eq ""} {
         puts "WARNING: could not find end node"
         #error "Could not find end node"
     } else {
-    	set end_node [get_nodes -of_objects]
-    	lappend nodes [$end_node]
-	}
+        set end_node [get_nodes -of_objects]
+        lappend nodes [$end_node]
+    }
 
-	puts ""
-	puts "Routing net $net:"
+    puts ""
+    puts "Routing net $net:"
 
-	foreach to_node $nodes {
+    foreach to_node $nodes {
         if {$to_node eq ""} {
             error "Empty node"
         }
 
-	    # Node string to object
-		set to_node [get_nodes -of_objects [get_wires $to_node]]
-		# Start at last routed position
-		set from_node [lindex $fixed_route end]
-		# Let vivado do heavy liftin in between
-		set route [find_routing_path -quiet -from $from_node -to $to_node]
-		if {$route == ""} {
-		    # Some errors print a huge route
-			puts [concat [string range "  $from_node -> $to_node" 0 1000] ": no route found - assuming direct PIP"]
-			lappend fixed_route $to_node
-		} {
-			puts [concat [string range "  $from_node -> $to_node: $route" 0 1000] "routed"]
-			set fixed_route [concat $fixed_route [lrange $route 1 end]]
-		}
-		set_property -quiet FIXED_ROUTE $fixed_route $net
-	}
+        # Node string to object
+        set to_node [get_nodes -of_objects [get_wires $to_node]]
+        # Start at last routed position
+        set from_node [lindex $fixed_route end]
+        # Let vivado do heavy liftin in between
+        set route [find_routing_path -quiet -from $from_node -to $to_node]
+        if {$route == ""} {
+            # Some errors print a huge route
+            puts [concat [string range "  $from_node -> $to_node" 0 1000] ": no route found - assuming direct PIP"]
+            lappend fixed_route $to_node
+        } {
+            puts [concat [string range "  $from_node -> $to_node: $route" 0 1000] "routed"]
+            set fixed_route [concat $fixed_route [lrange $route 1 end]]
+        }
+        set_property -quiet FIXED_ROUTE $fixed_route $net
+    }
 
-	set_property -quiet FIXED_ROUTE $fixed_route $net
-	puts ""
+    set_property -quiet FIXED_ROUTE $fixed_route $net
+    puts ""
 }
 
 # XXX: maybe add IOB?
@@ -378,7 +378,8 @@ if {$fixed_xdc eq ""} {
         route_via2 "din_IBUF[$i]" "INT_R_X${x_EE2BEG3}Y${y}/EE2BEG3 $node"
         set net "din[$i]"
         set pin "$net2pin($net)"
-        puts $fp "$net $node $pin"
+        set more [get_wires -of_objects [get_nodes $node]]
+        puts $fp "$net $node $pin $more"
         set y [expr {$y + $PITCH}]
     }
 
@@ -409,7 +410,8 @@ if {$fixed_xdc eq ""} {
         }
         set net "dout[$i]"
         set pin "$net2pin($net)"
-        puts $fp "$net $node $pin"
+        set more [get_wires -of_objects [get_nodes $node]]
+        puts $fp "$net $node $pin $more"
         set y [expr {$y + $PITCH}]
     }
 }
