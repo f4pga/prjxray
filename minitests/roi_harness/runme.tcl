@@ -349,6 +349,13 @@ proc route_via2 {net nodes} {
     puts ""
 }
 
+# Return the wire on the ROI boundary
+proc node2wire {node} {
+    set wires [get_wires -of_objects [get_nodes $node]]
+    set wire [lsearch -inline $wires *VBRK*]
+    return $wire
+}
+
 # XXX: maybe add IOB?
 set fp [open "$outdir/design.txt" w]
 puts $fp "name node pin"
@@ -361,10 +368,11 @@ if {$fixed_xdc eq ""} {
     # But we still need to record something, so lets force a route
     # FIXME: very ROI specific
     set node "CLK_HROW_TOP_R_X60Y130/CLK_HROW_CK_BUFHCLK_L0"
+    set wire [node2wire $node]
     route_via2 "clk_IBUF_BUFG" "$node"
     set net "clk"
     set pin "$net2pin($net)"
-    puts $fp "$net $node $pin"
+    puts $fp "$net $node $pin $wire"
 
     puts "Routing ROI inputs"
     # Arbitrary offset as observed
@@ -378,8 +386,8 @@ if {$fixed_xdc eq ""} {
         route_via2 "din_IBUF[$i]" "INT_R_X${x_EE2BEG3}Y${y}/EE2BEG3 $node"
         set net "din[$i]"
         set pin "$net2pin($net)"
-        set more [get_wires -of_objects [get_nodes $node]]
-        puts $fp "$net $node $pin $more"
+        set wire [node2wire $node]
+        puts $fp "$net $node $pin $wire"
         set y [expr {$y + $PITCH}]
     }
 
@@ -410,8 +418,8 @@ if {$fixed_xdc eq ""} {
         }
         set net "dout[$i]"
         set pin "$net2pin($net)"
-        set more [get_wires -of_objects [get_nodes $node]]
-        puts $fp "$net $node $pin $more"
+        set wire [node2wire $node]
+        puts $fp "$net $node $pin $wire"
         set y [expr {$y + $PITCH}]
     }
 }
