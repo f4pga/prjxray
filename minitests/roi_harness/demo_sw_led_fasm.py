@@ -8,6 +8,7 @@ import simpleroute
 print()
 print('ready')
 
+
 def load_design(f):
     '''
     name node pin wire
@@ -18,9 +19,10 @@ def load_design(f):
     f.readline()
     for l in f:
         l = l.strip()
-        name,node,pin,wire = l.split(' ')
+        name, node, pin, wire = l.split(' ')
         ret[name] = wire
     return ret
+
 
 def route2fasm(route, out_f):
     pips = simpleroute.route(route)
@@ -32,26 +34,32 @@ def route2fasm(route, out_f):
         pip = pip[0:doti] + ' ' + pip[doti + 1:]
         out_f.write(pip + '\n')
 
+
 def run(design_f, swn, ledn, out_f):
     name2wire = load_design(design_f)
     led_name = 'dout[%d]' % ledn
     sw_name = 'din[%d]' % swn
     led_wire = name2wire[led_name]
     sw_wire = name2wire[sw_name]
-    print('Routing %s (%s) => %s (%s)' % (sw_wire, sw_name, led_wire, led_name))
+    print(
+        'Routing %s (%s) => %s (%s)' % (sw_wire, sw_name, led_wire, led_name))
 
     route2fasm((sw_wire, led_wire), out_f)
     # XXX: terminate LEDs so they are off?
 
+
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Switch to LED interconnect demo: FASM generator')
+    parser = argparse.ArgumentParser(
+        description='Switch to LED interconnect demo: FASM generator')
     parser.add_argument('design_txt', help='ROI metadata file')
     parser.add_argument('sw', type=int, help='Switch to use')
     parser.add_argument('led', type=int, help='LED to use')
     # For now can't use stdout since simpleroute is spewing out prints
     parser.add_argument('out_fasm', help='Output .fasm file')
-    
+
     args = parser.parse_args()
-    run(open(args.design_txt, 'r'), args.sw, args.led, open(args.out_fasm, 'w'))
+    run(
+        open(args.design_txt, 'r'), args.sw, args.led, open(
+            args.out_fasm, 'w'))

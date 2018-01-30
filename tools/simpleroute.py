@@ -119,7 +119,8 @@ def route(args):
         try:
             write_scores(set([dst_node]), 1)
         except RecursionError as e:
-            raise Exception("Could not find route for node %s" % (dst_node,)) from None
+            raise Exception("Could not find route for node %s" %
+                            (dst_node, )) from None
         print("  route length: %d" % node_scores[src_node])
 
         count = 0
