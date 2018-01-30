@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
 
-import getopt, sys, os, json, re
-
-if len(sys.argv) == 1 or (len(sys.argv) % 2) != 1:
-    print()
-    print("Usage: %s src1 dst1 [src2 dst2 [...]]" % sys.argv[0])
-    print()
-    print(
-        "Example: %s VBRK_X29Y140/VBRK_ER1BEG2 VFRAME_X47Y113/VFRAME_EL1BEG2" %
-        sys.argv[0])
-    print()
-    sys.exit(1)
+import sys, os, json
 
 
 class MergeFind:
@@ -98,67 +88,85 @@ for tile_type in ["int_l", "int_r"]:
                     tile, dst, src)
                 reverse_node_node[dst_node].add(src_node)
 
-for argidx in range((len(sys.argv) - 1) // 2):
-    src_tile, src_wire = sys.argv[2 * argidx + 1].split("/")
-    dst_tile, dst_wire = sys.argv[2 * argidx + 2].split("/")
 
-    src_node = nodes.find((src_tile, src_wire))
-    dst_node = nodes.find((dst_tile, dst_wire))
+def route(args):
+    for argidx in range((len(args)) // 2):
+        src_tile, src_wire = args[2 * argidx].split("/")
+        dst_tile, dst_wire = args[2 * argidx + 1].split("/")
 
-    print("Routing %s -> %s:" % (src_node, dst_node))
+        src_node = nodes.find((src_tile, src_wire))
+        dst_node = nodes.find((dst_tile, dst_wire))
 
-    node_scores = dict()
+        print("Routing %s -> %s:" % (src_node, dst_node))
 
-    def write_scores(nodes, count):
-        next_nodes = set()
-        for n in nodes:
-            if n in node_scores:
-                continue
-            node_scores[n] = count
-            if n == src_node:
-                return
-            if n in reverse_node_node:
-                for nn in reverse_node_node[n]:
-                    if nn not in node_scores and nn not in blocked_nodes:
-                        next_nodes.add(nn)
-        write_scores(next_nodes, count + 1)
+        node_scores = dict()
 
-    write_scores(set([dst_node]), 1)
-    print("  route length: %d" % node_scores[src_node])
+        def write_scores(nodes, count):
+            next_nodes = set()
+            for n in nodes:
+                if n in node_scores:
+                    continue
+                node_scores[n] = count
+                if n == src_node:
+                    return
+                if n in reverse_node_node:
+                    for nn in reverse_node_node[n]:
+                        if nn not in node_scores and nn not in blocked_nodes:
+                            next_nodes.add(nn)
+            write_scores(next_nodes, count + 1)
 
-    count = 0
-    c = src_node
-    blocked_nodes.add(c)
-    print("  %4d: %s" % (count, c))
+        write_scores(set([dst_node]), 1)
+        print("  route length: %d" % node_scores[src_node])
 
-    score = node_scores[src_node]
-    while c != dst_node:
-        nn = None
-        for n in node_node_pip[c].keys():
-            if n in node_scores and node_scores[n] < score:
-                nn, score = n, node_scores[n]
-
-        pip = node_node_pip[c][nn]
-        active_pips.add(pip)
-        print("        %s" % pip)
-
-        count += 1
-        c = nn
+        count = 0
+        c = src_node
         blocked_nodes.add(c)
         print("  %4d: %s" % (count, c))
 
-print("====")
-pipnames = list()
+        score = node_scores[src_node]
+        while c != dst_node:
+            nn = None
+            for n in node_node_pip[c].keys():
+                if n in node_scores and node_scores[n] < score:
+                    nn, score = n, node_scores[n]
 
-for pip in sorted(active_pips):
-    tile, dst, src = pip.split(".")
-    pipnames.append("%s/%s.%s->>%s" % (tile, tile[0:5], src, dst))
+            pip = node_node_pip[c][nn]
+            active_pips.add(pip)
+            print("        %s" % pip)
 
-print(
-    "highlight_objects -color orange [get_nodes -of_objects [get_wires {%s}]]"
-    % " ".join(["%s/%s" % n for n in sorted(blocked_nodes)]))
-print("highlight_objects -color orange [get_pips {%s}]" % " ".join(pipnames))
+            count += 1
+            c = nn
+            blocked_nodes.add(c)
+            print("  %4d: %s" % (count, c))
 
-print("====")
-for pip in sorted(active_pips):
-    print(pip)
+    print("====")
+    pipnames = list()
+
+    for pip in sorted(active_pips):
+        tile, dst, src = pip.split(".")
+        pipnames.append("%s/%s.%s->>%s" % (tile, tile[0:5], src, dst))
+
+    print(
+        "highlight_objects -color orange [get_nodes -of_objects [get_wires {%s}]]"
+        % " ".join(["%s/%s" % n for n in sorted(blocked_nodes)]))
+    print(
+        "highlight_objects -color orange [get_pips {%s}]" % " ".join(pipnames))
+
+    print("====")
+    for pip in sorted(active_pips):
+        print(pip)
+    return active_pips
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1 or (len(sys.argv) % 2) != 1:
+        print()
+        print("Usage: %s src1 dst1 [src2 dst2 [...]]" % sys.argv[0])
+        print("Where entires as tile/wire")
+        print()
+        print(
+            "Example: %s VBRK_X29Y140/VBRK_ER1BEG2 VFRAME_X47Y113/VFRAME_EL1BEG2"
+            % sys.argv[0])
+        print()
+        sys.exit(1)
+    route(sys.argv[1:])
