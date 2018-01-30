@@ -358,7 +358,7 @@ proc node2wire {node} {
 
 # XXX: maybe add IOB?
 set fp [open "$outdir/design.txt" w]
-puts $fp "name node pin"
+puts $fp "name node pin wire"
 # Manual routing
 if {$fixed_xdc eq ""} {
     set x $X_BASE
