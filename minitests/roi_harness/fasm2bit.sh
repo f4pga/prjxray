@@ -14,9 +14,18 @@ if [ -z "$bit_in" ] ; then
     echo "need .bit arg"
     exit
 fi
+bit_out=$3
+if [ -z "$bit_out" ] ; then
+    bit_out=$(echo $fasm_in |sed s/.fasm/.bit/)
+    if [ "$bit_out" = "$fasm_in" ] ; then
+        echo "Expected fasm file"
+        exit 1
+    fi
+fi
 
 echo "Design .fasm: $fasm_in"
 echo "Harness .bit: $bit_in"
+echo "Out .bit: $bit_out"
 
 ${XRAY_DIR}/tools/fasm2frame.py $fasm_in roi_partial.frm
 
@@ -42,7 +51,7 @@ xxd -p -s 0x216abf $bit_in | \
 	fold -w 40 | \
 	xxd -r -p - final_sequence.bin
 
-cat init_sequence.bit no_headers.bin final_sequence.bin >hand_crafted.bit
+cat init_sequence.bit no_headers.bin final_sequence.bin >$bit_out
 
-openocd -f openocd-basys3.cfg -c "init; pld load 0 hand_crafted.bit; exit"
+#openocd -f $XRAY_DIR/utils/openocd/board-digilent-basys3.cfg -c "init; pld load 0 $bit_out; exit"
 
