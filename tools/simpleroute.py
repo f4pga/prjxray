@@ -68,8 +68,6 @@ print("Processing PIPs..")
 
 node_node_pip = dict()
 reverse_node_node = dict()
-blocked_nodes = set()
-active_pips = set()
 
 for tile_type in ["int_l", "int_r"]:
     with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
@@ -90,6 +88,9 @@ for tile_type in ["int_l", "int_r"]:
 
 
 def route(args):
+    active_pips = set()
+    blocked_nodes = set()
+
     for argidx in range((len(args)) // 2):
         src_tile, src_wire = args[2 * argidx].split("/")
         dst_tile, dst_wire = args[2 * argidx + 1].split("/")
@@ -115,7 +116,10 @@ def route(args):
                             next_nodes.add(nn)
             write_scores(next_nodes, count + 1)
 
-        write_scores(set([dst_node]), 1)
+        try:
+            write_scores(set([dst_node]), 1)
+        except RecursionError as e:
+            raise Exception("Could not find route for node %s" % (dst_node,)) from None
         print("  route length: %d" % node_scores[src_node])
 
         count = 0
