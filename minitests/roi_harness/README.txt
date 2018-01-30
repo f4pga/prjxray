@@ -17,3 +17,7 @@ To build the baseline harness:
 To build a sample Vivado design using the harness:
 XRAY_ROIV=roi_inv.v XRAY_FIXED_XDC=out_xc7a35tcpg236-1_BASYS3-SWBUT_roi_basev/fixed_noclk.xdc ./runme.sh
 Note: this was intended for verification only and not as an end user flow (they should use SymbiFlow)
+
+To use the harness for the basys3 demo, do something like:
+python3 demo_sw_led.py out_xc7a35tcpg236-1_BASYS3-SWBUT_roi_basev 3 2
+This example connects switch 3 to LED 2
