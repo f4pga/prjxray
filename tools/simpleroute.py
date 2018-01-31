@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, os, json
+import pickle
 
 
 class MergeFind:
@@ -21,70 +22,91 @@ class MergeFind:
         return a
 
 
-print("Reading database..")
+def db_gen():
+    print("Reading database..")
 
-with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
-                                   os.getenv("XRAY_DATABASE")), "r") as f:
-    tiles = json.load(f)["tiles"]
+    with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
+                                       os.getenv("XRAY_DATABASE")), "r") as f:
+        tiles = json.load(f)["tiles"]
 
-with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
-                                   os.getenv("XRAY_DATABASE")), "r") as f:
-    tileconn = json.load(f)
+    with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
+                                       os.getenv("XRAY_DATABASE")), "r") as f:
+        tileconn = json.load(f)
 
-type_to_tiles = dict()
-grid_to_tile = dict()
-nodes = MergeFind()
+    type_to_tiles = dict()
+    grid_to_tile = dict()
+    nodes = MergeFind()
 
-for tile, tiledata in tiles.items():
-    if tiledata["type"] not in type_to_tiles:
-        type_to_tiles[tiledata["type"]] = list()
-    type_to_tiles[tiledata["type"]].append(tile)
-    grid_to_tile[(tiledata["grid_x"], tiledata["grid_y"])] = tile
+    for tile, tiledata in tiles.items():
+        if tiledata["type"] not in type_to_tiles:
+            type_to_tiles[tiledata["type"]] = list()
+        type_to_tiles[tiledata["type"]].append(tile)
+        grid_to_tile[(tiledata["grid_x"], tiledata["grid_y"])] = tile
 
-print("Processing tileconn..")
+    print("Processing tileconn..")
 
-for entry in tileconn:
-    type_a, type_b = entry["tile_types"]
-    for tile_a in type_to_tiles[type_a]:
-        tiledata_a = tiles[tile_a]
-        grid_a = (tiledata_a["grid_x"], tiledata_a["grid_y"])
-        grid_b = (
-            grid_a[0] + entry["grid_deltas"][0],
-            grid_a[1] + entry["grid_deltas"][1])
+    for entry in tileconn:
+        type_a, type_b = entry["tile_types"]
+        for tile_a in type_to_tiles[type_a]:
+            tiledata_a = tiles[tile_a]
+            grid_a = (tiledata_a["grid_x"], tiledata_a["grid_y"])
+            grid_b = (
+                grid_a[0] + entry["grid_deltas"][0],
+                grid_a[1] + entry["grid_deltas"][1])
 
-        if grid_b not in grid_to_tile:
-            continue
+            if grid_b not in grid_to_tile:
+                continue
 
-        tile_b = grid_to_tile[grid_b]
-        tiledata_b = tiles[tile_b]
+            tile_b = grid_to_tile[grid_b]
+            tiledata_b = tiles[tile_b]
 
-        if tiledata_b["type"] != type_b:
-            continue
+            if tiledata_b["type"] != type_b:
+                continue
 
-        for pair in entry["wire_pairs"]:
-            nodes.merge((tile_a, pair[0]), (tile_b, pair[1]))
+            for pair in entry["wire_pairs"]:
+                nodes.merge((tile_a, pair[0]), (tile_b, pair[1]))
 
-print("Processing PIPs..")
+    print("Processing PIPs..")
 
-node_node_pip = dict()
-reverse_node_node = dict()
+    node_node_pip = dict()
+    reverse_node_node = dict()
 
-for tile_type in ["int_l", "int_r"]:
-    with open("%s/%s/segbits_%s.db" % (os.getenv("XRAY_DATABASE_DIR"),
-                                       os.getenv("XRAY_DATABASE"), tile_type),
-              "r") as f:
-        for line in f:
-            _, dst, src = line.split()[0].split(".")
-            for tile in type_to_tiles[tile_type.upper()]:
-                src_node = nodes.find((tile, src))
-                dst_node = nodes.find((tile, dst))
-                if src_node not in node_node_pip:
-                    node_node_pip[src_node] = dict()
-                if dst_node not in reverse_node_node:
-                    reverse_node_node[dst_node] = set()
-                node_node_pip[src_node][dst_node] = "%s.%s.%s" % (
-                    tile, dst, src)
-                reverse_node_node[dst_node].add(src_node)
+    for tile_type in ["int_l", "int_r"]:
+        with open("%s/%s/segbits_%s.db" %
+                  (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+                   tile_type), "r") as f:
+            for line in f:
+                _, dst, src = line.split()[0].split(".")
+                for tile in type_to_tiles[tile_type.upper()]:
+                    src_node = nodes.find((tile, src))
+                    dst_node = nodes.find((tile, dst))
+                    if src_node not in node_node_pip:
+                        node_node_pip[src_node] = dict()
+                    if dst_node not in reverse_node_node:
+                        reverse_node_node[dst_node] = set()
+                    node_node_pip[src_node][dst_node] = "%s.%s.%s" % (
+                        tile, dst, src)
+                    reverse_node_node[dst_node].add(src_node)
+
+    return type_to_tiles, grid_to_tile, nodes, node_node_pip, reverse_node_node
+
+
+def db_load():
+    # Takes a while. Speed things up
+    picklef = os.getenv('XRAY_DIR') + '/tools/simpleroute.p'
+    if os.path.exists(picklef):
+        #print('Pickle: load')
+        db_res = pickle.load(open(picklef, 'rb'))
+    else:
+        #print('Pickle: rebuilding')
+        db_res = db_gen()
+        #print('Pickle: save')
+        pickle.dump(db_res, open(picklef, 'wb'))
+    return db_res
+
+
+type_to_tiles, grid_to_tile, nodes, node_node_pip, reverse_node_node = db_load(
+)
 
 
 def route(args):
