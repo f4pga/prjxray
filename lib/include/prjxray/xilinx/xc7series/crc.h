@@ -16,12 +16,14 @@ namespace xc7series {
 // frame data (32bit) pair and return the newly computed CRC value.
 
 uint32_t icap_crc(uint32_t addr, uint32_t data, uint32_t prev) {
+	constexpr int kAddressBitWidth = 5;
+	constexpr int kDataBitWidth = 32;
+
 	uint64_t poly = static_cast<uint64_t>(kCrc32CastagnoliPolynomial) << 1;
 	uint64_t val = (static_cast<uint64_t>(addr) << 32) | data;
 	uint64_t crc = prev;
-	constexpr int kFivePlusThrityTwo = 37;
 
-	for (int i = 0; i < kFivePlusThrityTwo; i++) {
+	for (int i = 0; i < kAddressBitWidth + kDataBitWidth; i++) {
 		if ((val & 1) != (crc & 1))
 			crc ^= poly;
 
