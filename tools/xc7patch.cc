@@ -11,6 +11,7 @@
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
 #include <prjxray/xilinx/xc7series/bitstream_writer.h>
 #include <prjxray/xilinx/xc7series/configuration.h>
+#include <prjxray/xilinx/xc7series/ecc.h>
 #include <prjxray/xilinx/xc7series/part.h>
 
 DEFINE_string(part_file, "", "Definition file for target 7-series part");
@@ -111,35 +112,8 @@ int main(int argc, char* argv[]) {
 
 		uint32_t ecc = 0;
 		for (size_t ii = 0; ii < frame_data.size(); ++ii) {
-			uint32_t word = frame_data[ii];
-			uint32_t offset = ii * 32;
-			if (ii > 0x25) {
-				offset += 0x1360;
-			} else if (ii > 0x6) {
-				offset += 0x1340;
-			} else {
-				offset += 0x1320;
-			}
-
-			// Mask out where the ECC should be.
-			if (ii == 0x32) {
-				word &= 0xFFFFE000;
-			}
-
-			for (int jj = 0; jj < 32; ++jj) {
-				if ((word & 1) == 1) {
-					ecc ^= offset + jj;
-				}
-				word >>= 1;
-			}
+			ecc = xc7series::icap_ecc(ii, frame_data[ii], ecc);
 		}
-
-		uint32_t v = ecc & 0xFFF;
-		v ^= v >> 8;
-		v ^= v >> 4;
-		v ^= v >> 2;
-		v ^= v >> 1;
-		ecc ^= (v & 1) << 12;
 
 		// Replace the old ECC with the new.
 		frame_data[0x32] &= 0xFFFFE000;
