@@ -5,7 +5,10 @@
 #include <string>
 #include <vector>
 
+#include <absl/strings/str_cat.h>
 #include <absl/strings/str_split.h>
+#include <absl/time/clock.h>
+#include <absl/time/time.h>
 #include <gflags/gflags.h>
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
@@ -18,6 +21,7 @@
 #include <prjxray/xilinx/xc7series/nop_packet.h>
 #include <prjxray/xilinx/xc7series/part.h>
 
+DEFINE_string(part_name, "", "");
 DEFINE_string(part_file, "", "Definition file for target 7-series part");
 DEFINE_string(bitstream_file,
               "",
@@ -315,12 +319,75 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	// Xilinx BIT header.
+	// Sync header
+	std::vector<uint8_t> bit_header{0x0,  0x9,  0x0f, 0xf0, 0x0f,
+	                                0xf0, 0x0f, 0xf0, 0x0f, 0xf0,
+	                                0x00, 0x00, 0x01, 'a'};
+	auto build_source = absl::StrCat(FLAGS_frm_file, ";Generator=xc7patch");
+	bit_header.push_back(
+	    static_cast<uint8_t>((build_source.size() + 1) >> 8));
+	bit_header.push_back(static_cast<uint8_t>(build_source.size() + 1));
+	bit_header.insert(bit_header.end(), build_source.begin(),
+	                  build_source.end());
+	bit_header.push_back(0x0);
+
+	// Source file.
+	bit_header.push_back('b');
+	bit_header.push_back(
+	    static_cast<uint8_t>((FLAGS_part_name.size() + 1) >> 8));
+	bit_header.push_back(static_cast<uint8_t>(FLAGS_part_name.size() + 1));
+	bit_header.insert(bit_header.end(), FLAGS_part_name.begin(),
+	                  FLAGS_part_name.end());
+	bit_header.push_back(0x0);
+
+	// Build timestamp.
+	auto build_time = absl::Now();
+	auto build_date_string =
+	    absl::FormatTime("%E4Y/%m/%d", build_time, absl::UTCTimeZone());
+	auto build_time_string =
+	    absl::FormatTime("%H:%M:%S", build_time, absl::UTCTimeZone());
+
+	bit_header.push_back('c');
+	bit_header.push_back(
+	    static_cast<uint8_t>((build_date_string.size() + 1) >> 8));
+	bit_header.push_back(
+	    static_cast<uint8_t>(build_date_string.size() + 1));
+	bit_header.insert(bit_header.end(), build_date_string.begin(),
+	                  build_date_string.end());
+	bit_header.push_back(0x0);
+
+	bit_header.push_back('d');
+	bit_header.push_back(
+	    static_cast<uint8_t>((build_time_string.size() + 1) >> 8));
+	bit_header.push_back(
+	    static_cast<uint8_t>(build_time_string.size() + 1));
+	bit_header.insert(bit_header.end(), build_time_string.begin(),
+	                  build_time_string.end());
+	bit_header.push_back(0x0);
+
+	bit_header.insert(bit_header.end(), {'e', 0x0, 0x0, 0x0, 0x0});
+	out_file.write(reinterpret_cast<const char*>(bit_header.data()),
+	               bit_header.size());
+
+	auto end_of_header_pos = out_file.tellp();
+	auto header_data_length_pos =
+	    end_of_header_pos - static_cast<std::ofstream::off_type>(4);
+
 	for (uint32_t word : out_bitstream_writer) {
 		out_file.put((word >> 24) & 0xFF);
 		out_file.put((word >> 16) & 0xFF);
 		out_file.put((word >> 8) & 0xFF);
 		out_file.put((word)&0xFF);
 	}
+
+	uint32_t length_of_data = out_file.tellp() - end_of_header_pos;
+
+	out_file.seekp(header_data_length_pos);
+	out_file.put((length_of_data >> 24) & 0xFF);
+	out_file.put((length_of_data >> 16) & 0xFF);
+	out_file.put((length_of_data >> 8) & 0xFF);
+	out_file.put((length_of_data)&0xFF);
 
 	return 0;
 }
