@@ -120,18 +120,6 @@ int main(int argc, char* argv[]) {
 		frame_data[0x32] |= (ecc & 0x1FFF);
 	}
 
-#if 0
-	for (auto& frame : frames) {
-		std::cout << "0x" << std::hex
-		          << static_cast<uint32_t>(frame.first) << " ";
-
-		for (auto& word : frame.second) {
-			std::cout << "0x" << std::hex << word << ",";
-		}
-
-		std::cout << std::endl;
-	}
-#endif
 	std::vector<xc7series::ConfigurationPacket> out_packets;
 
 	// Generate a single type 2 packet that writes everything at once.
@@ -157,12 +145,6 @@ int main(int argc, char* argv[]) {
 	out_packets.push_back(xc7series::ConfigurationPacket(
 	    2, xc7series::ConfigurationPacket::Opcode::Write,
 	    xc7series::ConfigurationRegister::FDRI, packet_data));
-
-#if 0
-	for (auto& packet : out_packets) {
-		std::cout << packet << std::endl;
-	}
-#endif
 
 	// Write bitstream.
 	xc7series::BitstreamWriter out_bitstream_writer(out_packets);
