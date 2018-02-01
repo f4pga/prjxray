@@ -1,4 +1,4 @@
-.PRECIOUS: harness_impl.dcp %_impl.dcp %.bit
+.PRECIOUS: harness_impl.dcp %_impl.dcp %.bit %_roi_partial.bit
 
 # Top-level target for generating a programmable bitstream.  Given a .fasm
 # file, calling make with the .fasm extension replaced with _hand_crafted.bit
