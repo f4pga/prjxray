@@ -25,6 +25,7 @@ enum class ConfigurationRegister : unsigned int {
 	COR1 = 0x0e,
 	WBSTAR = 0x10,
 	TIMER = 0x11,
+	UNKNOWN = 0x13,
 	BOOTSTS = 0x16,
 	CTL1 = 0x18,
 	BSPI = 0x1F,
