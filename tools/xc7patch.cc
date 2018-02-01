@@ -120,7 +120,8 @@ int main(int argc, char* argv[]) {
 		frame_data[0x32] |= (ecc & 0x1FFF);
 	}
 
-	std::vector<xc7series::ConfigurationPacket> out_packets;
+	std::vector<std::unique_ptr<xc7series::ConfigurationPacket>>
+	    out_packets;
 
 	// Generate a single type 2 packet that writes everything at once.
 	std::vector<uint32_t> packet_data;
@@ -139,10 +140,11 @@ int main(int argc, char* argv[]) {
 	}
 	packet_data.insert(packet_data.end(), 202, 0);
 
-	out_packets.push_back(xc7series::ConfigurationPacket(
+	// Frame data write
+	out_packets.emplace_back(new xc7series::ConfigurationPacket(
 	    1, xc7series::ConfigurationPacket::Opcode::Write,
 	    xc7series::ConfigurationRegister::FDRI, {}));
-	out_packets.push_back(xc7series::ConfigurationPacket(
+	out_packets.emplace_back(new xc7series::ConfigurationPacket(
 	    2, xc7series::ConfigurationPacket::Opcode::Write,
 	    xc7series::ConfigurationRegister::FDRI, packet_data));
 

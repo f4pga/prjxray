@@ -50,7 +50,8 @@ void dump_packets(xc7series::BitstreamWriter writer, bool nl = true) {
 }
 
 // Special all 0's
-void AddType0(std::vector<xc7series::ConfigurationPacket>& packets) {
+void AddType0(
+    std::vector<std::unique_ptr<xc7series::ConfigurationPacket>>& packets) {
 	// InitWithWords doesn't like type 0
 	/*
 	static std::vector<uint32_t> words{0x00000000};
@@ -61,27 +62,32 @@ void AddType0(std::vector<xc7series::ConfigurationPacket>& packets) {
 	static std::vector<uint32_t> words{};
 	absl::Span<uint32_t> word_span(words);
 	// CRC is config value 0
-	packets.push_back(xc7series::ConfigurationPacket(
+	packets.emplace_back(new xc7series::ConfigurationPacket(
 	    0, xc7series::ConfigurationPacket::NOP,
 	    xc7series::ConfigurationRegister::CRC, word_span));
 }
 
-void AddType1(std::vector<xc7series::ConfigurationPacket>& packets) {
+void AddType1(
+    std::vector<std::unique_ptr<xc7series::ConfigurationPacket>>& packets) {
 	static std::vector<uint32_t> words{MakeType1(0x2, 0x3, 2), 0xAA, 0xBB};
 	absl::Span<uint32_t> word_span(words);
 	auto packet = xc7series::ConfigurationPacket::InitWithWords(word_span);
-	packets.push_back(*(packet.second));
+	packets.emplace_back(
+	    new xc7series::ConfigurationPacket(*(packet.second)));
 }
 
 // Empty
-void AddType1E(std::vector<xc7series::ConfigurationPacket>& packets) {
+void AddType1E(
+    std::vector<std::unique_ptr<xc7series::ConfigurationPacket>>& packets) {
 	static std::vector<uint32_t> words{MakeType1(0x2, 0x3, 0)};
 	absl::Span<uint32_t> word_span(words);
 	auto packet = xc7series::ConfigurationPacket::InitWithWords(word_span);
-	packets.push_back(*(packet.second));
+	packets.emplace_back(
+	    new xc7series::ConfigurationPacket(*(packet.second)));
 }
 
-void AddType2(std::vector<xc7series::ConfigurationPacket>& packets) {
+void AddType2(
+    std::vector<std::unique_ptr<xc7series::ConfigurationPacket>>& packets) {
 	// Type 1 packet with address
 	// Without this InitWithWords will fail on type 2
 	xc7series::ConfigurationPacket* packet1;
@@ -90,8 +96,9 @@ void AddType2(std::vector<xc7series::ConfigurationPacket>& packets) {
 		absl::Span<uint32_t> word_span(words);
 		auto packet1_pair =
 		    xc7series::ConfigurationPacket::InitWithWords(word_span);
-		packets.push_back(*(packet1_pair.second));
-		packet1 = &packets[0];
+		packets.emplace_back(
+		    new xc7series::ConfigurationPacket(*(packet1_pair.second)));
+		packet1 = packets[0].get();
 	}
 	// Type 2 packet with data
 	{
@@ -100,13 +107,14 @@ void AddType2(std::vector<xc7series::ConfigurationPacket>& packets) {
 		absl::Span<uint32_t> word_span(words);
 		auto packet = xc7series::ConfigurationPacket::InitWithWords(
 		    word_span, packet1);
-		packets.push_back(*(packet.second));
+		packets.emplace_back(
+		    new xc7series::ConfigurationPacket(*(packet.second)));
 	}
 }
 
 // Empty packets should produce just the header
 TEST(BitstreamWriterTest, WriteHeader) {
-	std::vector<xc7series::ConfigurationPacket> packets;
+	std::vector<std::unique_ptr<xc7series::ConfigurationPacket>> packets;
 
 	xc7series::BitstreamWriter writer(packets);
 	std::vector<uint32_t> words(writer.begin(), writer.end());
@@ -120,7 +128,7 @@ TEST(BitstreamWriterTest, WriteHeader) {
 }
 
 TEST(BitstreamWriterTest, WriteType0) {
-	std::vector<xc7series::ConfigurationPacket> packets;
+	std::vector<std::unique_ptr<xc7series::ConfigurationPacket>> packets;
 	AddType0(packets);
 	xc7series::BitstreamWriter writer(packets);
 	// dump_packets(writer, false);
@@ -133,7 +141,7 @@ TEST(BitstreamWriterTest, WriteType0) {
 	EXPECT_EQ(words, ref);
 }
 TEST(BitstreamWriterTest, WriteType1) {
-	std::vector<xc7series::ConfigurationPacket> packets;
+	std::vector<std::unique_ptr<xc7series::ConfigurationPacket>> packets;
 	AddType1(packets);
 	xc7series::BitstreamWriter writer(packets);
 	// dump_packets(writer, false);
@@ -147,7 +155,7 @@ TEST(BitstreamWriterTest, WriteType1) {
 }
 
 TEST(BitstreamWriterTest, WriteType2) {
-	std::vector<xc7series::ConfigurationPacket> packets;
+	std::vector<std::unique_ptr<xc7series::ConfigurationPacket>> packets;
 	AddType2(packets);
 	xc7series::BitstreamWriter writer(packets);
 	// dump_packets(writer, false);
@@ -164,7 +172,7 @@ TEST(BitstreamWriterTest, WriteType2) {
 }
 
 TEST(BitstreamWriterTest, WriteMulti) {
-	std::vector<xc7series::ConfigurationPacket> packets;
+	std::vector<std::unique_ptr<xc7series::ConfigurationPacket>> packets;
 	AddType1(packets);
 	AddType1E(packets);
 	AddType2(packets);

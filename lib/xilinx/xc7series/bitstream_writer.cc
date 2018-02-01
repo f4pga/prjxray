@@ -28,7 +28,7 @@ BitstreamWriter::BitstreamWriter(const packets_t& packets)
 
 BitstreamWriter::packet_iterator BitstreamWriter::iterator::packet_begin() {
 	// itr_packets = packets.begin();
-	const ConfigurationPacket& packet = *itr_packets_;
+	const ConfigurationPacket& packet = **itr_packets_;
 
 	return BitstreamWriter::packet_iterator(
 	    &packet, BitstreamWriter::packet_iterator::STATE_HEADER,
@@ -36,7 +36,7 @@ BitstreamWriter::packet_iterator BitstreamWriter::iterator::packet_begin() {
 }
 
 BitstreamWriter::packet_iterator BitstreamWriter::iterator::packet_end() {
-	const ConfigurationPacket& packet = *itr_packets_;
+	const ConfigurationPacket& packet = **itr_packets_;
 
 	return BitstreamWriter::packet_iterator(
 	    &packet, BitstreamWriter::packet_iterator::STATE_END,
@@ -138,7 +138,7 @@ BitstreamWriter::iterator BitstreamWriter::begin() {
 	if (itr_packets != packets_.end()) {
 		// op_packet_itr = packet_begin();
 		// FIXME: de-duplicate this
-		const ConfigurationPacket& packet = *itr_packets;
+		const ConfigurationPacket& packet = **itr_packets;
 		packet_iterator packet_itr =
 		    packet_iterator(&packet, packet_iterator::STATE_HEADER,
 		                    packet.data().begin());
