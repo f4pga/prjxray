@@ -6,48 +6,13 @@
 # ready for programming to a board.  For example,
 # 'make inv_hand_crafted.bit' will generate a bitstream that includes the
 # design from roi_noninv.fasm. 
-%_hand_crafted.bit: init_sequence.bit %_no_headers.bin final_sequence.bin
-	cat $^ > $@
-
-%_no_headers.bin: %_patched.bin
-	# WARNING: these values need to be tweaked if anything about the
-	# Vivado-generated design changes.
-	xxd -p -s 0x18 $< | xxd -r -p - $@
-
-%_patched.bin: %_roi_partial.frm harness.bit
+%_hand_crafted.bit: %_roi_partial.frm harness.bit
 	${XRAY_TOOLS_DIR}/xc7patch \
-		--part_file ${XRAY_PART_YAML} \
+		--part_name "${XRAY_PART}" \
+		--part_file "${XRAY_PART_YAML}" \
 		--bitstream_file harness.bit \
 		--frm_file $< \
 		--output_file $@
-
-# xc7patch currently only generates the actual frame writes which is
-# insufficient to program a device.  Grab the initialization and finalization
-# sequences from the harness bitstream so they can be tacked on to the
-# xc7patch-generated bitstream to create a programmable bitstream.
-#
-# The offsets used below were determined by manually inspecting
-# harness.bit with a hex editor.  init_sequence.bit is the beginning of
-# the file until just before the actual frame data is sent via a write to FDRI.
-# final_sequence.bin is from just after the frame data write to the end of the
-# file.  Note that final_sequence.bin normally includes at least one CRC check.
-# The sed command replaces any CRC checks with a Reset CRC command which is the
-# same behavior as setting BITSTREAM.GENERAL.CRC to Disabled.  These offset
-# should not change unless you alter the bitstream format used (i.e. setting
-# BITSTREAM.GENERAL.DEBUGBITSTREAM or BITSTREAM.GENERAL.PERFRAMECRC to YES).
-init_sequence.bit: harness.bit
-	# WARNING: these values need to be tweaked if anything about the
-	# Vivado-generated design changes.
-	xxd -p -l 0x147 $< | xxd -r -p - $@
-
-final_sequence.bin: harness.bit
-	# WARNING: these values need to be tweaked if anything about the
-	# Vivado-generated design changes.
-	xxd -p -s 0x216abf $< | \
-		tr -d '\n' | \
-		sed -e 's/30000001.\{8\}/3000800100000007/g' | \
-		fold -w 40 | \
-		xxd -r -p - $@
 
 # Generate a suitable harness by using Vivado's partial reconfiguration
 # feature.  inv.v is used as a sample reconfiguration design as one is
