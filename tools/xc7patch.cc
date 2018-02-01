@@ -10,8 +10,12 @@
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
 #include <prjxray/xilinx/xc7series/bitstream_writer.h>
+#include <prjxray/xilinx/xc7series/command.h>
 #include <prjxray/xilinx/xc7series/configuration.h>
+#include <prjxray/xilinx/xc7series/configuration_options_0_value.h>
+#include <prjxray/xilinx/xc7series/configuration_packet_with_payload.h>
 #include <prjxray/xilinx/xc7series/ecc.h>
+#include <prjxray/xilinx/xc7series/nop_packet.h>
 #include <prjxray/xilinx/xc7series/part.h>
 
 DEFINE_string(part_file, "", "Definition file for target 7-series part");
@@ -140,6 +144,104 @@ int main(int argc, char* argv[]) {
 	}
 	packet_data.insert(packet_data.end(), 202, 0);
 
+	// Initialization sequence
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::TIMER, {0x0}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::WBSTAR, {0x0}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::NOP)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::RCRC)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::UNKNOWN, {0x0}));
+
+	// Configuration Options 0
+	out_packets.emplace_back(new xc7series::ConfigurationPacketWithPayload<
+	                         1>(
+	    xc7series::ConfigurationPacket::Opcode::Write,
+	    xc7series::ConfigurationRegister::COR0,
+	    {xc7series::ConfigurationOptions0Value()
+	         .SetAddPipelineStageForDoneIn(true)
+	         .SetReleaseDonePinAtStartupCycle(
+	             xc7series::ConfigurationOptions0Value::SignalReleaseCycle::
+	                 Phase4)
+	         .SetStallAtStartupCycleUntilDciMatch(
+	             xc7series::ConfigurationOptions0Value::StallCycle::NoWait)
+	         .SetStallAtStartupCycleUntilMmcmLock(
+	             xc7series::ConfigurationOptions0Value::StallCycle::NoWait)
+	         .SetReleaseGtsSignalAtStartupCycle(
+	             xc7series::ConfigurationOptions0Value::SignalReleaseCycle::
+	                 Phase5)
+	         .SetReleaseGweSignalAtStartupCycle(
+	             xc7series::ConfigurationOptions0Value::SignalReleaseCycle::
+	                 Phase6)}));
+
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::COR1, {0x0}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::IDCODE, {part->idcode()}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::SWITCH)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::MASK, {0x401}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CTL0, {0x501}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::MASK, {0x0}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CTL1, {0x0}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::FAR, {0x0}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::WCFG)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+
 	// Frame data write
 	out_packets.emplace_back(new xc7series::ConfigurationPacket(
 	    1, xc7series::ConfigurationPacket::Opcode::Write,
@@ -147,6 +249,62 @@ int main(int argc, char* argv[]) {
 	out_packets.emplace_back(new xc7series::ConfigurationPacket(
 	    2, xc7series::ConfigurationPacket::Opcode::Write,
 	    xc7series::ConfigurationRegister::FDRI, packet_data));
+
+	// Finalization sequence
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::RCRC)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::GRESTORE)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::LFRM)}));
+	for (int ii = 0; ii < 100; ++ii) {
+		out_packets.emplace_back(new xc7series::NopPacket());
+	}
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::START)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::FAR, {0x3be0000}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::MASK, {0x501}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CTL0, {0x501}));
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::RCRC)}));
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(new xc7series::NopPacket());
+	out_packets.emplace_back(
+	    new xc7series::ConfigurationPacketWithPayload<1>(
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::DESYNC)}));
+	for (int ii = 0; ii < 400; ++ii) {
+		out_packets.emplace_back(new xc7series::NopPacket());
+	}
 
 	// Write bitstream.
 	xc7series::BitstreamWriter out_bitstream_writer(out_packets);
