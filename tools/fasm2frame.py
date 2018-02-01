@@ -226,7 +226,7 @@ def run(f_in, f_out, sparse=False, debug=False):
         except KeyError:
             raise FASMSyntaxError(
                 "Segment DB %s, key %s not found from line '%s'" %
-                (segj['type'], db_k, l))
+                (segj['type'], db_k, l)) from None
 
         if not value:
             # If its binary, allow omitted value default to 1
