@@ -40,30 +40,25 @@ class segmaker:
         self.segments_by_type = dict()
 
         for tilename, tiledata in self.grid["tiles"].items():
-            if "segment" not in tiledata:
+            if "baseaddr" not in tiledata:
                 continue
 
-            segdata = self.grid["segments"][tiledata["segment"]]
-
-            if "baseaddr" not in segdata:
-                continue
-
-            if segdata["type"] not in self.segments_by_type:
-                self.segments_by_type[segdata["type"]] = dict()
-            segments = self.segments_by_type[segdata["type"]]
+            if tiledata["type"] not in self.segments_by_type:
+                self.segments_by_type[tiledata["type"]] = dict()
+            segments = self.segments_by_type[tiledata["type"]]
 
             tile_type = tiledata["type"]
             segname = "%s_%03d" % (
-                segdata["baseaddr"][0][2:], segdata["baseaddr"][1])
+                tiledata["baseaddr"][2:], tiledata["offset"])
 
             def add_segbits():
                 if not segname in segments:
                     segments[segname] = {"bits": set(), "tags": dict()}
 
-                    base_frame = int(segdata["baseaddr"][0][2:], 16)
+                    base_frame = int(tiledata["baseaddr"][2:], 16)
                     for wordidx in range(
-                            segdata["baseaddr"][1],
-                            segdata["baseaddr"][1] + segdata["words"]):
+                            tiledata["offset"],
+                            tiledata["offset"] + tiledata["height"]):
                         if base_frame not in self.bits:
                             continue
                         if wordidx not in self.bits[base_frame]:
@@ -72,8 +67,7 @@ class segmaker:
                                 base_frame][wordidx]:
                             bitname_frame = bit_frame - base_frame
                             bitname_bit = 32 * (
-                                bit_wordidx - segdata["baseaddr"][1]
-                            ) + bit_bitidx
+                                bit_wordidx - tiledata["offset"]) + bit_bitidx
                             if bitfilter is None or bitfilter(bitname_frame,
                                                               bitname_bit):
                                 bitname = "%02d_%02d" % (
@@ -111,9 +105,9 @@ class segmaker:
     def write(self, suffix=None, roi=False):
         for segtype in self.segments_by_type.keys():
             if suffix is not None:
-                filename = "segdata_%s_%s.txt" % (segtype, suffix)
+                filename = "segdata_%s_%s.txt" % (segtype.lower(), suffix)
             else:
-                filename = "segdata_%s.txt" % (segtype)
+                filename = "segdata_%s.txt" % (segtype.lower())
 
             print("Writing %s." % filename)
 
