@@ -26,7 +26,7 @@ for l in f:
         # Theory: there is one bit for each mux positon
         # In each config 3 muxes are in one position, other 3 are in another
         inv = int(i == n)
-        segmk.addtag(loc, "%c5FF.MUX.A" % which, def_a ^ inv)
-        segmk.addtag(loc, "%c5FF.MUX.B" % which, 1 ^ def_a ^ inv)
+        segmk.addtag(loc, "%c5FFMUX.IN_A" % which, def_a ^ inv)
+        segmk.addtag(loc, "%c5FFMUX.IN_B" % which, 1 ^ def_a ^ inv)
 segmk.compile()
 segmk.write()
