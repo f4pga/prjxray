@@ -39,7 +39,7 @@ class segmaker:
 
         self.segments_by_type = dict()
 
-        for tilename, tiledata in self.grid["tiles"].items():
+        for tilename, tiledata in self.grid.items():
             if "baseaddr" not in tiledata:
                 continue
 

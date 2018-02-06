@@ -27,7 +27,7 @@ def db_gen():
 
     with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
-        tiles = json.load(f)["tiles"]
+        tilegrid = json.load(f)
 
     with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
@@ -37,7 +37,7 @@ def db_gen():
     grid_to_tile = dict()
     nodes = MergeFind()
 
-    for tile, tiledata in tiles.items():
+    for tile, tiledata in tilegrid.items():
         if tiledata["type"] not in type_to_tiles:
             type_to_tiles[tiledata["type"]] = list()
         type_to_tiles[tiledata["type"]].append(tile)
@@ -48,7 +48,7 @@ def db_gen():
     for entry in tileconn:
         type_a, type_b = entry["tile_types"]
         for tile_a in type_to_tiles[type_a]:
-            tiledata_a = tiles[tile_a]
+            tiledata_a = tilegrid[tile_a]
             grid_a = (tiledata_a["grid_x"], tiledata_a["grid_y"])
             grid_b = (
                 grid_a[0] + entry["grid_deltas"][0],
@@ -58,7 +58,7 @@ def db_gen():
                 continue
 
             tile_b = grid_to_tile[grid_b]
-            tiledata_b = tiles[tile_b]
+            tiledata_b = tilegrid[tile_b]
 
             if tiledata_b["type"] != type_b:
                 continue

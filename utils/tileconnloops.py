@@ -7,7 +7,7 @@ import os, sys, json
 
 with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                    os.getenv("XRAY_DATABASE")), "r") as f:
-    tilegrid = json.load(f)["tiles"]
+    tilegrid = json.load(f)
 
 with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                    os.getenv("XRAY_DATABASE")), "r") as f:

@@ -226,6 +226,8 @@ for segment_name in database["segments"].keys():
             # print(tile_type, offset)
             assert False
 
+database = database["tiles"]
+
 #######################################
 # Write
 

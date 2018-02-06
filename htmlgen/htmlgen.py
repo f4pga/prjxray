@@ -160,13 +160,10 @@ with db_open("tilegrid.json") as f:
     data = f.read()
     if not data:
         grid = {
-            "segments": {},
-            "tiles": {
-                "NULL": {
-                    "grid_x": 0,
-                    "grid_y": 0,
-                    "type": "NULL",
-                }
+            "NULL": {
+                "grid_x": 0,
+                "grid_y": 0,
+                "type": "NULL",
             }
         }
     else:
