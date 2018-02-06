@@ -212,7 +212,8 @@ for segname, segdata in grid["segments"].items():
             print("  loading %s segbits." % segtype)
             with db_open("segbits_%s.db" % segtype) as f:
                 for line in f:
-                    if re.search(r"(\.[ABCD](5?FF|OUT)MUX\.)|(\.PRECYINIT\.)", line):
+                    if re.search(r"(\.[ABCD](5?FF|OUT)MUX\.)|(\.PRECYINIT\.)",
+                                 line):
                         add_pip_bits(line)
                     else:
                         add_single_bit(line)
