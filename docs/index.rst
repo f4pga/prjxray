@@ -17,3 +17,4 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    :maxdepth: 2
    :caption: Xilinx 7-series Architecture
 
+   architecture/glossary
