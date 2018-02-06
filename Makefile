@@ -1,11 +1,9 @@
-JOBS ?= $(shell nproc)
-JOBS ?= 2
 CLANG_FORMAT ?= clang-format
 
-go:
+build:
 	git submodule update --init --recursive
 	mkdir -p build
-	cd build; cmake ..; make -j$(JOBS)
+	cd build; cmake ..; $(MAKE)
 
 format:
 	find . -name \*.cc -and -not -path './third_party/*' -and -not -path './.git/*' -exec $(CLANG_FORMAT) -style=file -i {} \;
