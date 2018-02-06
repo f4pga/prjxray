@@ -17,7 +17,7 @@ BUFGs, the two halves defined by this division are treated as separate entities
 as related to configuration. The halves are referred to simply as the top and
 bottom halves.
 
-Each halves is next divided vertically into one or more :term:`horizontal clock
+Each half is next divided vertically into one or more :term:`horizontal clock
 rows <horizontal clock row>`, numbered outward from the global clock buffer
 dividing line. Each horizontal clock row contains 12 clock lines that extend
 across the device perpendicular to the global clock spine.  Similar to the
