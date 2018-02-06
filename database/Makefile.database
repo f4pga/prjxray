@@ -1,0 +1,15 @@
+.PHONY: all clean
+
+all: tilegrid.json
+
+# Small dance to say that there is a single recipe that is run once to generate
+# multiple files.
+tileconn.json tilegrid.json: fuzzers
+.INTERMEDIATE: fuzzers
+fuzzers: SHELL:=/bin/bash
+fuzzers: settings.sh
+	source settings.sh && $(MAKE) -C ../../fuzzers all
+
+clean:
+	rm -f *.db tileconn.json tilegrid.json *.yaml
+	rm -rf html
