@@ -30,28 +30,11 @@ echo "Out .bit: $bit_out"
 ${XRAY_DIR}/tools/fasm2frame.py $fasm_in roi_partial.frm
 
 ${XRAY_TOOLS_DIR}/xc7patch \
+	--part_name ${XRAY_PART} \
 	--part_file ${XRAY_PART_YAML} \
 	--bitstream_file $bit_in \
 	--frm_file roi_partial.frm \
-	--output_file patched.bin
-
-# WARNING: these values need to be tweaked if anything about the
-# Vivado-generated design changes.
-xxd -p -l 0x147 $bit_in | xxd -r -p - init_sequence.bit
-
-# WARNING: these values need to be tweaked if anything about the
-# Vivado-generated design changes.
-xxd -p -s 0x18 patched.bin | xxd -r -p - no_headers.bin
-
-# WARNING: these values need to be tweaked if anything about the
-# Vivado-generated design changes.
-xxd -p -s 0x216abf $bit_in | \
-	tr -d '\n' | \
-	sed -e 's/30000001.\{8\}/3000800100000007/g' | \
-	fold -w 40 | \
-	xxd -r -p - final_sequence.bin
-
-cat init_sequence.bit no_headers.bin final_sequence.bin >$bit_out
+	--output_file $bit_out
 
 #openocd -f $XRAY_DIR/utils/openocd/board-digilent-basys3.cfg -c "init; pld load 0 $bit_out; exit"
 

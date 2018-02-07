@@ -21,6 +21,7 @@ target_link_libraries(gen_part_base_yaml
 add_executable(xc7patch xc7patch.cc)
 target_link_libraries(xc7patch
 	absl::strings
+	absl::time
 	gflags
 	libprjxray
 )
