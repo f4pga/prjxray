@@ -18,4 +18,6 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    :caption: Xilinx 7-series Architecture
 
    architecture/overview
+   architecture/configuration
+   architecture/bitstream_format
    architecture/glossary
