@@ -20,6 +20,11 @@ Glossary
     Contains configuration :term:`frames <frame>` as well as programming
     sequences and other commands required to load and activate same.
 
+  clock domain
+    Portion of a :term:`horizontal clock row` to one side of the global clock
+    spine. Often refers to :term:`tiles <tile>` that are associated with these
+    clocks.
+
   column
     Collection of :term:`tiles <tile>` physically organized as a vertical line.
 
