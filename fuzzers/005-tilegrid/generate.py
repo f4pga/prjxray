@@ -228,6 +228,10 @@ for segment_name in database["segments"].keys():
 
 database = database["tiles"]
 
+for tiledata in database.values():
+    if "segment" in tiledata:
+        del tiledata["segment"]
+
 #######################################
 # Write
 
