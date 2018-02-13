@@ -1,8 +1,8 @@
-Purpose:
-Document ACY0 family of CLB muxes
+Purpose:  
+Document ACY0 family of CLB muxes  
 
-Algorithm:
+Algorithm:  
 
-Outcome:
+Outcome:  
 
 
