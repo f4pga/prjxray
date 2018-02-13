@@ -202,6 +202,7 @@ for segname, segdata in grid["segments"].items():
                     routebits[segtype][bit].add(bit_name)
 
         def add_single_bit(line):
+            print(line)
             bit_name, bit_pos = line.split()
             assert bit_pos[0] != "!"
             segbits[segtype][bit_name] = bit_pos
@@ -211,7 +212,8 @@ for segname, segdata in grid["segments"].items():
             print("  loading %s segbits." % segtype)
             with db_open("segbits_%s.db" % segtype) as f:
                 for line in f:
-                    if re.search(r"(\.[ABCD]MUX\.)|(\.PRECYINIT\.)", line):
+                    if re.search(r"(\.[ABCD](5?FF|OUT)MUX\.)|(\.PRECYINIT\.)",
+                                 line):
                         add_pip_bits(line)
                     else:
                         add_single_bit(line)
@@ -578,12 +580,12 @@ function oml() {
                             bgcolor = "#4466bb"
                             label = "LH"
                         elif re.match(
-                                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX",
+                                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FFMUX",
                                 bn):
                             bgcolor = "#88aaff"
                             label = "DMX"
                         elif re.match(
-                                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX",
+                                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]OUTMUX",
                                 bn):
                             bgcolor = "#aa88ff"
                             label = "OMX"
