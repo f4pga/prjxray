@@ -115,7 +115,8 @@ def update_mask(mask_db, *src_dbs, offset=0):
                         continue
                     if offset != 0:
                         m = re.match(r"(\d+)_(\d+)", bit)
-                        bit = "%02d_%02d" % (int(m.group(1)), int(m.group(2)) + offset)
+                        bit = "%02d_%02d" % (
+                            int(m.group(1)), int(m.group(2)) + offset)
                     bits.add(bit)
 
     if len(bits) > 0:
@@ -144,7 +145,7 @@ update_mask("dsp_l", "dsp_l")
 update_mask("dsp_r", "dsp_r")
 
 for k in range(5):
-    update_mask("bram_l", "int_l", offset=64*k)
-    update_mask("bram_r", "int_r", offset=64*k)
-    update_mask("dsp_l", "int_l", offset=64*k)
-    update_mask("dsp_r", "int_r", offset=64*k)
+    update_mask("bram_l", "int_l", offset=64 * k)
+    update_mask("bram_r", "int_r", offset=64 * k)
+    update_mask("dsp_l", "int_l", offset=64 * k)
+    update_mask("dsp_r", "int_r", offset=64 * k)

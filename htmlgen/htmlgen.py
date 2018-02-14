@@ -168,6 +168,7 @@ with db_open("tilegrid.json") as f:
     else:
         grid = json.loads(data)
 
+
 def db_read(tiletype):
     cfgbits[tiletype] = dict()
     cfgbits_r[tiletype] = dict()
@@ -226,13 +227,16 @@ def db_read(tiletype):
                 assert tag == "bit"
                 maskbits[tiletype].add(bit)
     else:
-        for t in ["clbll_l", "clbll_r", "clblm_l", "clblm_r", "dsp_l", "dsp_r", "bram_l", "bram_r"]:
+        for t in ["clbll_l", "clbll_r", "clblm_l", "clblm_r", "dsp_l", "dsp_r",
+                  "bram_l", "bram_r"]:
             with db_open("mask_%s.db" % t) as f:
                 for line in f:
                     tag, bit = line.split()
                     assert tag == "bit"
                     frameidx, bitidx = bit.split("_")
-                    maskbits[tiletype].add("%02d_%02d" % (int(frameidx), int(bitidx) % 64))
+                    maskbits[tiletype].add(
+                        "%02d_%02d" % (int(frameidx), int(bitidx) % 64))
+
 
 db_read("int_l")
 db_read("int_r")
@@ -344,7 +348,9 @@ with out_open("index.html") as f:
             if tiledata["type"].lower() in cfgbits:
                 print(
                     "<a style=\"text-decoration: none; color: black\" href=\"tile_%s.html\">%s</a></span></td>"
-                    % (tiledata["type"].lower(), tilename.replace("_X", "<br/>X")),
+                    % (
+                        tiledata["type"].lower(),
+                        tilename.replace("_X", "<br/>X")),
                     file=f)
             else:
                 print(
@@ -360,9 +366,11 @@ with out_open("index.html") as f:
 #################################################
 # Create Segment Pages
 
+
 def get_bit_info(frameidx, bitidx, tiletype):
     bit_pos = "%02d_%02d" % (frameidx, bitidx)
-    bit_name = cfgbits_r[tiletype][bit_pos] if bit_pos in cfgbits_r[tiletype] else None
+    bit_name = cfgbits_r[tiletype][bit_pos] if bit_pos in cfgbits_r[
+        tiletype] else None
 
     if bit_name is None and bit_pos in routebits[tiletype]:
         bit_name = routebits[tiletype][bit_pos]
@@ -370,10 +378,13 @@ def get_bit_info(frameidx, bitidx, tiletype):
     if bit_name is None and bit_pos in routezbits[tiletype]:
         bit_name = routezbits[tiletype][bit_pos]
 
-    if bit_name is None and tiletype in ["clbll_l", "clbll_r", "clblm_l", "clblm_r", "dsp_l", "dsp_r", "bram_l", "bram_r"]:
+    if bit_name is None and tiletype in ["clbll_l", "clbll_r", "clblm_l",
+                                         "clblm_r", "dsp_l", "dsp_r", "bram_l",
+                                         "bram_r"]:
         int_tile_type = "int_" + tiletype[-1]
         bit_int_pos = "%02d_%02d" % (frameidx, bitidx % 64)
-        bit_name = cfgbits_r[int_tile_type][bit_int_pos] if bit_int_pos in cfgbits_r[int_tile_type] else None
+        bit_name = cfgbits_r[int_tile_type][
+            bit_int_pos] if bit_int_pos in cfgbits_r[int_tile_type] else None
 
         if bit_name is None and bit_int_pos in routebits[int_tile_type]:
             bit_name = routebits[int_tile_type][bit_int_pos]
@@ -437,8 +448,7 @@ def get_bit_info(frameidx, bitidx, tiletype):
             else:
                 bgcolor = "#ff0000"
 
-        m = re.search(
-            r"\.([ABCD]5?)FF\.([A-Z]+(\.A|\.B)?)$", bit_name)
+        m = re.search(r"\.([ABCD]5?)FF\.([A-Z]+(\.A|\.B)?)$", bit_name)
         if m:
             bgcolor = "#aaffaa"
             if m.group(2) == "ZINI":
@@ -543,21 +553,15 @@ def get_bit_info(frameidx, bitidx, tiletype):
             bgcolor = "#4466bb"
             label = "LH"
 
-        if re.match(
-                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX",
-                bit_name):
+        if re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX", bit_name):
             bgcolor = "#88aaff"
             label = "DMX"
 
-        if re.match(
-                "^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX",
-                bit_name):
+        if re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX", bit_name):
             bgcolor = "#aa88ff"
             label = "OMX"
 
-        if re.match(
-                "^CLBL[LM]_[LR].SLICE[LM]_X[01].PRECYINIT",
-                bit_name):
+        if re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].PRECYINIT", bit_name):
             bgcolor = "#88aaff"
             label = "CYI"
 
@@ -575,9 +579,10 @@ def get_bit_info(frameidx, bitidx, tiletype):
 
     return bit_pos, label, title, bgcolor
 
+
 def gen_table(tiletype, f):
     print(
-            """
+        """
 <script><!--
 var grp2bits = { };
 var bit2grp = { }
@@ -654,7 +659,7 @@ function oml() {
 
     print_table_header()
 
-    for bitidx in range(32*height-1, -1, -1):
+    for bitidx in range(32 * height - 1, -1, -1):
         print("<tr>", file=f)
         print(
             "<th align=\"right\"><span style=\"font-size:10px\">%d</span></th>"
@@ -664,14 +669,16 @@ function oml() {
             if frameidx in hideframes:
                 continue
 
-            bit_pos, label, title, bgcolor = get_bit_info(frameidx, bitidx, tiletype)
+            bit_pos, label, title, bgcolor = get_bit_info(
+                frameidx, bitidx, tiletype)
 
             if label is None:
                 label = "&nbsp;"
                 onclick = ""
 
             if label == "INT":
-                onclick = " onmousedown=\"location.href = 'tile_int_%s.html#b%s'\"" % (tiletype[-1], bit_pos)
+                onclick = " onmousedown=\"location.href = 'tile_int_%s.html#b%s'\"" % (
+                    tiletype[-1], bit_pos)
             else:
                 onclick = " onmousedown=\"location.href = '#b%s'\"" % bit_pos
 
@@ -684,9 +691,8 @@ function oml() {
 
             print(
                 "<td id=\"bit%s\" onmouseenter=\"ome('%s');\" onmouseleave=\"oml();\" bgcolor=\"%s\" align=\"center\" title=\"%s\"%s><span style=\"font-size:10px\">%s</span></td>"
-                % (
-                    bit_pos, bit_pos, bgcolor, "\n".join(title), onclick,
-                    label),
+                %
+                (bit_pos, bit_pos, bgcolor, "\n".join(title), onclick, label),
                 file=f)
         print("</tr>", file=f)
 
@@ -703,8 +709,8 @@ function oml() {
         "  unused: %d, unknown: %d, known: %d, total: %d, percentage: %.2f%% (%.2f%%)"
         % (
             unused_bits, unknown_bits, known_bits,
-            unused_bits + unknown_bits + known_bits, 100 * known_bits /
-            (unknown_bits + unused_bits + known_bits),
+            unused_bits + unknown_bits + known_bits,
+            100 * known_bits / (unknown_bits + unused_bits + known_bits),
             100 * (known_bits + unused_bits) /
             (unknown_bits + unused_bits + known_bits)))
 
@@ -716,8 +722,8 @@ for tiletype in sorted(cfgbits.keys()):
             (get_setting("XRAY_DATABASE").upper(), tiletype.upper()),
             file=f)
         print(
-            "<h3><a href=\"index.html\">X-Ray %s Database</a>: %s Segment</h3>" %
-            (get_setting("XRAY_DATABASE").upper(), tiletype.upper()),
+            "<h3><a href=\"index.html\">X-Ray %s Database</a>: %s Segment</h3>"
+            % (get_setting("XRAY_DATABASE").upper(), tiletype.upper()),
             file=f)
 
         gen_table(tiletype, f)
@@ -806,7 +812,8 @@ for tiletype in sorted(cfgbits.keys()):
                         return "a" + b
                     if b in hclk_right_bits:
                         return "c" + b
-                if tiletype in ["clblm_l", "clblm_r", "clbll_l", "clbll_r", "int_l", "int_r"]:
+                if tiletype in ["clblm_l", "clblm_r", "clbll_l", "clbll_r",
+                                "int_l", "int_r"]:
                     if b in clb_left_bits:
                         return "a" + b
                     if b in clb_right_bits:
@@ -878,9 +885,12 @@ for tiletype in sorted(cfgbits.keys()):
                 "<tr><th width=\"500\" align=\"left\">PIP</th><th>Type</th></tr>",
                 file=f)
             trstyle = ""
-            for typ, tag in sorted([(b, a) for a, b in ppips[tiletype].items()]):
+            for typ, tag in sorted(
+                [(b, a) for a, b in ppips[tiletype].items()]):
                 trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
-                print("<tr%s><td>%s</td><td>%s</td></tr>" % (trstyle, tag, typ), file=f)
+                print(
+                    "<tr%s><td>%s</td><td>%s</td></tr>" % (trstyle, tag, typ),
+                    file=f)
             print("</table>", file=f)
 
         print("</div>", file=f)
