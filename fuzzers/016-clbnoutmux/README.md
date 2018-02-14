@@ -1,9 +1,11 @@
-Purpose:  
+# CLBnOUTMUX Fuzzer
+
+## Purpose  
 Document nOUTMUX family of CLB muxes  
-Algorithm:  
+## Algorithm  
   
-Outcome:  
-  
+## Outcome  
+```
 CLB.SLICE_X0.AOUTMUX.B0 30_11  
 CLB.SLICE_X0.AOUTMUX.B1 30_08  
 CLB.SLICE_X0.AOUTMUX.B2 30_06  
@@ -36,8 +38,9 @@ CLB.SLICE_X1.DOUTMUX.B0 31_56
 CLB.SLICE_X1.DOUTMUX.B1 30_53  
 CLB.SLICE_X1.DOUTMUX.B2 31_57  
 CLB.SLICE_X1.DOUTMUX.B3 31_53  
-  
-From manual O6 testing  
+```
+From manual O6 testing
+```
 30_11   X0 AOUTMUX O6  
 30_20   X0 BOUTMUX O6  
 30_45   X0 COUTMUX O6  
@@ -46,4 +49,4 @@ From manual O6 testing
 31_20   X1 BOUTMUX O6  
 31_43   X1 COUTMUX O6  
 31_56   X1 DOUTMUX O6  
-
+```

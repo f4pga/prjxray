@@ -1,8 +1,11 @@
-Purpose:  
+# CLBnFFMUX Fuzzer
+
+## Purpose  
 Document nFFMUX family of CLB muxes  
-Algorithm:   
+## Algorithm  
   
-Outcome:  
+## Outcome
+```
 CLB.SLICE_X0.AFFMUX.B0 30_00  
 CLB.SLICE_X0.AFFMUX.B1 30_01  
 CLB.SLICE_X0.AFFMUX.B2 30_02  
@@ -35,5 +38,4 @@ CLB.SLICE_X1.DFFMUX.B0 30_58
 CLB.SLICE_X1.DFFMUX.B1 31_61  
 CLB.SLICE_X1.DFFMUX.B2 31_62  
 CLB.SLICE_X1.DFFMUX.B3 31_60  
-
-
+```

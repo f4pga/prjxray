@@ -1,9 +1,16 @@
-Solves SLICEM specific bits:
--Shift register LUT (SRL)
--Memory size
--RAM vs LUT
--Related muxes
+# CLBRAM Fuzzer
 
+## Purpose  
+Solves SLICEM specific bits:  
+-Shift register LUT (SRL)  
+-Memory size  
+-RAM vs LUT  
+-Related muxes  
+
+## Algorithm  
+  
+## Outcome
+```
 CLB.SLICE_X0.ALUT.RAM 31_16
 CLB.SLICE_X0.ALUT.SMALL 00_04
 CLB.SLICE_X0.ALUT.SRL 30_16
@@ -19,4 +26,4 @@ CLB.SLICE_X0.DLUT.SRL 30_47
 CLB.SLICE_X0.WA7USED 00_40
 CLB.SLICE_X0.WA8USED 01_27
 CLB.SLICE_X0.WEMUX.CE 01_23
-
+```

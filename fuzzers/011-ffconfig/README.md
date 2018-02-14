@@ -1,22 +1,25 @@
-Documents the following:
--FF clock inversion
--FF primitive mapping
--FF initialization value
+# FFConfig Fuzzer
 
-Clock inversion is per slice (as BEL CLKINV)
-Vivado GUI is misleading as it often shows it per FF, which is not actually true
+Documents the following:  
+-FF clock inversion  
+-FF primitive mapping  
+-FF initialization value  
 
-        FFSYNC  LATCH   ZRST
-Sample  00_48   30_32   30_12
-FDPE
-FDSE    X
-FDRE    X               X
-FDCE                    X
-LDCE            X       X
-LDPE            X
+Clock inversion is per slice (as BEL CLKINV)  
+Vivado GUI is misleading as it often shows it per FF, which is not actually true  
+
+|      |FFSYNC|LATCH|ZRST |
+|------|------|-----|-----|
+|Sample| 00_48|30_32|30_12|
+|FDPE  |      |     |     |
+|FDSE  |   X  |     |     |
+|FDRE  |   X  |     |  X  |
+|FDCE  |      |     |  X  |
+|LDCE  |      |  X  |  X  |
+|LDPE  |      |  X  |     |
 
 
-
+```
 CLB.SLICE_X0.A5FF.ZINIT 31_06
 CLB.SLICE_X0.A5FF.ZRESET 01_07
 CLB.SLICE_X0.AFF.ZINIT 31_03
@@ -55,4 +58,4 @@ CLB.SLICE_X1.DFF.ZINIT 31_59
 CLB.SLICE_X1.DFF.ZRESET 31_50
 CLB.SLICE_X1.FFSYNC 01_31
 CLB.SLICE_X1.LATCH 31_32
-
+```

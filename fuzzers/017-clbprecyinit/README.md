@@ -1,10 +1,13 @@
-Purpose:
+# CLBPRECYINIT Fuzzer
+
+## Purpose
 Document PRECYINIT mux
 
-Algorithm:
+## Algorithm
 
-Outcome:
+## Outcome
 
+```
 CLB.SLICE_X0.PRECYINIT.0 <0 candidates>
 CLB.SLICE_X0.PRECYINIT.1 00_12
 CLB.SLICE_X0.PRECYINIT.AX 30_14
@@ -13,4 +16,4 @@ CLB.SLICE_X1.PRECYINIT.0 <0 candidates>
 CLB.SLICE_X1.PRECYINIT.1 01_11
 CLB.SLICE_X1.PRECYINIT.AX 31_13
 CLB.SLICE_X1.PRECYINIT.CIN 31_12
-
+```
