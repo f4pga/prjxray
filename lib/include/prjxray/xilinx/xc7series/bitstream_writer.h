@@ -23,7 +23,7 @@ namespace xc7series {
 class BitstreamWriter {
        public:
 	typedef std::array<uint32_t, 6> header_t;
-	typedef std::vector<ConfigurationPacket> packets_t;
+	typedef std::vector<std::unique_ptr<ConfigurationPacket>> packets_t;
 	// Only defined if a packet exists
 	typedef absl::optional<absl::Span<const uint32_t>> op_data_t;
 	typedef absl::Span<const uint32_t>::iterator data_iterator_t;

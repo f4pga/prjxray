@@ -52,7 +52,7 @@ for l in f:
         src = which + "5Q"
 
     # add the 1-tag for this connection
-    tag = "%sMUX.%s" % (which, src)
+    tag = "%sOUTMUX.%s" % (which, src)
     segmk.addtag(loc, tag, 1)
 
     # remove this MUX from the cache, preventing generation of 0-tags for this MUX
@@ -65,7 +65,7 @@ for loc, muxes in cache.items():
             if src == "F7" and which not in "AC": continue
             if src == "F8" and which not in "B": continue
             if src == "5Q": src = which + "5Q"
-            tag = "%sMUX.%s" % (which, src)
+            tag = "%sOUTMUX.%s" % (which, src)
             segmk.addtag(loc, tag, 0)
 
 

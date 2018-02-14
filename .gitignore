@@ -1,3 +1,5 @@
 /build/
 .Xil
-database/*
+# Ignore database directories _except_ for their settings
+database/*/*
+!database/*/settings.sh
