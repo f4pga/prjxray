@@ -200,6 +200,39 @@ for segment_name in start_segments:
         database["segments"][segname]["baseaddr"] = [framebase, wordbase]
 
 #######################################
+# Transfer segment data into tiles
+
+for segment_name in database["segments"].keys():
+    baseaddr, offset = database["segments"][segment_name]["baseaddr"]
+    for tile_name in database["segments"][segment_name]["tiles"]:
+        tile_type = database["tiles"][tile_name]["type"]
+        if tile_type in ["CLBLL_L", "CLBLL_R", "CLBLM_L", "CLBLM_R", "INT_L",
+                         "INT_R"]:
+            database["tiles"][tile_name]["baseaddr"] = baseaddr
+            database["tiles"][tile_name]["offset"] = offset
+            database["tiles"][tile_name]["height"] = 2
+        elif tile_type in ["HCLK_L", "HCLK_R"]:
+            database["tiles"][tile_name]["baseaddr"] = baseaddr
+            database["tiles"][tile_name]["offset"] = offset
+            database["tiles"][tile_name]["height"] = 1
+        elif tile_type in ["BRAM_L", "BRAM_R", "DSP_L", "DSP_R"]:
+            database["tiles"][tile_name]["baseaddr"] = baseaddr
+            database["tiles"][tile_name]["offset"] = offset
+            database["tiles"][tile_name]["height"] = 10
+        elif tile_type in ["INT_INTERFACE_L", "INT_INTERFACE_R",
+                           "BRAM_INT_INTERFACE_L", "BRAM_INT_INTERFACE_R"]:
+            continue
+        else:
+            # print(tile_type, offset)
+            assert False
+
+database = database["tiles"]
+
+for tiledata in database.values():
+    if "segment" in tiledata:
+        del tiledata["segment"]
+
+#######################################
 # Write
 
 print(json.dumps(database, sort_keys=True, indent="\t"))

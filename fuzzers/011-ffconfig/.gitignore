@@ -8,3 +8,4 @@
 /specimen_*
 /__pycache__/
 /*.segbits
+/run.ok

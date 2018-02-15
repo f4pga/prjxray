@@ -4,8 +4,8 @@ SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 5 -M 15 -o seg_int_l.segbits $(addsuffix /segdata_clbl[lm]_l.txt,$(SPECIMENS))
-	${XRAY_SEGMATCH} -m 5 -M 15 -o seg_int_r.segbits $(addsuffix /segdata_clbl[lm]_r.txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -m 5 -M 15 -o seg_int_l.segbits $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -m 5 -M 15 -o seg_int_r.segbits $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
 
 pushdb:
 	${XRAY_MERGEDB} int_l seg_int_l.segbits

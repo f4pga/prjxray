@@ -7,3 +7,4 @@
 /vivado*
 /specimen_*
 /*.segbits
+/run.ok
