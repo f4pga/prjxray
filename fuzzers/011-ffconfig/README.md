@@ -1,9 +1,9 @@
 # FFConfig Fuzzer
 
 Documents the following:  
--FF clock inversion  
--FF primitive mapping  
--FF initialization value  
+- FF clock inversion  
+- FF primitive mapping  
+- FF initialization value  
 
 Clock inversion is per slice (as BEL CLKINV)  
 Vivado GUI is misleading as it often shows it per FF, which is not actually true  

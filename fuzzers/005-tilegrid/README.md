@@ -23,10 +23,11 @@ If you don't know where your ROI is, just set to to include all values (0x000000
 
 ### XRAY_ROI_GRID_*  
 Optionally these as a small performance optimization:  
--XRAY_ROI_GRID_X1  
--XRAY_ROI_GRID_X2  
--XRAY_ROI_GRID_Y1  
--XRAY_ROI_GRID_Y2  
+- XRAY_ROI_GRID_X1  
+- XRAY_ROI_GRID_X2  
+- XRAY_ROI_GRID_Y1  
+- XRAY_ROI_GRID_Y2  
+
 Which should, if unused, be set to -1, with this caveat:  
 WARNING: CLB test generates this based on CLBs but implicitly includes INT  
 Therefore, if you don't set an explicit XRAY_ROI_GRID_* it may fail  
