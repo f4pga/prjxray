@@ -27,6 +27,16 @@ case "$1" in
 			-e 's/^CLB\.SLICE_X0\./CLBLM_R.SLICEM_X0./' \
 			-e 's/^CLB\.SLICE_X1\./CLBLM_R.SLICEL_X1./' ;;
 
+	dsp_l)
+		sed < "$2" > "$tmp1" -e 's/^DSP\./DSP_L./' ;;
+	dsp_r)
+		sed < "$2" > "$tmp1" -e 's/^DSP\./DSP_R./' ;;
+
+	bram_l)
+		sed < "$2" > "$tmp1" -e 's/^BRAM\./BRAM_L./' ;;
+	bram_r)
+		sed < "$2" > "$tmp1" -e 's/^BRAM\./BRAM_R./' ;;
+
 	int_l)
 		sed < "$2" > "$tmp1" -e 's/^INT\./INT_L./' ;;
 	int_r)

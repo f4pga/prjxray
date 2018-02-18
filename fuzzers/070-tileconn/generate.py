@@ -11,7 +11,7 @@ with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                    os.getenv("XRAY_DATABASE")), "r") as f:
     grid = json.load(f)
 
-for tile, tiledata in grid["tiles"].items():
+for tile, tiledata in grid.items():
     grid_xy = (tiledata["grid_x"], tiledata["grid_y"])
     grid2tile[grid_xy] = tile
 
@@ -61,8 +61,8 @@ def handle_pair(tile1, tile2):
     if tile1 not in tilenodes: return
     if tile2 not in tilenodes: return
 
-    tile1data = grid["tiles"][tile1]
-    tile2data = grid["tiles"][tile2]
+    tile1data = grid[tile1]
+    tile2data = grid[tile2]
 
     grid1_xy = (tile1data["grid_x"], tile1data["grid_y"])
     grid2_xy = (tile2data["grid_x"], tile2data["grid_y"])
@@ -91,7 +91,7 @@ def handle_pair(tile1, tile2):
         database[key] &= wire_pairs
 
 
-for tile, tiledata in grid["tiles"].items():
+for tile, tiledata in grid.items():
     grid_right_xy = (tiledata["grid_x"] + 1, tiledata["grid_y"])
     grid_below_xy = (tiledata["grid_x"], tiledata["grid_y"] + 1)
 
