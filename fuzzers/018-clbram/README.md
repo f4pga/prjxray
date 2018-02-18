@@ -2,10 +2,10 @@
 
 ## Purpose  
 Solves SLICEM specific bits:  
--Shift register LUT (SRL)  
--Memory size  
--RAM vs LUT  
--Related muxes  
+- Shift register LUT (SRL)  
+- Memory size  
+- RAM vs LUT  
+- Related muxes  
 
 ## Algorithm  
   
