@@ -26,4 +26,4 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    :maxdepth: 2
    :caption: Database Development Process
    
-   database development process/overview
+   db_dev_process/overview

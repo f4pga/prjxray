@@ -1,6 +1,15 @@
 Overview
 =========
 
+SymbiFlow/symbiflow-arch-defs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is where we describe the logical components in a device to VPR.
+
+* VtR stands for `Verilog to Routing <https://verilogtorouting.org/>`_,
+* VPR stands for VtR Place and Route.
+* VtR also has its own synthesis tool called ODIN-II, but we are using `Yosys <https://github.com/YosysHQ/yosys>`_ instead of that.
+  
+
 SymbiFlow/prjxray/fuzzers/
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Fuzzers are things that generate a design, feed it to Vivado, and look at the resulting bitstream to make some conclusion.
@@ -16,16 +25,11 @@ By looking at all the resulting specimens, you can correlate which bits in which
 
 Looking at the implemented design in Vivado with "Show Routing Resources" turned on is quite helpful in understanding what all choices exist.
 
-SymbiFlow/symbiflow-arch-defs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This is where we describe the logical components in a device to VPR.
-VPR stands for place and route software.
-
 SymbiFlow/prjxray/tools/
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Here, you can find various programs to work with bitstreams, mainly to assist building fuzzers.
 
-SymbiFlow/minitests/roi_harness
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SymbiFlow/prjxray/minitests/roi_harness
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Shows how to use a bunch of tools together to patch an existing bitstream with hand-crafted FASM (FPGA assembler).
 
