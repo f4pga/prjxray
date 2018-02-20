@@ -5,6 +5,10 @@ Documenting the Xilinx 7-series bit-stream format.
 This repository contains both tools and scripts which allow you to document the
 bit-stream format of Xilinx 7-series FPGAs.
 
+More documentation can be found published on [prjxray ReadTheDocs site](http://prjxray.readthedocs.io/en/latest/) - this includes;
+ * [Highlevel Bitstream Architecture](http://prjxray.readthedocs.io/en/latest/architecture/overview.html)
+ * [Overview of DB Development Process](http://prjxray.readthedocs.io/en/latest/db_dev_process/overview.html)
+
 # Quickstart Guide
 
 Install Vivado 2017.2 (2017.3 has a known compatibility issue, see
