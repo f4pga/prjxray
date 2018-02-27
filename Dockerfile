@@ -8,5 +8,5 @@ RUN cd /source && make -j${NUM_PARALLEL_JOBS} --output-sync=target --warn-undefi
 RUN find /source/database -mindepth 1 -maxdepth 1 -type d -exec /source/htmlgen/htmlgen.py --settings={}/settings.sh --output=/output/html \;
 RUN mkdir -p /output/raw && find /source/database -mindepth 1 -maxdepth 1 -type d -exec cp -R {} /output/raw \;
 
-FROM nginx:alpine
+FROM amd64/nginx:alpine
 COPY --from=db_builder /output /usr/share/nginx/html
