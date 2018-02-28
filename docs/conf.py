@@ -186,6 +186,6 @@ def setup(app):
     MarkdownCodeSymlinks.find_links()
     app.add_config_value(
         'recommonmark_config', {
-            'github_code_repo': 'https://github.com/verilog-to-routing/vtr-verilog-to-routing',
+            'github_code_repo': 'https://github.com/SymbiFlow/prjxray',
         }, True)
     app.add_transform(MarkdownCodeSymlinks)
