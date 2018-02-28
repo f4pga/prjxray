@@ -1,5 +1,2 @@
 futures
-sphinx
-sphinx_rtd_theme
-sphinx-autobuild
 yapf
