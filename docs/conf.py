@@ -12,16 +12,19 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
 import re
+
+# Markdown support
+import recommonmark
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+from markdown_code_symlinks import MarkdownCodeSymlinks
 
 # -- General configuration ------------------------------------------------
 
@@ -42,9 +45,10 @@ templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-#
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+source_parsers = {
+   '.md': 'recommonmark.parser.CommonMarkParser',
+}
 
 # The master toctree document.
 master_doc = 'index'
@@ -177,3 +181,11 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+def setup(app):
+    MarkdownCodeSymlinks.find_links()
+    app.add_config_value(
+        'recommonmark_config', {
+            'github_code_repo': 'https://github.com/verilog-to-routing/vtr-verilog-to-routing',
+        }, True)
+    app.add_transform(MarkdownCodeSymlinks)
