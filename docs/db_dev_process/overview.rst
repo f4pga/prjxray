@@ -26,7 +26,7 @@ By looking at all the resulting specimens, you can correlate which bits in which
 Looking at the implemented design in Vivado with "Show Routing Resources" turned on is quite helpful in understanding what all choices exist.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Current Fuzzers
    :glob:
 
@@ -36,7 +36,7 @@ Minitests
 ^^^^^^^^^
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Current Minitests
    :glob:
 
