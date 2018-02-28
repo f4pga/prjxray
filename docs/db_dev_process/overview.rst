@@ -35,6 +35,8 @@ Looking at the implemented design in Vivado with "Show Routing Resources" turned
 Minitests
 ^^^^^^^^^
 
+Minitests are experiments to figure out how things work. They allow us to understand how to better write new fuzzers.
+
 .. toctree::
    :maxdepth: 1
    :caption: Current Minitests
