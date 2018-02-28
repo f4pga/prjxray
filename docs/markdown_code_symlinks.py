@@ -2,7 +2,6 @@ import logging
 import os
 
 from recommonmark import transform
-
 """
 Allow linking of Markdown documentation from the source code tree into the Sphinx
 documentation tree.
@@ -13,6 +12,7 @@ than the place they are now linked too - this code fixes these paths up.
 We also want links from two Markdown documents found in the Sphinx docs to
 work, so that is also fixed up.
 """
+
 
 def path_contains(parent_path, child_path):
     """Check a path contains another path.
@@ -159,11 +159,12 @@ Document Root: {}
                 self.config['github_code_repo'], dst_rsrc)
         else:
             url = os.path.relpath(
-                os.path.join(self.docs_root_dir, self.mapping['code2docs'][dst_rsrc]),
+                os.path.join(
+                    self.docs_root_dir, self.mapping['code2docs'][dst_rsrc]),
                 start=src_dir)
             base_url, ext = os.path.splitext(url)
-            assert ext in (".md", ".markdown"), (
-                "Unknown extension {}""".format(ext))
+            assert ext in (".md",
+                           ".markdown"), ("Unknown extension {}".format(ext))
             url = "{}.html".format(base_url)
 
         print("---")
@@ -171,9 +172,6 @@ Document Root: {}
         print(url)
         print
         return url
-
-
-
 
 
 if __name__ == "__main__":
