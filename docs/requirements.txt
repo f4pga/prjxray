@@ -1,0 +1,8 @@
+docutils
+sphinx
+sphinx-autobuild
+
+breathe
+recommonmark
+sphinx_rtd_theme
+sphinxcontrib-napoleon
