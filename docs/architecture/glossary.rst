@@ -40,15 +40,14 @@ Glossary
     A CLB is a combination of basic logic elements (:term:`BELs <BEL>`).
 
   Database
-    A term used in *Project X-Ray* to denote
-    text files containing meaningful labels for bit positions within
+    Text files containing meaningful labels for bit positions within
     :term:`segments <segment>`.
 
   Frame
     The fundamental unit of :term:`bitstream` configuration data consisting of
     101 :term:`words <word>`.
     Each frame has a 32-bit frame address and 101 payload words, 32 bits each.
-    The 50th payload words is an EEC.
+    The 50th payload word is an EEC.
     The 7 LSB bits of the frame address are the frame index within the
     configuration :term:`column` (called *minor frame address* in the Xilinx
     documentation). The rest of the frame address identifies the configuration
@@ -74,7 +73,7 @@ Glossary
 
   Node
     A routing node on the device. A node is a collection of :term:`wires <wire>`
-    spanning one or more "tiles"term" `tiles <tile>`.
+    spanning one or more :term:`tiles <tile>`.
     Nodes that are local to a tile map 1:1 to a wire. A node that spans multiple
     tiles maps to multiple wires, one in each tile it spans.
 
@@ -93,8 +92,8 @@ Glossary
   Region of interest (ROI)
     A term used in *Project X-Ray* to denote a
     rectangular region on the FPGA that is the current focus of our study.
-    Right now this is `SLICE_X12Y100:SLICE_X27Y149` on a `xc7a50tfgg484-1`
-    chip.
+    The current region of interest is `SLICE_X12Y100:SLICE_X27Y149`
+    on a `xc7a50tfgg484-1` chip.
 
   Segment
     All configuration bits for a horizontal slice of a :term:`column`.
@@ -107,7 +106,7 @@ Glossary
     :term:`slices <slice>` in a :term:`CLB` tile are sites.
 
   Slice
-    Portion of a :term:`tile` tile that contains :term:`BELs <BEL>`.
+    Portion of a :term:`tile` that contains :term:`BELs <BEL>`.
     A `CLBLL_L/CLBLL_R` tile contains two `SLICEL` slices.
     A `CLBLM_L/CLBLM_R` tile contains one `SLICEL` slice and one `SLICEM` slice.
 
