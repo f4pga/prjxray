@@ -3,10 +3,12 @@ Glossary
 
 .. glossary::
 
+  basic element
   BEL
+  basic logic element
   BLE
-  Basic element (BEL) or basic logic element (BLE)
-    BELs or BLEs are the basic logic elements in an FPGA, including
+    Basic elements (BELs) or basic logic element (BLEs)
+    are the basic logic units in an FPGA, including
     carry or fast adders (CFAs), flip flops (FFs), lookup tables (LUTs),
     multiplexers (MUXes), and other element types.
     Note: Programmable interconnects (PIPs) are not counted as BELs.
