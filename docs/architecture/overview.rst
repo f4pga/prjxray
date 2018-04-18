@@ -28,6 +28,6 @@ may be used within a single clock domain, connected to span both clock domains
 in a horizontal clock row, or connected to global clocks.
 
 Clock domains have a fixed height of 50 :term:`interconnect tiles
-<interconnect tile>` centered around the horizontal clock lines (25 above, 25
+<tile>` centered around the horizontal clock lines (25 above, 25
 below). Various function tiles, such as :term:`CLBs <CLB>`, are attached to interconnect
 tiles.
