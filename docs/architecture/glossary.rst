@@ -37,9 +37,10 @@ Glossary
     (pairs of logic tiles and interconnect tiles).
 
   CLB
-  Configurable logic block (CLB)
-    The configurable logic unit of an FPGA. Also called a **logic cell**.
-    A CLB is a combination of basic logic elements (:term:`BELs <BEL>`).
+  Configurable logic block
+    A configurable logic block (CLB) is the configurable logic unit of an FPGA.
+    Also called a **logic cell**. A CLB is a combination of basic logic elements
+    (:term:`BELs <BEL>`).
 
   Database
     Text files containing meaningful labels for bit positions within
@@ -73,6 +74,12 @@ Glossary
     clock buffers present in a device. The two halves are referred to as
     the top and bottom halves.
 
+  Horizontal clock row
+    Portion of a device including 12 horizontal clocks and the 50 interconnect
+    and function tiles associated with them. A :term:`half` contains one or
+    more horizontal clock rows and each half may have a different number of
+    rows.
+
   Node
     A routing node on the device. A node is a collection of :term:`wires <wire>`
     spanning one or more :term:`tiles <tile>`.
@@ -80,19 +87,13 @@ Glossary
     tiles maps to multiple wires, one in each tile it spans.
 
   PIP
-  Programmable interconnect point (PIP)
-    Connection point between two wires in a tile that may be enabled or
-    disabled by the configuration.
-
-  Horizontal clock row
-    Portion of a device including 12 horizontal clocks and the 50 interconnect
-    and function tiles associated with them. A :term:`half` contains one or
-    more horizontal clock rows and each half may have a different number of
-    rows.
+  Programmable interconnect point
+    A programmable interconnect point (PIP) is a connection point between two
+    wires in a tile that may be enabled or disabled by the configuration.
     
   ROI
-  Region of interest (ROI)
-    A term used in *Project X-Ray* to denote a
+  Region of interest
+    Region of interest (ROI) is used in *Project X-Ray* to denote a
     rectangular region on the FPGA that is the current focus of our study.
     The current region of interest is `SLICE_X12Y100:SLICE_X27Y149`
     on a `xc7a50tfgg484-1` chip.
