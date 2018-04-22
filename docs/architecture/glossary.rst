@@ -3,15 +3,23 @@ Glossary
 
 .. glossary::
 
+  ASIC
+    An application-specific integrated circuit (ASIC) is a chip that is
+    designed and used for a specific purpose, such as video acceleration,
+    machine learning acceleration, and many more purposes. In contrast to
+    :term:`FPGAs <FPGA>`, the programming of an ASIC is fixed at the time of
+    manufacture.
+
   basic element
   BEL
   basic logic element
   BLE
     Basic elements (BELs) or basic logic element (BLEs)
-    are the basic logic units in an FPGA, including
-    carry or fast adders (CFAs), flip flops (FFs), lookup tables (LUTs),
-    multiplexers (MUXes), and other element types.
-    Note: Programmable interconnects (PIPs) are not counted as BELs.
+    are the basic logic units in an :term:`FPGA`, including
+    carry or fast adders (:term:`CFAs <cfa>`), flip flops (:term:`FFs <ff>`),
+    lookup tables (:term:`LUTs <lut>`), multiplexers (:term:`MUXes <mux>`), and
+    other element types. Note: Programmable interconnects (:term:`PIPs <pip>`)
+    are not counted as BELs.
 
     BELs come in two forms:
 
@@ -20,9 +28,13 @@ Glossary
      
 
   Bitstream
-    Binary data that is directly loaded into an FPGA to perform configuration.
-    Contains configuration :term:`frames <frame>` as well as programming
-    sequences and other commands required to load and activate same.
+    Binary data that is directly loaded into an :term:`FPGA` to perform
+    configuration. Contains configuration :term:`frames <frame>` as well as
+    programming sequences and other commands required to load and activate same.
+
+  CFA
+    A carry or fast adder (CFA) is a logic element on the :term:`FPGA` that
+    performs fast arithmetic operations.
 
   Clock domain
     Portion of a :term:`horizontal clock row` to one side of the global clock
@@ -38,13 +50,25 @@ Glossary
 
   CLB
   Configurable logic block
-    A configurable logic block (CLB) is the configurable logic unit of an FPGA.
-    Also called a **logic cell**. A CLB is a combination of basic logic elements
-    (:term:`BELs <BEL>`).
+    A configurable logic block (CLB) is the configurable logic unit of an
+    :term:`FPGA`. Also called a **logic cell**. A CLB is a combination of basic
+    logic elements (:term:`BELs <bel>`).
 
   Database
     Text files containing meaningful labels for bit positions within
     :term:`segments <segment>`.
+
+  FF
+  Flip flop
+    A flip flop (FF) is a logic element on the :term:`FPGA` that stores state.
+
+  FPGA
+    A field-programmable gate array (FPGA) is a reprogrammable integrated
+    circuit, or chip. Reprogrammable means you can reconfigure the integrated
+    circuit for different types of computing. You define the configuration via a
+    hardware definition language (:term:`HDL`). The word "field" in
+    *field-programmable gate array* means the circuit is programmable
+    *in the field*, as opposed to during chip manufacture.
 
   Frame
     The fundamental unit of :term:`bitstream` configuration data consisting of
@@ -74,11 +98,29 @@ Glossary
     clock buffers present in a device. The two halves are referred to as
     the top and bottom halves.
 
+  HDL
+    You use a hardware definition language (HDL) to describe the behavior of an
+    electronic circuit. Popular HDLs include Verilog (inspired by C) and VHDL
+    (inspired by Ada).
+
   Horizontal clock row
     Portion of a device including 12 horizontal clocks and the 50 interconnect
     and function tiles associated with them. A :term:`half` contains one or
     more horizontal clock rows and each half may have a different number of
     rows.
+
+  I/O block
+    One of the configurable input/output blocks that connect the :term:`FPGA`
+    to external devices.
+
+  LUT
+    A lookup table (LUT) is a logic element on the :term:`FPGA`. LUTs function
+    as a ROM, apply combinatorial logic, and generate the output value for a
+    given set of inputs.
+
+  MUX
+    A multiplexer (MUX) is a multi-input, single-output switch controled by
+    logic.
 
   Node
     A routing node on the device. A node is a collection of :term:`wires <wire>`
@@ -90,13 +132,23 @@ Glossary
   Programmable interconnect point
     A programmable interconnect point (PIP) is a connection point between two
     wires in a tile that may be enabled or disabled by the configuration.
-    
+
+  PnR
+  Place and route
+    Place and route (PnR) is the process of taking logic and placing it into
+    hardware logic elements on the :term:`FPGA`, and then routing the signals
+    between the placed elements. 
+
   ROI
   Region of interest
     Region of interest (ROI) is used in *Project X-Ray* to denote a
-    rectangular region on the FPGA that is the current focus of our study.
+    rectangular region on the :term:`FPGA` that is the focus of our study.
     The current region of interest is `SLICE_X12Y100:SLICE_X27Y149`
     on a `xc7a50tfgg484-1` chip.
+
+  Routing fabric
+    The :term:`wires <wire>` and programmable interconnects (:term:`PIPs <pip>`)
+    connecting the logic blocks in an :term:`FPGA`.
 
   Segment
     All configuration bits for a horizontal slice of a :term:`column`.
@@ -105,11 +157,11 @@ Glossary
     column is 36 frames wide and 2 words high.
 
   Site
-    Portion of a tile where :term:`BELs <BEL>` can be placed. The
+    Portion of a tile where :term:`BELs <bel>` can be placed. The
     :term:`slices <slice>` in a :term:`CLB` tile are sites.
 
   Slice
-    Portion of a :term:`tile` that contains :term:`BELs <BEL>`.
+    Portion of a :term:`tile` that contains :term:`BELs <bel>`.
     A `CLBLL_L/CLBLL_R` tile contains two `SLICEL` slices.
     A `CLBLM_L/CLBLM_R` tile contains one `SLICEL` slice and one `SLICEM` slice.
 
