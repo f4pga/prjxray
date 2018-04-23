@@ -224,3 +224,13 @@ then you just add a line saying
 	Signed-off-by: Random J Developer <random@developer.example.org>
 
 using your real name (sorry, no pseudonyms or anonymous contributions.)
+
+You can add the signoff as part of your commit statement. For example:
+
+    git commit --signoff -a -m "Fixed some errors."
+
+*Hint:* If you've forgotten to add a signoff to one or more commits, you can use the
+following command to add signoffs to all commits between you and the upstream
+master:
+
+    git rebase --signoff upstream/master

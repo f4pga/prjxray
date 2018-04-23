@@ -1,10 +1,25 @@
 # Contributing to Project X-Ray
+
 There are a couple of guidelines when contributing to Project X-Ray which are
 listed here.
 
+### Sending
+
+All contributions should be sent as
+[GitHub Pull requests](https://help.github.com/articles/creating-a-pull-request-from-a-fork/).
+
+### License
+
+All code in the Project X-Ray repository is licensed under the very permissive
+[ISC Licence](COPYING). A copy can be found in the [`COPYING`](COPYING) file.
+
+All new contributions must also be released under this license.
+
 ### Code of Conduct
 
-By contributing you agree to the [code of conduct](CODE_OF_CONDUCT.md).
+By contributing you agree to the [code of conduct](CODE_OF_CONDUCT.md). We
+follow the open source best practice of using the [Contributor
+Covenant](https://www.contributor-covenant.org/) for our Code of Conduct.
 
 ### Sign your work
 
@@ -53,6 +68,16 @@ then you just add a line saying
 	Signed-off-by: Random J Developer <random@developer.example.org>
 
 using your real name (sorry, no pseudonyms or anonymous contributions.)
+
+You can add the signoff as part of your commit statement. For example:
+
+    git commit --signoff -a -m "Fixed some errors."
+
+*Hint:* If you've forgotten to add a signoff to one or more commits, you can use the
+following command to add signoffs to all commits between you and the upstream
+master:
+
+    git rebase --signoff upstream/master
 
 
 
