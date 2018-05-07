@@ -35,7 +35,8 @@ memories it contains. These busses are identified by a 3-bit integer:
 | 010     | CFG_CLB           | ???                 |
 +---------+-------------------+---------------------+
 
-Within each bus, the connected tiles are organized into columns. A column roughly
+Within each bus, the connected tiles are organized into
+:term:`columns <column>`. A column roughly
 corresponds to a physical vertical line of tiles perpendicular to and centered over
 the horizontal clock row. Each column contains varying amounts of configuration data
 depending on the types of tiles attached to that column. Regardless of the amount,
