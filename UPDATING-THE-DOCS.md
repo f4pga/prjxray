@@ -43,47 +43,46 @@ Sphinx and all the necessary plugins are installed:
 
 Steps in detail, on Linux:
 
-- Install pip:
+1. Install pip:
 
-    sudo apt install python-pip
+        sudo apt install python-pip
 
-- Install pipenv - see the
+1. Install pipenv - see the
   [pipenv installation
   guide](http://pipenv.readthedocs.io/en/latest/install/#installing-pipenv):
 
-    pip install pipenv
+        pip install pipenv
  
-- Add pipenv to your path, as recommended in the
+1. Add pipenv to your path, as recommended in the
   [pipenv installation
-  guide](http://pipenv.readthedocs.io/en/latest/install/#installing-pipenv):
-
-  - On Linux, add this in your ~/.profile file:
+  guide](http://pipenv.readthedocs.io/en/latest/install/#installing-pipenv). On
+  Linux, add this in your `~/.profile` file:
  
-      export PATH=$PATH:~/.local/bin source ~/.profile
+        export PATH=$PATH:~/.local/bin source ~/.profile
 
-  - Note: On OS X the path is different: `~/Library/Python/2.7/bin`
+    Note: On OS X the path is different: `~/Library/Python/2.7/bin`
 
-- Go to the docs directory in the Project X-Ray repo:
+1. Go to the docs directory in the Project X-Ray repo:
 
-    cd ~/github-repos/prjxray/docs
+        cd ~/github-repos/prjxray/docs
  
-- Run pipenv to install the Sphinx environment:
+1. Run pipenv to install the Sphinx environment:
 
-    pipenv install
+        pipenv install
 
-- Activate the shell:
+1. Activate the shell:
 
-    pipenv shell
+        pipenv shell
 
-- Run the HTML build checker, and check for _errors_:
+1. Run the HTML build checker, and check for _errors_:
 
-    make html
+        make html
 
-- Run the link checker, and check for _warnings_:
+1. Run the link checker, and check for _warnings_:
 
-    make linkcheck
+        make linkcheck
 
-- To leave the shell, type: `exit`.
+1. To leave the shell, type: `exit`.
 
 ## Perform more comprehensive testing on your own staging doc site
 
@@ -94,33 +93,34 @@ build.
 
 Follow these steps to create your own staging doc site on Read the Docs (RtD):
 
--  Sign up for a RtD account here:
+1. Sign up for a RtD account here:
    [https://readthedocs.org/](https://readthedocs.org/)
--  Go to your [RtD connected
+1. Go to your [RtD connected
    services](https://readthedocs.org/accounts/social/connections/), click
    **Connect to GitHub**, and connect RtD to your GitHub account. (If you
    decide not to do this, you'll need to import your project manually in the
    following steps.)
--  Go to [your RtD dashboard](https://readthedocs.org/dashboard/).
--  Click **Import a Project**.
--  Add your GitHub fork of the Project X-Ray project. Give your doc site a
+1. Go to [your RtD dashboard](https://readthedocs.org/dashboard/).
+1. Click **Import a Project**.
+1. Add your GitHub fork of the Project X-Ray project. Give your doc site a
    **name** that distinguishes it from the canonical Project X-Ray docs. For
-   example, `your-username-prjxray`
--  Make your doc site **protected**. See the [RtD guide to privacy
+   example, `your-username-prjxray`.
+1. Make your doc site **protected**. See the [RtD guide to privacy
    levels](http://docs.readthedocs.io/en/latest/privacy.html).
    Reason for protecting your doc site: If you leave your doc site public, it
    will appear in web searches. That may be confusing for readers who are
    looking for the canonical Project X-Ray docs.
--  Set RtD to build from your branch, rather than from master. This ensures
+1. Set RtD to build from your branch, rather than from master. This ensures
    that the content you see on your doc site reflect your latest updates:
-   -  On the RtD dashboard, go to **Admin > Advanced Settings.**
+   -  On [your RtD dashboard](https://readthedocs.org/dashboard/),
+      open **your project**, then go to **Admin > Advanced Settings.**
    -  Add the name of your branch in **Default branch**. This is the
       branch that the "latest" build config points to. If you leave this field
       empty, RtD uses `master` or `trunk`.
 
--  RtD now builds your doc site, based on the contents in your Project X-Ray
+1. RtD now builds your doc site, based on the contents in your Project X-Ray
    fork.
--  See the [RtD getting-started
+1. See the [RtD getting-started
    guide](https://docs.readthedocs.io/en/latest/getting_started.html#import-docs)
    for more info.
 
