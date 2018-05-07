@@ -234,3 +234,8 @@ following command to add signoffs to all commits between you and the upstream
 master:
 
     git rebase --signoff upstream/master
+
+### Contributing to the docs
+
+In addition to the above contribution guidelines, see the guide to
+[updating the Project X-Ray docs](UPDATING-THE-DOCS.md).
