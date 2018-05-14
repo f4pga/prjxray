@@ -76,9 +76,9 @@ will have 36 frames.
 Block RAM content
 ^^^^^^^^^^^^^^^^^
 
-As the name says, this bus provides access to the Block RAM contents. Block RAM configuration
-data is accessed via the CLB, I/O, CLB bus. The mapping of frame words to memory locations is
-not currently understood.
+As the name says, this bus provides access to the :term:`block RAM` contents.
+Block RAM configuration data is accessed via the CLB, I/O, CLB bus. The mapping
+of frame words to memory locations is not currently understood.
 
 CFG_CLB
 ^^^^^^^
