@@ -95,8 +95,8 @@ def dump_frames_verbose(frames):
     for addr in sorted(frames.keys()):
         words = frames[addr]
         print(
-            '0x%08X ' % addr + ', '.join(['0x%08X' % w
-                                          for w in words]) + '...')
+            '0x%08X ' % addr + ', '.join(['0x%08X' % w for w in words]) +
+            '...')
 
 
 def dump_frames_sparse(frames):

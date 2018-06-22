@@ -84,8 +84,8 @@ def db_gen():
                         node_node_pip[src_node] = dict()
                     if dst_node not in reverse_node_node:
                         reverse_node_node[dst_node] = set()
-                    node_node_pip[src_node][dst_node] = "%s.%s.%s" % (
-                        tile, dst, src)
+                    node_node_pip[src_node][
+                        dst_node] = "%s.%s.%s" % (tile, dst, src)
                     reverse_node_node[dst_node].add(src_node)
 
     return type_to_tiles, grid_to_tile, nodes, node_node_pip, reverse_node_node
@@ -141,8 +141,8 @@ def route(args):
         try:
             write_scores(set([dst_node]), 1)
         except RecursionError as e:
-            raise Exception("Could not find route for node %s" %
-                            (dst_node, )) from None
+            raise Exception(
+                "Could not find route for node %s" % (dst_node, )) from None
         print("  route length: %d" % node_scores[src_node])
 
         count = 0

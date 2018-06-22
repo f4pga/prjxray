@@ -78,8 +78,8 @@ for tilename, tiledata in grid["tiles"].items():
         continue
 
     segname = "%s_%02x" % (
-        tiledata["cfgcol"]["BASE_FRAMEID"][2:],
-        min(tiledata["cfgcol"]["WORDS"]))
+        tiledata["cfgcol"]["BASE_FRAMEID"][2:], min(
+            tiledata["cfgcol"]["WORDS"]))
 
     if not segname in segments:
         segments[segname] = {"bits": list(), "tags": dict()}
@@ -122,9 +122,8 @@ for tilename, tiledata in grid["tiles"].items():
         for bit_frame, bit_wordidx, bit_bitidx in bits[base_frame][wordidx]:
             segments[segname]["bits"].append(
                 "%02x_%02x_%02x" % (
-                    bit_frame - base_frame,
-                    bit_wordidx - min(tiledata["cfgcol"]["WORDS"]),
-                    bit_bitidx))
+                    bit_frame - base_frame, bit_wordidx - min(
+                        tiledata["cfgcol"]["WORDS"]), bit_bitidx))
 
     segments[segname]["bits"].sort()
 
