@@ -709,9 +709,9 @@ function oml() {
         "  unused: %d, unknown: %d, known: %d, total: %d, percentage: %.2f%% (%.2f%%)"
         % (
             unused_bits, unknown_bits, known_bits,
-            unused_bits + unknown_bits + known_bits,
-            100 * known_bits / (unknown_bits + unused_bits + known_bits),
-            100 * (known_bits + unused_bits) /
+            unused_bits + unknown_bits + known_bits, 100 * known_bits /
+            (unknown_bits + unused_bits + known_bits), 100 *
+            (known_bits + unused_bits) /
             (unknown_bits + unused_bits + known_bits)))
 
 
