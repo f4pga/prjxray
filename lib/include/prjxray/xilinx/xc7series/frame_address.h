@@ -7,6 +7,10 @@
 #include <prjxray/xilinx/xc7series/block_type.h>
 #include <yaml-cpp/yaml.h>
 
+#ifdef _GNU_SOURCE
+#undef minor
+#endif
+
 namespace prjxray {
 namespace xilinx {
 namespace xc7series {
