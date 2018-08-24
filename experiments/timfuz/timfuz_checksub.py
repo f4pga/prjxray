@@ -8,7 +8,7 @@ import math
 from collections import OrderedDict
 
 # check for issues that may be due to round off error
-STRICT = 0
+STRICT = 1
 
 def Adi2matrix_random(A_ubd, b_ub, names):
     # random assignment
@@ -78,7 +78,7 @@ def row_sub_syms(row, sub_json, verbose=False):
             print('pivot %i %s' % (n, pivot))
         for subk, subv in sorted(sub_json['subs'][group].items()):
             oldn = row.get(subk, 0)
-            rown = oldn - n * subv
+            rown = oldn - n * (1.0* subv[0] / subv[1])
             if verbose:
                 print("  %s: %d => %d" % (subk, oldn, rown))
             if rown == 0:
@@ -208,12 +208,7 @@ def load_sub(fn):
         for name, vals in sorted(j['subs'].items()):
             pivot = None
             for k, v in vals.items():
-                if STRICT:
-                    vi = int(round(v))
-                    assert abs(vi - v) < delta
-                    vals[k] = vi
-                else:
-                    vals[k] = float(v)
+                vals[k] = float(v)
 
                 # there may be more than one acceptable pivot
                 # take the first
