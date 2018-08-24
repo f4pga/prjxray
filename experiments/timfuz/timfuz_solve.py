@@ -2,7 +2,8 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json
+from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np
+from timfuz_massage import massage_equations
 import numpy as np
 import glob
 import json
@@ -65,11 +66,9 @@ def check_feasible(A_ub, b_ub):
     print(' done')
 
 def run_corner(Anp, b, names, verbose=False, opts={}, meta={}):
+    # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
     assert type(b) is np.ndarray, type(b)
-
-    # Given timing scores for above delays (-ps)
-    names_orig = names
 
     #check_feasible(Anp, b)
 
@@ -90,6 +89,12 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}):
     b_ub = -1.0 * b
     #A_ub = -1.0 * Anp
     A_ub = [-1.0 * x for x in Anp]
+
+    if verbose:
+        print('')
+        print('A_ub b_ub')
+        print_eqns_np(A_ub, b_ub, verbose=verbose)
+        print('')
 
     print('Creating misc constants...')
     # Minimization function scalars
@@ -133,7 +138,7 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}):
     print('')
     # Now find smallest values for delay constants
     # Due to input bounds (ex: column limit), some delay elements may get eliminated entirely
-    print('Running linprog w/ %d r, %d c (%d name)' % (rows, cols, len(names_orig)))
+    print('Running linprog w/ %d r, %d c (%d name)' % (rows, cols, len(names)))
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, callback=callback,
           options={"disp": True, 'maxiter': maxiter, 'bland': True, 'tol': 1e-6,})
     nonzeros = 0
@@ -155,7 +160,7 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}):
         print('Writing %s' % fn_out)
         np.save(fn_out, (3, c, A_ub, b_ub, bounds, names, res, meta))
 
-def run(fns_in, corner, sub_json=None, dedup=True, verbose=False):
+def run(fns_in, corner, sub_json=None, dedup=True, massage=False, verbose=False):
     Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
 
     # Remove duplicate rows
@@ -175,12 +180,15 @@ def run(fns_in, corner, sub_json=None, dedup=True, verbose=False):
     else:
         names = index_names(Ads)
 
-    if 0:
+    if verbose:
         print
-        print_eqns(A_ubd, b_ub, verbose=verbose)
+        print_eqns(Ads, b, verbose=verbose)
 
-        print
-        col_dist(A_ubd, 'final', names)
+        #print
+        #col_dist(A_ubd, 'final', names)
+
+    if massage:
+        Ads, b = massage_equations(Ads, b)
 
     print('Converting to numpy...')
     names, Anp = A_ds2np(Ads)
@@ -195,6 +203,7 @@ def main():
     )
 
     parser.add_argument('--verbose', action='store_true', help='')
+    parser.add_argument('--massage', action='store_true', help='')
     parser.add_argument('--sub-json', help='Group substitutions to make fully ranked')
     parser.add_argument('--corner', default="slow_max", help='')
     parser.add_argument(
@@ -215,7 +224,7 @@ def main():
 
     try:
         run(sub_json=sub_json,
-            fns_in=fns_in, verbose=args.verbose, corner=args.corner)
+            fns_in=fns_in, verbose=args.verbose, corner=args.corner, massage=args.massage)
     finally:
         print('Exiting after %s' % bench)
 

@@ -130,18 +130,18 @@ def Ab_ub_dt2d(eqns):
     return list(A_ubd), list(b_ub)
 
 # This significantly reduces runtime
-def simplify_rows(A_ubd, b_ub):
+def simplify_rows(Ads, b_ub):
     '''Remove duplicate equations, taking highest delay'''
     # dict of constants to highest delay
     eqns = OrderedDict()
-    assert len(A_ubd) == len(b_ub), (len(A_ubd), len(b_ub))
+    assert len(Ads) == len(b_ub), (len(Ads), len(b_ub))
 
     sys.stdout.write('SimpR ')
     sys.stdout.flush()
     progress = max(1, len(b_ub) / 100)
     zero_ds = 0
     zero_es = 0
-    for loopi, (b, rowd) in enumerate(zip(b_ub, A_ubd)):
+    for loopi, (b, rowd) in enumerate(zip(b_ub, Ads)):
         if loopi % progress == 0:
             sys.stdout.write('.')
             sys.stdout.flush()
@@ -173,61 +173,6 @@ def simplify_rows(A_ubd, b_ub):
     #return A_ub_np2d(A_ub_ret), b_ub_ret
     return A_ubd_ret, b_ub_ret
 
-def simplify_cols(names, A_ubd, b_ub):
-    '''
-    Remove unsued columns
-    This is fairly straightforward in dictionary form now as only have to remove and adjust indices
-    Maybe should use the names as keys? Then this wouldn't be needed anymore as indices wouldn't need to be rebased
-
-    XXX: shuffles the name order around. Do we care?
-    '''
-
-    # First: find unused names
-    # use dict since no standard ordered set
-    used_cols = set()
-    names_ret = OrderedDict()
-    col_old2new = OrderedDict()
-    rows = len(b_ub)
-    cols = len(names)
-
-    sys.stdout.write('SimpC indexing ')
-    sys.stdout.flush()
-    progress = max(1, rows / 100)
-    for rowi, rowd in enumerate(A_ubd):
-        if rowi % progress == 0:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        for coli in rowd.keys():
-            used_cols.add(coli)
-
-    for coli in range(cols):
-        if coli in used_cols:
-            names_ret[names[coli]] = None
-            col_old2new[coli] = len(col_old2new)
-    assert len(used_cols) == len(col_old2new)
-
-    print(' done')
-
-    # Create a new matrix, copying important values over
-    #A_ub_ret = np.zeros((4, 1))
-    #A_ub_ret[3][0] = 1.0
-    #A_ub_ret = np.zeros((rows, len(names_ret)))
-    A_ub_ret = [None] * rows
-    sys.stdout.write('SimpC creating ')
-    sys.stdout.flush()
-    progress = max(1, rows / 100)
-    for rowi, rowd_old in enumerate(A_ubd):
-        if rowi % progress == 0:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        l = [(col_old2new[k], v) for k, v in rowd_old.items()]
-        A_ub_ret[rowi] = OrderedDict(l)
-    print(' done')
-
-    print('Simplify cols: %d => %d cols' % (len(names), len(names_ret)))
-    nr = list(names_ret.keys())
-    return nr, A_ub_ret, b_ub
-
 def A_ubr_np2d(row):
     '''Convert a single row'''
     #d = {}
@@ -239,10 +184,10 @@ def A_ubr_np2d(row):
 
 def A_ub_np2d(A_ub):
     '''Convert A_ub entries in numpy matrix to dictionary / sparse form'''
-    A_ubd = [None] * len(A_ub)
+    Adi = [None] * len(A_ub)
     for i, row in enumerate(A_ub):
-        A_ubd[i] = A_ubr_np2d(row)
-    return A_ubd
+        Adi[i] = A_ubr_np2d(row)
+    return Adi
 
 def Ar_di2np(row_di, cols):
     rownp = np.zeros(cols)
@@ -282,65 +227,14 @@ def Ab_np2d(A_ub, b_ub_inv):
     b_ub = invb(b_ub_inv)
     return A_ubd, b_ub
 
-def sort_equations_(A_ubd, b_ub):
-    # Dictionaries aren't hashable for sorting even though they are comparable
-    return A_ub_t2d(sorted(A_ub_d2t(A_ubd)))
-
-def sort_equations(A_ub, b_ub):
+def sort_equations(Ads, b):
     # Track rows with value column
     # Hmm can't sort against np arrays
-    tosort = [(sorted(row.items()), b) for row, b in zip(A_ub, b_ub)]
+    tosort = [(sorted(row.items()), rowb) for row, rowb in zip(Ads, b)]
     #res = sorted(tosort, key=lambda e: e[0])
     res = sorted(tosort)
     A_ubtr, b_ubr = zip(*res)
     return [OrderedDict(rowt) for rowt in A_ubtr], b_ubr
-
-def lte_const(row_ref, row_cmp):
-    '''Return true if all constants are smaller magnitude in row_cmp than row_ref'''
-    #return False
-    for k, vc in row_cmp.items():
-        vr = row_ref.get(k, None)
-        # Not in reference?
-        if vr is None:
-            return False
-        if vr < vc:
-            return False
-    return True
-
-def shared_const(row_ref, row_cmp):
-    '''Return true if more constants are equal than not equal'''
-    #return False
-    matches = 0
-    unmatches = 0
-    ks = list(row_ref.keys()) + list(row_cmp.keys())
-    for k in ks:
-        vr = row_ref.get(k, None)
-        vc = row_cmp.get(k, None)
-        # At least one
-        if vr is not None and vc is not None:
-            if vc == vr:
-                matches += 1
-            else:
-                unmatches += 1
-        else:
-            unmatches += 1
-
-    # Will equation reduce if subtracted?
-    return matches > unmatches
-
-def reduce_const(row_ref, row_cmp):
-    '''Subtract cmp constants from ref'''
-    #ret = {}
-    ret = OrderedDict()
-    ks = set(row_ref.keys())
-    ks.update(set(row_cmp.keys()))
-    for k in ks:
-        vr = row_ref.get(k, 0)
-        vc = row_cmp.get(k, 0)
-        res = vr - vc
-        if res:
-            ret[k] = res
-    return ret
 
 def derive_eq_by_row(A_ubd, b_ub, verbose=0, col_lim=0, tweak=False):
     '''
@@ -510,13 +404,13 @@ def derive_eq_by_col(A_ubd, b_ub, verbose=0):
     print('Derive col: %d => %d rows' % (len(b_ub), len(b_ub_ret)))
     return A_ubd_ret, b_ub_ret
 
-def col_dist(A_ubd, desc='of', names=[], lim=0):
+def col_dist(Ads, desc='of', names=[], lim=0):
     '''print(frequency distribution of number of elements in a given row'''
-    rows = len(A_ubd)
+    rows = len(Ads)
     cols = len(names)
 
     fs = {}
-    for row in A_ubd:
+    for row in Ads:
         this_cols = len(row)
         fs[this_cols] = fs.get(this_cols, 0) + 1
 
@@ -912,3 +806,21 @@ def run_sub_json(Ads, sub_json, verbose=False):
 
     print("Sub: %u / %u rows changed" % (nsubs, nrows))
     print("Sub: %u => %u cols" % (ncols_old, ncols_new))
+
+def print_eqns(Ads, b, verbose=0, lim=3, label=''):
+    rows = len(b)
+
+    print('Sample equations (%s) from %d r' % (label, rows))
+    prints = 0
+    for rowi, row in enumerate(Ads):
+        if verbose or ((rowi < 10 or rowi % max(1, (rows / 20)) == 0) and (not lim or prints < lim)):
+            line = '  EQN: p%u: ' % rowi
+            for k, v in sorted(row.items()):
+                line += '%u*t%s ' % (v, k)
+            line += '= %d' % b[rowi]
+            print(line)
+            prints += 1
+
+def print_eqns_np(A_ub, b_ub, verbose=0):
+    Adi = A_ub_np2d(A_ub)
+    print_eqns(Adi, b_ub, verbose=verbose)

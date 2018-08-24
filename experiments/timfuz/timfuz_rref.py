@@ -169,7 +169,7 @@ def comb_corr_sets(state, verbose=False):
             continue
 
         # a grouping
-        group_name = "GROUP_%u" % row_i
+        group_name = "GRP_%u" % row_i
         rowdsf = row_sym2dsf(rowsym, names)
 
         state.subs[group_name] = rowdsf
