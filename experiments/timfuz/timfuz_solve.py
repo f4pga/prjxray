@@ -1,24 +1,77 @@
 #!/usr/bin/env python3
 
-def run_corner(A_ubd, b_ub, names, verbose=0, opts={}, meta={}):
+# https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
+from scipy.optimize import linprog
+from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json
+import numpy as np
+import glob
+import json
+import math
+from collections import OrderedDict
+from fractions import Fraction
+import sys
+import datetime
+import os
+import time
+
+def check_feasible(A_ub, b_ub):
+    '''
+    Put large timing constants into the equations
+    See if that would solve it
+
+    Its having trouble giving me solutions as this gets bigger
+    Make a terrible baseline guess to confirm we aren't doing something bad
+    '''
+
+    sys.stdout.write('Check feasible ')
+    sys.stdout.flush()
+
+    rows = len(b_ub)
+    cols = len(A_ub[0])
+
+    progress = max(1, rows / 100)
+
+    # Chose a high arbitrary value for x
+    # Delays should be in order of ns, so a 10 ns delay should be way above what anything should be
+    xs = [10e3 for _i in range(cols)]
+
+    # FIXME: use the correct np function to do this for me
+    # Verify bounds
+    #b_res = np.matmul(A_ub, xs)
+    #print(type(A_ub), type(xs)
+    #A_ub = np.array(A_ub)
+    #xs = np.array(xs)
+    #b_res = np.matmul(A_ub, xs)
+    def my_mul(A_ub, xs):
+        #print('cols', cols
+        #print('rows', rows
+        ret = [None] * rows
+        for row in range(rows):
+            this = 0
+            for col in range(cols):
+                this += A_ub[row][col] * xs[col]
+            ret[row] = this
+        return ret
+    b_res = my_mul(A_ub, xs)
+
+    # Verify bound was respected
+    for rowi, (this_b, this_b_ub) in enumerate(zip(b_res, b_ub)):
+        if rowi % progress == 0:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+        if this_b >= this_b_ub or this_b > 0:
+            print('% 4d Want res % 10.1f <= % 10.1f <= 0' % (rowi, this_b, this_b_ub))
+            raise Exception("Bad ")
+    print(' done')
+
+def run_corner(Anp, b, names, verbose=False, opts={}, meta={}):
+    assert type(Anp[0]) is np.ndarray, type(Anp[0])
+    assert type(b) is np.ndarray, type(b)
+
     # Given timing scores for above delays (-ps)
     names_orig = names
 
-    #print_eqns(A_ub, b_ub, verbose=verbose)
-    names, A_ubd, b_ub = massage_equations(A_ubd, b_ub, opts, names, verbose=verbose)
-
-    print
-    print_eqns(A_ubd, b_ub, verbose=verbose)
-
-    print
-    col_dist(A_ubd, 'final', names)
-
-    A_ub, b_ub = Ab_d2np(A_ubd, b_ub, names)
-
-    # Its having trouble giving me solutions as this gets bigger
-    # Make a terrible baseline guess to confirm we aren't doing something bad
-    #print_names(names, verbose=verbose)
-    check_feasible(A_ub=A_ub, b_ub=b_ub)
+    #check_feasible(Anp, b)
 
     '''
     Be mindful of signs
@@ -31,8 +84,14 @@ def run_corner(A_ubd, b_ub, names, verbose=0, opts={}, meta={}):
     -delay1 +   -delay2 +               -delay4     <= -timing1
                 -delay2 +   -delay3                 <= -timing2
     '''
-    rows = len(A_ub)
-    cols = len(A_ub[0])
+    rows = len(Anp)
+    cols = len(Anp[0])
+    print('Scaling to solution form...')
+    b_ub = -1.0 * b
+    #A_ub = -1.0 * Anp
+    A_ub = [-1.0 * x for x in Anp]
+
+    print('Creating misc constants...')
     # Minimization function scalars
     # Treat all logic elements as equally important
     c = [1 for _i in range(len(names))]
@@ -50,12 +109,12 @@ def run_corner(A_ubd, b_ub, names, verbose=0, opts={}, meta={}):
     maxiter = 1000000
 
     if verbose >= 2:
-        print('b_ub', b_ub)
+        print('b_ub', b)
     print('Unique delay elements: %d' % len(names))
     print('  # delay minimization weights: %d' % len(c))
     print('  # delay constraints: %d' % len(bounds))
     print('Input paths')
-    print('  # timing scores: %d' % len(b_ub))
+    print('  # timing scores: %d' % len(b))
     print('  Rows: %d' % rows)
 
     tlast = [time.time()]
@@ -96,3 +155,69 @@ def run_corner(A_ubd, b_ub, names, verbose=0, opts={}, meta={}):
         print('Writing %s' % fn_out)
         np.save(fn_out, (3, c, A_ub, b_ub, bounds, names, res, meta))
 
+def run(fns_in, corner, sub_json=None, dedup=True, verbose=False):
+    Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
+
+    # Remove duplicate rows
+    # is this necessary?
+    # maybe better to just add them into the matrix directly
+    if dedup:
+        oldn = len(Ads)
+        Ads, b = simplify_rows(Ads, b)
+        print('Simplify %u => %u rows' % (oldn, len(Ads)))
+
+    if sub_json:
+        print('Sub: %u rows' % len(Ads))
+        names_old = index_names(Ads)
+        run_sub_json(Ads, sub_json, verbose=verbose)
+        names = index_names(Ads)
+        print("Sub: %u => %u names" % (len(names_old), len(names)))
+    else:
+        names = index_names(Ads)
+
+    if 0:
+        print
+        print_eqns(A_ubd, b_ub, verbose=verbose)
+
+        print
+        col_dist(A_ubd, 'final', names)
+
+    print('Converting to numpy...')
+    names, Anp = A_ds2np(Ads)
+    run_corner(Anp, np.asarray(b), names, verbose=verbose)
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description=
+        'Solve timing solution'
+    )
+
+    parser.add_argument('--verbose', action='store_true', help='')
+    parser.add_argument('--sub-json', help='Group substitutions to make fully ranked')
+    parser.add_argument('--corner', default="slow_max", help='')
+    parser.add_argument(
+        'fns_in',
+        nargs='*',
+        help='timing3.csv input files')
+    args = parser.parse_args()
+    # Store options in dict to ease passing through functions
+    bench = Benchmark()
+
+    fns_in = args.fns_in
+    if not fns_in:
+        fns_in = glob.glob('specimen_*/timing3.csv')
+
+    sub_json = None
+    if args.sub_json:
+        sub_json = load_sub(args.sub_json)
+
+    try:
+        run(sub_json=sub_json,
+            fns_in=fns_in, verbose=args.verbose, corner=args.corner)
+    finally:
+        print('Exiting after %s' % bench)
+
+if __name__ == '__main__':
+    main()

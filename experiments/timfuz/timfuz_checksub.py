@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np
+from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json
 import numpy as np
 import glob
 import json
 import math
 from collections import OrderedDict
 from fractions import Fraction
-
-# check for issues that may be due to round off error
-STRICT = 1
 
 def Adi2matrix_random(A_ubd, b_ub, names):
     # random assignment
@@ -44,97 +41,6 @@ def Ads2matrix_linear(Ads, b):
         dst_rowi = (dst_rowi + 1) % rows_out
     return A_ret, b_ret
 
-def row_sub_syms(row, sub_json, verbose=False):
-    if 0 and verbose:
-        print("")
-        print(row.items())
-
-    delsyms = 0
-    for k in sub_json['drop_names']:
-        try:
-            del row[k]
-            delsyms += 1
-        except KeyError:
-            pass
-    if verbose:
-        print("Deleted %u symbols" % delsyms)
-
-    if verbose:
-        print('Checking pivots')
-        print(sorted(row.items()))
-        for group, pivot in sorted(sub_json['pivots'].items()):
-            if pivot not in row:
-                continue
-            n = row[pivot]
-            print('  pivot %u %s' % (n, pivot))
-
-    for group, pivot in sorted(sub_json['pivots'].items()):
-        if pivot not in row:
-            continue
-
-        # take the sub out n times
-        # note constants may be negative
-        n = row[pivot]
-        if verbose:
-            print('pivot %i %s' % (n, pivot))
-        for subk, subv in sorted(sub_json['subs'][group].items()):
-            oldn = row.get(subk, Fraction(0))
-            rown = oldn - n * subv
-            if verbose:
-                print("  %s: %d => %d" % (subk, oldn, rown))
-            if rown == 0:
-                # only becomes zero if didn't previously exist
-                del row[subk]
-                if verbose:
-                    print("    del")
-            else:
-                row[subk] = rown
-        row[group] = n
-        assert pivot not in row
-
-    # after all constants are applied, the row should end up positive?
-    # numeric precision issues may limit this
-    # Ex: AssertionError: ('PIP_BSW_2ELSING0', -2.220446049250313e-16)
-    if STRICT:
-        for k, v in sorted(row.items()):
-            assert v > 0, (k, v)
-
-def run_sub_json(Ads, sub_json, verbose=False):
-    nrows = 0
-    nsubs = 0
-
-    ncols_old = 0
-    ncols_new = 0
-
-    print('Subbing %u rows' % len(Ads))
-    prints = set()
-
-    for rowi, row in enumerate(Ads):
-        if 0 and verbose:
-            print(row)
-        if verbose:
-            print('')
-            print('Row %u w/ %u elements' % (rowi, len(row)))
-
-        row_orig = dict(row)
-        row_sub_syms(row, sub_json, verbose=verbose)
-        nrows += 1
-        if row_orig != row:
-            nsubs += 1
-            if verbose:
-                rowt = Ar_ds2t(row)
-                if rowt not in prints:
-                    print('row', row)
-                    prints.add(rowt)
-        ncols_old += len(row_orig)
-        ncols_new += len(row)
-
-    if verbose:
-        print('')
-
-    print("Sub: %u / %u rows changed" % (nsubs, nrows))
-    print("Sub: %u => %u cols" % (ncols_old, ncols_new))
-
 def pmatrix(Anp, s):
     import sympy
     msym = sympy.Matrix(Anp)
@@ -146,7 +52,10 @@ def pds(Ads, s):
     pmatrix(Anp, s)
     print('Names: %s' % (names,))
 
-def run(fns_in, sub_json=None, verbose=False, corner=None):
+def run(fns_in, sub_json=None, verbose=False):
+    # arbitrary...data is thrown away
+    corner = "slow_max"
+
     Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
 
     # Remove duplicate rows
@@ -190,15 +99,6 @@ def run(fns_in, sub_json=None, verbose=False, corner=None):
         else:
             print('slogdet :) : %s, %s' % (sign, logdet))
 
-def load_sub(fn):
-    j = json.load(open(fn, 'r'))
-
-    for name, vals in sorted(j['subs'].items()):
-        for k, v in vals.items():
-            vals[k] = Fraction(v[0], v[1])
-
-    return j
-
 def main():
     import argparse
 
@@ -209,18 +109,17 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--sub-json', help='')
-    parser.add_argument('--corner', default="slow_max", help='')
     parser.add_argument(
         'fns_in',
         nargs='*',
-        help='timing3.txt input files')
+        help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3.txt')
+        fns_in = glob.glob('specimen_*/timing3.csv')
 
     sub_json = None
     if args.sub_json:
@@ -228,7 +127,7 @@ def main():
 
     try:
         run(sub_json=sub_json,
-            fns_in=fns_in, verbose=args.verbose, corner=args.corner)
+            fns_in=fns_in, verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
 

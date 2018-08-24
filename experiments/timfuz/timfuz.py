@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
-from scipy.optimize import linprog
 import math
 import numpy as np
 from collections import OrderedDict
@@ -14,6 +12,7 @@ import copy
 import sys
 import random
 import glob
+from fractions import Fraction
 
 from benchmark import Benchmark
 
@@ -229,36 +228,33 @@ def simplify_cols(names, A_ubd, b_ub):
     nr = list(names_ret.keys())
     return nr, A_ub_ret, b_ub
 
-def A_ubr_np2d(row, sf=1):
+def A_ubr_np2d(row):
     '''Convert a single row'''
     #d = {}
     d = OrderedDict()
     for coli, val in enumerate(row):
         if val:
-            d[coli] = sf * val
+            d[coli] = val
     return d
 
-def A_ub_np2d(A_ub, sf=1):
+def A_ub_np2d(A_ub):
     '''Convert A_ub entries in numpy matrix to dictionary / sparse form'''
     A_ubd = [None] * len(A_ub)
     for i, row in enumerate(A_ub):
-        A_ubd[i] = A_ubr_np2d(row, sf=sf)
+        A_ubd[i] = A_ubr_np2d(row)
     return A_ubd
 
-# def Ar_ds2np(row_ds, names):
-#     Ar_di2np(row_di, cols, sf=1)
-
-def Ar_di2np(row_di, cols, sf=1):
+def Ar_di2np(row_di, cols):
     rownp = np.zeros(cols)
     for coli, val in row_di.items():
         # Sign inversion due to way solver works
-        rownp[coli] = sf * val
+        rownp[coli] = val
     return rownp
 
 # NOTE: sign inversion
-def A_di2np(Adi, cols, sf=1):
+def A_di2np(Adi, cols):
     '''Convert A_ub entries in dictionary / sparse to numpy matrix form'''
-    return [Ar_di2np(row_di, cols, sf=sf) for row_di in Adi]
+    return [Ar_di2np(row_di, cols) for row_di in Adi]
 
 def Ar_ds2t(rowd):
     '''Convert a dictionary row into a tuple with (column number, value) tuples'''
@@ -817,3 +813,102 @@ def index_names(Ads):
         for k1 in row_ds.keys():
             names.add(k1)
     return names
+
+def load_sub(fn):
+    j = json.load(open(fn, 'r'))
+
+    for name, vals in sorted(j['subs'].items()):
+        for k, v in vals.items():
+            vals[k] = Fraction(v[0], v[1])
+
+    return j
+
+def row_sub_syms(row, sub_json, verbose=False):
+    if 0 and verbose:
+        print("")
+        print(row.items())
+
+    delsyms = 0
+    for k in sub_json['drop_names']:
+        try:
+            del row[k]
+            delsyms += 1
+        except KeyError:
+            pass
+    if verbose:
+        print("Deleted %u symbols" % delsyms)
+
+    if verbose:
+        print('Checking pivots')
+        print(sorted(row.items()))
+        for group, pivot in sorted(sub_json['pivots'].items()):
+            if pivot not in row:
+                continue
+            n = row[pivot]
+            print('  pivot %u %s' % (n, pivot))
+
+    for group, pivot in sorted(sub_json['pivots'].items()):
+        if pivot not in row:
+            continue
+
+        # take the sub out n times
+        # note constants may be negative
+        n = row[pivot]
+        if verbose:
+            print('pivot %i %s' % (n, pivot))
+        for subk, subv in sorted(sub_json['subs'][group].items()):
+            oldn = row.get(subk, Fraction(0))
+            rown = oldn - n * subv
+            if verbose:
+                print("  %s: %d => %d" % (subk, oldn, rown))
+            if rown == 0:
+                # only becomes zero if didn't previously exist
+                del row[subk]
+                if verbose:
+                    print("    del")
+            else:
+                row[subk] = rown
+        row[group] = n
+        assert pivot not in row
+
+    # after all constants are applied, the row should end up positive?
+    # numeric precision issues previously limited this
+    # Ex: AssertionError: ('PIP_BSW_2ELSING0', -2.220446049250313e-16)
+    for k, v in sorted(row.items()):
+        assert v > 0, (k, v)
+
+def run_sub_json(Ads, sub_json, verbose=False):
+    nrows = 0
+    nsubs = 0
+
+    ncols_old = 0
+    ncols_new = 0
+
+    print('Subbing %u rows' % len(Ads))
+    prints = set()
+
+    for rowi, row in enumerate(Ads):
+        if 0 and verbose:
+            print(row)
+        if verbose:
+            print('')
+            print('Row %u w/ %u elements' % (rowi, len(row)))
+
+        row_orig = dict(row)
+        row_sub_syms(row, sub_json, verbose=verbose)
+        nrows += 1
+        if row_orig != row:
+            nsubs += 1
+            if verbose:
+                rowt = Ar_ds2t(row)
+                if rowt not in prints:
+                    print('row', row)
+                    prints.add(rowt)
+        ncols_old += len(row_orig)
+        ncols_new += len(row)
+
+    if verbose:
+        print('')
+
+    print("Sub: %u / %u rows changed" % (nsubs, nrows))
+    print("Sub: %u => %u cols" % (ncols_old, ncols_new))
