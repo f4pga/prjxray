@@ -6,6 +6,7 @@ import glob
 import json
 import math
 from collections import OrderedDict
+from fractions import Fraction
 
 # check for issues that may be due to round off error
 STRICT = 1
@@ -77,8 +78,8 @@ def row_sub_syms(row, sub_json, verbose=False):
         if verbose:
             print('pivot %i %s' % (n, pivot))
         for subk, subv in sorted(sub_json['subs'][group].items()):
-            oldn = row.get(subk, 0)
-            rown = oldn - n * (1.0* subv[0] / subv[1])
+            oldn = row.get(subk, Fraction(0))
+            rown = oldn - n * subv
             if verbose:
                 print("  %s: %d => %d" % (subk, oldn, rown))
             if rown == 0:
@@ -190,32 +191,11 @@ def run(fns_in, sub_json=None, verbose=False, corner=None):
             print('slogdet :) : %s, %s' % (sign, logdet))
 
 def load_sub(fn):
-    delta = 0.001
     j = json.load(open(fn, 'r'))
 
-    # convert groups to use integer constants
-    # beware of roundoff error
-    # if we round poorly here, it won't give incorrect results later, but may make it fail to find a good solution
-
-    if 'pivots' in j:
-        print('pivots: using existing')
-    else:
-        print('pivots: guessing')
-
-        pivots = OrderedDict()
-        j['pivots'] = pivots
-
-        for name, vals in sorted(j['subs'].items()):
-            pivot = None
-            for k, v in vals.items():
-                vals[k] = float(v)
-
-                # there may be more than one acceptable pivot
-                # take the first
-                if v == 1 and pivot is None:
-                    pivot = k
-            assert pivot is not None
-            pivots[name] = pivot
+    for name, vals in sorted(j['subs'].items()):
+        for k, v in vals.items():
+            vals[k] = Fraction(v[0], v[1])
 
     return j
 
