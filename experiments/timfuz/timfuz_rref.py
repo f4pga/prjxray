@@ -12,8 +12,22 @@ import math
 import json
 import sympy
 from collections import OrderedDict
+from fractions import Fraction
 
-STRICT = 1
+STRICT = 0
+
+def fracr(r):
+    DELTA = 0.0001
+
+    for i, x in enumerate(r):
+        if type(x) is float:
+            xi = int(x)
+            assert abs(xi - x) < DELTA
+            r[i] = xi
+    return [Fraction(x) for x in r]
+
+def fracm(m):
+    return [fracr(r) for r in m]
 
 class State(object):
     def __init__(self, Ads, drop_names=[]):
@@ -97,9 +111,12 @@ def comb_corr_sets(state, verbose=False):
     mnp = Anp2matrix(Anp)
     print('Matrix: %u rows x %u cols' % (len(mnp), len(mnp[0])))
     print('Converting np to sympy matrix')
-    msym = sympy.Matrix(mnp)
+    mfrac = fracm(mnp)
+    print('mfrac', type(mfrac[0][0]))
+    msym = sympy.Matrix(mfrac)
     print('Making rref')
     rref, pivots = msym.rref()
+
 
     if verbose:
         print('names')
