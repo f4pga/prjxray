@@ -1,0 +1,9 @@
+/.Xil
+/design/
+/design.bit
+/design.bits
+/design.dcp
+/usage_statistics_webtalk.*
+/vivado*
+/specimen_*
+build_speed
