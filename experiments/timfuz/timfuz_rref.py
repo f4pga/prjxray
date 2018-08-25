@@ -5,7 +5,7 @@ Triaging tool to help understand where we need more timing coverage
 Finds correlated variables to help make better test cases
 '''
 
-from timfuz import Benchmark, Ar_di2np, loadc_Ads_b, index_names, A_ds2np
+from timfuz import Benchmark, Ar_di2np, loadc_Ads_b, index_names, A_ds2np, simplify_rows
 import numpy as np
 import glob
 import math
@@ -57,7 +57,9 @@ class State(object):
 
     @staticmethod
     def load(fn_ins):
-        Ads, _b = loadc_Ads_b(fn_ins, corner=None, ico=True)
+        Ads, b = loadc_Ads_b(fn_ins, corner=None, ico=True)
+        print('Simplifying')
+        #Ads, b = simplify_rows(Ads, b)
         return State(Ads)
 
 def write_state(state, fout):
@@ -69,18 +71,6 @@ def write_state(state, fout):
         'pivots': state.pivots,
     }
     json.dump(j, fout, sort_keys=True, indent=4, separators=(',', ': '))
-
-def Adi2matrix(Adi, cols):
-    A_ub2 = [np.zeros(cols) for _i in range(cols)]
-
-    dst_rowi = 0
-    for row in Adi:
-        rownp = Ar_di2np(row, cols=len(names), sf=1)
-
-        A_ub2[dst_rowi] = np.add(A_ub2[dst_rowi], rownp)
-        dst_rowi = (dst_rowi + 1) % len(names)
-
-    return A_ub2
 
 def Anp2matrix(Anp):
     '''
@@ -119,27 +109,28 @@ def row_sym2dsf(rowsym, names):
             ret[name] = (int(num), int(den))
     return ret
 
-def comb_corr_sets(state, verbose=False):
+def state_rref(state, verbose=False):
     print('Converting rows to integer keys')
     names, Anp = A_ds2np(state.Ads)
 
     print('np: %u rows x %u cols' % (len(Anp), len(Anp[0])))
     print('Combining rows into matrix')
-    mnp = Anp2matrix(Anp)
+    #mnp = Anp2matrix(Anp)
+    mnp = Anp
     print('Matrix: %u rows x %u cols' % (len(mnp), len(mnp[0])))
     print('Converting np to sympy matrix')
     mfrac = fracm(mnp)
-    print('mfrac', type(mfrac[0][0]))
     msym = sympy.Matrix(mfrac)
-    print('Making rref')
-    rref, pivots = msym.rref()
-
-
     if verbose:
         print('names')
         print(names)
         print('Matrix')
         sympy.pprint(msym)
+    print('Making rref')
+    rref, pivots = msym.rref()
+
+
+    if verbose:
         print('Pivots')
         sympy.pprint(pivots)
         print('rref')
@@ -189,7 +180,7 @@ def run(fout, fn_ins, verbose=0):
     print('Loading data')
 
     state = State.load(fn_ins)
-    comb_corr_sets(state, verbose=verbose)
+    state_rref(state, verbose=verbose)
     state.print_stats()
     if fout:
         write_state(state, fout)
