@@ -138,7 +138,7 @@ def simplify_rows(Ads, b_ub):
 
     sys.stdout.write('SimpR ')
     sys.stdout.flush()
-    progress = max(1, len(b_ub) / 100)
+    progress = int(max(1, len(b_ub) / 100))
     zero_ds = 0
     zero_es = 0
     for loopi, (b, rowd) in enumerate(zip(b_ub, Ads)):

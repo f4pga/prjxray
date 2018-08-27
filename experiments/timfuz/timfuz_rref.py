@@ -27,6 +27,16 @@ def fracr(r):
 def fracm(m):
     return [fracr(r) for r in m]
 
+def fracr_quick(r):
+    return [Fraction(numerator=int(x), denominator=1) for x in r]
+
+# the way I'm doing thing they should all be even integers
+# hmm this was only slightly faster
+def fracm_quick(m):
+    t = type(m[0][0])
+    print('fracm_quick type: %s' % t)
+    return [fracr_quick(r) for r in m]
+
 class State(object):
     def __init__(self, Ads, drop_names=[]):
         self.Ads = Ads
@@ -57,10 +67,11 @@ class State(object):
         assert len(self.names) >= len(self.subs)
 
     @staticmethod
-    def load(fn_ins):
-        Ads, b = loadc_Ads_b(fn_ins, corner=None, ico=True)
-        print('Simplifying')
-        #Ads, b = simplify_rows(Ads, b)
+    def load(fn_ins, simplify=False, corner=None):
+        Ads, b = loadc_Ads_b(fn_ins, corner=corner, ico=True)
+        if simplify:
+            print('Simplifying corner %s' % (corner,))
+            Ads, b = simplify_rows(Ads, b)
         return State(Ads)
 
 def write_state(state, fout):
@@ -115,12 +126,14 @@ def state_rref(state, verbose=False):
     names, Anp = A_ds2np(state.Ads)
 
     print('np: %u rows x %u cols' % (len(Anp), len(Anp[0])))
-    print('Combining rows into matrix')
-    #mnp = Anp2matrix(Anp)
-    mnp = Anp
+    if 0:
+        print('Combining rows into matrix')
+        mnp = Anp2matrix(Anp)
+    else:
+        mnp = Anp
     print('Matrix: %u rows x %u cols' % (len(mnp), len(mnp[0])))
     print('Converting np to sympy matrix')
-    mfrac = fracm(mnp)
+    mfrac = fracm_quick(mnp)
     msym = sympy.Matrix(mfrac)
     # internal encoding has significnat performance implications
     #print(type(msym[3]))
@@ -181,10 +194,10 @@ def state_rref(state, verbose=False):
 
     return state
 
-def run(fout, fn_ins, verbose=0):
+def run(fout, fn_ins, simplify=False, corner=None, verbose=0):
     print('Loading data')
 
-    state = State.load(fn_ins)
+    state = State.load(fn_ins, simplify=simplify, corner=corner)
     state_rref(state, verbose=verbose)
     state.print_stats()
     if fout:
@@ -199,6 +212,8 @@ def main():
     )
 
     parser.add_argument('--verbose', action='store_true', help='')
+    parser.add_argument('--simplify', action='store_true', help='')
+    parser.add_argument('--corner', default="slow_max", help='')
     parser.add_argument('--speed-json', default='build_speed/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('--out', help='Output sub.json substitution result')
@@ -219,7 +234,7 @@ def main():
 
     try:
         run(fout=fout,
-            fn_ins=args.fns_in, verbose=args.verbose)
+            fn_ins=args.fns_in, simplify=args.simplify, corner=args.corner, verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
 
