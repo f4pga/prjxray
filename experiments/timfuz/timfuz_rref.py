@@ -53,6 +53,7 @@ class State(object):
         print("  Cols (preprocessed): %u" % len(self.base_names))
         print("    Drop names: %u" % len(self.drop_names))
         print("  Cols (out): %u" % len(self.names))
+        print("  Solvable vars: %u" % len(self.names & self.base_names))
         assert len(self.names) >= len(self.subs)
 
     @staticmethod
@@ -121,13 +122,17 @@ def state_rref(state, verbose=False):
     print('Converting np to sympy matrix')
     mfrac = fracm(mnp)
     msym = sympy.Matrix(mfrac)
+    # internal encoding has significnat performance implications
+    #print(type(msym[3]))
+    #assert type(msym[0]) is sympy.Integer
+
     if verbose:
         print('names')
         print(names)
         print('Matrix')
         sympy.pprint(msym)
     print('Making rref')
-    rref, pivots = msym.rref()
+    rref, pivots = msym.rref(normalize_last=False)
 
 
     if verbose:
