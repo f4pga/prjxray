@@ -134,6 +134,8 @@ def state_rref(state, verbose=False):
     print('Matrix: %u rows x %u cols' % (len(mnp), len(mnp[0])))
     print('Converting np to sympy matrix')
     mfrac = fracm_quick(mnp)
+    # doesn't seem to change anything
+    #msym = sympy.MutableSparseMatrix(mfrac)
     msym = sympy.Matrix(mfrac)
     # internal encoding has significnat performance implications
     #print(type(msym[3]))
@@ -146,7 +148,6 @@ def state_rref(state, verbose=False):
         sympy.pprint(msym)
     print('Making rref')
     rref, pivots = msym.rref(normalize_last=False)
-
 
     if verbose:
         print('Pivots')
@@ -194,14 +195,15 @@ def state_rref(state, verbose=False):
 
     return state
 
-def run(fout, fn_ins, simplify=False, corner=None, verbose=0):
+def run(fnout, fn_ins, simplify=False, corner=None, verbose=0):
     print('Loading data')
 
     state = State.load(fn_ins, simplify=simplify, corner=corner)
     state_rref(state, verbose=verbose)
     state.print_stats()
-    if fout:
-        write_state(state, fout)
+    if fnout:
+        with open(fnout, 'w') as fout:
+            write_state(state, fout)
 
 def main():
     import argparse
@@ -224,16 +226,12 @@ def main():
     args = parser.parse_args()
     bench = Benchmark()
 
-    fout = None
-    if args.out:
-        fout = open(args.out, 'w')
-
     fns_in = args.fns_in
     if not fns_in:
         fns_in = glob.glob('specimen_*/timing3.csv')
 
     try:
-        run(fout=fout,
+        run(fnout=args.out,
             fn_ins=args.fns_in, simplify=args.simplify, corner=args.corner, verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
