@@ -19,6 +19,17 @@ import numpy
 import scipy.optimize as optimize
 from scipy.optimize import least_squares
 
+def mkestimate(Anp, b):
+    cols = len(Anp[0])
+    x0 = np.array([1e3 for _x in range(cols)])
+    for row_np, row_b in zip(Anp, b):
+        for coli, val in enumerate(row_np):
+            if val:
+                ub = row_b / val
+                if ub >= 0:
+                    x0[coli] = min(x0[coli], ub)
+    return x0
+
 def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
@@ -54,21 +65,31 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     if rows < cols:
         raise Exception("rows must be >= cols")
 
-    def func(params, xdata, ydata):
-        return (ydata - np.dot(xdata, params))
+    def func(params):
+        return (b - np.dot(Anp, params))
 
     print('')
     # Now find smallest values for delay constants
     # Due to input bounds (ex: column limit), some delay elements may get eliminated entirely
     print('Running leastsq w/ %d r, %d c (%d name)' % (rows, cols, len(names)))
-    x0 = np.array([0.0 for _x in range(cols)])
-    x, cov_x, infodict, mesg, ier = optimize.leastsq(func, x0, args=(Anp, b), full_output=True)
-    print('x', x)
-    print('cov_x', cov_x)
-    print('infodictx', infodict)
-    print('mesg', mesg)
-    print('ier', ier)
-    print('  Solution found: %s' % (ier in (1, 2, 3, 4)))
+    # starting at 0 completes quicky, but gives a solution near 0 with terrible results
+    # maybe give a starting estimate to the smallest net delay with the indicated variable
+    #x0 = np.array([1000.0 for _x in range(cols)])
+    x0 = mkestimate(Anp, b)
+    #print('x0', x0)
+    if 0:
+        x, cov_x, infodict, mesg, ier = optimize.leastsq(func, x0, args=(), full_output=True)
+        print('x', x)
+        print('cov_x', cov_x)
+        print('infodictx', infodict)
+        print('mesg', mesg)
+        print('ier', ier)
+        print('  Solution found: %s' % (ier in (1, 2, 3, 4)))
+    else:
+        res = least_squares(func, x0, bounds=(0, float('inf')))
+        print(res)
+        print('')
+        print(res.x)
 
 def main():
     import argparse
@@ -240,8 +261,6 @@ def test5():
     print(res)
 
 def test6():
-    from scipy.optimize import least_squares
-
     def func(params):
         return (ydata - np.dot(xdata, params))
 
@@ -262,11 +281,11 @@ def test6():
     print(res)
 
 if __name__ == '__main__':
-    #main()
+    main()
     #test1()
     #test2()
     #test3()
     #test4()
     #test5()
-    test6()
+    #test6()
 
