@@ -65,7 +65,23 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     if rows < cols:
         raise Exception("rows must be >= cols")
 
+    tlast = [None]
+    iters = [0]
+    printn = [0]
+    def progress_print():
+        iters[0] += 1
+        if tlast[0] is None:
+            tlast[0]= time.time()
+        if time.time() - tlast[0] > 1.0:
+            sys.stdout.write('I:%d ' % iters[0])
+            tlast[0] = time.time()
+            printn[0] += 1
+            if printn[0] % 10 == 0:
+                sys.stdout.write('\n')
+            sys.stdout.flush()
+
     def func(params):
+        progress_print()
         return (b - np.dot(Anp, params))
 
     print('')
@@ -75,8 +91,10 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     # starting at 0 completes quicky, but gives a solution near 0 with terrible results
     # maybe give a starting estimate to the smallest net delay with the indicated variable
     #x0 = np.array([1000.0 for _x in range(cols)])
+    print('Creating x0 estimate')
     x0 = mkestimate(Anp, b)
     #print('x0', x0)
+
     if 0:
         x, cov_x, infodict, mesg, ier = optimize.leastsq(func, x0, args=(), full_output=True)
         print('x', x)
@@ -86,10 +104,13 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
         print('ier', ier)
         print('  Solution found: %s' % (ier in (1, 2, 3, 4)))
     else:
+        print('Solving')
         res = least_squares(func, x0, bounds=(0, float('inf')))
-        print(res)
-        print('')
-        print(res.x)
+        if 0:
+            print(res)
+            print('')
+            print(res.x)
+        print('Done')
 
 def main():
     import argparse
