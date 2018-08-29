@@ -36,7 +36,7 @@ def check_feasible(A_ub, b_ub):
     Delays should be in order of ns, so a 10 ns delay should be way above what anything should be
     Series can have several hundred delay elements
     Max delay in ballpark
-    ''' 
+    '''
     xs = [1e9 for _i in range(cols)]
 
     # FIXME: use the correct np function to do this for me
@@ -74,7 +74,29 @@ def instances(Ads):
         ret += sum(row_ds.values())
     return ret
 
-def run(fns_in, corner, run_corner, sub_json=None, dedup=True, massage=False, outfn=None, verbose=False, **kwargs):
+def Ads2bounds(Ads, b):
+    ret = {}
+    for row_ds, row_b in zip(Ads, b):
+        assert len(row_ds) == 1
+        k, v = list(row_ds.items())[0]
+        assert v == 1
+        ret[k] = row_b
+    return ret
+
+def filter_bounds(Ads, b, bounds):
+    '''Given min variable delays, remove rows that won't constrain solution'''
+    ret_Ads = []
+    ret_b = []
+    for row_ds, row_b in zip(Ads, b):
+        # some variables get estimated at 0
+        est = sum([bounds.get(k, 0) * v for k, v in row_ds.items()])
+        # will this row potentially constrain us more?
+        if row_b > est:
+            ret_Ads.append(row_ds)
+            ret_b.append(row_b)
+    return ret_Ads, ret_b
+
+def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, massage=False, outfn=None, verbose=False, **kwargs):
     print('Loading data')
     Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
 
@@ -87,7 +109,7 @@ def run(fns_in, corner, run_corner, sub_json=None, dedup=True, massage=False, ou
         Ads, b = simplify_rows(Ads, b)
         print('Simplify %u => %u rows' % (oldn, len(Ads)))
         print('Simplify %u => %u instances' % (iold, instances(Ads)))
-        
+
     if sub_json:
         print('Sub: %u rows' % len(Ads))
         iold = instances(Ads)
@@ -98,6 +120,23 @@ def run(fns_in, corner, run_corner, sub_json=None, dedup=True, massage=False, ou
         print('Sub: %u => %u instances' % (iold, instances(Ads)))
     else:
         names = index_names(Ads)
+
+    # post substitution csv
+    # actually this might not be strictly necessary since subs would just not apply
+    # however, I wanted to do some filtering based on expected form
+    if sub_csv:
+        Ads2, b2 = loadc_Ads_b([sub_csv], corner, ico=True)
+        if 0:
+            Ads = Ads + Ads2
+            b = b + b2
+        else:
+            bounds = Ads2bounds(Ads2, b2)
+            rows_old = len(Ads)
+            Ads, b = filter_bounds(Ads, b, bounds)
+            print('Filter bounds: %s => %s rows' % (rows_old, len(Ads)))
+            if 1:
+                Ads = Ads + Ads2
+                b = b + b2
 
     if verbose:
         print
@@ -115,7 +154,7 @@ def run(fns_in, corner, run_corner, sub_json=None, dedup=True, massage=False, ou
     However, a better solution is something like
         a = 10
         b = 90
-    This creates derived constraints to provide more realistic results 
+    This creates derived constraints to provide more realistic results
     '''
     if massage:
         Ads, b = massage_equations(Ads, b)

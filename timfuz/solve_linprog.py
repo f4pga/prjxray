@@ -111,6 +111,36 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
         print('Writing %s' % fn_out)
         np.save(fn_out, (3, c, A_ub, b_ub, bounds, names, res, meta))
 
+        if outfn:
+            # ballpark minimum actual observed delay is around 7 (carry chain)
+            # anything less than one is probably a solver artifact
+            delta = 0.5
+
+            print('Writing resutls')
+            skips = 0
+            with open(outfn, 'w') as fout:
+                # write as one variable per line
+                # this natively forms a bound if fed into linprog solver
+                fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
+                for xval, name in zip(res.x, names):
+                    row_ico = 1
+
+                    # FIXME: only report for the given corner?
+                    # also review ceil vs floor choice for min vs max
+                    # lets be more conservative for now
+                    if xval < delta:
+                        #print('Skipping %s: %0.6f' % (name, xval))
+                        skips += 1
+                        continue
+                    #xvali = round(xval)
+                    xvali = math.ceil(xval)
+                    corners = [xvali for _ in range(4)]
+                    items = [str(row_ico), ' '.join([str(x) for x in corners])]
+                    items.append('%u %s' % (1, name))
+                    fout.write(','.join(items) + '\n')
+            print('Wrote: skip %u => %u / %u valid delays' % (skips, len(names) - skips, len(names)))
+
+
 def main():
     import argparse
 
@@ -121,6 +151,7 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--massage', action='store_true', help='')
+    parser.add_argument('--sub-csv', help='')
     parser.add_argument('--sub-json', help='Group substitutions to make fully ranked')
     parser.add_argument('--corner', default="slow_max", help='')
     parser.add_argument('--out', default=None, help='output timing delay .json')
@@ -141,7 +172,7 @@ def main():
         sub_json = load_sub(args.sub_json)
 
     try:
-        timfuz_solve.run(run_corner=run_corner, sub_json=sub_json,
+        timfuz_solve.run(run_corner=run_corner, sub_json=sub_json, sub_csv=args.sub_csv,
             fns_in=fns_in, corner=args.corner, massage=args.massage, outfn=args.out, verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
