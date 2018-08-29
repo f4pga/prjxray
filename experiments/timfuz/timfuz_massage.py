@@ -322,6 +322,7 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
     print('Derive col: %d => %d rows' % (len(b_ub), len(b_ret)))
     return Ads_ret, b_ret
 
+# keep derriving until solution is (probably) stable
 def massage_equations_old(Ads, b, verbose=False, derive_lim=3):
     '''
     Equation pipeline
@@ -392,7 +393,8 @@ def massage_equations_old(Ads, b, verbose=False, derive_lim=3):
     debug("final (sorted)")
     return Ads, b
 
-def massage_equations_old2(Ads, b, verbose=False):
+# iteratively increasing column limit until all columns are added
+def massage_equations_inc_col_lim(Ads, b, verbose=False):
     '''
     Equation pipeline
     Some operations may generate new equations
@@ -463,7 +465,9 @@ def massage_equations_old2(Ads, b, verbose=False):
     print('Massage final: %d => %d rows' % (dstart, dend))
     return Ads, b
 
-def massage_equations(Ads, b, verbose=False):
+# only derive based on nearby equations
+# theory is they will be the best to diff
+def massage_equations_near(Ads, b, verbose=False):
     '''
     Equation pipeline
     Some operations may generate new equations
@@ -525,3 +529,5 @@ def massage_equations(Ads, b, verbose=False):
     print('')
     print('Massage final: %d => %d rows' % (dstart, dend))
     return Ads, b
+
+massage_equations = massage_equations_inc_col_lim

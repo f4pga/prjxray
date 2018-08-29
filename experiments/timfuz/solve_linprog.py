@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+
+# https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
+from scipy.optimize import linprog
+from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np
+from timfuz_massage import massage_equations
+import numpy as np
+import glob
+import json
+import math
+from collections import OrderedDict
+from fractions import Fraction
+import sys
+import datetime
+import os
+import time
+import timfuz_solve
+
+def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
+    # Given timing scores for above delays (-ps)
+    assert type(Anp[0]) is np.ndarray, type(Anp[0])
+    assert type(b) is np.ndarray, type(b)
+
+    #check_feasible(Anp, b)
+
+    '''
+    Be mindful of signs
+    Have something like
+    timing1/timing 2 are constants
+    delay1 +   delay2 +               delay4     >= timing1
+               delay2 +   delay3                 >= timing2
+
+    But need it in compliant form:
+    -delay1 +   -delay2 +               -delay4     <= -timing1
+                -delay2 +   -delay3                 <= -timing2
+    '''
+    rows = len(Anp)
+    cols = len(Anp[0])
+    print('Scaling to solution form...')
+    b_ub = -1.0 * b
+    #A_ub = -1.0 * Anp
+    A_ub = [-1.0 * x for x in Anp]
+
+    if verbose:
+        print('')
+        print('A_ub b_ub')
+        print_eqns_np(A_ub, b_ub, verbose=verbose)
+        print('')
+
+    print('Creating misc constants...')
+    # Minimization function scalars
+    # Treat all logic elements as equally important
+    c = [1 for _i in range(len(names))]
+    # Delays cannot be negative
+    # (this is also the default constraint)
+    #bounds =  [(0, None) for _i in range(len(names))]
+    # Also you can provide one to apply to all
+    bounds = (0, None)
+
+    # Seems to take about rows + 3 iterations
+    # Give some margin
+    #maxiter = int(1.1 * rows + 100)
+    #maxiter = max(1000, int(1000 * rows + 1000))
+    # Most of the time I want it to just keep going unless I ^C it
+    maxiter = 1000000
+
+    if verbose >= 2:
+        print('b_ub', b)
+    print('Unique delay elements: %d' % len(names))
+    print('  # delay minimization weights: %d' % len(c))
+    print('  # delay constraints: %d' % len(bounds))
+    print('Input paths')
+    print('  # timing scores: %d' % len(b))
+    print('  Rows: %d' % rows)
+
+    tlast = [time.time()]
+    iters = [0]
+    printn = [0]
+    def callback(xk, **kwargs):
+        iters[0] = kwargs['nit']
+        if time.time() - tlast[0] > 1.0:
+            sys.stdout.write('I:%d ' % kwargs['nit'])
+            tlast[0] = time.time()
+            printn[0] += 1
+            if printn[0] % 10 == 0:
+                sys.stdout.write('\n')
+            sys.stdout.flush()
+
+    print('')
+    # Now find smallest values for delay constants
+    # Due to input bounds (ex: column limit), some delay elements may get eliminated entirely
+    print('Running linprog w/ %d r, %d c (%d name)' % (rows, cols, len(names)))
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, callback=callback,
+          options={"disp": True, 'maxiter': maxiter, 'bland': True, 'tol': 1e-6,})
+    nonzeros = 0
+    print('Ran %d iters' % iters[0])
+    if res.success:
+        print('Result sample (%d elements)' % (len(res.x)))
+        plim = 3
+        for xi, (name, x) in enumerate(zip(names, res.x)):
+            nonzero = x >= 0.001
+            if nonzero:
+                nonzeros += 1
+            #if nonzero and (verbose >= 1 or xi > 30):
+            if nonzero and (verbose or ((nonzeros < 100 or nonzeros % 20 == 0) and nonzeros <= plim)):
+                print('  % 4u % -80s % 10.1f' % (xi, name, x))
+        print('Delay on %d / %d' % (nonzeros, len(res.x)))
+        if not os.path.exists('res'):
+            os.mkdir('res')
+        fn_out = 'res/%s' % datetime.datetime.utcnow().isoformat().split('.')[0]
+        print('Writing %s' % fn_out)
+        np.save(fn_out, (3, c, A_ub, b_ub, bounds, names, res, meta))
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description=
+        'Solve timing solution'
+    )
+
+    parser.add_argument('--verbose', action='store_true', help='')
+    parser.add_argument('--massage', action='store_true', help='')
+    parser.add_argument('--sub-json', help='Group substitutions to make fully ranked')
+    parser.add_argument('--corner', default="slow_max", help='')
+    parser.add_argument('--out', default=None, help='output timing delay .json')
+    parser.add_argument(
+        'fns_in',
+        nargs='*',
+        help='timing3.csv input files')
+    args = parser.parse_args()
+    # Store options in dict to ease passing through functions
+    bench = Benchmark()
+
+    fns_in = args.fns_in
+    if not fns_in:
+        fns_in = glob.glob('specimen_*/timing3.csv')
+
+    sub_json = None
+    if args.sub_json:
+        sub_json = load_sub(args.sub_json)
+
+    try:
+        timfuz_solve.run(run_corner=run_corner, sub_json=sub_json,
+            fns_in=fns_in, corner=args.corner, massage=args.massage, outfn=args.out, verbose=args.verbose)
+    finally:
+        print('Exiting after %s' % bench)
+
+if __name__ == '__main__':
+    main()
