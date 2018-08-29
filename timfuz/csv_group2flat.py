@@ -71,7 +71,6 @@ def main():
     )
 
     parser.add_argument('--verbose', action='store_true', help='')
-    parser.add_argument('--massage', action='store_true', help='')
     parser.add_argument('--sort', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
     parser.add_argument('--sub-json', required=True, help='Group substitutions to make fully ranked')
