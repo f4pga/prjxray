@@ -27,3 +27,9 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    :caption: Database Development Process
 
    db_dev_process/overview
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Output File Formats
+
+   format/tile
