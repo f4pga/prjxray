@@ -724,7 +724,7 @@ def load_sub(fn):
 
     return j
 
-def row_sub_syms(row, sub_json, verbose=False):
+def row_sub_syms(row, sub_json, strict=False, verbose=False):
     zero = Fraction(0)
     zero = 0
 
@@ -751,10 +751,10 @@ def row_sub_syms(row, sub_json, verbose=False):
             n = row[pivot]
             print('  pivot %u %s' % (n, pivot))
 
+    #pivots = set(sub_json['pivots'].values()).intersection(row.keys())
     for group, pivot in sorted(sub_json['pivots'].items()):
         if pivot not in row:
             continue
-
         # take the sub out n times
         # note constants may be negative
         n = row[pivot]
@@ -779,11 +779,21 @@ def row_sub_syms(row, sub_json, verbose=False):
     # after all constants are applied, the row should end up positive?
     # numeric precision issues previously limited this
     # Ex: AssertionError: ('PIP_BSW_2ELSING0', -2.220446049250313e-16)
-    if 0:
+    if strict:
+        # verify no subs are left
+        for subs in sub_json['subs'].values():
+            for sub in subs:
+                assert sub not in row, 'Unexpected element %s' % sub
+
+        # Verify all constants are positive
         for k, v in sorted(row.items()):
             assert v > 0, (k, v)
 
-def run_sub_json(Ads, sub_json, verbose=False):
+def run_sub_json(Ads, sub_json, strict=False, verbose=False):
+    '''
+    strict: complain if a sub doesn't go in evenly
+    '''
+
     nrows = 0
     nsubs = 0
 
@@ -801,7 +811,7 @@ def run_sub_json(Ads, sub_json, verbose=False):
             print('Row %u w/ %u elements' % (rowi, len(row)))
 
         row_orig = dict(row)
-        row_sub_syms(row, sub_json, verbose=verbose)
+        row_sub_syms(row, sub_json, strict=strict, verbose=verbose)
         nrows += 1
         if row_orig != row:
             nsubs += 1
@@ -844,4 +854,10 @@ def Ads2bounds(Ads, b):
         k, v = list(row_ds.items())[0]
         assert v == 1
         ret[k] = row_b
+    return ret
+
+def instances(Ads):
+    ret = 0
+    for row_ds in Ads:
+        ret += sum(row_ds.values())
     return ret

@@ -47,10 +47,15 @@ def gen_flat(fnin, sub_json):
     for zero in zeros - violations:
         yield zero, 0
 
-def run(fnin, fnout, sub_json, corner=None, verbose=False):
+def run(fnin, fnout, sub_json, corner=None, sort=False, verbose=False):
+    if sort:
+        sortf = sorted
+    else:
+        sortf = lambda x: x
+
     with open(fnout, 'w') as fout:
         fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-        for name, delay in sorted(gen_flat(fnin, sub_json)):
+        for name, delay in sortf(gen_flat(fnin, sub_json)):
             row_ico = 1
             corners = [delay for _ in range(4)]
             items = [str(row_ico), ' '.join([str(x) for x in corners])]
@@ -67,6 +72,7 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--massage', action='store_true', help='')
+    parser.add_argument('--sort', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
     parser.add_argument('--sub-json', required=True, help='Group substitutions to make fully ranked')
     parser.add_argument('fnin', default=None, help='input timing delay .csv')
@@ -75,12 +81,10 @@ def main():
     # Store options in dict to ease passing through functions
     bench = Benchmark()
 
-    sub_json = None
-    if args.sub_json:
-        sub_json = load_sub(args.sub_json)
+    sub_json = load_sub(args.sub_json)
 
     try:
-        run(args.fnin, args.fnout, sub_json=sub_json, verbose=args.verbose)
+        run(args.fnin, args.fnout, sub_json=sub_json, sort=args.sort, verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
 

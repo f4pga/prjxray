@@ -2,7 +2,7 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np, Ads2bounds
+from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np, Ads2bounds, instances
 from timfuz_massage import massage_equations
 import numpy as np
 import glob
@@ -67,12 +67,6 @@ def check_feasible(A_ub, b_ub):
             print('% 4d Want res % 10.1f <= % 10.1f <= 0' % (rowi, this_b, this_b_ub))
             raise Exception("Bad ")
     print(' done')
-
-def instances(Ads):
-    ret = 0
-    for row_ds in Ads:
-        ret += sum(row_ds.values())
-    return ret
 
 def filter_bounds(Ads, b, bounds):
     '''Given min variable delays, remove rows that won't constrain solution'''
