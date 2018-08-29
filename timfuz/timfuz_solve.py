@@ -2,7 +2,7 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np
+from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np, Ads2bounds
 from timfuz_massage import massage_equations
 import numpy as np
 import glob
@@ -72,15 +72,6 @@ def instances(Ads):
     ret = 0
     for row_ds in Ads:
         ret += sum(row_ds.values())
-    return ret
-
-def Ads2bounds(Ads, b):
-    ret = {}
-    for row_ds, row_b in zip(Ads, b):
-        assert len(row_ds) == 1
-        k, v = list(row_ds.items())[0]
-        assert v == 1
-        ret[k] = row_b
     return ret
 
 def filter_bounds(Ads, b, bounds):

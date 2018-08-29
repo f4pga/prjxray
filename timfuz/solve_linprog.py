@@ -117,7 +117,7 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
             delta = 0.5
 
             print('Writing resutls')
-            skips = 0
+            zeros = 0
             with open(outfn, 'w') as fout:
                 # write as one variable per line
                 # this natively forms a bound if fed into linprog solver
@@ -129,17 +129,16 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
                     # also review ceil vs floor choice for min vs max
                     # lets be more conservative for now
                     if xval < delta:
-                        #print('Skipping %s: %0.6f' % (name, xval))
-                        skips += 1
-                        continue
+                        print('WARNING: near 0 delay on %s: %0.6f' % (name, xval))
+                        zeros += 1
+                        #continue
                     #xvali = round(xval)
                     xvali = math.ceil(xval)
                     corners = [xvali for _ in range(4)]
                     items = [str(row_ico), ' '.join([str(x) for x in corners])]
                     items.append('%u %s' % (1, name))
                     fout.write(','.join(items) + '\n')
-            print('Wrote: skip %u => %u / %u valid delays' % (skips, len(names) - skips, len(names)))
-
+            print('Wrote: zeros %u => %u / %u constrained delays' % (zeros, len(names) - zeros, len(names)))
 
 def main():
     import argparse

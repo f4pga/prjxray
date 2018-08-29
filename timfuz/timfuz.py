@@ -701,6 +701,13 @@ def loadc_Ads_b(fns, corner, ico=None):
         return val[corneri]
     return loadc_Ads_mkb(fns, mkb, filt)
 
+def loadc_Ads_raw(fns):
+    filt = lambda ico, corners, vars: True
+
+    def mkb(val):
+        return val
+    return loadc_Ads_mkb(fns, mkb, filt)
+
 def index_names(Ads):
     names = set()
     for row_ds in Ads:
@@ -829,3 +836,12 @@ def print_eqns(Ads, b, verbose=0, lim=3, label=''):
 def print_eqns_np(A_ub, b_ub, verbose=0):
     Adi = A_ub_np2d(A_ub)
     print_eqns(Adi, b_ub, verbose=verbose)
+
+def Ads2bounds(Ads, b):
+    ret = {}
+    for row_ds, row_b in zip(Ads, b):
+        assert len(row_ds) == 1
+        k, v = list(row_ds.items())[0]
+        assert v == 1
+        ret[k] = row_b
+    return ret
