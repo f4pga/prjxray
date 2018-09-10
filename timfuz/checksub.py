@@ -90,6 +90,7 @@ def run(fns_in, sub_json=None, verbose=False):
     print
     # https://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.linalg.matrix_rank.html
     print('rank: %s / %d col' % (np.linalg.matrix_rank(Amat), len(names)))
+    # doesn't work on non-square matrices
     if 0:
         # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.linalg.slogdet.html
         sign, logdet = np.linalg.slogdet(Amat)
