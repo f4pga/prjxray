@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import timfuz
 from timfuz import loadc_Ads_b, Ads2bounds
 
 import sys
@@ -20,9 +21,9 @@ def run(fnin, fnout, tile_json_fn, verbose=False):
     bounds = Ads2bounds(Ads, b)
 
     pipn_net = 0
-    pipn_solved = 0
+    pipn_solved = [0, 0, 0, 0]
     wiren_net = 0
-    wiren_solved = 0
+    wiren_solved = [0, 0, 0, 0]
 
     for tile in tilej['tiles'].values():
         pips = tile['pips']
@@ -30,19 +31,23 @@ def run(fnin, fnout, tile_json_fn, verbose=False):
             val = bounds.get('PIP_' + v, None)
             pips[k] = quad(val)
             pipn_net += 1
-            if pips[k]:
-                pipn_solved += 1
+            for i in range(4):
+                if pips[k][i]:
+                    pipn_solved[i] += 1
 
         wires = tile['wires']
         for k, v in wires.items():
             val = bounds.get('WIRE_' + v, None)
             wires[k] = quad(val)
             wiren_net += 1
-            if wires[k]:
-                wiren_solved += 1
+            for i in range(4):
+                if wires[k][i]:
+                    wiren_solved[i] += 1
 
-    print('Pips: %u / %u solved' % (pipn_solved, pipn_net))
-    print('Wires: %u / %u solved' % (wiren_solved, wiren_net))
+    for corner, corneri in timfuz.corner_s2i.items():
+        print('Corner %s' % corner)
+        print('  Pips: %u / %u solved' % (pipn_solved[corneri], pipn_net))
+        print('  Wires: %u / %u solved' % (wiren_solved[corneri], wiren_net))
 
     json.dump(tilej, open(fnout, 'w'), sort_keys=True, indent=4, separators=(',', ': '))
 

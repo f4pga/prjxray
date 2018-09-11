@@ -30,12 +30,12 @@ NAME_ZERO = set([
             ])
 
 # csv index
-corner_s2i = {
-    'fast_max': 0,
-    'fast_min': 1,
-    'slow_max': 2,
-    'slow_min': 3,
-    }
+corner_s2i = OrderedDict([
+    ('fast_max', 0),
+    ('fast_min', 1),
+    ('slow_max', 2),
+    ('slow_min', 3),
+    ])
 
 def print_eqns(A_ubd, b_ub, verbose=0, lim=3, label=''):
     rows = len(b_ub)
