@@ -1,4 +1,4 @@
-proc create_project {} {
+proc build_project {} {
     if 0 {
         set grid_min_x -1
         set grid_max_x -1
@@ -83,7 +83,7 @@ proc write_data {} {
     set tiles [get_tiles -filter "GRID_POINT_X >= $grid_min_x && GRID_POINT_X <= $grid_max_x && GRID_POINT_Y >= $grid_min_y && GRID_POINT_Y <= $grid_max_y"]
 
     # Write tiles.txt with site metadata
-    set fp [open "tiles.txt" w]
+    set fp [open "timgrid.txt" w]
     foreach tile $tiles {
 	    set type [get_property TYPE $tile]
 	    set grid_x [get_property GRID_POINT_X $tile]
@@ -114,6 +114,6 @@ proc write_data {} {
     close $fp
 }
 
-create_project
+build_project
 write_data
 

@@ -1,5 +1,3 @@
-source ../../../utils/utils.tcl
-
 proc pin_info {pin} {
     set cell [get_cells -of_objects $pin]
     set bel [get_bels -of_objects $cell]
@@ -16,24 +14,17 @@ proc pin_bel {pin} {
 proc build_design_full {} {
     create_project -force -part $::env(XRAY_PART) design design
     read_verilog ../top.v
-    read_verilog ../picorv32.v
+    read_verilog ../../src/picorv32.v
     synth_design -top top
 
-    set_property LOCK_PINS {I0:A1 I1:A2 I2:A3 I3:A4 I4:A5 I5:A6} \
-		[get_cells -quiet -filter {REF_NAME == LUT6} -hierarchical]
+    #set_property LOCK_PINS {I0:A1 I1:A2 I2:A3 I3:A4 I4:A5 I5:A6} \
+	#	[get_cells -quiet -filter {REF_NAME == LUT6} -hierarchical]
 
     set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
     set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports stb]
     set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_02) IOSTANDARD LVCMOS33" [get_ports di]
     set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_03) IOSTANDARD LVCMOS33" [get_ports do]
 
-    create_pblock roi
-    set roipb [get_pblocks roi]
-    set_property EXCLUDE_PLACEMENT 1 $roipb
-    add_cells_to_pblock $roipb [get_cells roi]
-    resize_pblock $roipb -add "$::env(XRAY_ROI)"
-
-    randplace_pblock 150 $roipb
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
@@ -145,7 +136,7 @@ proc nodes_unique_cc {} {
     set outdir "."
     set fp [open "$outdir/node.txt" w]
     set items [get_nodes]
-    puts "Items: [llength $items]"
+    puts "Computing cost codes with [llength $items] items"
 
     set needspace 0
     set properties [list_property [lindex $items 0]]
@@ -157,7 +148,7 @@ proc nodes_unique_cc {} {
         if {[ dict exists $cost_codes_known $cost_code ]} {
             continue
         }
-        puts "Adding $cost_code @ item $itemi"
+        puts "  Adding cost code $cost_code @ item $itemi"
         dict set cost_codes_known $cost_code 1
 
         set needspace 0

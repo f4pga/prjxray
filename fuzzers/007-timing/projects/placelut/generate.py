@@ -25,7 +25,7 @@ nlut = 4 * SDX * SDY
 nin = 6 * nlut
 nout = nlut
 
-print('placelut simple')
+print('//placelut simple')
 print('//SBASE: %s' % (SBASE,))
 print('//SDX: %s' % (SDX,))
 print('//SDY: %s' % (SDX,))

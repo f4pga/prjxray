@@ -62,7 +62,7 @@ def main():
         description=
         'Solve timing solution'
     )
-    parser.add_argument('--speed-json', default='build_speed/speed.json',
+    parser.add_argument('--speed-json', default='../../speed/build/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('fnin', default=None, help='input tcl output .txt')
     parser.add_argument('fnout', default=None, help='output .json')
