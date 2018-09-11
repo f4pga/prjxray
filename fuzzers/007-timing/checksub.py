@@ -89,7 +89,8 @@ def run(fns_in, sub_json=None, verbose=False):
     '''
     print
     # https://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.linalg.matrix_rank.html
-    print('rank: %s / %d col' % (np.linalg.matrix_rank(Amat), len(names)))
+    rank = np.linalg.matrix_rank(Amat)
+    print('rank: %s / %d col' % (rank, len(names)))
     # doesn't work on non-square matrices
     if 0:
         # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.linalg.slogdet.html
@@ -99,6 +100,8 @@ def run(fns_in, sub_json=None, verbose=False):
             print('slogdet :( : 0')
         else:
             print('slogdet :) : %s, %s' % (sign, logdet))
+    if rank != len(names):
+        raise Exception("Matrix not fully ranked w/ %u / %u" % (rank, len(names)))
 
 def main():
     import argparse

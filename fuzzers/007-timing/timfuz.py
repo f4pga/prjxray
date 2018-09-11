@@ -130,7 +130,7 @@ def Ab_ub_dt2d(eqns):
     return list(A_ubd), list(b_ub)
 
 # This significantly reduces runtime
-def simplify_rows(Ads, b_ub):
+def simplify_rows(Ads, b_ub, remove_zd=False):
     '''Remove duplicate equations, taking highest delay'''
     # dict of constants to highest delay
     eqns = OrderedDict()
@@ -149,7 +149,7 @@ def simplify_rows(Ads, b_ub):
         # TODO: elements have zero delay (ex: COUT)
         # Remove these from now since they make me nervous
         # Although they should just solve to 0
-        if not b:
+        if remove_zd and not b:
             zero_ds += 1
             continue
 
@@ -168,7 +168,7 @@ def simplify_rows(Ads, b_ub):
     #A_ub_ret = eqns.keys()
     A_ubd_ret, b_ub_ret = Ab_ub_dt2d(eqns)
 
-    print('Simplify rows: %d => %d w/ zd %d, ze %d' % (len(b_ub), len(b_ub_ret), zero_ds, zero_es))
+    print('Simplify rows: %d => %d rows w/ zd %d, ze %d' % (len(b_ub), len(b_ub_ret), zero_ds, zero_es))
     #return A_ub_ret, b_ub_ret
     #return A_ub_np2d(A_ub_ret), b_ub_ret
     return A_ubd_ret, b_ub_ret
@@ -693,9 +693,9 @@ def loadc_Ads_b(fns, corner, ico=None):
     corneri = corner_s2i[corner]
 
     if ico is not None:
-        filt = lambda ico, corners, vars: ico == ico
+        filt = lambda ico_, corners, vars: ico_ == ico
     else:
-        filt = lambda ico, corners, vars: True
+        filt = lambda ico_, corners, vars: True
 
     def mkb(val):
         return val[corneri]
@@ -725,9 +725,6 @@ def load_sub(fn):
     return j
 
 def row_sub_syms(row, sub_json, strict=False, verbose=False):
-    zero = Fraction(0)
-    zero = 0
-
     if 0 and verbose:
         print("")
         print(row.items())
@@ -761,9 +758,9 @@ def row_sub_syms(row, sub_json, strict=False, verbose=False):
         if verbose:
             print('pivot %i %s' % (n, pivot))
         for subk, subv in sorted(sub_json['subs'][group].items()):
-            oldn = row.get(subk, zero)
+            oldn = row.get(subk, type(subv)(0))
             rown = -n * subv
-            rown += type(rown)(oldn)
+            rown += oldn
             if verbose:
                 print("  %s: %d => %d" % (subk, oldn, rown))
             if rown == 0:
@@ -783,7 +780,7 @@ def row_sub_syms(row, sub_json, strict=False, verbose=False):
         # verify no subs are left
         for subs in sub_json['subs'].values():
             for sub in subs:
-                assert sub not in row, 'Unexpected element %s' % sub
+                assert sub not in row, 'non-pivot element after group sub %s' % sub
 
         # Verify all constants are positive
         for k, v in sorted(row.items()):
