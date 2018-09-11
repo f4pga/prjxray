@@ -12,36 +12,18 @@ Currently this document focuses exclusively on fabric timing delays.
 
 ## Quick start
 
-TODO: make this into a more formal makefile flow
-
 ```
-# Pre-processing
-# Create speed.json
-./speed.sh
+pushd speed
+make
+popd
 
-# Create csvs
+pushd timgrid
+make
+popd
+
+pushd projects/placelut
 make N=1
-csv=specimen_001/timing3.csv
-
-# Main workflow
-# Discover which variables can be separated
-python3 timfuz_rref.py --simplify --out sub.json $csv
-# Verify sub.json makes a solvable solution
-python3 checksub.py --sub-json sub.json group.csv
-# Separate variables
-python3 csv_flat2group.py --sub-json sub.json --strict $csv group.csv
-# Create a rough timing model that approximately fits the given paths
-python3 solve_leastsq.py --sub-json sub.json group.csv --out leastsq.csv
-# Tweak rough timing model, making sure all constraints are satisfied
-python3 solve_linprog.py --sub-json sub.json --sub-csv leastsq.csv --massage group.csv --out linprog.csv
-# Take separated variables and back-annotate them to the original timing variables
-python3 csv_group2flat.py --sub-json sub.json --sort linprog.csv flat.csv
-
-# Final processing
-# Create tile.json (where timing models are in tile fabric)
-python3 tile_txt2json.py timgrid/specimen_001/tiles.txt tiles.json
-# Insert timing delays into actual tile layouts
-python3 tile_annotate.py flat.csv tilea.json
+popd
 ```
 
 
