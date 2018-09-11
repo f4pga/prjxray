@@ -4,7 +4,7 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 CSVS := $(addsuffix /timing3.csv,$(SPECIMENS))
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
 
-all: tilea.json
+all: build/tilea.json
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
@@ -22,31 +22,32 @@ clean:
 
 .PHONY: database pushdb run clean
 
-sub.json: $(SPECIMENS_OK)
+build/sub.json: $(SPECIMENS_OK)
+	mkdir -p build
 	# Discover which variables can be separated
 	# This is typically the longest running operation
-	python3 $(TIMFUZ_DIR)/rref.py --simplify --out sub.json $(CSVS)
+	python3 $(TIMFUZ_DIR)/rref.py --simplify --out build/sub.json $(CSVS)
 
-grouped.csv: $(SPECIMENS_OK) sub.json
+build/grouped.csv: $(SPECIMENS_OK) build/sub.json
 	# Separate variables
-	python3 $(TIMFUZ_DIR)/csv_flat2group.py --sub-json sub.json --strict $(CSVS) grouped.csv
+	python3 $(TIMFUZ_DIR)/csv_flat2group.py --sub-json build/sub.json --strict $(CSVS) build/grouped.csv
 	# Verify sub.json makes a solvable solution
-	# python3 $(TIMFUZ_DIR)/checksub.py --sub-json sub.json grouped.csv
+	# python3 $(TIMFUZ_DIR)/checksub.py --sub-json build/sub.json grouped.csv
 
-leastsq.csv: sub.json grouped.csv
+build/leastsq.csv: build/sub.json build/grouped.csv
 	# Create a rough timing model that approximately fits the given paths
-	python3 $(TIMFUZ_DIR)/solve_leastsq.py --sub-json sub.json grouped.csv --out leastsq.csv
+	python3 $(TIMFUZ_DIR)/solve_leastsq.py --sub-json build/sub.json build/grouped.csv --out build/leastsq.csv
 
-linprog.csv: leastsq.csv grouped.csv
+build/linprog.csv: build/leastsq.csv build/grouped.csv
 	# Tweak rough timing model, making sure all constraints are satisfied
-	python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json sub.json --sub-csv leastsq.csv --massage grouped.csv --out linprog.csv
+	python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json build/sub.json --sub-csv build/leastsq.csv --massage build/grouped.csv --out build/linprog.csv
 
-flat.csv: linprog.csv
+build/flat.csv: build/linprog.csv
 	# Take separated variables and back-annotate them to the original timing variables
-	python3 $(TIMFUZ_DIR)/csv_group2flat.py --sub-json sub.json --sort linprog.csv flat.csv
+	python3 $(TIMFUZ_DIR)/csv_group2flat.py --sub-json build/sub.json --sort build/linprog.csv build/flat.csv
 
-tilea.json: flat.csv
+build/tilea.json: build/flat.csv
 	# Final processing
 	# Insert timing delays into actual tile layouts
-	python3 $(TIMFUZ_DIR)/tile_annotate.py --tile-json $(TIMFUZ_DIR)/timgrid/build/timgrid.json flat.csv tilea.json
+	python3 $(TIMFUZ_DIR)/tile_annotate.py --tile-json $(TIMFUZ_DIR)/timgrid/build/timgrid.json build/flat.csv build/tilea.json
 
