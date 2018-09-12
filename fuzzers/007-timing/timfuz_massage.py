@@ -80,8 +80,8 @@ def derive_eq_by_row(Ads, b, verbose=0, col_lim=0, tweak=False):
     How to do this in a reasonable time span?
     Also equations are sparse, which makes this harder to compute
     '''
+    assert len(Ads) == len(b), 'Ads, b length mismatch'
     rows = len(Ads)
-    assert rows == len(b)
 
     # Index equations into hash maps so can lookup sparse elements quicker
     assert len(Ads) == len(b)
@@ -402,6 +402,8 @@ def massage_equations_inc_col_lim(Ads, b, verbose=False, corner=None):
     Similarly some operations may eliminate equations, potentially eliminating a column (ie variable)
     Remove these columns as necessary to speed up solving
     '''
+
+    assert len(Ads) == len(b), 'Ads, b length mismatch'
 
     def debug(what):
         if verbose:

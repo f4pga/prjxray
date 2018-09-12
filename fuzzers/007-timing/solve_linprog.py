@@ -18,7 +18,7 @@ def save(outfn, xvals, names, corner):
     delta = 0.5
     corneri = corner_s2i[corner]
 
-    print('Writing resutls')
+    print('Writing results')
     zeros = 0
     with open(outfn, 'w') as fout:
         # write as one variable per line

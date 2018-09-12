@@ -2,7 +2,7 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, simplify_rows, loadc_Ads_b, index_names, A_ds2np, run_sub_json, print_eqns, Ads2bounds, instances, SimplifiedToZero
+from timfuz import Benchmark, simplify_rows, loadc_Ads_b, index_names, A_ds2np, run_sub_json, print_eqns, Ads2bounds, instances, SimplifiedToZero, allow_zero_eqns
 from timfuz_massage import massage_equations
 import numpy as np
 import glob
@@ -68,15 +68,30 @@ def check_feasible(A_ub, b_ub):
             raise Exception("Bad ")
     print(' done')
 
-def filter_bounds(Ads, b, bounds):
+def filter_bounds(Ads, b, bounds, corner):
     '''Given min variable delays, remove rows that won't constrain solution'''
+    #assert len(bounds) > 0
+
+    if 'max' in corner:
+        # Keep delays possibly larger than current bound
+        def keep(row_b, est):
+            return row_b > est
+        T_UNK = 0
+    elif 'min' in corner:
+        # Keep delays possibly smaller than current bound
+        def keep(row_b, est):
+            return row_b < est
+        T_UNK = 1e9
+    else:
+        assert 0
+
     ret_Ads = []
     ret_b = []
     for row_ds, row_b in zip(Ads, b):
         # some variables get estimated at 0
-        est = sum([bounds.get(k, 0) * v for k, v in row_ds.items()])
+        est = sum([bounds.get(k, T_UNK) * v for k, v in row_ds.items()])
         # will this row potentially constrain us more?
-        if row_b > est:
+        if keep(row_b, est):
             ret_Ads.append(row_ds)
             ret_b.append(row_b)
     return ret_Ads, ret_b
@@ -114,11 +129,14 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
     if sub_csv:
         Ads2, b2 = loadc_Ads_b([sub_csv], corner, ico=True)
         bounds = Ads2bounds(Ads2, b2)
+        assert len(bounds), 'Failed to load bounds'
         rows_old = len(Ads)
-        Ads, b = filter_bounds(Ads, b, bounds)
-        print('Filter bounds: %s => %s rows' % (rows_old, len(Ads)))
+        Ads, b = filter_bounds(Ads, b, bounds, corner)
+        print('Filter bounds: %s => %s + %s rows' % (rows_old, len(Ads), len(Ads2)))
         Ads = Ads + Ads2
         b = b + b2
+        assert len(Ads) or allow_zero_eqns()
+        assert len(Ads) == len(b), 'Ads, b length mismatch'
 
     if verbose:
         print
@@ -126,6 +144,7 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
 
         #print
         #col_dist(A_ubd, 'final', names)
+    print('b10', b[0:100])
 
     '''
     Given:
@@ -142,7 +161,7 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
         try:
             Ads, b = massage_equations(Ads, b, corner=corner)
         except SimplifiedToZero:
-            if os.getenv('ALLOW_ZERO_EQN', 'N') != 'Y':
+            if not allow_zero_eqns():
                 raise
             print('WARNING: simplified to zero equations')
             Ads = []

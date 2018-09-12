@@ -41,6 +41,10 @@ corner_s2i = OrderedDict([
 class SimplifiedToZero(Exception):
     pass
 
+
+def allow_zero_eqns():
+    return os.getenv('ALLOW_ZERO_EQN', 'N') == 'Y'
+
 def print_eqns(A_ubd, b_ub, verbose=0, lim=3, label=''):
     rows = len(b_ub)
 
@@ -147,6 +151,13 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
         'slow_max': max,
         'slow_min': min,
         }[corner]
+    # An outlier to make unknown values be ignored
+    T_UNK = {
+        'fast_max': 0,
+        'fast_min': 10e9,
+        'slow_max': 0,
+        'slow_min': 10e9,
+        }[corner]
 
     sys.stdout.write('SimpR ')
     sys.stdout.flush()
@@ -173,7 +184,7 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
             continue
 
         rowt = Ar_ds2t(rowd)
-        eqns[rowt] = minmax(eqns.get(rowt, 0), b)
+        eqns[rowt] = minmax(eqns.get(rowt, T_UNK), b)
 
     print(' done')
     if len(eqns) == 0:
