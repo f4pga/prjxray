@@ -323,7 +323,7 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
     return Ads_ret, b_ret
 
 # keep derriving until solution is (probably) stable
-def massage_equations_old(Ads, b, verbose=False, derive_lim=3):
+def massage_equations_old(Ads, b, verbose=False, derive_lim=3, corner=None):
     '''
     Equation pipeline
     Some operations may generate new equations
@@ -356,7 +356,7 @@ def massage_equations_old(Ads, b, verbose=False, derive_lim=3):
         Ads, b = derive_eq_by_row(Ads, b, col_lim=col_lim)
         debug("der_rows")
         # Run another simplify pass since new equations may have overlap with original
-        Ads, b = simplify_rows(Ads, b)
+        Ads, b = simplify_rows(Ads, b, corner=corner)
         print('Derive row %d / %d: %d => %d equations' % (di + 1, derive_lim, n_orig, len(b)))
         debug("der_rows simp")
 
@@ -365,7 +365,7 @@ def massage_equations_old(Ads, b, verbose=False, derive_lim=3):
         Ads, b = derive_eq_by_col(Ads, b)
         debug("der_cols")
         # Run another simplify pass since new equations may have overlap with original
-        Ads, b = simplify_rows(Ads, b)
+        Ads, b = simplify_rows(Ads, b, corner=corner)
         print('Derive col %d / %d: %d => %d equations' % (di + 1, derive_lim, n_orig2, len(b)))
         debug("der_cols simp")
 
@@ -394,7 +394,7 @@ def massage_equations_old(Ads, b, verbose=False, derive_lim=3):
     return Ads, b
 
 # iteratively increasing column limit until all columns are added
-def massage_equations_inc_col_lim(Ads, b, verbose=False):
+def massage_equations_inc_col_lim(Ads, b, verbose=False, corner=None):
     '''
     Equation pipeline
     Some operations may generate new equations
@@ -428,7 +428,7 @@ def massage_equations_inc_col_lim(Ads, b, verbose=False):
         Ads, b = derive_eq_by_row(Ads, b, col_lim=col_lim, tweak=True)
         debug("der_rows")
         # Run another simplify pass since new equations may have overlap with original
-        Ads, b = simplify_rows(Ads, b)
+        Ads, b = simplify_rows(Ads, b, corner=corner)
         print('Derive row: %d => %d equations' % (n_orig, len(b)))
         debug("der_rows simp")
 
@@ -437,7 +437,7 @@ def massage_equations_inc_col_lim(Ads, b, verbose=False):
         Ads, b = derive_eq_by_col(Ads, b)
         debug("der_cols")
         # Run another simplify pass since new equations may have overlap with original
-        Ads, b = simplify_rows(Ads, b)
+        Ads, b = simplify_rows(Ads, b, corner=corner)
         print('Derive col %d: %d => %d equations' % (di + 1, n_orig2, len(b)))
         debug("der_cols simp")
 
@@ -467,7 +467,7 @@ def massage_equations_inc_col_lim(Ads, b, verbose=False):
 
 # only derive based on nearby equations
 # theory is they will be the best to diff
-def massage_equations_near(Ads, b, verbose=False):
+def massage_equations_near(Ads, b, verbose=False, corner=None):
     '''
     Equation pipeline
     Some operations may generate new equations
@@ -497,7 +497,7 @@ def massage_equations_near(Ads, b, verbose=False):
     Ads, b = derive_eq_by_near_row(Ads, b, tweak=True)
     debug("der_rows")
     # Run another simplify pass since new equations may have overlap with original
-    Ads, b = simplify_rows(Ads, b)
+    Ads, b = simplify_rows(Ads, b, corner=corner)
     print('Derive row: %d => %d equations' % (n_orig, len(b)))
     debug("der_rows simp")
 
@@ -506,7 +506,7 @@ def massage_equations_near(Ads, b, verbose=False):
     Ads, b = derive_eq_by_col(Ads, b)
     debug("der_cols")
     # Run another simplify pass since new equations may have overlap with original
-    Ads, b = simplify_rows(Ads, b)
+    Ads, b = simplify_rows(Ads, b, corner=corner)
     print('Derive col: %d => %d equations' % (n_orig2, len(b)))
     debug("der_cols simp")
 

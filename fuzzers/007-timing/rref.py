@@ -71,7 +71,7 @@ class State(object):
         Ads, b = loadc_Ads_b(fn_ins, corner=corner, ico=True)
         if simplify:
             print('Simplifying corner %s' % (corner,))
-            Ads, b = simplify_rows(Ads, b, remove_zd=False)
+            Ads, b = simplify_rows(Ads, b, remove_zd=False, corner=corner)
         return State(Ads)
 
 def write_state(state, fout):

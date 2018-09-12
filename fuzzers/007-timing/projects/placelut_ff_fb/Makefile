@@ -1,0 +1,2 @@
+include ../project.mk
+

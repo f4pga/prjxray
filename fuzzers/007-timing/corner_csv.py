@@ -5,7 +5,7 @@ import glob
 
 def run(fout, fns_in, corner, verbose=0):
     Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
-    Ads, b = simplify_rows(Ads, b)
+    Ads, b = simplify_rows(Ads, b, corner=corner)
 
     fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
     for row_b, row_ds in zip(b, Ads):

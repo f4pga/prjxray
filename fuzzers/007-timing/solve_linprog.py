@@ -105,11 +105,6 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
             if nonzero and (verbose or ((nonzeros < 100 or nonzeros % 20 == 0) and nonzeros <= plim)):
                 print('  % 4u % -80s % 10.1f' % (xi, name, x))
         print('Delay on %d / %d' % (nonzeros, len(res.x)))
-        if not os.path.exists('res'):
-            os.mkdir('res')
-        fn_out = 'res/%s' % datetime.datetime.utcnow().isoformat().split('.')[0]
-        print('Writing %s' % fn_out)
-        np.save(fn_out, (3, c, A_ub, b_ub, bounds, names, res, meta))
 
         if outfn:
             # ballpark minimum actual observed delay is around 7 (carry chain)

@@ -91,7 +91,7 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
     if dedup:
         oldn = len(Ads)
         iold = instances(Ads)
-        Ads, b = simplify_rows(Ads, b)
+        Ads, b = simplify_rows(Ads, b, corner=corner)
         print('Simplify %u => %u rows' % (oldn, len(Ads)))
         print('Simplify %u => %u instances' % (iold, instances(Ads)))
 
@@ -142,7 +142,7 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
     This creates derived constraints to provide more realistic results
     '''
     if massage:
-        Ads, b = massage_equations(Ads, b)
+        Ads, b = massage_equations(Ads, b, corner=corner)
 
     print('Converting to numpy...')
     names, Anp = A_ds2np(Ads)

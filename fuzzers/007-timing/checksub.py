@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json
+from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json
 import numpy as np
 import glob
 import json
@@ -57,11 +57,6 @@ def run(fns_in, sub_json=None, verbose=False):
     corner = "slow_max"
 
     Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
-
-    # Remove duplicate rows
-    # is this necessary?
-    # maybe better to just add them into the matrix directly
-    #Ads, b = simplify_rows(Ads, b)
 
     if sub_json:
         print('Subbing JSON %u rows' % len(Ads))

@@ -130,11 +130,19 @@ def Ab_ub_dt2d(eqns):
     return list(A_ubd), list(b_ub)
 
 # This significantly reduces runtime
-def simplify_rows(Ads, b_ub, remove_zd=False):
+def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
     '''Remove duplicate equations, taking highest delay'''
     # dict of constants to highest delay
     eqns = OrderedDict()
     assert len(Ads) == len(b_ub), (len(Ads), len(b_ub))
+
+    assert corner is not None
+    minmax = {
+        'fast_max': max,
+        'fast_min': min,
+        'slow_max': max,
+        'slow_min': min,
+        }[corner]
 
     sys.stdout.write('SimpR ')
     sys.stdout.flush()
@@ -161,7 +169,7 @@ def simplify_rows(Ads, b_ub, remove_zd=False):
             continue
 
         rowt = Ar_ds2t(rowd)
-        eqns[rowt] = max(eqns.get(rowt, 0), b)
+        eqns[rowt] = minmax(eqns.get(rowt, 0), b)
 
     print(' done')
 
@@ -472,159 +480,6 @@ def filter_ncols(A_ubd, b_ub, cols_min=0, cols_max=0):
     print('Filter ncols w/ %d <= cols <= %d: %d ==> %d rows' % (cols_min, cols_max, len(b_ub), len(b_ub_ret)))
     assert len(b_ub_ret)
     return A_ubd_ret, b_ub_ret
-
-def preprocess(A_ubd, b_ub, opts, names, verbose=0):
-    def debug(what):
-        if verbose:
-            print('')
-            print_eqns(A_ubd, b_ub, verbose=verbose, label=what, lim=20)
-            col_dist(A_ubd, what, names)
-            check_feasible_d(A_ubd, b_ub, names)
-
-    col_dist(A_ubd, 'pre-filt', names, lim=12)
-    debug('pre-filt')
-
-    need_simpc = 0
-
-    # Input set may have redundant constraints
-    A_ubd, b_ub = simplify_rows(A_ubd=A_ubd, b_ub=b_ub)
-    debug("simp_rows")
-    cols_min_pre = opts.get('cols_min_pre', None)
-    cols_max_pre = opts.get('cols_max_pre', None)
-    # Filter input based on number of columns
-    if cols_min_pre or cols_max_pre:
-        A_ubd, b_ub = filter_ncols(A_ubd=A_ubd, b_ub=b_ub, cols_min=cols_min_pre, cols_max=cols_max_pre)
-        debug("filt_ncols")
-        need_simpc = 1
-
-    # Limit input rows, mostly for quick full run checks
-    row_limit = opts.get('row_limit', None)
-    if row_limit:
-        before_rows = len(b_ub)
-        A_ubd = A_ubd[0:row_limit]
-        b_ub = b_ub[0:row_limit]
-        print('Row limit %d => %d rows' % (before_rows, len(b_ub)))
-        need_simpc = 1
-
-    if need_simpc:
-        names, A_ubd, b_ub = simplify_cols(names=names, A_ubd=A_ubd, b_ub=b_ub)
-        debug("simp_cols")
-
-    return A_ubd, b_ub, names
-
-def massage_equations(A_ubd, b_ub, opts, names, verbose=0):
-    '''
-    Equation pipeline
-    Some operations may generate new equations
-    Simplify after these to avoid unnecessary overhead on redundant constraints
-    Similarly some operations may eliminate equations, potentially eliminating a column (ie variable)
-    Remove these columns as necessary to speed up solving
-    '''
-
-    def debug(what):
-        if verbose:
-            print('')
-            print_eqns(A_ubd, b_ub, verbose=verbose, label=what, lim=20)
-            col_dist(A_ubd, what, names)
-            check_feasible_d(A_ubd, b_ub, names)
-
-    A_ubd, b_ub, names = preprocess(A_ubd, b_ub, opts, names, verbose=verbose)
-
-    # Try to (intelligently) subtract equations to generate additional constraints
-    # This helps avoid putting all delay in a single shared variable
-    derive_lim = opts.get('derive_lim', None)
-    if derive_lim:
-        dstart = len(b_ub)
-
-        # Original simple
-        if 0:
-            for di in range(derive_lim):
-                print
-                assert len(A_ubd) == len(b_ub)
-                n_orig = len(b_ub)
-
-                # Meat of the operation
-                # Focus on easy equations for first pass to get a lot of easy derrivations
-                col_lim = 12 if di == 0 else None
-                #col_lim = None
-                A_ubd, b_ub = derive_eq_by_row(A_ubd, b_ub, col_lim=col_lim)
-                debug("der_rows")
-                # Run another simplify pass since new equations may have overlap with original
-                A_ubd, b_ub = simplify_rows(A_ubd, b_ub)
-                print('Derive row %d / %d: %d => %d equations' % (di + 1, derive_lim, n_orig, len(b_ub)))
-                debug("der_rows simp")
-
-                n_orig2 = len(b_ub)
-                # Meat of the operation
-                A_ubd, b_ub = derive_eq_by_col(A_ubd, b_ub)
-                debug("der_cols")
-                # Run another simplify pass since new equations may have overlap with original
-                A_ubd, b_ub = simplify_rows(A_ubd=A_ubd, b_ub=b_ub)
-                print('Derive col %d / %d: %d => %d equations' % (di + 1, derive_lim, n_orig2, len(b_ub)))
-                debug("der_cols simp")
-
-                if n_orig == len(b_ub):
-                    break
-
-        if 1:
-            # Each iteration one more column is allowed until all columns are included
-            # (and the system is stable)
-            col_lim = 15
-            di = 0
-            while True:
-                print
-                n_orig = len(b_ub)
-
-                print('Loop %d, lim %d' % (di + 1, col_lim))
-                # Meat of the operation
-                A_ubd, b_ub = derive_eq_by_row(A_ubd, b_ub, col_lim=col_lim, tweak=True)
-                debug("der_rows")
-                # Run another simplify pass since new equations may have overlap with original
-                A_ubd, b_ub = simplify_rows(A_ubd, b_ub)
-                print('Derive row: %d => %d equations' % (n_orig, len(b_ub)))
-                debug("der_rows simp")
-
-                n_orig2 = len(b_ub)
-                # Meat of the operation
-                A_ubd, b_ub = derive_eq_by_col(A_ubd, b_ub)
-                debug("der_cols")
-                # Run another simplify pass since new equations may have overlap with original
-                A_ubd, b_ub = simplify_rows(A_ubd=A_ubd, b_ub=b_ub)
-                print('Derive col %d: %d => %d equations' % (di + 1, n_orig2, len(b_ub)))
-                debug("der_cols simp")
-
-                # Doesn't help computation, but helps debugging
-                names, A_ubd, b_ub = simplify_cols(names=names, A_ubd=A_ubd, b_ub=b_ub)
-                A_ubd, b_ub = sort_equations(A_ubd, b_ub)
-                debug("loop done")
-                col_dist(A_ubd, 'derive done iter %d, lim %d' % (di, col_lim), names, lim=12)
-
-                rows = len(A_ubd)
-                if n_orig == len(b_ub) and col_lim >= rows:
-                    break
-                col_lim += col_lim / 5
-                di += 1
-
-        dend = len(b_ub)
-        print('')
-        print('Derive net: %d => %d' % (dstart, dend))
-        print('')
-        # Was experimentting to see how much the higher order columns really help
-
-    cols_min_post = opts.get('cols_min_post', None)
-    cols_max_post = opts.get('cols_max_post', None)
-    # Filter input based on number of columns
-    if cols_min_post or cols_max_post:
-        A_ubd, b_ub = filter_ncols(A_ubd=A_ubd, b_ub=b_ub, cols_min=cols_min_post, cols_max=cols_max_post)
-        debug("filter_ncals final")
-
-    names, A_ubd, b_ub = simplify_cols(names=names, A_ubd=A_ubd, b_ub=b_ub)
-    debug("simp_cols final")
-
-    # Helps debug readability
-    A_ubd, b_ub = sort_equations(A_ubd, b_ub)
-    debug("final (sorted)")
-    return names, A_ubd, b_ub
 
 def Ar_di2ds(rowA, names):
     row = OrderedDict()
