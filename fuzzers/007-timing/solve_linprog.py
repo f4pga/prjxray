@@ -57,6 +57,8 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
     -delay1 +   -delay2 +               -delay4     <= -timing1
                 -delay2 +   -delay3                 <= -timing2
     '''
+    assert 'max' in corner, 'FIXME: support min corner math'
+
     rows = len(Anp)
     cols = len(Anp[0])
     print('Scaling to solution form...')
