@@ -2,7 +2,7 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np, Ads2bounds, instances
+from timfuz import Benchmark, simplify_rows, loadc_Ads_b, index_names, A_ds2np, run_sub_json, print_eqns, Ads2bounds, instances, SimplifiedToZero
 from timfuz_massage import massage_equations
 import numpy as np
 import glob
@@ -139,7 +139,12 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
     This creates derived constraints to provide more realistic results
     '''
     if massage:
-        Ads, b = massage_equations(Ads, b, corner=corner)
+        try:
+            Ads, b = massage_equations(Ads, b, corner=corner)
+        except SimplifiedToZero:
+            print('WARNING: simplified to zero equations')
+            Ads = []
+            b = []
 
     print('Converting to numpy...')
     names, Anp = A_ds2np(Ads)

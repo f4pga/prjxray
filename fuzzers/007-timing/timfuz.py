@@ -37,6 +37,10 @@ corner_s2i = OrderedDict([
     ('slow_min', 3),
     ])
 
+# Equations are filtered out until nothing is left
+class SimplifiedToZero(Exception):
+    pass
+
 def print_eqns(A_ubd, b_ub, verbose=0, lim=3, label=''):
     rows = len(b_ub)
 
@@ -172,6 +176,8 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
         eqns[rowt] = minmax(eqns.get(rowt, 0), b)
 
     print(' done')
+    if len(eqns) == 0:
+        raise SimplifiedToZero()
 
     #A_ub_ret = eqns.keys()
     A_ubd_ret, b_ub_ret = Ab_ub_dt2d(eqns)

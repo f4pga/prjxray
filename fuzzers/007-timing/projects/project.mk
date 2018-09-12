@@ -1,11 +1,30 @@
+# project.mk: build specimens (run vivado), compute rref
+# corner.mk: run corner specific calculations
+
 N := 1
 SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 CSVS := $(addsuffix /timing3.csv,$(SPECIMENS))
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
-CORNER=slow_max
+RREF_CORNER=slow_max
 
-all: build/tilea.json
+TILEA_JSONS=build/fast_max/tilea.json build/fast_min/tilea.json build/slow_max/tilea.json build/slow_min/tilea.json
+
+all: $(TILEA_JSONS)
+
+# make build/checksub first
+build/fast_max/tilea.json: build/checksub
+	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=fast_max
+build/fast_min/tilea.json: build/checksub
+	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=fast_min
+build/slow_max/tilea.json: build/checksub
+	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=slow_max
+build/slow_min/tilea.json: build/checksub
+	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=slow_min
+fast_max: build/fast_max/tilea.json
+fast_min: build/fast_min/tilea.json
+slow_max: build/slow_max/tilea.json
+slow_min: build/slow_min/tilea.json
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
@@ -21,13 +40,15 @@ clean:
 	rm -rf vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit
 	rm -rf build
 
-.PHONY: database pushdb run clean
+.PHONY: all run clean
+
+# rref should be the same regardless of corner
 
 build/sub.json: $(SPECIMENS_OK)
 	mkdir -p build
 	# Discover which variables can be separated
 	# This is typically the longest running operation
-	python3 $(TIMFUZ_DIR)/rref.py --corner $(CORNER) --simplify --out build/sub.json.tmp $(CSVS)
+	python3 $(TIMFUZ_DIR)/rref.py --corner $(RREF_CORNER) --simplify --out build/sub.json.tmp $(CSVS)
 	mv build/sub.json.tmp build/sub.json
 
 build/grouped.csv: $(SPECIMENS_OK) build/sub.json
@@ -39,24 +60,4 @@ build/checksub: build/grouped.csv build/sub.json
 	# Verify sub.json makes a cleanly solvable solution with no non-pivot leftover
 	python3 $(TIMFUZ_DIR)/checksub.py --sub-json build/sub.json build/grouped.csv
 	touch build/checksub
-
-build/leastsq.csv: build/sub.json build/grouped.csv build/checksub
-	# Create a rough timing model that approximately fits the given paths
-	python3 $(TIMFUZ_DIR)/solve_leastsq.py --sub-json build/sub.json build/grouped.csv --corner $(CORNER) --out build/leastsq.csv.tmp
-	mv build/leastsq.csv.tmp build/leastsq.csv
-
-build/linprog.csv: build/leastsq.csv build/grouped.csv
-	# Tweak rough timing model, making sure all constraints are satisfied
-	python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json build/sub.json --sub-csv build/leastsq.csv --massage build/grouped.csv --corner $(CORNER) --out build/linprog.csv.tmp
-	mv build/linprog.csv.tmp build/linprog.csv
-
-build/flat.csv: build/linprog.csv
-	# Take separated variables and back-annotate them to the original timing variables
-	python3 $(TIMFUZ_DIR)/csv_group2flat.py --sub-json build/sub.json --corner $(CORNER) --sort build/linprog.csv build/flat.csv.tmp
-	mv build/flat.csv.tmp build/flat.csv
-
-build/tilea.json: build/flat.csv
-	# Final processing
-	# Insert timing delays into actual tile layouts
-	python3 $(TIMFUZ_DIR)/tile_annotate.py --tile-json $(TIMFUZ_DIR)/timgrid/build/timgrid.json build/flat.csv build/tilea.json
 

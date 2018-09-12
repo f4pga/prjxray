@@ -12,7 +12,7 @@ import os
 import time
 import timfuz_solve
 
-def save(outfn, res, names, corner):
+def save(outfn, xvals, names, corner):
     # ballpark minimum actual observed delay is around 7 (carry chain)
     # anything less than one is probably a solver artifact
     delta = 0.5
@@ -24,7 +24,7 @@ def save(outfn, res, names, corner):
         # write as one variable per line
         # this natively forms a bound if fed into linprog solver
         fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-        for xval, name in zip(res.x, names):
+        for xval, name in zip(xvals, names):
             row_ico = 1
 
             # FIXME: only report for the given corner?
@@ -40,6 +40,12 @@ def save(outfn, res, names, corner):
     print('Wrote: zeros %u => %u / %u constrained delays' % (zeros, len(names) - zeros, len(names)))
 
 def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
+    if len(Anp) == 0:
+        print('WARNING: zero equations')
+        if outfn:
+            save(outfn, [], [], corner)
+        return
+
     # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
     assert type(b) is np.ndarray, type(b)
@@ -126,7 +132,7 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
         print('Delay on %d / %d' % (nonzeros, len(res.x)))
 
         if outfn:
-            save(outfn, res, names, corner)
+            save(outfn, res.x, names, corner)
 
 def main():
     import argparse
