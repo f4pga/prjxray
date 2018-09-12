@@ -143,4 +143,4 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
 
     print('Converting to numpy...')
     names, Anp = A_ds2np(Ads)
-    run_corner(Anp, np.asarray(b), names, outfn=outfn, verbose=verbose, **kwargs)
+    run_corner(Anp, np.asarray(b), names, corner, outfn=outfn, verbose=verbose, **kwargs)

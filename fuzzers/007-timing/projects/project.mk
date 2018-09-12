@@ -3,6 +3,7 @@ SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 CSVS := $(addsuffix /timing3.csv,$(SPECIMENS))
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
+CORNER=slow_max
 
 all: build/tilea.json
 
@@ -26,7 +27,7 @@ build/sub.json: $(SPECIMENS_OK)
 	mkdir -p build
 	# Discover which variables can be separated
 	# This is typically the longest running operation
-	python3 $(TIMFUZ_DIR)/rref.py --simplify --out build/sub.json.tmp $(CSVS)
+	python3 $(TIMFUZ_DIR)/rref.py --corner $(CORNER) --simplify --out build/sub.json.tmp $(CSVS)
 	mv build/sub.json.tmp build/sub.json
 
 build/grouped.csv: $(SPECIMENS_OK) build/sub.json
@@ -41,17 +42,17 @@ build/checksub: build/grouped.csv build/sub.json
 
 build/leastsq.csv: build/sub.json build/grouped.csv build/checksub
 	# Create a rough timing model that approximately fits the given paths
-	python3 $(TIMFUZ_DIR)/solve_leastsq.py --sub-json build/sub.json build/grouped.csv --out build/leastsq.csv.tmp
+	python3 $(TIMFUZ_DIR)/solve_leastsq.py --sub-json build/sub.json build/grouped.csv --corner $(CORNER) --out build/leastsq.csv.tmp
 	mv build/leastsq.csv.tmp build/leastsq.csv
 
 build/linprog.csv: build/leastsq.csv build/grouped.csv
 	# Tweak rough timing model, making sure all constraints are satisfied
-	python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json build/sub.json --sub-csv build/leastsq.csv --massage build/grouped.csv --out build/linprog.csv.tmp
+	python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json build/sub.json --sub-csv build/leastsq.csv --massage build/grouped.csv --corner $(CORNER) --out build/linprog.csv.tmp
 	mv build/linprog.csv.tmp build/linprog.csv
 
 build/flat.csv: build/linprog.csv
 	# Take separated variables and back-annotate them to the original timing variables
-	python3 $(TIMFUZ_DIR)/csv_group2flat.py --sub-json build/sub.json --sort build/linprog.csv build/flat.csv.tmp
+	python3 $(TIMFUZ_DIR)/csv_group2flat.py --sub-json build/sub.json --corner $(CORNER) --sort build/linprog.csv build/flat.csv.tmp
 	mv build/flat.csv.tmp build/flat.csv
 
 build/tilea.json: build/flat.csv

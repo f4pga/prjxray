@@ -2,21 +2,44 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np
-from timfuz_massage import massage_equations
+from timfuz import Benchmark, load_sub, A_ub_np2d, acorner2csv, corner_s2i
 import numpy as np
 import glob
 import json
 import math
-from collections import OrderedDict
-from fractions import Fraction
 import sys
-import datetime
 import os
 import time
 import timfuz_solve
 
-def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
+def save(outfn, res, names, corner):
+    # ballpark minimum actual observed delay is around 7 (carry chain)
+    # anything less than one is probably a solver artifact
+    delta = 0.5
+    corneri = corner_s2i[corner]
+
+    print('Writing resutls')
+    zeros = 0
+    with open(outfn, 'w') as fout:
+        # write as one variable per line
+        # this natively forms a bound if fed into linprog solver
+        fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
+        for xval, name in zip(res.x, names):
+            row_ico = 1
+
+            # FIXME: only report for the given corner?
+            # also review ceil vs floor choice for min vs max
+            # lets be more conservative for now
+            if xval < delta:
+                print('WARNING: near 0 delay on %s: %0.6f' % (name, xval))
+                zeros += 1
+                #continue
+            items = [str(row_ico), acorner2csv(math.ceil(xval), corneri)]
+            items.append('%u %s' % (1, name))
+            fout.write(','.join(items) + '\n')
+    print('Wrote: zeros %u => %u / %u constrained delays' % (zeros, len(names) - zeros, len(names)))
+
+def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
     # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
     assert type(b) is np.ndarray, type(b)
@@ -40,12 +63,6 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     b_ub = -1.0 * b
     #A_ub = -1.0 * Anp
     A_ub = [-1.0 * x for x in Anp]
-
-    if verbose:
-        print('')
-        print('A_ub b_ub')
-        print_eqns_np(A_ub, b_ub, verbose=verbose)
-        print('')
 
     print('Creating misc constants...')
     # Minimization function scalars
@@ -107,33 +124,7 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
         print('Delay on %d / %d' % (nonzeros, len(res.x)))
 
         if outfn:
-            # ballpark minimum actual observed delay is around 7 (carry chain)
-            # anything less than one is probably a solver artifact
-            delta = 0.5
-
-            print('Writing resutls')
-            zeros = 0
-            with open(outfn, 'w') as fout:
-                # write as one variable per line
-                # this natively forms a bound if fed into linprog solver
-                fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-                for xval, name in zip(res.x, names):
-                    row_ico = 1
-
-                    # FIXME: only report for the given corner?
-                    # also review ceil vs floor choice for min vs max
-                    # lets be more conservative for now
-                    if xval < delta:
-                        print('WARNING: near 0 delay on %s: %0.6f' % (name, xval))
-                        zeros += 1
-                        #continue
-                    #xvali = round(xval)
-                    xvali = math.ceil(xval)
-                    corners = [xvali for _ in range(4)]
-                    items = [str(row_ico), ' '.join([str(x) for x in corners])]
-                    items.append('%u %s' % (1, name))
-                    fout.write(','.join(items) + '\n')
-            print('Wrote: zeros %u => %u / %u constrained delays' % (zeros, len(names) - zeros, len(names)))
+            save(outfn, res, names, corner)
 
 def main():
     import argparse
@@ -147,7 +138,7 @@ def main():
     parser.add_argument('--massage', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
     parser.add_argument('--sub-json', help='Group substitutions to make fully ranked')
-    parser.add_argument('--corner', default="slow_max", help='')
+    parser.add_argument('--corner', default=None, required=True, help='')
     parser.add_argument('--out', default=None, help='output timing delay .json')
     parser.add_argument(
         'fns_in',

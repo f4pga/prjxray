@@ -2,20 +2,16 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np
-from timfuz_massage import massage_equations
+from timfuz import Benchmark, load_sub, corner_s2i, acorner2csv
+import timfuz
 import numpy as np
 import glob
-import json
 import math
-from collections import OrderedDict
 from fractions import Fraction
 import sys
-import datetime
 import os
 import time
 import timfuz_solve
-import numpy
 import scipy.optimize as optimize
 from scipy.optimize import least_squares
 
@@ -37,10 +33,11 @@ def mkestimate(Anp, b):
                     x0[coli] = min(x0[coli], ub)
     return x0
 
-def save(outfn, res, names):
+def save(outfn, res, names, corner):
     # ballpark minimum actual observed delay is around 7 (carry chain)
     # anything less than one is probably a solver artifact
     delta = 0.5
+    corneri = corner_s2i[corner]
 
     print('Writing resutls')
     skips = 0
@@ -59,14 +56,13 @@ def save(outfn, res, names):
                 skips += 1
                 continue
             #xvali = round(xval)
-            xvali = math.ceil(xval)
-            corners = [xvali for _ in range(4)]
-            items = [str(row_ico), ' '.join([str(x) for x in corners])]
+
+            items = [str(row_ico), acorner2csv(math.ceil(xval), corneri)]
             items.append('%u %s' % (1, name))
             fout.write(','.join(items) + '\n')
     print('Wrote: skip %u => %u / %u valid delays' % (skips, len(names) - skips, len(names)))
 
-def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
+def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
     # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
     assert type(b) is np.ndarray, type(b)
@@ -135,7 +131,7 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     print('Done')
 
     if outfn:
-        save(outfn, res, names)
+        save(outfn, res, names, corner)
 
 def main():
     import argparse

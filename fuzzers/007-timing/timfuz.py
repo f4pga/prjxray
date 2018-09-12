@@ -530,7 +530,12 @@ def loadc_Ads_mkb(fns, mkb, filt):
                 corners = cols[1]
                 vars = cols[2:]
 
-                corners = [int(x) for x in corners.split()]
+                def mkcorner(bstr):
+                    if bstr == 'None':
+                        return None
+                    else:
+                        return int(bstr)
+                corners = [mkcorner(corner) for corner in corners.split()]
                 def mkvar(x):
                     i, var = x.split()
                     return (var, int(i))
@@ -554,6 +559,16 @@ def loadc_Ads_b(fns, corner, ico=None):
 
     def mkb(val):
         return val[corneri]
+    return loadc_Ads_mkb(fns, mkb, filt)
+
+def loadc_Ads_bs(fns, ico=None):
+    if ico is not None:
+        filt = lambda ico_, corners, vars: ico_ == ico
+    else:
+        filt = lambda ico_, corners, vars: True
+
+    def mkb(val):
+        return val
     return loadc_Ads_mkb(fns, mkb, filt)
 
 def loadc_Ads_raw(fns):
@@ -699,13 +714,13 @@ def print_eqns_np(A_ub, b_ub, verbose=0):
     Adi = A_ub_np2d(A_ub)
     print_eqns(Adi, b_ub, verbose=verbose)
 
-def Ads2bounds(Ads, b):
+def Ads2bounds(Ads, bs):
     ret = {}
-    for row_ds, row_b in zip(Ads, b):
+    for row_ds, row_bs in zip(Ads, bs):
         assert len(row_ds) == 1
         k, v = list(row_ds.items())[0]
         assert v == 1
-        ret[k] = row_b
+        ret[k] = row_bs
     return ret
 
 def instances(Ads):
@@ -713,3 +728,13 @@ def instances(Ads):
     for row_ds in Ads:
         ret += sum(row_ds.values())
     return ret
+
+def acorner2csv(b, corneri):
+    corners = ["None" for _ in range(4)]
+    corners[corneri] = str(b)
+    return ' '.join(corners)
+
+def corners2csv(bs):
+    assert len(bs) == 4
+    corners = ["None" if b is None else str(b) for b in bs]
+    return ' '.join(corners)

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, loadc_Ads_b, index_names, load_sub, run_sub_json, instances
+from timfuz import Benchmark, loadc_Ads_bs, index_names, load_sub, run_sub_json, instances
 
 def gen_group(fnin, sub_json, strict=False, verbose=False):
     print('Loading data')
-    # FIXME: preserve corners
-    Ads, b = loadc_Ads_b([fnin], corner=None, ico=True)
+    Ads, bs = loadc_Ads_bs([fnin], ico=True)
 
     print('Sub: %u rows' % len(Ads))
     iold = instances(Ads)
@@ -15,10 +14,10 @@ def gen_group(fnin, sub_json, strict=False, verbose=False):
     print("Sub: %u => %u names" % (len(names_old), len(names)))
     print('Sub: %u => %u instances' % (iold, instances(Ads)))
 
-    for row_ds, row_b in zip(Ads, b):
-        yield row_ds, [row_b for _ in range(4)]
+    for row_ds, row_bs in zip(Ads, bs):
+        yield row_ds, row_bs
 
-def run(fns_in, fnout, sub_json, corner=None, strict=False, verbose=False):
+def run(fns_in, fnout, sub_json, strict=False, verbose=False):
     with open(fnout, 'w') as fout:
         fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
         for fn_in in fns_in:
@@ -38,7 +37,6 @@ def main():
     )
 
     parser.add_argument('--verbose', action='store_true', help='')
-    parser.add_argument('--massage', action='store_true', help='')
     parser.add_argument('--strict', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
     parser.add_argument('--sub-json', required=True, help='Group substitutions to make fully ranked')

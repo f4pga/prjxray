@@ -2,7 +2,7 @@
 
 # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 from scipy.optimize import linprog
-from timfuz import Benchmark, Ar_di2np, Ar_ds2t, A_di2ds, A_ds2di, simplify_rows, loadc_Ads_b, index_names, A_ds2np, load_sub, run_sub_json, A_ub_np2d, print_eqns, print_eqns_np, Ads2bounds, loadc_Ads_raw
+from timfuz import Benchmark, loadc_Ads_bs, load_sub, Ads2bounds, corners2csv, corner_s2i
 from timfuz_massage import massage_equations
 import numpy as np
 import glob
@@ -15,15 +15,13 @@ import datetime
 import os
 import time
 
-def gen_flat(fnin, sub_json):
-    # FIXME: preserve all bounds
-    # Ads, bs = loadc_Ads_raw([csv_fn_in])
-    Ads, b = loadc_Ads_b([fnin], corner=None, ico=True)
-    bounds = Ads2bounds(Ads, b)
+def gen_flat(fnin, sub_json, corner=None):
+    Ads, bs = loadc_Ads_bs([fnin], ico=True)
+    bounds = Ads2bounds(Ads, bs)
     zeros = set()
     nonzeros = set()
 
-    for bound_name, bound_b in bounds.items():
+    for bound_name, bound_bs in bounds.items():
         sub = sub_json['subs'].get(bound_name, None)
         if sub:
             # put entire delay into pivot
@@ -34,18 +32,23 @@ def gen_flat(fnin, sub_json):
             #for name in non_pivot:
             #    assert name not in nonzeros, (pivot, name, nonzeros)
             zeros.update(non_pivot)
-            yield pivot, bound_b
+            yield pivot, bound_bs
         else:
             nonzeros.add(bound_name)
-            yield bound_name, bound_b
+            yield bound_name, bound_bs
     # non-pivots can appear multiple times, but they should always be zero
     # however, due to substitution limitations, just warn
     violations = zeros.intersection(nonzeros)
     if len(violations):
         print('WARNING: %s non-0 non-pivot' % (len(violations)))
 
-    for zero in zeros - violations:
-        yield zero, 0
+    # XXX: how to best handle these?
+    # should they be fixed 0?
+    if corner:
+        zero_row = [None, None, None, None]
+        zero_row[corner_s2i[corner]] = 0
+        for zero in zeros - violations:
+            yield zero, zero_row
 
 def run(fnin, fnout, sub_json, corner=None, sort=False, verbose=False):
     if sort:
@@ -55,10 +58,10 @@ def run(fnin, fnout, sub_json, corner=None, sort=False, verbose=False):
 
     with open(fnout, 'w') as fout:
         fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-        for name, delay in sortf(gen_flat(fnin, sub_json)):
+        #for name, corners in sortf(gen_flat(fnin, sub_json)):
+        for name, corners in gen_flat(fnin, sub_json, corner=corner):
             row_ico = 1
-            corners = [delay for _ in range(4)]
-            items = [str(row_ico), ' '.join([str(x) for x in corners])]
+            items = [str(row_ico), corners2csv(corners)]
             items.append('%u %s' % (1, name))
             fout.write(','.join(items) + '\n')
 
@@ -74,6 +77,7 @@ def main():
     parser.add_argument('--sort', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
     parser.add_argument('--sub-json', required=True, help='Group substitutions to make fully ranked')
+    parser.add_argument('--corner', default=None, help='')
     parser.add_argument('fnin', default=None, help='input timing delay .csv')
     parser.add_argument('fnout', default=None, help='output timing delay .csv')
     args = parser.parse_args()
@@ -83,7 +87,7 @@ def main():
     sub_json = load_sub(args.sub_json)
 
     try:
-        run(args.fnin, args.fnout, sub_json=sub_json, sort=args.sort, verbose=args.verbose)
+        run(args.fnin, args.fnout, sub_json=sub_json, sort=args.sort, verbose=args.verbose, corner=args.corner)
     finally:
         print('Exiting after %s' % bench)
 
