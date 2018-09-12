@@ -153,10 +153,10 @@ def simplify_rows(Ads, b_ub, remove_zd=False):
             zero_ds += 1
             continue
 
-        # A very few of these exist with very small values
-        # TODO: investigate, understand what these are
-        # Leaving these in can make the result unsolvable since there does not exist a set of constants to reach the delay
+        # think ran into these before when taking out ZERO elements
         if len(rowd) == 0:
+            if b != 0:
+                assert zero_es == 0, 'Unexpected zero element row with non-zero delay'
             zero_es += 1
             continue
 
