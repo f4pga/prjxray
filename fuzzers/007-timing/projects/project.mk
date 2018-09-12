@@ -7,6 +7,7 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 CSVS := $(addsuffix /timing3.csv,$(SPECIMENS))
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
 RREF_CORNER=slow_max
+ALLOW_ZERO_EQN?=N
 
 TILEA_JSONS=build/fast_max/tilea.json build/fast_min/tilea.json build/slow_max/tilea.json build/slow_min/tilea.json
 

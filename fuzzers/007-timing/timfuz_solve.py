@@ -142,6 +142,8 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
         try:
             Ads, b = massage_equations(Ads, b, corner=corner)
         except SimplifiedToZero:
+            if os.getenv('ALLOW_ZERO_EQN', 'N') != 'Y':
+                raise
             print('WARNING: simplified to zero equations')
             Ads = []
             b = []
