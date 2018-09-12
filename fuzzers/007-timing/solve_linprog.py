@@ -18,6 +18,13 @@ def save(outfn, xvals, names, corner):
     delta = 0.5
     corneri = corner_s2i[corner]
 
+    roundf = {
+        'fast_max': math.ceil,
+        'fast_min': math.floor,
+        'slow_max': math.ceil,
+        'slow_min': math.floor,
+        }[corner]
+
     print('Writing results')
     zeros = 0
     with open(outfn, 'w') as fout:
@@ -34,10 +41,11 @@ def save(outfn, xvals, names, corner):
                 print('WARNING: near 0 delay on %s: %0.6f' % (name, xval))
                 zeros += 1
                 #continue
-            items = [str(row_ico), acorner2csv(math.ceil(xval), corneri)]
+            items = [str(row_ico), acorner2csv(roundf(xval), corneri)]
             items.append('%u %s' % (1, name))
             fout.write(','.join(items) + '\n')
-    print('Wrote: zeros %u => %u / %u constrained delays' % (zeros, len(names) - zeros, len(names)))
+    nonzeros = len(names) - zeros
+    print('Wrote: %u / %u constrained delays, %u zeros' % (nonzeros, len(names), zeros))
 
 def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
     if len(Anp) == 0:
@@ -45,6 +53,12 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
         if outfn:
             save(outfn, [], [], corner)
         return
+    maxcorner = {
+        'slow_max': True,
+        'slow_min': False,
+        'fast_max': True,
+        'fast_min': False,
+        }[corner]
 
     # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
@@ -54,28 +68,46 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
 
     '''
     Be mindful of signs
-    Have something like
-    timing1/timing 2 are constants
-    delay1 +   delay2 +               delay4     >= timing1
-               delay2 +   delay3                 >= timing2
+    t1, t2: total delay contants
+    d1, d2..: variables to solve for
+
+    Max corner intuitive form:
+    d1 + d2 +     d4 >= t1
+         d2 + d3     >= t2
 
     But need it in compliant form:
-    -delay1 +   -delay2 +               -delay4     <= -timing1
-                -delay2 +   -delay3                 <= -timing2
+    -d1 + -d2 +      -d4 <= -t1
+          -d2 + -d3      <= -t2
+    Minimize delay elements
+
+
+    Min corner intuitive form:
+    d1 + d2 +     d4 <= t1
+         d2 + d3     <= t2
+    Maximize delay elements
     '''
-    assert 'max' in corner, 'FIXME: support min corner math'
 
     rows = len(Anp)
     cols = len(Anp[0])
-    print('Scaling to solution form...')
-    b_ub = -1.0 * b
-    #A_ub = -1.0 * Anp
-    A_ub = [-1.0 * x for x in Anp]
+    if maxcorner:
+        print('maxcorner => scaling to solution form...')
+        b_ub = -1.0 * b
+        #A_ub = -1.0 * Anp
+        A_ub = [-1.0 * x for x in Anp]
+    else:
+        print('mincorner => no scaling required')
+        b_ub = b
+        A_ub = Anp
 
     print('Creating misc constants...')
     # Minimization function scalars
     # Treat all logic elements as equally important
-    c = [1 for _i in range(len(names))]
+    if maxcorner:
+        # Best result are min delays
+        c = [1 for _i in range(len(names))]
+    else:
+        # Best result are max delays
+        c = [-1 for _i in range(len(names))]
     # Delays cannot be negative
     # (this is also the default constraint)
     #bounds =  [(0, None) for _i in range(len(names))]
