@@ -111,17 +111,12 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
     # however, I wanted to do some filtering based on expected form
     if sub_csv:
         Ads2, b2 = loadc_Ads_b([sub_csv], corner, ico=True)
-        if 0:
-            Ads = Ads + Ads2
-            b = b + b2
-        else:
-            bounds = Ads2bounds(Ads2, b2)
-            rows_old = len(Ads)
-            Ads, b = filter_bounds(Ads, b, bounds)
-            print('Filter bounds: %s => %s rows' % (rows_old, len(Ads)))
-            if 1:
-                Ads = Ads + Ads2
-                b = b + b2
+        bounds = Ads2bounds(Ads2, b2)
+        rows_old = len(Ads)
+        Ads, b = filter_bounds(Ads, b, bounds)
+        print('Filter bounds: %s => %s rows' % (rows_old, len(Ads)))
+        Ads = Ads + Ads2
+        b = b + b2
 
     if verbose:
         print
