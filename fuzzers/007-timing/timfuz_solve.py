@@ -106,9 +106,11 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
     else:
         names = index_names(Ads)
 
-    # post substitution csv
-    # actually this might not be strictly necessary since subs would just not apply
-    # however, I wanted to do some filtering based on expected form
+    '''
+    Substitution .csv
+    Special .csv containing one variable per line
+    Used primarily for multiple optimization passes, such as different algorithms or additional constraints
+    '''
     if sub_csv:
         Ads2, b2 = loadc_Ads_b([sub_csv], corner, ico=True)
         bounds = Ads2bounds(Ads2, b2)

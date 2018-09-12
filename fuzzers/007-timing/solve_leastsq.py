@@ -20,15 +20,51 @@ import scipy.optimize as optimize
 from scipy.optimize import least_squares
 
 def mkestimate(Anp, b):
+    '''
+    Ballpark upper bound estimate assuming variables contribute all of the delay in their respective row
+    Return the min of all of the occurances
+
+    XXX: should this be corner adjusted?
+    '''
     cols = len(Anp[0])
     x0 = np.array([1e3 for _x in range(cols)])
     for row_np, row_b in zip(Anp, b):
         for coli, val in enumerate(row_np):
             if val:
+                # Scale by number occurances
                 ub = row_b / val
                 if ub >= 0:
                     x0[coli] = min(x0[coli], ub)
     return x0
+
+def save(outfn, res, names):
+    # ballpark minimum actual observed delay is around 7 (carry chain)
+    # anything less than one is probably a solver artifact
+    delta = 0.5
+
+    print('Writing resutls')
+    skips = 0
+    with open(outfn, 'w') as fout:
+        # write as one variable per line
+        # this natively forms a bound if fed into linprog solver
+        fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
+        for xval, name in zip(res.x, names):
+            row_ico = 1
+
+            # FIXME: only report for the given corner?
+            # also review ceil vs floor choice for min vs max
+            # lets be more conservative for now
+            if xval < delta:
+                #print('Skipping %s: %0.6f' % (name, xval))
+                skips += 1
+                continue
+            #xvali = round(xval)
+            xvali = math.ceil(xval)
+            corners = [xvali for _ in range(4)]
+            items = [str(row_ico), ' '.join([str(x) for x in corners])]
+            items.append('%u %s' % (1, name))
+            fout.write(','.join(items) + '\n')
+    print('Wrote: skip %u => %u / %u valid delays' % (skips, len(names) - skips, len(names)))
 
 def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     # Given timing scores for above delays (-ps)
@@ -93,59 +129,20 @@ def run_corner(Anp, b, names, verbose=False, opts={}, meta={}, outfn=None):
     #x0 = np.array([1000.0 for _x in range(cols)])
     print('Creating x0 estimate')
     x0 = mkestimate(Anp, b)
-    #print('x0', x0)
 
-    if 0:
-        x, cov_x, infodict, mesg, ier = optimize.leastsq(func, x0, args=(), full_output=True)
-        print('x', x)
-        print('cov_x', cov_x)
-        print('infodictx', infodict)
-        print('mesg', mesg)
-        print('ier', ier)
-        print('  Solution found: %s' % (ier in (1, 2, 3, 4)))
-    else:
-        print('Solving')
-        res = least_squares(func, x0, bounds=(0, float('inf')))
-        if 0:
-            print(res)
-            print('')
-            print(res.x)
-        print('Done')
-        if outfn:
-            # ballpark minimum actual observed delay is around 7 (carry chain)
-            # anything less than one is probably a solver artifact
-            delta = 0.5
+    print('Solving')
+    res = least_squares(func, x0, bounds=(0, float('inf')))
+    print('Done')
 
-            print('Writing resutls')
-            skips = 0
-            with open(outfn, 'w') as fout:
-                # write as one variable per line
-                # this natively forms a bound if fed into linprog solver
-                fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-                for xval, name in zip(res.x, names):
-                    row_ico = 1
-
-                    # FIXME: only report for the given corner?
-                    # also review ceil vs floor choice for min vs max
-                    # lets be more conservative for now
-                    if xval < delta:
-                        #print('Skipping %s: %0.6f' % (name, xval))
-                        skips += 1
-                        continue
-                    #xvali = round(xval)
-                    xvali = math.ceil(xval)
-                    corners = [xvali for _ in range(4)]
-                    items = [str(row_ico), ' '.join([str(x) for x in corners])]
-                    items.append('%u %s' % (1, name))
-                    fout.write(','.join(items) + '\n')
-            print('Wrote: skip %u => %u / %u valid delays' % (skips, len(names) - skips, len(names)))
+    if outfn:
+        save(outfn, res, names)
 
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(
         description=
-        'Solve timing solution'
+        'Solve timing solution using least squares objective function'
     )
 
     parser.add_argument('--verbose', action='store_true', help='')

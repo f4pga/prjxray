@@ -140,7 +140,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=
-        'Solve timing solution'
+        'Solve timing solution using linear programming inequalities'
     )
 
     parser.add_argument('--verbose', action='store_true', help='')
