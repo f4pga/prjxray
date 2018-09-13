@@ -8,6 +8,7 @@ CSVS := $(addsuffix /timing3.csv,$(SPECIMENS))
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
 RREF_CORNER=slow_max
 ALLOW_ZERO_EQN?=N
+BADPRJ_OK?=N
 
 TILEA_JSONS=build/fast_max/tilea.json build/fast_min/tilea.json build/slow_max/tilea.json build/slow_min/tilea.json
 
@@ -28,7 +29,7 @@ slow_max: build/slow_max/tilea.json
 slow_min: build/slow_min/tilea.json
 
 $(SPECIMENS_OK):
-	bash generate.sh $(subst /OK,,$@)
+	bash generate.sh $(subst /OK,,$@) || (if [ "$(BADPRJ_OK)" != 'Y' ] ; then exit 1; fi; exit 0)
 	touch $@
 
 run:
@@ -43,18 +44,31 @@ clean:
 
 .PHONY: all run clean
 
-# rref should be the same regardless of corner
+# Normally require all projects to complete
+# If BADPRJ_OK is allowed, only take projects that were successful
+# FIXME: couldn't get call to work
+exist_csvs = \
+        for f in $(CSVS); do \
+            if [ "$(BADPRJ_OK)" != 'Y' -o -f $$f ] ; then \
+                echo $$f; \
+            fi; \
+        done
 
+# rref should be the same regardless of corner
 build/sub.json: $(SPECIMENS_OK)
 	mkdir -p build
 	# Discover which variables can be separated
 	# This is typically the longest running operation
-	python3 $(TIMFUZ_DIR)/rref.py --corner $(RREF_CORNER) --simplify --out build/sub.json.tmp $(CSVS)
+	\
+	    csvs=$$(for f in $(CSVS); do if [ "$(BADPRJ_OK)" != 'Y' -o -f $$f ] ; then echo $$f; fi; done) ; \
+	    python3 $(TIMFUZ_DIR)/rref.py --corner $(RREF_CORNER) --simplify --out build/sub.json.tmp $$csvs
 	mv build/sub.json.tmp build/sub.json
 
 build/grouped.csv: $(SPECIMENS_OK) build/sub.json
 	# Separate variables
-	python3 $(TIMFUZ_DIR)/csv_flat2group.py --sub-json build/sub.json --strict --out build/grouped.csv.tmp $(CSVS)
+	\
+	    csvs=$$(for f in $(CSVS); do if [ "$(BADPRJ_OK)" != 'Y' -o -f $$f ] ; then echo $$f; fi; done) ; \
+	    python3 $(TIMFUZ_DIR)/csv_flat2group.py --sub-json build/sub.json --strict --out build/grouped.csv.tmp $$csvs
 	mv build/grouped.csv.tmp build/grouped.csv
 
 build/checksub: build/grouped.csv build/sub.json

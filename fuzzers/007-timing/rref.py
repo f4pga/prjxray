@@ -221,7 +221,7 @@ def main():
     parser.add_argument('--out', help='Output sub.json substitution result')
     parser.add_argument(
         'fns_in',
-        nargs='*',
+        nargs='+',
         help='timing3.txt input files')
     args = parser.parse_args()
     bench = Benchmark()

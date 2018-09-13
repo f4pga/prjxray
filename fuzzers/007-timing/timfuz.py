@@ -187,15 +187,11 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
         eqns[rowt] = minmax(eqns.get(rowt, T_UNK), b)
 
     print(' done')
+
+    print('Simplify rows: %d => %d rows w/ zd %d, ze %d' % (len(b_ub), len(eqns), zero_ds, zero_es))
     if len(eqns) == 0:
         raise SimplifiedToZero()
-
-    #A_ub_ret = eqns.keys()
     A_ubd_ret, b_ub_ret = Ab_ub_dt2d(eqns)
-
-    print('Simplify rows: %d => %d rows w/ zd %d, ze %d' % (len(b_ub), len(b_ub_ret), zero_ds, zero_es))
-    #return A_ub_ret, b_ub_ret
-    #return A_ub_np2d(A_ub_ret), b_ub_ret
     return A_ubd_ret, b_ub_ret
 
 def A_ubr_np2d(row):

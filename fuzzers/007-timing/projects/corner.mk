@@ -3,6 +3,7 @@
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
 CORNER=slow_max
 ALLOW_ZERO_EQN?=N
+BADPRJ_OK?=N
 
 all: build/$(CORNER)/tilea.json
 
