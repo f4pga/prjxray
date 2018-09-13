@@ -13,18 +13,10 @@ Currently this document focuses exclusively on fabric timing delays.
 ## Quick start
 
 ```
-pushd speed
 make
-popd
-
-pushd timgrid
-make
-popd
-
-pushd projects/placelut
-make N=1
-popd
 ```
+
+This will take a relatively long time (say 45 min) and generate build/tilea.json
 
 
 ## Vivado background

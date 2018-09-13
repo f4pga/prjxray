@@ -12,7 +12,7 @@ BADPRJ_OK?=N
 
 TILEA_JSONS=build/fast_max/tilea.json build/fast_min/tilea.json build/slow_max/tilea.json build/slow_min/tilea.json
 
-all: $(TILEA_JSONS)
+all: build/tilea.json
 
 # make build/checksub first
 build/fast_max/tilea.json: build/checksub
@@ -75,4 +75,7 @@ build/checksub: build/grouped.csv build/sub.json
 	# Verify sub.json makes a cleanly solvable solution with no non-pivot leftover
 	python3 $(TIMFUZ_DIR)/checksub.py --sub-json build/sub.json build/grouped.csv
 	touch build/checksub
+
+build/tilea.json: $(TILEA_JSONS)
+	python3 $(TIMFUZ_DIR)/tile_combine.py --out build/tilea.json $(TILEA_JSONS)
 
