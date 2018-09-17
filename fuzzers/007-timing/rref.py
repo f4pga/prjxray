@@ -14,28 +14,12 @@ from collections import OrderedDict
 from fractions import Fraction
 
 
-def fracr(r):
-    DELTA = 0.0001
-
-    for i, x in enumerate(r):
-        if type(x) is float:
-            xi = int(x)
-            assert abs(xi - x) < DELTA
-            r[i] = xi
-    return [Fraction(x) for x in r]
-
-
-def fracm(m):
-    return [fracr(r) for r in m]
-
-
 def fracr_quick(r):
     return [Fraction(numerator=int(x), denominator=1) for x in r]
 
 
-# the way I'm doing thing they should all be even integers
-# hmm this was only slightly faster
 def fracm_quick(m):
+    '''Convert integer matrix to Fraction matrix'''
     t = type(m[0][0])
     print('fracm_quick type: %s' % t)
     return [fracr_quick(r) for r in m]
@@ -149,7 +133,6 @@ def state_rref(state, verbose=False):
     #msym = sympy.MutableSparseMatrix(mfrac)
     msym = sympy.Matrix(mfrac)
     # internal encoding has significnat performance implications
-    #print(type(msym[3]))
     #assert type(msym[0]) is sympy.Integer
 
     if verbose:
@@ -221,7 +204,10 @@ def run(fnout, fn_ins, simplify=False, corner=None, verbose=0):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Timing fuzzer')
+    parser = argparse.ArgumentParser(
+        description=
+        'Compute reduced row echelon (RREF) to form sub.json (variable groups)'
+    )
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--simplify', action='store_true', help='')
@@ -231,13 +217,9 @@ def main():
         default='build_speed/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('--out', help='Output sub.json substitution result')
-    parser.add_argument('fns_in', nargs='+', help='timing3.txt input files')
+    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
     args = parser.parse_args()
     bench = Benchmark()
-
-    fns_in = args.fns_in
-    if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3.csv')
 
     try:
         run(

@@ -195,10 +195,10 @@ def main():
     parser.add_argument('--sub-csv', help='')
     parser.add_argument(
         '--sub-json', help='Group substitutions to make fully ranked')
-    parser.add_argument('--corner', default=None, required=True, help='')
+    parser.add_argument('--corner', required=True, default="slow_max", help='')
     parser.add_argument(
         '--out', default=None, help='output timing delay .json')
-    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
@@ -216,7 +216,7 @@ def main():
             run_corner=run_corner,
             sub_json=sub_json,
             sub_csv=args.sub_csv,
-            fns_in=fns_in,
+            fn_in=fn_in,
             corner=args.corner,
             massage=args.massage,
             outfn=args.out,

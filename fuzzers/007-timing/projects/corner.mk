@@ -37,7 +37,7 @@ build/$(CORNER)/linprog.csv: build/$(CORNER)/leastsq.csv build/grouped.csv
 
 build/$(CORNER)/flat.csv: build/$(CORNER)/linprog.csv
 	# Take separated variables and back-annotate them to the original timing variables
-	python3 $(TIMFUZ_DIR)/csv_group2flat.py --sub-json build/sub.json --corner $(CORNER) --sort build/$(CORNER)/linprog.csv build/$(CORNER)/flat.csv.tmp
+	python3 $(TIMFUZ_DIR)/csv_group2flat.py --sub-json build/sub.json --corner $(CORNER) --sort --out build/$(CORNER)/flat.csv.tmp build/$(CORNER)/linprog.csv
 	mv build/$(CORNER)/flat.csv.tmp build/$(CORNER)/flat.csv
 
 build/$(CORNER)/tilea.json: build/$(CORNER)/flat.csv

@@ -31,7 +31,7 @@ def main():
         '--auto-name', action='store_true', help='timing3.csv => timing3c.csv')
     parser.add_argument('--out', default=None, help='Output csv')
     parser.add_argument('--corner', help='Output csv')
-    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
     args = parser.parse_args()
     bench = Benchmark()
 

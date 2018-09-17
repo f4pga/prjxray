@@ -156,13 +156,16 @@ def main():
         'Solve timing solution using least squares objective function')
 
     parser.add_argument('--verbose', action='store_true', help='')
-    parser.add_argument('--massage', action='store_true', help='')
+    parser.add_argument(
+        '--massage',
+        action='store_true',
+        help='Derive additional constraints to improve solution')
     parser.add_argument(
         '--sub-json', help='Group substitutions to make fully ranked')
-    parser.add_argument('--corner', default="slow_max", help='')
+    parser.add_argument('--corner', required=True, default="slow_max", help='')
     parser.add_argument(
         '--out', default=None, help='output timing delay .json')
-    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', 'timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()

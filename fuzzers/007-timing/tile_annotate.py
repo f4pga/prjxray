@@ -9,16 +9,10 @@ import time
 import json
 
 
-# corner wokraround
-def quad(x):
-    return [x for _ in range(4)]
-
-
 def run(fnin, fnout, tile_json_fn, verbose=False):
     # modified in place
     tilej = json.load(open(tile_json_fn, 'r'))
 
-    # FIXME: all corners
     Ads, bs = loadc_Ads_bs([fnin], ico=True)
     bounds = Ads2bounds(Ads, bs)
 
@@ -71,9 +65,12 @@ def run(fnin, fnout, tile_json_fn, verbose=False):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='')
+    parser = argparse.ArgumentParser(
+        description=
+        'Substitute timgrid timing model names for real timing values')
     parser.add_argument('--tile-json', default='tiles.json', help='')
-    parser.add_argument('fnin', default=None, help='Flattened timing csv')
+    parser.add_argument(
+        'fnin', default=None, help='Input flattened timing csv (flat.json)')
     parser.add_argument('fnout', default=None, help='output tile .json')
     args = parser.parse_args()
 

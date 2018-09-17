@@ -34,7 +34,8 @@ def run(fns_in, fnout, sub_json, strict=False, verbose=False):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Solve timing solution')
+    parser = argparse.ArgumentParser(
+        description='Substitute .csv to group correlated symbols')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--strict', action='store_true', help='')
@@ -44,7 +45,7 @@ def main():
         required=True,
         help='Group substitutions to make fully ranked')
     parser.add_argument('--out', help='Output sub.json substitution result')
-    parser.add_argument('fns_in', nargs='*', help='timing3.txt input files')
+    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()

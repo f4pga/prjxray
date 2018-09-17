@@ -91,7 +91,7 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--out', help='Output csv')
-    parser.add_argument('fns_in', nargs='*', help='sub.json input files')
+    parser.add_argument('fns_in', nargs='+', help='sub.json input files')
     args = parser.parse_args()
     bench = Benchmark()
 

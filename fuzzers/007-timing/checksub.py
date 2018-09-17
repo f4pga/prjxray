@@ -108,11 +108,11 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Check sub.json solution feasibility')
+        description='Check if sub.json would make a linear equation solvable')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--sub-json', help='')
-    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()

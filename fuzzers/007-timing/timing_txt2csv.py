@@ -255,14 +255,15 @@ def main():
     )
 
     parser.add_argument('--verbose', type=int, help='')
+    # made a bulk conversion easier...keep?
     parser.add_argument(
         '--auto-name', action='store_true', help='timing3.txt => timing3.csv')
     parser.add_argument(
         '--speed-json',
         default='build_speed/speed.json',
         help='Provides speed index to name translation')
-    parser.add_argument('--out', default=None, help='Output csv')
-    parser.add_argument('fns_in', nargs='*', help='timing3.txt input files')
+    parser.add_argument('--out', default=None, help='Output timing3.csv file')
+    parser.add_argument('fns_in', nargs='+', help='Input timing3.txt files')
     args = parser.parse_args()
     bench = Benchmark()
 
@@ -274,6 +275,8 @@ def main():
             fnout = fnin.replace('.txt', '.csv')
             assert fnout != fnin, 'Expect .txt in'
         else:
+            # practically there are too many stray prints to make this work as expected
+            assert 0, 'File name required'
             fnout = '/dev/stdout'
     print("Writing to %s" % fnout)
     fout = open(fnout, 'w')
