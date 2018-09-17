@@ -333,83 +333,12 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
     return Ads_ret, b_ret
 
 
-# keep derriving until solution is (probably) stable
-def massage_equations_old(Ads, b, verbose=False, derive_lim=3, corner=None):
-    '''
-    Equation pipeline
-    Some operations may generate new equations
-    Simplify after these to avoid unnecessary overhead on redundant constraints
-    Similarly some operations may eliminate equations, potentially eliminating a column (ie variable)
-    Remove these columns as necessary to speed up solving
-    '''
-
-    def debug(what):
-        if verbose:
-            print('')
-            print_eqns(Ads, b, verbose=verbose, label=what, lim=20)
-            col_dist(Ads, what)
-            check_feasible_d(Ads, b)
-
-    # Try to (intelligently) subtract equations to generate additional constraints
-    # This helps avoid putting all delay in a single shared variable
-    dstart = len(b)
-
-    # Original simple
-    for di in range(derive_lim):
-        print
-        assert len(Ads) == len(b)
-        n_orig = len(b)
-
-        # Meat of the operation
-        # Focus on easy equations for first pass to get a lot of easy derrivations
-        col_lim = 12 if di == 0 else None
-        #col_lim = None
-        Ads, b = derive_eq_by_row(Ads, b, col_lim=col_lim)
-        debug("der_rows")
-        # Run another simplify pass since new equations may have overlap with original
-        Ads, b = simplify_rows(Ads, b, corner=corner)
-        print(
-            'Derive row %d / %d: %d => %d equations' %
-            (di + 1, derive_lim, n_orig, len(b)))
-        debug("der_rows simp")
-
-        n_orig2 = len(b)
-        # Meat of the operation
-        Ads, b = derive_eq_by_col(Ads, b)
-        debug("der_cols")
-        # Run another simplify pass since new equations may have overlap with original
-        Ads, b = simplify_rows(Ads, b, corner=corner)
-        print(
-            'Derive col %d / %d: %d => %d equations' %
-            (di + 1, derive_lim, n_orig2, len(b)))
-        debug("der_cols simp")
-
-        if n_orig == len(b):
-            break
-
-    dend = len(b)
-    print('')
-    print('Derive net: %d => %d' % (dstart, dend))
-    print('')
-    # Was experimentting to see how much the higher order columns really help
-    '''
-    cols_min_post = opts.get('cols_min_post', None)
-    cols_max_post = opts.get('cols_max_post', None)
-    # Filter input based on number of columns
-    if cols_min_post or cols_max_post:
-        Ads, b = filter_ncols(Ads=Ads, b=b, cols_min=cols_min_post, cols_max=cols_max_post)
-        debug("filter_ncals final")
-    '''
-
-    # Helps debug readability
-    Ads, b = sort_equations(Ads, b)
-    debug("final (sorted)")
-    return Ads, b
-
-
 # iteratively increasing column limit until all columns are added
-def massage_equations_inc_col_lim(Ads, b, verbose=False, corner=None):
+def massage_equations(Ads, b, verbose=False, corner=None):
     '''
+    Subtract equations from each other to generate additional constraints
+    Helps provide additional guidance to solver for realistic delays
+
     Equation pipeline
     Some operations may generate new equations
     Simplify after these to avoid unnecessary overhead on redundant constraints
@@ -463,6 +392,7 @@ def massage_equations_inc_col_lim(Ads, b, verbose=False, corner=None):
         col_dist(Ads, 'derive done iter %d, lim %d' % (di, col_lim), lim=12)
 
         rows = len(Ads)
+        # possible that a new equation was generated and taken away, but close enough
         if n_orig == len(b) and col_lim >= cols:
             break
         col_lim += col_lim / 5
@@ -480,72 +410,3 @@ def massage_equations_inc_col_lim(Ads, b, verbose=False, corner=None):
     print('')
     print('Massage final: %d => %d rows' % (dstart, dend))
     return Ads, b
-
-
-# only derive based on nearby equations
-# theory is they will be the best to diff
-def massage_equations_near(Ads, b, verbose=False, corner=None):
-    '''
-    Equation pipeline
-    Some operations may generate new equations
-    Simplify after these to avoid unnecessary overhead on redundant constraints
-    Similarly some operations may eliminate equations, potentially eliminating a column (ie variable)
-    Remove these columns as necessary to speed up solving
-    '''
-
-    def debug(what):
-        if verbose:
-            print('')
-            print_eqns(Ads, b, verbose=verbose, label=what, lim=20)
-            col_dist(Ads, what)
-            check_feasible_d(Ads, b)
-
-    # Try to (intelligently) subtract equations to generate additional constraints
-    # This helps avoid putting all delay in a single shared variable
-    dstart = len(b)
-    cols = len(index_names(Ads))
-
-    # Each iteration one more column is allowed until all columns are included
-    # (and the system is stable)
-    print
-    n_orig = len(b)
-
-    # Meat of the operation
-    Ads, b = derive_eq_by_near_row(Ads, b, tweak=True)
-    debug("der_rows")
-    # Run another simplify pass since new equations may have overlap with original
-    Ads, b = simplify_rows(Ads, b, corner=corner)
-    print('Derive row: %d => %d equations' % (n_orig, len(b)))
-    debug("der_rows simp")
-
-    n_orig2 = len(b)
-    # Meat of the operation
-    Ads, b = derive_eq_by_col(Ads, b)
-    debug("der_cols")
-    # Run another simplify pass since new equations may have overlap with original
-    Ads, b = simplify_rows(Ads, b, corner=corner)
-    print('Derive col: %d => %d equations' % (n_orig2, len(b)))
-    debug("der_cols simp")
-
-    # Doesn't help computation, but helps debugging
-    Ads, b = sort_equations(Ads, b)
-    debug("loop done")
-    col_dist(Ads, 'derive done', lim=12)
-
-    rows = len(Ads)
-
-    dend = len(b)
-    print('')
-    print('Derive net: %d => %d' % (dstart, dend))
-    print('')
-    # Was experimentting to see how much the higher order columns really help
-
-    # Helps debug readability
-    Ads, b = sort_equations(Ads, b)
-    debug("final (sorted)")
-    print('')
-    print('Massage final: %d => %d rows' % (dstart, dend))
-    return Ads, b
-
-
-massage_equations = massage_equations_inc_col_lim
