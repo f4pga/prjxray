@@ -2,6 +2,7 @@
 
 from timfuz import Benchmark, loadc_Ads_bs, index_names, load_sub, run_sub_json, instances
 
+
 def gen_group(fnin, sub_json, strict=False, verbose=False):
     print('Loading data')
     Ads, bs = loadc_Ads_bs([fnin], ico=True)
@@ -17,6 +18,7 @@ def gen_group(fnin, sub_json, strict=False, verbose=False):
     for row_ds, row_bs in zip(Ads, bs):
         yield row_ds, row_bs
 
+
 def run(fns_in, fnout, sub_json, strict=False, verbose=False):
     with open(fnout, 'w') as fout:
         fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
@@ -28,23 +30,21 @@ def run(fns_in, fnout, sub_json, strict=False, verbose=False):
                     items.append('%u %s' % (v, k))
                 fout.write(','.join(items) + '\n')
 
+
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        'Solve timing solution'
-    )
+    parser = argparse.ArgumentParser(description='Solve timing solution')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--strict', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
-    parser.add_argument('--sub-json', required=True, help='Group substitutions to make fully ranked')
-    parser.add_argument('--out', help='Output sub.json substitution result')
     parser.add_argument(
-        'fns_in',
-        nargs='*',
-        help='timing3.txt input files')
+        '--sub-json',
+        required=True,
+        help='Group substitutions to make fully ranked')
+    parser.add_argument('--out', help='Output sub.json substitution result')
+    parser.add_argument('fns_in', nargs='*', help='timing3.txt input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
@@ -52,9 +52,15 @@ def main():
     sub_json = load_sub(args.sub_json)
 
     try:
-        run(args.fns_in, args.out, sub_json=sub_json, strict=args.strict, verbose=args.verbose)
+        run(
+            args.fns_in,
+            args.out,
+            sub_json=sub_json,
+            strict=args.strict,
+            verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
+
 
 if __name__ == '__main__':
     main()

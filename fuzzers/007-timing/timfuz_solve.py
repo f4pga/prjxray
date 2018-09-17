@@ -15,6 +15,7 @@ import datetime
 import os
 import time
 
+
 def check_feasible(A_ub, b_ub):
     '''
     Put large timing constants into the equations
@@ -31,7 +32,6 @@ def check_feasible(A_ub, b_ub):
     cols = len(A_ub[0])
 
     progress = max(1, rows / 100)
-
     '''
     Delays should be in order of ns, so a 10 ns delay should be way above what anything should be
     Series can have several hundred delay elements
@@ -56,6 +56,7 @@ def check_feasible(A_ub, b_ub):
                 this += A_ub[row][col] * xs[col]
             ret[row] = this
         return ret
+
     b_res = my_mul(A_ub, xs)
 
     # Verify bound was respected
@@ -64,9 +65,12 @@ def check_feasible(A_ub, b_ub):
             sys.stdout.write('.')
             sys.stdout.flush()
         if this_b >= this_b_ub or this_b > 0:
-            print('% 4d Want res % 10.1f <= % 10.1f <= 0' % (rowi, this_b, this_b_ub))
+            print(
+                '% 4d Want res % 10.1f <= % 10.1f <= 0' %
+                (rowi, this_b, this_b_ub))
             raise Exception("Bad ")
     print(' done')
+
 
 def filter_bounds(Ads, b, bounds, corner):
     '''Given min variable delays, remove rows that won't constrain solution'''
@@ -76,11 +80,13 @@ def filter_bounds(Ads, b, bounds, corner):
         # Keep delays possibly larger than current bound
         def keep(row_b, est):
             return row_b > est
+
         T_UNK = 0
     elif 'min' in corner:
         # Keep delays possibly smaller than current bound
         def keep(row_b, est):
             return row_b < est
+
         T_UNK = 1e9
     else:
         assert 0
@@ -96,7 +102,18 @@ def filter_bounds(Ads, b, bounds, corner):
             ret_b.append(row_b)
     return ret_Ads, ret_b
 
-def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, massage=False, outfn=None, verbose=False, **kwargs):
+
+def run(
+        fns_in,
+        corner,
+        run_corner,
+        sub_json=None,
+        sub_csv=None,
+        dedup=True,
+        massage=False,
+        outfn=None,
+        verbose=False,
+        **kwargs):
     print('Loading data')
     Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
 
@@ -120,7 +137,6 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
         print('Sub: %u => %u instances' % (iold, instances(Ads)))
     else:
         names = index_names(Ads)
-
     '''
     Substitution .csv
     Special .csv containing one variable per line
@@ -132,7 +148,9 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
         assert len(bounds), 'Failed to load bounds'
         rows_old = len(Ads)
         Ads, b = filter_bounds(Ads, b, bounds, corner)
-        print('Filter bounds: %s => %s + %s rows' % (rows_old, len(Ads), len(Ads2)))
+        print(
+            'Filter bounds: %s => %s + %s rows' %
+            (rows_old, len(Ads), len(Ads2)))
         Ads = Ads + Ads2
         b = b + b2
         assert len(Ads) or allow_zero_eqns()
@@ -145,7 +163,6 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
         #print
         #col_dist(A_ubd, 'final', names)
     print('b10', b[0:100])
-
     '''
     Given:
     a >= 10
@@ -169,4 +186,11 @@ def run(fns_in, corner, run_corner, sub_json=None, sub_csv=None, dedup=True, mas
 
     print('Converting to numpy...')
     names, Anp = A_ds2np(Ads)
-    run_corner(Anp, np.asarray(b), names, corner, outfn=outfn, verbose=verbose, **kwargs)
+    run_corner(
+        Anp,
+        np.asarray(b),
+        names,
+        corner,
+        outfn=outfn,
+        verbose=verbose,
+        **kwargs)

@@ -1,5 +1,6 @@
 import json
 
+
 def load_speed(fin):
     speed_models = {}
     speed_types = {}
@@ -9,9 +10,9 @@ def load_speed(fin):
         for kvs in l.split():
             name, value = kvs.split(':')
             name = name.lower()
-            if name in ('class',):
+            if name in ('class', ):
                 continue
-            if name in ('speed_index',):
+            if name in ('speed_index', ):
                 value = int(value)
             if name == 'type':
                 speed_types.setdefault(value, {})
@@ -38,6 +39,7 @@ def load_speed(fin):
         speed_models[delayk] = delay
     return speed_models, speed_types
 
+
 def load_cost_code(fin):
     # COST_CODE:4 COST_CODE_NAME:SLOWSINGLE
     cost_codes = {}
@@ -53,10 +55,11 @@ def load_cost_code(fin):
             'code': int(lj['cost_code']),
             # Hmm is this unique per type?
             #'speed_class': int(lj['speed_class']),
-            }
-        
+        }
+
         cost_codes[cost_code['name']] = cost_code
     return cost_codes
+
 
 def run(speed_fin, node_fin, fout, verbose=0):
     print('Loading data')
@@ -67,32 +70,25 @@ def run(speed_fin, node_fin, fout, verbose=0):
         'speed_model': speed_models,
         'speed_type': speed_types,
         'cost_code': cost_codes,
-        }
+    }
     json.dump(j, fout, sort_keys=True, indent=4, separators=(',', ': '))
+
 
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        'Timing fuzzer'
-    )
+    parser = argparse.ArgumentParser(description='Timing fuzzer')
 
     parser.add_argument('--verbose', type=int, help='')
     parser.add_argument(
-        'speed_fn_in',
-        default='/dev/stdin',
-        nargs='?',
-        help='Input file')
+        'speed_fn_in', default='/dev/stdin', nargs='?', help='Input file')
     parser.add_argument(
-        'node_fn_in',
-        default='/dev/stdin',
-        nargs='?',
-        help='Input file')
+        'node_fn_in', default='/dev/stdin', nargs='?', help='Input file')
     parser.add_argument(
-        'fn_out',
-        default='/dev/stdout',
-        nargs='?',
-        help='Output file')
+        'fn_out', default='/dev/stdout', nargs='?', help='Output file')
     args = parser.parse_args()
-    run(open(args.speed_fn_in, 'r'), open(args.node_fn_in, 'r'), open(args.fn_out, 'w'), verbose=args.verbose)
+    run(
+        open(args.speed_fn_in, 'r'),
+        open(args.node_fn_in, 'r'),
+        open(args.fn_out, 'w'),
+        verbose=args.verbose)

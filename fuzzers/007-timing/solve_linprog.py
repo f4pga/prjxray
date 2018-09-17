@@ -12,6 +12,7 @@ import os
 import time
 import timfuz_solve
 
+
 def save(outfn, xvals, names, corner):
     # ballpark minimum actual observed delay is around 7 (carry chain)
     # anything less than one is probably a solver artifact
@@ -23,7 +24,7 @@ def save(outfn, xvals, names, corner):
         'fast_min': math.floor,
         'slow_max': math.ceil,
         'slow_min': math.floor,
-        }[corner]
+    }[corner]
 
     print('Writing results')
     zeros = 0
@@ -45,9 +46,13 @@ def save(outfn, xvals, names, corner):
             items.append('%u %s' % (1, name))
             fout.write(','.join(items) + '\n')
     nonzeros = len(names) - zeros
-    print('Wrote: %u / %u constrained delays, %u zeros' % (nonzeros, len(names), zeros))
+    print(
+        'Wrote: %u / %u constrained delays, %u zeros' %
+        (nonzeros, len(names), zeros))
 
-def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
+
+def run_corner(
+        Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
     if len(Anp) == 0:
         print('WARNING: zero equations')
         if outfn:
@@ -58,14 +63,13 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
         'slow_min': False,
         'fast_max': True,
         'fast_min': False,
-        }[corner]
+    }[corner]
 
     # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
     assert type(b) is np.ndarray, type(b)
 
     #check_feasible(Anp, b)
-
     '''
     Be mindful of signs
     t1, t2: total delay contants
@@ -133,6 +137,7 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
     tlast = [time.time()]
     iters = [0]
     printn = [0]
+
     def callback(xk, **kwargs):
         iters[0] = kwargs['nit']
         if time.time() - tlast[0] > 1.0:
@@ -147,8 +152,18 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
     # Now find smallest values for delay constants
     # Due to input bounds (ex: column limit), some delay elements may get eliminated entirely
     print('Running linprog w/ %d r, %d c (%d name)' % (rows, cols, len(names)))
-    res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, callback=callback,
-          options={"disp": True, 'maxiter': maxiter, 'bland': True, 'tol': 1e-6,})
+    res = linprog(
+        c,
+        A_ub=A_ub,
+        b_ub=b_ub,
+        bounds=bounds,
+        callback=callback,
+        options={
+            "disp": True,
+            'maxiter': maxiter,
+            'bland': True,
+            'tol': 1e-6,
+        })
     nonzeros = 0
     print('Ran %d iters' % iters[0])
     if res.success:
@@ -159,31 +174,31 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
             if nonzero:
                 nonzeros += 1
             #if nonzero and (verbose >= 1 or xi > 30):
-            if nonzero and (verbose or ((nonzeros < 100 or nonzeros % 20 == 0) and nonzeros <= plim)):
+            if nonzero and (verbose or (
+                (nonzeros < 100 or nonzeros % 20 == 0) and nonzeros <= plim)):
                 print('  % 4u % -80s % 10.1f' % (xi, name, x))
         print('Delay on %d / %d' % (nonzeros, len(res.x)))
 
         if outfn:
             save(outfn, res.x, names, corner)
 
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(
         description=
-        'Solve timing solution using linear programming inequalities'
-    )
+        'Solve timing solution using linear programming inequalities')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--massage', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
-    parser.add_argument('--sub-json', help='Group substitutions to make fully ranked')
-    parser.add_argument('--corner', default=None, required=True, help='')
-    parser.add_argument('--out', default=None, help='output timing delay .json')
     parser.add_argument(
-        'fns_in',
-        nargs='*',
-        help='timing3.csv input files')
+        '--sub-json', help='Group substitutions to make fully ranked')
+    parser.add_argument('--corner', default=None, required=True, help='')
+    parser.add_argument(
+        '--out', default=None, help='output timing delay .json')
+    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
@@ -197,10 +212,18 @@ def main():
         sub_json = load_sub(args.sub_json)
 
     try:
-        timfuz_solve.run(run_corner=run_corner, sub_json=sub_json, sub_csv=args.sub_csv,
-            fns_in=fns_in, corner=args.corner, massage=args.massage, outfn=args.out, verbose=args.verbose)
+        timfuz_solve.run(
+            run_corner=run_corner,
+            sub_json=sub_json,
+            sub_csv=args.sub_csv,
+            fns_in=fns_in,
+            corner=args.corner,
+            massage=args.massage,
+            outfn=args.out,
+            verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
+
 
 if __name__ == '__main__':
     main()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 '''
 Note: vivado will (by default) fail bitgen DRC on LUT feedback loops
 Looks like can probably be disabled, but we actually don't need a bitstream for timing analysis
@@ -18,7 +17,6 @@ parser = argparse.ArgumentParser(description='')
 parser.add_argument('--sdx', default='8', help='')
 parser.add_argument('--sdy', default='4', help='')
 args = parser.parse_args()
-
 '''
 Generate in pairs
 Fill up switchbox quad for now
@@ -38,15 +36,16 @@ nin = 6 * nlut
 nout = nlut
 
 print('//placelut w/ FF + feedback')
-print('//SBASE: %s' % (SBASE,))
-print('//SDX: %s' % (SDX,))
-print('//SDY: %s' % (SDX,))
-print('//nlut: %s' % (nlut,))
-print('''\
+print('//SBASE: %s' % (SBASE, ))
+print('//SDX: %s' % (SDX, ))
+print('//SDY: %s' % (SDX, ))
+print('//nlut: %s' % (nlut, ))
+print(
+    '''\
 module roi (
         input wire clk,
         input wire [%u:0] ins,
-        output wire [%u:0] outs);''') % (nin - 1, nout -1)
+        output wire [%u:0] outs);''') % (nin - 1, nout - 1)
 
 ini = 0
 outi = 0
@@ -56,7 +55,8 @@ for lutx in xrange(SBASE[0], SBASE[0] + SDX):
         for belc in 'ABCD':
             bel = '%c6LUT' % belc
             name = 'lut_x%uy%u_%c' % (lutx, luty, belc)
-            print('''\
+            print(
+                '''\
 
     (* KEEP, DONT_TOUCH, LOC="%s", BEL="%s" *)
     LUT6 #(
@@ -75,14 +75,15 @@ for lutx in xrange(SBASE[0], SBASE[0] + SDX):
         .I%u(%s),''' % (i, wfrom))
             out_w = name + '_o'
             print('''\
-        .O(%s));''') % (out_w,)
+        .O(%s));''') % (out_w, )
 
             outs_w = "outs[%u]" % outi
             if random.randint(0, 9) < 5:
                 print('    assign %s = %s;' % (outs_w, out_w))
             else:
                 out_r = name + '_or'
-                print('''\
+                print(
+                    '''\
     reg %s;
     assign %s = %s;
     always @(posedge clk) begin
@@ -94,7 +95,8 @@ for lutx in xrange(SBASE[0], SBASE[0] + SDX):
 #assert nin == ini
 assert nout == outi
 
-print('''
+print(
+    '''
 endmodule
 
 module top(input wire clk, input wire stb, input wire di, output wire do);
@@ -123,4 +125,3 @@ module top(input wire clk, input wire stb, input wire di, output wire do);
             .outs(dout)
             );
 endmodule''') % (nin, nout)
-

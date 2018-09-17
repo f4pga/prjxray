@@ -16,26 +16,29 @@ from fractions import Fraction
 
 from benchmark import Benchmark
 
-NAME_ZERO = set([
-            "BSW_CLK_ZERO",
-            "BSW_ZERO",
-            "B_ZERO",
-            "C_CLK_ZERO",
-            "C_DSP_ZERO",
-            "C_ZERO",
-            "I_ZERO",
-            "O_ZERO",
-            "RC_ZERO",
-            "R_ZERO",
-            ])
+NAME_ZERO = set(
+    [
+        "BSW_CLK_ZERO",
+        "BSW_ZERO",
+        "B_ZERO",
+        "C_CLK_ZERO",
+        "C_DSP_ZERO",
+        "C_ZERO",
+        "I_ZERO",
+        "O_ZERO",
+        "RC_ZERO",
+        "R_ZERO",
+    ])
 
 # csv index
-corner_s2i = OrderedDict([
-    ('fast_max', 0),
-    ('fast_min', 1),
-    ('slow_max', 2),
-    ('slow_min', 3),
+corner_s2i = OrderedDict(
+    [
+        ('fast_max', 0),
+        ('fast_min', 1),
+        ('slow_max', 2),
+        ('slow_min', 3),
     ])
+
 
 # Equations are filtered out until nothing is left
 class SimplifiedToZero(Exception):
@@ -45,6 +48,7 @@ class SimplifiedToZero(Exception):
 def allow_zero_eqns():
     return os.getenv('ALLOW_ZERO_EQN', 'N') == 'Y'
 
+
 def print_eqns(A_ubd, b_ub, verbose=0, lim=3, label=''):
     rows = len(b_ub)
 
@@ -52,13 +56,15 @@ def print_eqns(A_ubd, b_ub, verbose=0, lim=3, label=''):
     prints = 0
     #verbose = 1
     for rowi, row in enumerate(A_ubd):
-        if verbose or ((rowi < 10 or rowi % max(1, (rows / 20)) == 0) and (not lim or prints < lim)):
+        if verbose or ((rowi < 10 or rowi % max(1, (rows / 20)) == 0) and
+                       (not lim or prints < lim)):
             line = '  EQN: p%u: ' % rowi
             for k, v in sorted(row.items()):
                 line += '%u*t%d ' % (v, k)
             line += '= %d' % b_ub[rowi]
             print(line)
             prints += 1
+
 
 def print_name_eqns(A_ubd, b_ub, names, verbose=0, lim=3, label=''):
     rows = len(b_ub)
@@ -67,7 +73,8 @@ def print_name_eqns(A_ubd, b_ub, names, verbose=0, lim=3, label=''):
     prints = 0
     #verbose = 1
     for rowi, row in enumerate(A_ubd):
-        if verbose or ((rowi < 10 or rowi % max(1, (rows / 20)) == 0) and (not lim or prints < lim)):
+        if verbose or ((rowi < 10 or rowi % max(1, (rows / 20)) == 0) and
+                       (not lim or prints < lim)):
             line = '  EQN: p%u: ' % rowi
             for k, v in sorted(row.items()):
                 line += '%u*%s ' % (v, names[k])
@@ -75,18 +82,22 @@ def print_name_eqns(A_ubd, b_ub, names, verbose=0, lim=3, label=''):
             print(line)
             prints += 1
 
+
 def print_names(names, verbose=1):
     print('Names: %d' % len(names))
     for xi, name in enumerate(names):
         print('  % 4u % -80s' % (xi, name))
 
+
 def invb(b_ub):
     #return [-b for b in b_ub]
     return -np.array(b_ub)
 
+
 def check_feasible_d(A_ubd, b_ub, names):
     A_ub, b_ub_inv = Ab_d2np(A_ubd, b_ub, names)
     check_feasible(A_ub, b_ub_inv)
+
 
 def check_feasible(A_ub, b_ub):
     sys.stdout.write('Check feasible ')
@@ -118,6 +129,7 @@ def check_feasible(A_ub, b_ub):
                 this += A_ub[row][col] * xs[col]
             ret[row] = this
         return ret
+
     b_res = my_mul(A_ub, xs)
 
     # Verify bound was respected
@@ -126,9 +138,12 @@ def check_feasible(A_ub, b_ub):
             sys.stdout.write('.')
             sys.stdout.flush()
         if this_b >= this_b_ub or this_b > 0:
-            print('% 4d Want res % 10.1f <= % 10.1f <= 0' % (rowi, this_b, this_b_ub))
+            print(
+                '% 4d Want res % 10.1f <= % 10.1f <= 0' %
+                (rowi, this_b, this_b_ub))
             raise Exception("Bad ")
     print(' done')
+
 
 def Ab_ub_dt2d(eqns):
     '''Convert dict using the rows as keys into a list of dicts + b_ub list (ie return A_ub, b_ub)'''
@@ -136,6 +151,7 @@ def Ab_ub_dt2d(eqns):
     rows = [(dict(rowt), b) for rowt, b in eqns.items()]
     A_ubd, b_ub = zip(*rows)
     return list(A_ubd), list(b_ub)
+
 
 # This significantly reduces runtime
 def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
@@ -150,14 +166,14 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
         'fast_min': min,
         'slow_max': max,
         'slow_min': min,
-        }[corner]
+    }[corner]
     # An outlier to make unknown values be ignored
     T_UNK = {
         'fast_max': 0,
         'fast_min': 10e9,
         'slow_max': 0,
         'slow_min': 10e9,
-        }[corner]
+    }[corner]
 
     sys.stdout.write('SimpR ')
     sys.stdout.flush()
@@ -188,11 +204,14 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
 
     print(' done')
 
-    print('Simplify rows: %d => %d rows w/ zd %d, ze %d' % (len(b_ub), len(eqns), zero_ds, zero_es))
+    print(
+        'Simplify rows: %d => %d rows w/ zd %d, ze %d' %
+        (len(b_ub), len(eqns), zero_ds, zero_es))
     if len(eqns) == 0:
         raise SimplifiedToZero()
     A_ubd_ret, b_ub_ret = Ab_ub_dt2d(eqns)
     return A_ubd_ret, b_ub_ret
+
 
 def A_ubr_np2d(row):
     '''Convert a single row'''
@@ -203,12 +222,14 @@ def A_ubr_np2d(row):
             d[coli] = val
     return d
 
+
 def A_ub_np2d(A_ub):
     '''Convert A_ub entries in numpy matrix to dictionary / sparse form'''
     Adi = [None] * len(A_ub)
     for i, row in enumerate(A_ub):
         Adi[i] = A_ubr_np2d(row)
     return Adi
+
 
 def Ar_di2np(row_di, cols):
     rownp = np.zeros(cols)
@@ -217,36 +238,44 @@ def Ar_di2np(row_di, cols):
         rownp[coli] = val
     return rownp
 
+
 # NOTE: sign inversion
 def A_di2np(Adi, cols):
     '''Convert A_ub entries in dictionary / sparse to numpy matrix form'''
     return [Ar_di2np(row_di, cols) for row_di in Adi]
 
+
 def Ar_ds2t(rowd):
     '''Convert a dictionary row into a tuple with (column number, value) tuples'''
     return tuple(sorted(rowd.items()))
+
 
 def A_ubr_t2d(rowt):
     '''Convert a dictionary row into a tuple with (column number, value) tuples'''
     return OrderedDict(rowt)
 
+
 def A_ub_d2t(A_ubd):
     '''Convert rows as dicts to rows as tuples'''
     return [Ar_ds2t(rowd) for rowd in A_ubd]
 
+
 def A_ub_t2d(A_ubd):
     '''Convert rows as tuples to rows as dicts'''
     return [OrderedDict(rowt) for rowt in A_ubd]
+
 
 def Ab_d2np(A_ubd, b_ub, names):
     A_ub = A_di2np(A_ubd, len(names))
     b_ub_inv = invb(b_ub)
     return A_ub, b_ub_inv
 
+
 def Ab_np2d(A_ub, b_ub_inv):
     A_ubd = A_ub_np2d(A_ub)
     b_ub = invb(b_ub_inv)
     return A_ubd, b_ub
+
 
 def sort_equations(Ads, b):
     # Track rows with value column
@@ -256,6 +285,7 @@ def sort_equations(Ads, b):
     res = sorted(tosort)
     A_ubtr, b_ubr = zip(*res)
     return [OrderedDict(rowt) for rowt in A_ubtr], b_ubr
+
 
 def derive_eq_by_row(A_ubd, b_ub, verbose=0, col_lim=0, tweak=False):
     '''
@@ -348,9 +378,12 @@ def derive_eq_by_row(A_ubd, b_ub, verbose=0, col_lim=0, tweak=False):
     print(' done')
 
     #A_ub_ret = A_di2np(A_ubd2, cols=cols)
-    print('Derive row: %d => %d rows using %d lte, %d sc' % (len(b_ub), len(b_ub_ret), ltes, scs))
+    print(
+        'Derive row: %d => %d rows using %d lte, %d sc' %
+        (len(b_ub), len(b_ub_ret), ltes, scs))
     assert len(A_ubd_ret) == len(b_ub_ret)
     return A_ubd_ret, b_ub_ret
+
 
 def derive_eq_by_col(A_ubd, b_ub, verbose=0):
     '''
@@ -380,7 +413,6 @@ def derive_eq_by_col(A_ubd, b_ub, verbose=0):
     print(' done')
     #knowns_set = set(knowns.keys())
     print('%d constrained' % len(knowns))
-
     '''
     Now see what we can do
     Rows that are already constrained: eliminate
@@ -425,6 +457,7 @@ def derive_eq_by_col(A_ubd, b_ub, verbose=0):
     print('Derive col: %d => %d rows' % (len(b_ub), len(b_ub_ret)))
     return A_ubd_ret, b_ub_ret
 
+
 def col_dist(Ads, desc='of', names=[], lim=0):
     '''print(frequency distribution of number of elements in a given row'''
     rows = len(Ads)
@@ -435,7 +468,9 @@ def col_dist(Ads, desc='of', names=[], lim=0):
         this_cols = len(row)
         fs[this_cols] = fs.get(this_cols, 0) + 1
 
-    print('Col count distribution (%s) for %dr x %dc w/ %d freqs' % (desc, rows, cols, len(fs)))
+    print(
+        'Col count distribution (%s) for %dr x %dc w/ %d freqs' %
+        (desc, rows, cols, len(fs)))
     prints = 0
     for i, (k, v) in enumerate(sorted(fs.items())):
         if lim == 0 or (lim and prints < lim or i == len(fs) - 1):
@@ -443,6 +478,7 @@ def col_dist(Ads, desc='of', names=[], lim=0):
         prints += 1
         if lim and prints == lim:
             print('  ...')
+
 
 def name_dist(A_ubd, desc='of', names=[], lim=0):
     '''print(frequency distribution of number of times an element appears'''
@@ -467,7 +503,7 @@ def name_dist(A_ubd, desc='of', names=[], lim=0):
     for v in fs.values():
         fs2[v] = fs2.get(v, 0) + 1
     prints = 0
-    print('Distribution distribution (%d items)'% len(fs2))
+    print('Distribution distribution (%d items)' % len(fs2))
     for i, (k, v) in enumerate(sorted(fs2.items())):
         if lim == 0 or (lim and prints < lim or i == len(fs2) - 1):
             print('  %s: %s' % (k, v))
@@ -479,6 +515,7 @@ def name_dist(A_ubd, desc='of', names=[], lim=0):
     if zeros:
         raise Exception("%d names without equation" % zeros)
 
+
 def filter_ncols(A_ubd, b_ub, cols_min=0, cols_max=0):
     '''Only keep equations with a few delay elements'''
     A_ubd_ret = []
@@ -486,13 +523,17 @@ def filter_ncols(A_ubd, b_ub, cols_min=0, cols_max=0):
 
     #print('Removing large rows')
     for rowd, b in zip(A_ubd, b_ub):
-        if (not cols_min or len(rowd) >= cols_min) and (not cols_max or len(rowd) <= cols_max):
+        if (not cols_min or len(rowd) >= cols_min) and (not cols_max or
+                                                        len(rowd) <= cols_max):
             A_ubd_ret.append(rowd)
             b_ub_ret.append(b)
 
-    print('Filter ncols w/ %d <= cols <= %d: %d ==> %d rows' % (cols_min, cols_max, len(b_ub), len(b_ub_ret)))
+    print(
+        'Filter ncols w/ %d <= cols <= %d: %d ==> %d rows' %
+        (cols_min, cols_max, len(b_ub), len(b_ub_ret)))
     assert len(b_ub_ret)
     return A_ubd_ret, b_ub_ret
+
 
 def Ar_di2ds(rowA, names):
     row = OrderedDict()
@@ -500,11 +541,13 @@ def Ar_di2ds(rowA, names):
         row[names[k]] = v
     return row
 
+
 def A_di2ds(Adi, names):
     rows = []
     for row_di in Adi:
         rows.append(Ar_di2ds(row_di, names))
     return rows
+
 
 def Ar_ds2di(row_ds, names):
     def keyi(name):
@@ -517,6 +560,7 @@ def Ar_ds2di(row_ds, names):
         row_di[keyi(k)] = v
     return row_di
 
+
 def A_ds2di(rows):
     names = OrderedDict()
 
@@ -526,9 +570,11 @@ def A_ds2di(rows):
 
     return list(names.keys()), A_ubd
 
+
 def A_ds2np(Ads):
     names, Adi = A_ds2di(Ads)
     return names, A_di2np(Adi, len(names))
+
 
 def loadc_Ads_mkb(fns, mkb, filt):
     bs = []
@@ -548,10 +594,13 @@ def loadc_Ads_mkb(fns, mkb, filt):
                         return None
                     else:
                         return int(bstr)
+
                 corners = [mkcorner(corner) for corner in corners.split()]
+
                 def mkvar(x):
                     i, var = x.split()
                     return (var, int(i))
+
                 vars = OrderedDict([mkvar(var) for var in vars])
                 if not filt(ico, corners, vars):
                     continue
@@ -560,6 +609,7 @@ def loadc_Ads_mkb(fns, mkb, filt):
                 Ads.append(vars)
 
     return Ads, bs
+
 
 def loadc_Ads_b(fns, corner, ico=None):
     corner = corner or "slow_max"
@@ -572,7 +622,9 @@ def loadc_Ads_b(fns, corner, ico=None):
 
     def mkb(val):
         return val[corneri]
+
     return loadc_Ads_mkb(fns, mkb, filt)
+
 
 def loadc_Ads_bs(fns, ico=None):
     if ico is not None:
@@ -582,14 +634,18 @@ def loadc_Ads_bs(fns, ico=None):
 
     def mkb(val):
         return val
+
     return loadc_Ads_mkb(fns, mkb, filt)
+
 
 def loadc_Ads_raw(fns):
     filt = lambda ico, corners, vars: True
 
     def mkb(val):
         return val
+
     return loadc_Ads_mkb(fns, mkb, filt)
+
 
 def index_names(Ads):
     names = set()
@@ -597,6 +653,7 @@ def index_names(Ads):
         for k1 in row_ds.keys():
             names.add(k1)
     return names
+
 
 def load_sub(fn):
     j = json.load(open(fn, 'r'))
@@ -606,6 +663,7 @@ def load_sub(fn):
             vals[k] = Fraction(v[0], v[1])
 
     return j
+
 
 def row_sub_syms(row, sub_json, strict=False, verbose=False):
     if 0 and verbose:
@@ -669,6 +727,7 @@ def row_sub_syms(row, sub_json, strict=False, verbose=False):
         for k, v in sorted(row.items()):
             assert v > 0, (k, v)
 
+
 def run_sub_json(Ads, sub_json, strict=False, verbose=False):
     '''
     strict: complain if a sub doesn't go in evenly
@@ -709,13 +768,15 @@ def run_sub_json(Ads, sub_json, strict=False, verbose=False):
     print("Sub: %u / %u rows changed" % (nsubs, nrows))
     print("Sub: %u => %u non-zero row cols" % (ncols_old, ncols_new))
 
+
 def print_eqns(Ads, b, verbose=0, lim=3, label=''):
     rows = len(b)
 
     print('Sample equations (%s) from %d r' % (label, rows))
     prints = 0
     for rowi, row in enumerate(Ads):
-        if verbose or ((rowi < 10 or rowi % max(1, (rows / 20)) == 0) and (not lim or prints < lim)):
+        if verbose or ((rowi < 10 or rowi % max(1, (rows / 20)) == 0) and
+                       (not lim or prints < lim)):
             line = '  EQN: p%u: ' % rowi
             for k, v in sorted(row.items()):
                 line += '%u*t%s ' % (v, k)
@@ -723,9 +784,11 @@ def print_eqns(Ads, b, verbose=0, lim=3, label=''):
             print(line)
             prints += 1
 
+
 def print_eqns_np(A_ub, b_ub, verbose=0):
     Adi = A_ub_np2d(A_ub)
     print_eqns(Adi, b_ub, verbose=verbose)
+
 
 def Ads2bounds(Ads, bs):
     ret = {}
@@ -736,16 +799,19 @@ def Ads2bounds(Ads, bs):
         ret[k] = row_bs
     return ret
 
+
 def instances(Ads):
     ret = 0
     for row_ds in Ads:
         ret += sum(row_ds.values())
     return ret
 
+
 def acorner2csv(b, corneri):
     corners = ["None" for _ in range(4)]
     corners[corneri] = str(b)
     return ' '.join(corners)
+
 
 def corners2csv(bs):
     assert len(bs) == 4

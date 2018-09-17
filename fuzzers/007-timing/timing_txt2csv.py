@@ -14,8 +14,10 @@ SI_NONE = 0xFFFF
 
 PREFIX_W = 'WIRE_'
 PREFIX_P = 'PIP_'
+
 #PREFIX_W = ''
 #PREFIX_P = ''
+
 
 def parse_pip(s):
     # Entries like
@@ -28,9 +30,11 @@ def parse_pip(s):
     #return (site, type, pip_junction, pip)
     return site, instance, int(speed_index)
 
+
 def parse_node(s):
     node, nwires = s.split(':')
     return node, int(nwires)
+
 
 def parse_wire(s):
     # CLBLM_R_X3Y80/CLBLM_M_D6:952
@@ -38,11 +42,13 @@ def parse_wire(s):
     site, instance = wirestr.split('/')
     return site, instance, int(speed_index)
 
+
 # FIXME: these actually have a delay element
 # Probably need to put these back in
 def remove_virtual_pips(pips):
     return pips
     return filter(lambda pip: not re.match(r'CLBL[LM]_[LR]_', pip[0]), pips)
+
 
 def load_timing3(f, name='file'):
     # src_bel dst_bel ico fast_max fast_min slow_max slow_min pips
@@ -66,24 +72,26 @@ def load_timing3(f, name='file'):
         pips = pips.split('|')
         nodes = nodes.split('|')
         wires = wires.split('|')
-        ret.append({
-            'net': net,
-            'src_bel': src_bel,
-            'dst_bel': dst_bel,
-            'ico': int(ico),
-            # ps
-            'fast_max': int(fast_max),
-            'fast_min': int(fast_min),
-            'slow_max': int(slow_max),
-            'slow_min': int(slow_min),
-            'pips': remove_virtual_pips([parse_pip(pip) for pip in pips]),
-            'nodes': [parse_node(node) for node in nodes],
-            'wires': [parse_wire(wire) for wire in wires],
-            'line': l,
+        ret.append(
+            {
+                'net': net,
+                'src_bel': src_bel,
+                'dst_bel': dst_bel,
+                'ico': int(ico),
+                # ps
+                'fast_max': int(fast_max),
+                'fast_min': int(fast_min),
+                'slow_max': int(slow_max),
+                'slow_min': int(slow_min),
+                'pips': remove_virtual_pips([parse_pip(pip) for pip in pips]),
+                'nodes': [parse_node(node) for node in nodes],
+                'wires': [parse_wire(wire) for wire in wires],
+                'line': l,
             })
     print('  load %s: %d bad, %d good' % (name, bads, len(ret)))
     #assert 0
     return ret
+
 
 def load_speed_json(f):
     j = json.load(f)
@@ -94,6 +102,7 @@ def load_speed_json(f):
         if i != SI_NONE:
             speed_i2s[i] = k
     return j, speed_i2s
+
 
 # Verify the nodes and wires really do line up
 def vals2Adi_check(vals, names):
@@ -106,12 +115,12 @@ def vals2Adi_check(vals, names):
     print('Done')
     assert 0
 
-def vals2Adi(vals, speed_i2s,
-        name_tr={}, name_drop=[],
-        verbose=False):
+
+def vals2Adi(vals, speed_i2s, name_tr={}, name_drop=[], verbose=False):
     def pip2speed(pip):
-        _site, _name, speed_index  = pip
+        _site, _name, speed_index = pip
         return PREFIX_P + speed_i2s[speed_index]
+
     def wire2speed(wire):
         _site, _name, speed_index = wire
         return PREFIX_W + speed_i2s[speed_index]
@@ -119,7 +128,8 @@ def vals2Adi(vals, speed_i2s,
     # Want this ordered
     names = OrderedDict()
 
-    print('Creating matrix w/ tr: %d, drop: %d' % (len(name_tr), len(name_drop)))
+    print(
+        'Creating matrix w/ tr: %d, drop: %d' % (len(name_tr), len(name_drop)))
 
     # Take sites out entirely using handy "interconnect only" option
     #vals = filter(lambda x: str(x).find('SLICE') >= 0, vals)
@@ -171,6 +181,7 @@ def vals2Adi(vals, speed_i2s,
     print('Creating delay element matrix w/ %d names' % len(names))
     Adi = [None for _i in range(len(vals))]
     for vali, val in enumerate(vals):
+
         def add_name(name):
             if name in name_drop:
                 return
@@ -192,11 +203,13 @@ def vals2Adi(vals, speed_i2s,
 
     return Adi, names
 
+
 # TODO: load directly as Ads
 # remove names_tr, names_drop
 def vals2Ads(vals, speed_i2s, verbose=False):
     Adi, names = vals2Adi(vals, speed_i2s, verbose=False)
     return A_di2ds(Adi, names)
+
 
 def load_Ads(speed_json_f, f_ins):
 
@@ -211,11 +224,14 @@ def load_Ads(speed_json_f, f_ins):
     Ads = vals2Ads(vals, speed_i2s)
 
     def mkb(val):
-        return (val['fast_max'], val['fast_min'], val['slow_max'], val['slow_min'])
+        return (
+            val['fast_max'], val['fast_min'], val['slow_max'], val['slow_min'])
+
     b = [mkb(val) for val in vals]
     ico = [val['ico'] for val in vals]
 
     return Ads, b, ico
+
 
 def run(speed_json_f, fout, f_ins, verbose=0, corner=None):
     Ads, bs, ico = load_Ads(speed_json_f, f_ins)
@@ -229,6 +245,7 @@ def run(speed_json_f, fout, f_ins, verbose=0, corner=None):
             items.append('%u %s' % (v, k))
         fout.write(','.join(items) + '\n')
 
+
 def main():
     import argparse
 
@@ -238,14 +255,14 @@ def main():
     )
 
     parser.add_argument('--verbose', type=int, help='')
-    parser.add_argument('--auto-name', action='store_true', help='timing3.txt => timing3.csv')
-    parser.add_argument('--speed-json', default='build_speed/speed.json',
+    parser.add_argument(
+        '--auto-name', action='store_true', help='timing3.txt => timing3.csv')
+    parser.add_argument(
+        '--speed-json',
+        default='build_speed/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('--out', default=None, help='Output csv')
-    parser.add_argument(
-        'fns_in',
-        nargs='*',
-        help='timing3.txt input files')
+    parser.add_argument('fns_in', nargs='*', help='timing3.txt input files')
     args = parser.parse_args()
     bench = Benchmark()
 
@@ -265,8 +282,12 @@ def main():
     if not fns_in:
         fns_in = glob.glob('specimen_*/timing3.txt')
 
-    run(speed_json_f=open(args.speed_json, 'r'), fout=fout,
-        f_ins=[(open(fn_in, 'r'), fn_in) for fn_in in fns_in], verbose=args.verbose)
+    run(
+        speed_json_f=open(args.speed_json, 'r'),
+        fout=fout,
+        f_ins=[(open(fn_in, 'r'), fn_in) for fn_in in fns_in],
+        verbose=args.verbose)
+
 
 if __name__ == '__main__':
     main()

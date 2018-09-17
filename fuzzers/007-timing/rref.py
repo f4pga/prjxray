@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 '''
 Triaging tool to help understand where we need more timing coverage
 Finds correlated variables to help make better test cases
@@ -14,6 +13,7 @@ import sympy
 from collections import OrderedDict
 from fractions import Fraction
 
+
 def fracr(r):
     DELTA = 0.0001
 
@@ -24,11 +24,14 @@ def fracr(r):
             r[i] = xi
     return [Fraction(x) for x in r]
 
+
 def fracm(m):
     return [fracr(r) for r in m]
 
+
 def fracr_quick(r):
     return [Fraction(numerator=int(x), denominator=1) for x in r]
+
 
 # the way I'm doing thing they should all be even integers
 # hmm this was only slightly faster
@@ -36,6 +39,7 @@ def fracm_quick(m):
     t = type(m[0][0])
     print('fracm_quick type: %s' % t)
     return [fracr_quick(r) for r in m]
+
 
 class State(object):
     def __init__(self, Ads, drop_names=[]):
@@ -57,9 +61,11 @@ class State(object):
         print("Stats")
         print("  Substitutions: %u" % len(self.subs))
         if self.subs:
-            print("    Largest: %u" % max([len(x) for x in self.subs.values()]))
+            print(
+                "    Largest: %u" % max([len(x) for x in self.subs.values()]))
         print("  Rows: %u" % len(self.Ads))
-        print("  Cols (in): %u" % (len(self.base_names) + len(self.drop_names)))
+        print(
+            "  Cols (in): %u" % (len(self.base_names) + len(self.drop_names)))
         print("  Cols (preprocessed): %u" % len(self.base_names))
         print("    Drop names: %u" % len(self.drop_names))
         print("  Cols (out): %u" % len(self.names))
@@ -70,9 +76,10 @@ class State(object):
     def load(fn_ins, simplify=False, corner=None):
         Ads, b = loadc_Ads_b(fn_ins, corner=corner, ico=True)
         if simplify:
-            print('Simplifying corner %s' % (corner,))
+            print('Simplifying corner %s' % (corner, ))
             Ads, b = simplify_rows(Ads, b, remove_zd=False, corner=corner)
         return State(Ads)
+
 
 def write_state(state, fout):
     j = {
@@ -83,6 +90,7 @@ def write_state(state, fout):
         'pivots': state.pivots,
     }
     json.dump(j, fout, sort_keys=True, indent=4, separators=(',', ': '))
+
 
 def Anp2matrix(Anp):
     '''
@@ -99,6 +107,7 @@ def Anp2matrix(Anp):
         dst_rowi = (dst_rowi + 1) % ncols
     return A_ub2
 
+
 def row_np2ds(rownp, names):
     ret = {}
     assert len(rownp) == len(names), (len(rownp), len(names))
@@ -107,6 +116,7 @@ def row_np2ds(rownp, names):
         if v:
             ret[name] = v
     return ret
+
 
 def row_sym2dsf(rowsym, names):
     '''Convert a sympy row into a dictionary of keys to (numerator, denominator) tuples'''
@@ -120,6 +130,7 @@ def row_sym2dsf(rowsym, names):
             (num, den) = fraction(v)
             ret[name] = (int(num), int(den))
     return ret
+
 
 def state_rref(state, verbose=False):
     print('Converting rows to integer keys')
@@ -195,6 +206,7 @@ def state_rref(state, verbose=False):
 
     return state
 
+
 def run(fnout, fn_ins, simplify=False, corner=None, verbose=0):
     print('Loading data')
 
@@ -205,24 +217,21 @@ def run(fnout, fn_ins, simplify=False, corner=None, verbose=0):
         with open(fnout, 'w') as fout:
             write_state(state, fout)
 
+
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        'Timing fuzzer'
-    )
+    parser = argparse.ArgumentParser(description='Timing fuzzer')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--simplify', action='store_true', help='')
     parser.add_argument('--corner', default="slow_max", help='')
-    parser.add_argument('--speed-json', default='build_speed/speed.json',
+    parser.add_argument(
+        '--speed-json',
+        default='build_speed/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('--out', help='Output sub.json substitution result')
-    parser.add_argument(
-        'fns_in',
-        nargs='+',
-        help='timing3.txt input files')
+    parser.add_argument('fns_in', nargs='+', help='timing3.txt input files')
     args = parser.parse_args()
     bench = Benchmark()
 
@@ -231,10 +240,15 @@ def main():
         fns_in = glob.glob('specimen_*/timing3.csv')
 
     try:
-        run(fnout=args.out,
-            fn_ins=args.fns_in, simplify=args.simplify, corner=args.corner, verbose=args.verbose)
+        run(
+            fnout=args.out,
+            fn_ins=args.fns_in,
+            simplify=args.simplify,
+            corner=args.corner,
+            verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
+
 
 if __name__ == '__main__':
     main()

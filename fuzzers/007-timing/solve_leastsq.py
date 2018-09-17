@@ -15,6 +15,7 @@ import timfuz_solve
 import scipy.optimize as optimize
 from scipy.optimize import least_squares
 
+
 def mkestimate(Anp, b):
     '''
     Ballpark upper bound estimate assuming variables contribute all of the delay in their respective row
@@ -33,6 +34,7 @@ def mkestimate(Anp, b):
                     x0[coli] = min(x0[coli], ub)
     return x0
 
+
 def save(outfn, xvals, names, corner):
     # ballpark minimum actual observed delay is around 7 (carry chain)
     # anything less than one is probably a solver artifact
@@ -45,7 +47,7 @@ def save(outfn, xvals, names, corner):
         'fast_min': math.floor,
         'slow_max': math.ceil,
         'slow_min': math.floor,
-        }[corner]
+    }[corner]
 
     print('Writing results')
     skips = 0
@@ -69,16 +71,18 @@ def save(outfn, xvals, names, corner):
             items = [str(row_ico), acorner2csv(roundf(xval), corneri)]
             items.append('%u %s' % (1, name))
             fout.write(','.join(items) + '\n')
-    print('Wrote: skip %u => %u / %u valid delays' % (skips, keeps, len(names)))
+    print(
+        'Wrote: skip %u => %u / %u valid delays' % (skips, keeps, len(names)))
     assert keeps, 'Failed to estimate delay'
 
-def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
+
+def run_corner(
+        Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
     # Given timing scores for above delays (-ps)
     assert type(Anp[0]) is np.ndarray, type(Anp[0])
     assert type(b) is np.ndarray, type(b)
 
     #check_feasible(Anp, b)
-
     '''
     Be mindful of signs
     Have something like
@@ -97,7 +101,6 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
     print('Input paths')
     print('  # timing scores: %d' % len(b))
     print('  Rows: %d' % rows)
-
     '''
     You must have at least as many things to optimize as variables
     That is, the system must be plausibly constrained for it to attempt a solve
@@ -110,10 +113,11 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
     tlast = [None]
     iters = [0]
     printn = [0]
+
     def progress_print():
         iters[0] += 1
         if tlast[0] is None:
-            tlast[0]= time.time()
+            tlast[0] = time.time()
         if time.time() - tlast[0] > 1.0:
             sys.stdout.write('I:%d ' % iters[0])
             tlast[0] = time.time()
@@ -143,23 +147,22 @@ def run_corner(Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=Non
     if outfn:
         save(outfn, res.x, names, corner)
 
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(
         description=
-        'Solve timing solution using least squares objective function'
-    )
+        'Solve timing solution using least squares objective function')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--massage', action='store_true', help='')
-    parser.add_argument('--sub-json', help='Group substitutions to make fully ranked')
-    parser.add_argument('--corner', default="slow_max", help='')
-    parser.add_argument('--out', default=None, help='output timing delay .json')
     parser.add_argument(
-        'fns_in',
-        nargs='+',
-        help='timing3.csv input files')
+        '--sub-json', help='Group substitutions to make fully ranked')
+    parser.add_argument('--corner', default="slow_max", help='')
+    parser.add_argument(
+        '--out', default=None, help='output timing delay .json')
+    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
@@ -169,10 +172,17 @@ def main():
         sub_json = load_sub(args.sub_json)
 
     try:
-        timfuz_solve.run(run_corner=run_corner, sub_json=sub_json,
-            fns_in=args.fns_in, corner=args.corner, massage=args.massage, outfn=args.out, verbose=args.verbose)
+        timfuz_solve.run(
+            run_corner=run_corner,
+            sub_json=sub_json,
+            fns_in=args.fns_in,
+            corner=args.corner,
+            massage=args.massage,
+            outfn=args.out,
+            verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
+
 
 if __name__ == '__main__':
     main()

@@ -10,6 +10,7 @@ import time
 import copy
 from collections import OrderedDict
 
+
 def lte_const(row_ref, row_cmp):
     '''Return true if all constants are smaller magnitude in row_cmp than row_ref'''
     #return False
@@ -21,6 +22,7 @@ def lte_const(row_ref, row_cmp):
         if vr < vc:
             return False
     return True
+
 
 def shared_const(row_ref, row_cmp):
     '''Return true if more constants are equal than not equal'''
@@ -43,6 +45,7 @@ def shared_const(row_ref, row_cmp):
     # Will equation reduce if subtracted?
     return matches > unmatches
 
+
 def reduce_const(row_ref, row_cmp):
     '''Subtract cmp constants from ref'''
     #ret = {}
@@ -56,6 +59,7 @@ def reduce_const(row_ref, row_cmp):
         if res:
             ret[k] = res
     return ret
+
 
 def derive_eq_by_row(Ads, b, verbose=0, col_lim=0, tweak=False):
     '''
@@ -148,9 +152,12 @@ def derive_eq_by_row(Ads, b, verbose=0, col_lim=0, tweak=False):
     print(' done')
 
     #A_ub_ret = A_di2np(Ads2, cols=cols)
-    print('Derive row: %d => %d rows using %d lte, %d sc' % (len(b), len(b_ret), ltes, scs))
+    print(
+        'Derive row: %d => %d rows using %d lte, %d sc' %
+        (len(b), len(b_ret), ltes, scs))
     assert len(Ads_ret) == len(b_ret)
     return Ads_ret, b_ret
+
 
 def derive_eq_by_near_row(Ads, b, verbose=0, col_lim=0, tweak=False):
     '''
@@ -199,7 +206,8 @@ def derive_eq_by_near_row(Ads, b, verbose=0, col_lim=0, tweak=False):
             continue
 
         #for row_cmpi, row_cmp in enumerate(Ads):
-        for row_cmpi in range(max(0, row_refi - rowdelta), min(len(Ads), row_refi + rowdelta)):
+        for row_cmpi in range(max(0, row_refi - rowdelta),
+                              min(len(Ads), row_refi + rowdelta)):
             if row_refi == row_cmpi or col_lim and len(row_cmp) > col_lim:
                 continue
             row_cmp = Ads[row_cmpi]
@@ -246,9 +254,12 @@ def derive_eq_by_near_row(Ads, b, verbose=0, col_lim=0, tweak=False):
     print(' done')
 
     #A_ub_ret = A_di2np(Ads2, cols=cols)
-    print('Derive row: %d => %d rows using %d lte, %d sc' % (len(b), len(b_ret), ltes, scs))
+    print(
+        'Derive row: %d => %d rows using %d lte, %d sc' %
+        (len(b), len(b_ret), ltes, scs))
     assert len(Ads_ret) == len(b_ret)
     return Ads_ret, b_ret
+
 
 def derive_eq_by_col(Ads, b_ub, verbose=0):
     '''
@@ -277,7 +288,6 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
     print(' done')
     #knowns_set = set(knowns.keys())
     print('%d constrained' % len(knowns))
-
     '''
     Now see what we can do
     Rows that are already constrained: eliminate
@@ -322,6 +332,7 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
     print('Derive col: %d => %d rows' % (len(b_ub), len(b_ret)))
     return Ads_ret, b_ret
 
+
 # keep derriving until solution is (probably) stable
 def massage_equations_old(Ads, b, verbose=False, derive_lim=3, corner=None):
     '''
@@ -357,7 +368,9 @@ def massage_equations_old(Ads, b, verbose=False, derive_lim=3, corner=None):
         debug("der_rows")
         # Run another simplify pass since new equations may have overlap with original
         Ads, b = simplify_rows(Ads, b, corner=corner)
-        print('Derive row %d / %d: %d => %d equations' % (di + 1, derive_lim, n_orig, len(b)))
+        print(
+            'Derive row %d / %d: %d => %d equations' %
+            (di + 1, derive_lim, n_orig, len(b)))
         debug("der_rows simp")
 
         n_orig2 = len(b)
@@ -366,19 +379,19 @@ def massage_equations_old(Ads, b, verbose=False, derive_lim=3, corner=None):
         debug("der_cols")
         # Run another simplify pass since new equations may have overlap with original
         Ads, b = simplify_rows(Ads, b, corner=corner)
-        print('Derive col %d / %d: %d => %d equations' % (di + 1, derive_lim, n_orig2, len(b)))
+        print(
+            'Derive col %d / %d: %d => %d equations' %
+            (di + 1, derive_lim, n_orig2, len(b)))
         debug("der_cols simp")
 
         if n_orig == len(b):
             break
-
 
     dend = len(b)
     print('')
     print('Derive net: %d => %d' % (dstart, dend))
     print('')
     # Was experimentting to see how much the higher order columns really help
-
     '''
     cols_min_post = opts.get('cols_min_post', None)
     cols_max_post = opts.get('cols_max_post', None)
@@ -392,6 +405,7 @@ def massage_equations_old(Ads, b, verbose=False, derive_lim=3, corner=None):
     Ads, b = sort_equations(Ads, b)
     debug("final (sorted)")
     return Ads, b
+
 
 # iteratively increasing column limit until all columns are added
 def massage_equations_inc_col_lim(Ads, b, verbose=False, corner=None):
@@ -467,6 +481,7 @@ def massage_equations_inc_col_lim(Ads, b, verbose=False, corner=None):
     print('Massage final: %d => %d rows' % (dstart, dend))
     return Ads, b
 
+
 # only derive based on nearby equations
 # theory is they will be the best to diff
 def massage_equations_near(Ads, b, verbose=False, corner=None):
@@ -531,5 +546,6 @@ def massage_equations_near(Ads, b, verbose=False, corner=None):
     print('')
     print('Massage final: %d => %d rows' % (dstart, dend))
     return Ads, b
+
 
 massage_equations = massage_equations_inc_col_lim

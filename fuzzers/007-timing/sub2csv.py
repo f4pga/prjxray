@@ -9,6 +9,7 @@ import sympy
 from collections import OrderedDict
 from fractions import Fraction
 
+
 def mlcm(xs):
     '''
     Find the LCM between elements in a group
@@ -20,6 +21,7 @@ def mlcm(xs):
             l = int(max(lthis, l))
     return ret
 
+
 def write_state(state, fout):
     j = {
         'names': dict([(x, None) for x in state.names]),
@@ -29,6 +31,7 @@ def write_state(state, fout):
         'pivots': state.pivots,
     }
     json.dump(j, fout, sort_keys=True, indent=4, separators=(',', ': '))
+
 
 def gen_rows(fn_ins):
     for fn_in in fn_ins:
@@ -52,7 +55,7 @@ def gen_rows(fn_ins):
                 n = 1
                 for _var, (_num, den) in sub.items():
                     n *= den
-    
+
                 for var, (num, den) in sub.items():
                     num2 = n * num
                     assert num2 % den == 0
@@ -61,6 +64,7 @@ def gen_rows(fn_ins):
         except:
             print("Error processing %s" % fn_in)
             raise
+
 
 def run(fnout, fn_ins, verbose=0):
     print('Loading data')
@@ -76,6 +80,7 @@ def run(fnout, fn_ins, verbose=0):
                 items.append('%i %s' % (v, k))
             fout.write(','.join(items) + '\n')
 
+
 def main():
     import argparse
 
@@ -86,20 +91,17 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--out', help='Output csv')
-    parser.add_argument(
-        'fns_in',
-        nargs='*',
-        help='sub.json input files')
+    parser.add_argument('fns_in', nargs='*', help='sub.json input files')
     args = parser.parse_args()
     bench = Benchmark()
 
     fns_in = args.fns_in
 
     try:
-        run(fnout=args.out,
-            fn_ins=args.fns_in, verbose=args.verbose)
+        run(fnout=args.out, fn_ins=args.fns_in, verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
+
 
 if __name__ == '__main__':
     main()

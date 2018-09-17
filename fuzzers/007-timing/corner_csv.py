@@ -3,6 +3,7 @@
 from timfuz import Benchmark, simplify_rows, loadc_Ads_b
 import glob
 
+
 def run(fout, fns_in, corner, verbose=0):
     Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
     Ads, b = simplify_rows(Ads, b, corner=corner)
@@ -18,22 +19,19 @@ def run(fout, fns_in, corner, verbose=0):
             items.append('%u %s' % (v, k))
         fout.write(','.join(items) + '\n')
 
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description=
-        'Create a .csv with a single process corner'
-    )
+        description='Create a .csv with a single process corner')
 
     parser.add_argument('--verbose', type=int, help='')
-    parser.add_argument('--auto-name', action='store_true', help='timing3.csv => timing3c.csv')
+    parser.add_argument(
+        '--auto-name', action='store_true', help='timing3.csv => timing3c.csv')
     parser.add_argument('--out', default=None, help='Output csv')
     parser.add_argument('--corner', help='Output csv')
-    parser.add_argument(
-        'fns_in',
-        nargs='*',
-        help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
     args = parser.parse_args()
     bench = Benchmark()
 
@@ -53,8 +51,8 @@ def main():
     if not fns_in:
         fns_in = glob.glob('specimen_*/timing3.csv')
 
-    run(fout=fout,
-        fns_in=fns_in, corner=args.corner, verbose=args.verbose)
+    run(fout=fout, fns_in=fns_in, corner=args.corner, verbose=args.verbose)
+
 
 if __name__ == '__main__':
     main()

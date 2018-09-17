@@ -8,6 +8,7 @@ import math
 from collections import OrderedDict
 from fractions import Fraction
 
+
 def Adi2matrix_random(A_ubd, b_ub, names):
     # random assignment
     # was making some empty rows
@@ -23,6 +24,7 @@ def Adi2matrix_random(A_ubd, b_ub, names):
         A_ret[dst_rowi] = np.add(A_ret[dst_rowi], rownp)
         b_ret[dst_rowi] += b
     return A_ret, b_ret
+
 
 def Ads2matrix_linear(Ads, b):
     names, Adi = A_ds2di(Ads)
@@ -41,16 +43,19 @@ def Ads2matrix_linear(Ads, b):
         dst_rowi = (dst_rowi + 1) % rows_out
     return A_ret, b_ret
 
+
 def pmatrix(Anp, s):
     import sympy
     msym = sympy.Matrix(Anp)
     print(s)
     sympy.pprint(msym)
 
+
 def pds(Ads, s):
     names, Anp = A_ds2np(Ads)
     pmatrix(Anp, s)
-    print('Names: %s' % (names,))
+    print('Names: %s' % (names, ))
+
 
 def run(fns_in, sub_json=None, verbose=False):
     # arbitrary...data is thrown away
@@ -76,7 +81,6 @@ def run(fns_in, sub_json=None, verbose=False):
     # A_ub2, b_ub2 = Adi2matrix_random(A_ubd, b, names)
     Amat, _bmat = Ads2matrix_linear(Ads, b)
     #pmatrix(Amat, 'Matrix')
-
     '''
     The matrix must be fully ranked to even be considered reasonable
     Even then, floating point error *possibly* could make it fully ranked, although probably not since we have whole numbers
@@ -96,22 +100,19 @@ def run(fns_in, sub_json=None, verbose=False):
         else:
             print('slogdet :) : %s, %s' % (sign, logdet))
     if rank != len(names):
-        raise Exception("Matrix not fully ranked w/ %u / %u" % (rank, len(names)))
+        raise Exception(
+            "Matrix not fully ranked w/ %u / %u" % (rank, len(names)))
+
 
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description=
-        'Check sub.json solution feasibility'
-    )
+        description='Check sub.json solution feasibility')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--sub-json', help='')
-    parser.add_argument(
-        'fns_in',
-        nargs='*',
-        help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
@@ -125,10 +126,10 @@ def main():
         sub_json = load_sub(args.sub_json)
 
     try:
-        run(sub_json=sub_json,
-            fns_in=fns_in, verbose=args.verbose)
+        run(sub_json=sub_json, fns_in=fns_in, verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)
+
 
 if __name__ == '__main__':
     main()

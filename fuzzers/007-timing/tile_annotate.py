@@ -8,9 +8,11 @@ import os
 import time
 import json
 
+
 # corner wokraround
 def quad(x):
     return [x for _ in range(4)]
+
 
 def run(fnin, fnout, tile_json_fn, verbose=False):
     # modified in place
@@ -50,24 +52,33 @@ def run(fnin, fnout, tile_json_fn, verbose=False):
 
     for corner, corneri in timfuz.corner_s2i.items():
         print('Corner %s' % corner)
-        print('  Pips: %u / %u solved, %u / %u covered' % (pipn_solved[corneri], pipn_net, pipn_covered[corneri], pipn_net))
-        print('  Wires: %u / %u solved, %u / %u covered' % (wiren_solved[corneri], wiren_net, wiren_covered[corneri], wiren_net))
+        print(
+            '  Pips: %u / %u solved, %u / %u covered' %
+            (pipn_solved[corneri], pipn_net, pipn_covered[corneri], pipn_net))
+        print(
+            '  Wires: %u / %u solved, %u / %u covered' % (
+                wiren_solved[corneri], wiren_net, wiren_covered[corneri],
+                wiren_net))
 
-    json.dump(tilej, open(fnout, 'w'), sort_keys=True, indent=4, separators=(',', ': '))
+    json.dump(
+        tilej,
+        open(fnout, 'w'),
+        sort_keys=True,
+        indent=4,
+        separators=(',', ': '))
+
 
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        ''
-    )
+    parser = argparse.ArgumentParser(description='')
     parser.add_argument('--tile-json', default='tiles.json', help='')
     parser.add_argument('fnin', default=None, help='Flattened timing csv')
     parser.add_argument('fnout', default=None, help='output tile .json')
     args = parser.parse_args()
 
     run(args.fnin, args.fnout, args.tile_json, verbose=False)
+
 
 if __name__ == '__main__':
     main()

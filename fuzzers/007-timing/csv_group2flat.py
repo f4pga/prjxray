@@ -15,6 +15,7 @@ import datetime
 import os
 import time
 
+
 def gen_flat(fnin, sub_json, corner=None):
     Ads, bs = loadc_Ads_bs([fnin], ico=True)
     bounds = Ads2bounds(Ads, bs)
@@ -50,6 +51,7 @@ def gen_flat(fnin, sub_json, corner=None):
         for zero in zeros - violations:
             yield zero, zero_row
 
+
 def run(fnin, fnout, sub_json, corner=None, sort=False, verbose=False):
     if sort:
         sortf = sorted
@@ -65,18 +67,19 @@ def run(fnin, fnout, sub_json, corner=None, sort=False, verbose=False):
             items.append('%u %s' % (1, name))
             fout.write(','.join(items) + '\n')
 
+
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        'Solve timing solution'
-    )
+    parser = argparse.ArgumentParser(description='Solve timing solution')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--sort', action='store_true', help='')
     parser.add_argument('--sub-csv', help='')
-    parser.add_argument('--sub-json', required=True, help='Group substitutions to make fully ranked')
+    parser.add_argument(
+        '--sub-json',
+        required=True,
+        help='Group substitutions to make fully ranked')
     parser.add_argument('--corner', default=None, help='')
     parser.add_argument('fnin', default=None, help='input timing delay .csv')
     parser.add_argument('fnout', default=None, help='output timing delay .csv')
@@ -87,9 +90,16 @@ def main():
     sub_json = load_sub(args.sub_json)
 
     try:
-        run(args.fnin, args.fnout, sub_json=sub_json, sort=args.sort, verbose=args.verbose, corner=args.corner)
+        run(
+            args.fnin,
+            args.fnout,
+            sub_json=sub_json,
+            sort=args.sort,
+            verbose=args.verbose,
+            corner=args.corner)
     finally:
         print('Exiting after %s' % bench)
+
 
 if __name__ == '__main__':
     main()
