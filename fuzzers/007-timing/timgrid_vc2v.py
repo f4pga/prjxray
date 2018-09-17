@@ -5,6 +5,7 @@ import os
 import time
 import json
 from collections import OrderedDict
+import timfuz
 
 corner_s2i = OrderedDict(
     [
@@ -77,6 +78,7 @@ def check_corner_minmax(tilej, verbose=False):
     print('Checking for min/max consistency')
     checks = 0
     bad = 0
+
     for tilev in tilej['tiles'].values():
 
         def process_type(etype):
@@ -102,7 +104,10 @@ def check_corner_minmax(tilej, verbose=False):
 
         process_type('pips')
         process_type('wires')
-    print('minmax: %u / %u bad' % (bad, checks))
+
+    print('')
+    print('minmax: %u / %u pairs bad pairs adjusted' % (bad, checks))
+    timfuz.tilej_stats(tilej)
 
 
 def check_corners_minmax(tilej, verbose=False):
@@ -127,8 +132,9 @@ def main():
 
     parser = argparse.ArgumentParser(
         description='Combine multiple tile corners into one .json file')
-    parser.add_argument('--out', required=True, help='Combined .json file')
-    parser.add_argument('fnins', nargs='+', help='Input .json files')
+    parser.add_argument(
+        '--out', required=True, help='Combined timgrid-v.json files')
+    parser.add_argument('fnins', nargs='+', help='Input timgrid-vc.json files')
     args = parser.parse_args()
 
     run(args.fnins, args.out, verbose=False)

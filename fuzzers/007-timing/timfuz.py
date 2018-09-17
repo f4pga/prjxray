@@ -665,20 +665,20 @@ def load_sub(fn):
     return j
 
 
-def row_sub_syms(row, sub_json, strict=False, verbose=False):
+def row_sub_vars(row, sub_json, strict=False, verbose=False):
     if 0 and verbose:
         print("")
         print(row.items())
 
-    delsyms = 0
+    delvars = 0
     for k in sub_json['drop_names']:
         try:
             del row[k]
-            delsyms += 1
+            delvars += 1
         except KeyError:
             pass
     if verbose:
-        print("Deleted %u symbols" % delsyms)
+        print("Deleted %u variables" % delvars)
 
     if verbose:
         print('Checking pivots')
@@ -750,7 +750,7 @@ def run_sub_json(Ads, sub_json, strict=False, verbose=False):
             print('Row %u w/ %u elements' % (rowi, len(row)))
 
         row_orig = dict(row)
-        row_sub_syms(row, sub_json, strict=strict, verbose=verbose)
+        row_sub_vars(row, sub_json, strict=strict, verbose=verbose)
         nrows += 1
         if row_orig != row:
             nsubs += 1
@@ -817,3 +817,33 @@ def corners2csv(bs):
     assert len(bs) == 4
     corners = ["None" if b is None else str(b) for b in bs]
     return ' '.join(corners)
+
+
+def tilej_stats(tilej):
+    stats = {}
+    for etype in ('pips', 'wires'):
+        tm = stats.setdefault(etype, {})
+        tm['net'] = 0
+        tm['solved'] = [0, 0, 0, 0]
+        tm['covered'] = [0, 0, 0, 0]
+
+    for tile in tilej['tiles'].values():
+        for etype in ('pips', 'wires'):
+            pips = tile[etype]
+            for k, v in pips.items():
+                stats[etype]['net'] += 1
+                for i in range(4):
+                    if pips[k][i]:
+                        stats[etype]['solved'][i] += 1
+                    if pips[k][i] is not None:
+                        stats[etype]['covered'][i] += 1
+
+    for corner, corneri in corner_s2i.items():
+        print('Corner %s' % corner)
+        for etype in ('pips', 'wires'):
+            net = stats[etype]['net']
+            solved = stats[etype]['solved'][corneri]
+            covered = stats[etype]['covered'][corneri]
+            print(
+                '  %s: %u / %u solved, %u / %u covered' %
+                (etype, solved, net, covered, net))

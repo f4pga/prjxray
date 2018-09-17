@@ -35,7 +35,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Substitute .csv to group correlated symbols')
+        description='Substitute .csv to group correlated variables')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--strict', action='store_true', help='')

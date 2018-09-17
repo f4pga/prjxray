@@ -29,7 +29,7 @@ class State(object):
         # known zero delay elements
         self.drop_names = set(drop_names)
         # active names in rows
-        # includes sub symbols, excludes symbols that have been substituted out
+        # includes sub variables, excludes variables that have been substituted out
         self.base_names = set(self.names)
         self.names = set(self.base_names)
         # List of variable substitutions
@@ -173,10 +173,10 @@ def state_rref(state, verbose=False):
         rowdsf = row_sym2dsf(rowsym, names)
 
         state.subs[group_name] = rowdsf
-        # Add the new symbol
+        # Add the new variables
         state.names.add(group_name)
-        # Remove substituted symbols
-        # Note: symbols may appear multiple times
+        # Remove substituted variables
+        # Note: variables may appear multiple times
         state.names.difference_update(set(rowdsf.keys()))
         pivot_name = names[row_pivot]
         state.pivots[group_name] = pivot_name

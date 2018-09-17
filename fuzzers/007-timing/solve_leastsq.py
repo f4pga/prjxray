@@ -160,10 +160,14 @@ def main():
     parser.add_argument('--corner', required=True, default="slow_max", help='')
     parser.add_argument(
         '--out', default=None, help='output timing delay .json')
-    parser.add_argument('fns_in', nargs='+', 'timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
+
+    fns_in = args.fns_in
+    if not fns_in:
+        fns_in = glob.glob('specimen_*/timing3.csv')
 
     sub_json = None
     if args.sub_json:
@@ -173,7 +177,7 @@ def main():
         timfuz_solve.run(
             run_corner=run_corner,
             sub_json=sub_json,
-            fns_in=args.fns_in,
+            fns_in=fns_in,
             corner=args.corner,
             massage=args.massage,
             outfn=args.out,

@@ -216,7 +216,7 @@ def main():
             run_corner=run_corner,
             sub_json=sub_json,
             sub_csv=args.sub_csv,
-            fn_in=fn_in,
+            fns_in=fns_in,
             corner=args.corner,
             massage=args.massage,
             outfn=args.out,

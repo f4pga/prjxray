@@ -9,50 +9,24 @@ import time
 import json
 
 
-def run(fnin, fnout, tile_json_fn, verbose=False):
+def run(fns_in, fnout, tile_json_fn, verbose=False):
     # modified in place
     tilej = json.load(open(tile_json_fn, 'r'))
 
-    Ads, bs = loadc_Ads_bs([fnin], ico=True)
-    bounds = Ads2bounds(Ads, bs)
+    for fnin in fns_in:
+        Ads, bs = loadc_Ads_bs([fnin], ico=True)
+        bounds = Ads2bounds(Ads, bs)
 
-    pipn_net = 0
-    pipn_solved = [0, 0, 0, 0]
-    pipn_covered = [0, 0, 0, 0]
-    wiren_net = 0
-    wiren_solved = [0, 0, 0, 0]
-    wiren_covered = [0, 0, 0, 0]
+        for tile in tilej['tiles'].values():
+            pips = tile['pips']
+            for k, v in pips.items():
+                pips[k] = bounds.get('PIP_' + v, [None, None, None, None])
 
-    for tile in tilej['tiles'].values():
-        pips = tile['pips']
-        for k, v in pips.items():
-            pips[k] = bounds.get('PIP_' + v, [None, None, None, None])
-            pipn_net += 1
-            for i in range(4):
-                if pips[k][i]:
-                    pipn_solved[i] += 1
-                if pips[k][i] is not None:
-                    pipn_covered[i] += 1
+            wires = tile['wires']
+            for k, v in wires.items():
+                wires[k] = bounds.get('WIRE_' + v, [None, None, None, None])
 
-        wires = tile['wires']
-        for k, v in wires.items():
-            wires[k] = bounds.get('WIRE_' + v, [None, None, None, None])
-            wiren_net += 1
-            for i in range(4):
-                if wires[k][i]:
-                    wiren_solved[i] += 1
-                if wires[k][i] is not None:
-                    wiren_covered[i] += 1
-
-    for corner, corneri in timfuz.corner_s2i.items():
-        print('Corner %s' % corner)
-        print(
-            '  Pips: %u / %u solved, %u / %u covered' %
-            (pipn_solved[corneri], pipn_net, pipn_covered[corneri], pipn_net))
-        print(
-            '  Wires: %u / %u solved, %u / %u covered' % (
-                wiren_solved[corneri], wiren_net, wiren_covered[corneri],
-                wiren_net))
+    timfuz.tilej_stats(tilej)
 
     json.dump(
         tilej,
@@ -68,13 +42,19 @@ def main():
     parser = argparse.ArgumentParser(
         description=
         'Substitute timgrid timing model names for real timing values')
-    parser.add_argument('--tile-json', default='tiles.json', help='')
     parser.add_argument(
-        'fnin', default=None, help='Input flattened timing csv (flat.json)')
-    parser.add_argument('fnout', default=None, help='output tile .json')
+        '--timgrid-s',
+        default='../../timgrid/build/timgrid-s.json',
+        help='tilegrid timing delay symbolic input (timgrid-s.json)')
+    parser.add_argument(
+        '--out',
+        default='build/timgrid-vc.json',
+        help='tilegrid timing delay values at corner (timgrid-vc.json)')
+    parser.add_argument(
+        'fn_ins', nargs='+', help='Input flattened timing csv (flat.json)')
     args = parser.parse_args()
 
-    run(args.fnin, args.fnout, args.tile_json, verbose=False)
+    run(args.fn_ins, args.out, args.timgrid_s, verbose=False)
 
 
 if __name__ == '__main__':

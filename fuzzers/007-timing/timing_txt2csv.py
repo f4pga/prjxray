@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 from timfuz import Benchmark, A_di2ds
-import numpy as np
 import glob
 import math
 import json
-import sympy
 import sys
 from collections import OrderedDict
 

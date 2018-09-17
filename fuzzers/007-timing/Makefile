@@ -3,13 +3,13 @@
 PRJ?=picorv32
 PRJN?=8
 
-all: build/tilea.json
+all: build/timgrid-v.json
 
 clean:
 	rm -rf build
 	cd speed && $(MAKE) clean
 	cd timgrid && $(MAKE) clean
-	cd projects && $(MAKE) clean
+	cd projects/$(PRJ) && $(MAKE) clean
 
 speed/build/speed.json:
 	cd speed && $(MAKE)
@@ -17,10 +17,10 @@ speed/build/speed.json:
 timgrid/build/timgrid.json:
 	cd timgrid && $(MAKE)
 
-build/tilea.json: projects/$(PRJ)/build/tilea.json
+build/timgrid-v.json: projects/$(PRJ)/build/timgrid-v.json
 	mkdir -p build
-	cp projects/$(PRJ)/build/tilea.json build/tilea.json
+	cp projects/$(PRJ)/build/timgrid-v.json build/timgrid-v.json
 
-projects/$(PRJ)/build/tilea.json: speed/build/speed.json timgrid/build/timgrid.json
+projects/$(PRJ)/build/timgrid-v.json: speed/build/speed.json timgrid/build/timgrid.json
 	cd projects/$(PRJ) && $(MAKE) N=$(PRJN)
 

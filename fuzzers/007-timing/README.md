@@ -13,10 +13,15 @@ Currently this document focuses exclusively on fabric timing delays.
 ## Quick start
 
 ```
-make
+make -j$(nproc)
 ```
 
-This will take a relatively long time (say 45 min) and generate build/tilea.json
+This will take a relatively long time (say 45 min) and generate build/timgrid-v.json.
+You can do a quicker test run (say 3 min) using:
+
+```
+make PRJ=oneblinkw PRJN=1 -j$(nproc)
+```
 
 
 ## Vivado background

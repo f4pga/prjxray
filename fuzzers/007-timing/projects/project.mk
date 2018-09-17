@@ -10,23 +10,19 @@ RREF_CORNER=slow_max
 ALLOW_ZERO_EQN?=N
 BADPRJ_OK?=N
 
-TILEA_JSONS=build/fast_max/tilea.json build/fast_min/tilea.json build/slow_max/tilea.json build/slow_min/tilea.json
+TIMGRID_VCS=build/fast_max/timgrid-vc.json build/fast_min/timgrid-vc.json build/slow_max/timgrid-vc.json build/slow_min/timgrid-vc.json
 
-all: build/tilea.json
+all: build/timgrid-v.json
 
 # make build/checksub first
-build/fast_max/tilea.json: build/checksub
+build/fast_max/timgrid-vc.json: build/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=fast_max
-build/fast_min/tilea.json: build/checksub
+build/fast_min/timgrid-vc.json: build/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=fast_min
-build/slow_max/tilea.json: build/checksub
+build/slow_max/timgrid-vc.json: build/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=slow_max
-build/slow_min/tilea.json: build/checksub
+build/slow_min/timgrid-vc.json: build/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=slow_min
-fast_max: build/fast_max/tilea.json
-fast_min: build/fast_min/tilea.json
-slow_max: build/slow_max/tilea.json
-slow_min: build/slow_min/tilea.json
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@) || (if [ "$(BADPRJ_OK)" != 'Y' ] ; then exit 1; fi; exit 0)
@@ -76,6 +72,6 @@ build/checksub: build/grouped.csv build/sub.json
 	python3 $(TIMFUZ_DIR)/checksub.py --sub-json build/sub.json build/grouped.csv
 	touch build/checksub
 
-build/tilea.json: $(TILEA_JSONS)
-	python3 $(TIMFUZ_DIR)/tile_combine.py --out build/tilea.json $(TILEA_JSONS)
+build/timgrid-v.json: $(TIMGRID_VCS)
+	python3 $(TIMFUZ_DIR)/timgrid_vc2v.py --out build/timgrid-v.json $(TIMGRID_VCS)
 
