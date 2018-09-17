@@ -1,7 +1,3 @@
-'''
-Verifies that node timing info is unique
-'''
-
 import re
 
 
@@ -31,7 +27,7 @@ def run(node_fin, verbose=0):
 
         def getk(anode):
             return anode['wname']
-            return (anode['tile_type'], anode['wname'])
+            #return (anode['tile_type'], anode['wname'])
 
         if nodei % 1000 == 0:
             print 'Check node %d' % nodei
@@ -43,18 +39,23 @@ def run(node_fin, verbose=0):
             refnodes[getk(anode)] = anode
             continue
         k_invariant = (
-            'CAN_INVERT',
-            'IS_BUFFERED_2_0',
-            'IS_BUFFERED_2_1',
-            'IS_DIRECTIONAL',
-            'IS_EXCLUDED_PIP',
-            'IS_FIXED_INVERSION',
-            'IS_INVERTED',
-            'IS_PSEUDO',
-            'IS_SITE_PIP',
-            'IS_TEST_PIP',
+            'COST_CODE',
+            'IS_INPUT_PIN',
+            'IS_OUTPUT_PIN',
+            'IS_PART_OF_BUS',
+            'NUM_INTERSECTS',
+            'NUM_TILE_PORTS',
+            'SPEED_INDEX',
+            'TILE_PATTERN_OFFSET',
         )
-        k_varies = ('TILE', )
+        k_varies = (
+            'ID_IN_TILE_TYPE',
+            'IS_CONNECTED',
+            'NUM_DOWNHILL_PIPS',
+            'NUM_PIPS',
+            'NUM_UPHILL_PIPS',
+            'TILE_NAME',
+        )
         # Verify equivilence
         for k in k_invariant:
             if k in refnode and k in anode:
@@ -79,7 +80,9 @@ def run(node_fin, verbose=0):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Timing fuzzer')
+    parser = argparse.ArgumentParser(
+        description=
+        'Determines which info is consistent across wires with the same name')
 
     parser.add_argument('--verbose', type=int, help='')
     parser.add_argument(

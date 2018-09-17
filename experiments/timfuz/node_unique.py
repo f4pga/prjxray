@@ -1,7 +1,3 @@
-'''
-Verifies that node timing info is unique
-'''
-
 import re
 
 
@@ -95,7 +91,9 @@ def run(node_fin, verbose=0):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Timing fuzzer')
+    parser = argparse.ArgumentParser(
+        description=
+        'Determines which info is consistent across nodes with the same name')
 
     parser.add_argument('--verbose', type=int, help='')
     parser.add_argument(
