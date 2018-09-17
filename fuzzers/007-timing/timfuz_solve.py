@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
 
-# https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
-from scipy.optimize import linprog
-from timfuz import Benchmark, simplify_rows, loadc_Ads_b, index_names, A_ds2np, run_sub_json, print_eqns, Ads2bounds, instances, SimplifiedToZero, allow_zero_eqns
+from timfuz import simplify_rows, loadc_Ads_b, index_names, A_ds2np, run_sub_json, print_eqns, Ads2bounds, instances, SimplifiedToZero, allow_zero_eqns
 from timfuz_massage import massage_equations
 import numpy as np
-import glob
-import json
-import math
-from collections import OrderedDict
-from fractions import Fraction
 import sys
-import datetime
-import os
-import time
 
 
 def check_feasible(A_ub, b_ub):
@@ -162,18 +152,6 @@ def run(
 
         #print
         #col_dist(A_ubd, 'final', names)
-    print('b10', b[0:100])
-    '''
-    Given:
-    a >= 10
-    a + b >= 100
-    A valid solution is:
-         a = 100
-    However, a better solution is something like
-        a = 10
-        b = 90
-    This creates derived constraints to provide more realistic results
-    '''
     if massage:
         try:
             Ads, b = massage_equations(Ads, b, corner=corner)

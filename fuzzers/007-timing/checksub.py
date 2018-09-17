@@ -58,10 +58,9 @@ def pds(Ads, s):
 
 
 def run(fns_in, sub_json=None, verbose=False):
-    # arbitrary...data is thrown away
-    corner = "slow_max"
-
-    Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
+    assert len(fn_ins) > 0
+    # arbitrary corner...data is thrown away
+    Ads, b = loadc_Ads_b(fns_in, "slow_max", ico=True)
 
     if sub_json:
         print('Subbing JSON %u rows' % len(Ads))
@@ -112,7 +111,7 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--sub-json', help='')
-    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()

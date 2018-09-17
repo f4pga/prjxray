@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-# https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
-from scipy.optimize import linprog
+import scipy.optimize as optimize
 from timfuz import Benchmark, load_sub, A_ub_np2d, acorner2csv, corner_s2i
 import numpy as np
 import glob
@@ -151,8 +150,9 @@ def run_corner(
     print('')
     # Now find smallest values for delay constants
     # Due to input bounds (ex: column limit), some delay elements may get eliminated entirely
+    # https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
     print('Running linprog w/ %d r, %d c (%d name)' % (rows, cols, len(names)))
-    res = linprog(
+    res = optimize.linprog(
         c,
         A_ub=A_ub,
         b_ub=b_ub,

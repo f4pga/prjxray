@@ -339,6 +339,16 @@ def massage_equations(Ads, b, verbose=False, corner=None):
     Subtract equations from each other to generate additional constraints
     Helps provide additional guidance to solver for realistic delays
 
+    Ex: given:
+    a >= 10
+    a + b >= 100
+    A valid solution is:
+         a = 100
+    However, a better solution is something like
+        a = 10
+        b = 90
+    This creates derived constraints to provide more realistic results
+
     Equation pipeline
     Some operations may generate new equations
     Simplify after these to avoid unnecessary overhead on redundant constraints

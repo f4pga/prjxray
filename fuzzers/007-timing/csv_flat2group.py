@@ -50,11 +50,15 @@ def main():
     # Store options in dict to ease passing through functions
     bench = Benchmark()
 
+    fns_in = args.fns_in
+    if not fns_in:
+        fns_in = glob.glob('specimen_*/timing3.csv')
+
     sub_json = load_sub(args.sub_json)
 
     try:
         run(
-            args.fns_in,
+            fns_in,
             args.out,
             sub_json=sub_json,
             strict=args.strict,

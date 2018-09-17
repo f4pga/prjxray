@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-'''
-Triaging tool to help understand where we need more timing coverage
-Finds correlated variables to help make better test cases
-'''
 
 from timfuz import Benchmark, Ar_di2np, loadc_Ads_b, index_names, A_ds2np, simplify_rows
 import numpy as np
@@ -193,6 +189,7 @@ def state_rref(state, verbose=False):
 def run(fnout, fn_ins, simplify=False, corner=None, verbose=0):
     print('Loading data')
 
+    assert len(fn_ins) > 0
     state = State.load(fn_ins, simplify=simplify, corner=corner)
     state_rref(state, verbose=verbose)
     state.print_stats()
@@ -217,14 +214,18 @@ def main():
         default='build_speed/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('--out', help='Output sub.json substitution result')
-    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
     args = parser.parse_args()
     bench = Benchmark()
+
+    fns_in = args.fns_in
+    if not fns_in:
+        fns_in = glob.glob('specimen_*/timing3.csv')
 
     try:
         run(
             fnout=args.out,
-            fn_ins=args.fns_in,
+            fn_ins=fns_in,
             simplify=args.simplify,
             corner=args.corner,
             verbose=args.verbose)

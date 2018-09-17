@@ -12,11 +12,10 @@ from collections import OrderedDict
 # Speed index: some sort of special value
 SI_NONE = 0xFFFF
 
+# prefix to make easier to track
+# models do not overlap between PIPs and WIREs
 PREFIX_W = 'WIRE_'
 PREFIX_P = 'PIP_'
-
-#PREFIX_W = ''
-#PREFIX_P = ''
 
 
 def parse_pip(s):

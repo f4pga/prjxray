@@ -1,19 +1,6 @@
 #!/usr/bin/env python3
 
-# https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
-from scipy.optimize import linprog
 from timfuz import Benchmark, loadc_Ads_bs, load_sub, Ads2bounds, corners2csv, corner_s2i
-from timfuz_massage import massage_equations
-import numpy as np
-import glob
-import json
-import math
-from collections import OrderedDict
-from fractions import Fraction
-import sys
-import datetime
-import os
-import time
 
 
 def gen_flat(fnin, sub_json, corner=None):

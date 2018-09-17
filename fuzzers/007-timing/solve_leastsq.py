@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 
-# https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
-from scipy.optimize import linprog
 from timfuz import Benchmark, load_sub, corner_s2i, acorner2csv
 import timfuz
 import numpy as np
-import glob
 import math
-from fractions import Fraction
 import sys
 import os
 import time
 import timfuz_solve
 import scipy.optimize as optimize
-from scipy.optimize import least_squares
 
 
 def mkestimate(Anp, b):
@@ -141,7 +136,7 @@ def run_corner(
     x0 = mkestimate(Anp, b)
 
     print('Solving')
-    res = least_squares(func, x0, bounds=(0, float('inf')))
+    res = optimize.least_squares(func, x0, bounds=(0, float('inf')))
     print('Done')
 
     if outfn:

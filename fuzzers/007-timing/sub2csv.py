@@ -1,25 +1,7 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, Ar_di2np, loadc_Ads_b, index_names, A_ds2np, simplify_rows
-import numpy as np
-import glob
-import math
+from timfuz import Benchmark
 import json
-import sympy
-from collections import OrderedDict
-from fractions import Fraction
-
-
-def mlcm(xs):
-    '''
-    Find the LCM between elements in a group
-    '''
-    l = xs[0]
-    for n in xs:
-        for m in xs:
-            lthis = lcm(n, m)
-            l = int(max(lthis, l))
-    return ret
 
 
 def write_state(state, fout):
