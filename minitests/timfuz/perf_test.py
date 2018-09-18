@@ -119,7 +119,8 @@ def run(
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Matrix solving performance tests')
+    parser = argparse.ArgumentParser(
+        description='Matrix solving performance tests')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--sparse', action='store_true', help='')
