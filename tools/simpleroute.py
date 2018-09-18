@@ -84,8 +84,8 @@ def db_gen():
                         node_node_pip[src_node] = dict()
                     if dst_node not in reverse_node_node:
                         reverse_node_node[dst_node] = set()
-                    node_node_pip[src_node][
-                        dst_node] = "%s.%s.%s" % (tile, dst, src)
+                    node_node_pip[src_node][dst_node] = "%s.%s.%s" % (
+                        tile, dst, src)
                     reverse_node_node[dst_node].add(src_node)
 
     return type_to_tiles, grid_to_tile, nodes, node_node_pip, reverse_node_node

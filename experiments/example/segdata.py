@@ -54,8 +54,8 @@ with open("carrydata.txt", "r") as f:
         assert line[0] not in carry
         carry[line[0]] = dict()
         for i, n in enumerate(
-                "CYINIT:ZRO:ONE:AX:CIN DI0:AX:O5 DI1:AX:O5 DI2:AX:O5 DI3:AX:O5".
-                split()):
+                "CYINIT:ZRO:ONE:AX:CIN DI0:AX:O5 DI1:AX:O5 DI2:AX:O5 DI3:AX:O5"
+                .split()):
             n = n.split(":")
             for k in n[1:]:
                 carry[line[0]]["CARRY_%s_MUX_%s" %

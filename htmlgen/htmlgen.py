@@ -848,9 +848,11 @@ for tiletype in sorted(cfgbits.keys()):
                 line = " --><td>%s</td>" % (pip)
                 for bit in grp_bits:
                     c = "-"
-                    if bit in routebits[tiletype] and pip in routebits[tiletype][bit]:
+                    if bit in routebits[tiletype] and pip in routebits[
+                            tiletype][bit]:
                         c = "1"
-                    if bit in routezbits[tiletype] and pip in routezbits[tiletype][bit]:
+                    if bit in routezbits[tiletype] and pip in routezbits[
+                            tiletype][bit]:
                         c = "0"
                     line = "%s%s<td align=\"center\">%s</td>" % (c, line, c)
                 lines.append(line)
