@@ -11,7 +11,7 @@ namespace xc7series = prjxray::xilinx::xc7series;
 
 struct Action {
 	std::string name;
-	std::function<int(int, char* [])> handler;
+	std::function<int(int, char*[])> handler;
 };
 
 int ListConfigPackets(int argc, char* argv[]) {
