@@ -7,5 +7,5 @@ $ python3 wire_unique.py
 $ python3 node_unique.py
 ```
 
-NOTE: this will take a long time
+NOTE: "make" will take a long time (about 2.5 hours on my machine)
 

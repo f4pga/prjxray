@@ -42,7 +42,7 @@ def run(node_fin, verbose=0):
             return anode['wname']
             #return (anode['tile_type'], anode['wname'])
 
-        if nodei % 10000 == 0:
+        if nodei % 100000 == 0:
             print('Check node %d, %u node types' % (nodei, len(refnodes)))
         # Existing node?
         try:
