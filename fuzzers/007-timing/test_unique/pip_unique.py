@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import re
 
 
@@ -29,8 +31,8 @@ def run(node_fin, verbose=0):
             return anode['wname']
             return (anode['tile_type'], anode['wname'])
 
-        if nodei % 1000 == 0:
-            print 'Check node %d' % nodei
+        if nodei % 10000 == 0:
+            print('Check node %d, %u node types' % (nodei, len(refnodes)))
         # Existing node?
         try:
             refnode = refnodes[getk(anode)]
@@ -56,14 +58,14 @@ def run(node_fin, verbose=0):
             if k in refnode and k in anode:
 
                 def fail():
-                    print 'Mismatch on %s' % k
-                    print refnode[k], anode[k]
-                    print refnode['l']
-                    print anode['l']
+                    print('Mismatch on %s' % k)
+                    print(refnode[k], anode[k])
+                    print(refnode['l'])
+                    print(anode['l'])
                     #assert 0
 
                 if refnode[k] != anode[k]:
-                    print
+                    print('')
                     fail()
             # A key in one but not the other?
             elif k in refnode or k in anode:
@@ -81,6 +83,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--verbose', type=int, help='')
     parser.add_argument(
-        'node_fn_in', default='/dev/stdin', nargs='?', help='Input file')
+        'node_fn_in',
+        default='specimen_001/pip_all.txt',
+        nargs='?',
+        help='Input file')
     args = parser.parse_args()
     run(open(args.node_fn_in, 'r'), verbose=args.verbose)
