@@ -142,7 +142,8 @@ def run_corner(
         print('Delay on %d / %d' % (nonzeros, len(res.x)))
 
         if outfn:
-            timfuz_solve.solve_save(outfn, res.x, names, corner, verbose=verbose)
+            timfuz_solve.solve_save(
+                outfn, res.x, names, corner, verbose=verbose)
 
 
 def main():

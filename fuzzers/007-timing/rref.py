@@ -9,6 +9,7 @@ import sympy
 from collections import OrderedDict
 from fractions import Fraction
 
+
 def rm_zero_cols(Ads, verbose=True):
     removed = OrderedSet()
 
@@ -24,6 +25,7 @@ def rm_zero_cols(Ads, verbose=True):
                     print('  Removing %s' % k)
     return removed
 
+
 def fracr_quick(r):
     return [Fraction(numerator=int(x), denominator=1) for x in r]
 
@@ -33,6 +35,7 @@ def fracm_quick(m):
     t = type(m[0][0])
     print('fracm_quick type: %s' % t)
     return [fracr_quick(r) for r in m]
+
 
 class State(object):
     def __init__(self, Ads, zero_names=[]):
@@ -193,7 +196,8 @@ def run(fnout, fn_ins, simplify=False, corner=None, rm_zero=False, verbose=0):
     print('Loading data')
 
     assert len(fn_ins) > 0
-    state = State.load(fn_ins, simplify=simplify, corner=corner, rm_zero=rm_zero)
+    state = State.load(
+        fn_ins, simplify=simplify, corner=corner, rm_zero=rm_zero)
     state_rref(state, verbose=verbose)
     state.print_stats()
     if fnout:
@@ -212,7 +216,8 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--simplify', action='store_true', help='')
     parser.add_argument('--corner', default="slow_max", help='')
-    parser.add_argument('--rm-zero', action='store_true', help='Remove ZERO elements')
+    parser.add_argument(
+        '--rm-zero', action='store_true', help='Remove ZERO elements')
     parser.add_argument(
         '--speed-json',
         default='build_speed/speed.json',

@@ -46,15 +46,17 @@ def gen_flat(fns_in, sub_json, corner=None):
     # should they be fixed 0?
     if zero_row:
         print('zero_row', len(group_zeros), len(violations))
+        for zero in sub_json['zero_names']:
+            yield zero, zero_row
         for zero in group_zeros - violations:
-            print('zero', zero)
             yield zero, zero_row
 
 
 def run(fns_in, fnout, sub_json, corner=None, verbose=False):
     with open(fnout, 'w') as fout:
         fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-        for name, corners in sorted(list(gen_flat(fns_in, sub_json, corner=corner))):
+        for name, corners in sorted(list(gen_flat(fns_in, sub_json,
+                                                  corner=corner))):
             row_ico = 1
             items = [str(row_ico), corners2csv(corners)]
             items.append('%u %s' % (1, name))
