@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, Ar_di2np, loadc_Ads_b, index_names, A_ds2np, simplify_rows
+from timfuz import Benchmark, Ar_di2np, loadc_Ads_b, index_names, A_ds2np, simplify_rows, OrderedSet
 import numpy as np
 import glob
 import math
@@ -27,14 +27,15 @@ class State(object):
         self.names = index_names(self.Ads)
 
         # known zero delay elements
-        self.drop_names = set(drop_names)
+        self.drop_names = OrderedSet(drop_names)
         # active names in rows
         # includes sub variables, excludes variables that have been substituted out
-        self.base_names = set(self.names)
+        self.base_names = OrderedSet(self.names)
+        #self.names = OrderedSet(self.base_names)
         self.names = set(self.base_names)
         # List of variable substitutions
         # k => dict of v:n entries that it came from
-        self.subs = {}
+        self.subs = OrderedDict()
         self.verbose = True
 
     def print_stats(self):
@@ -63,11 +64,16 @@ class State(object):
 
 def write_state(state, fout):
     j = {
-        'names': dict([(x, None) for x in state.names]),
-        'drop_names': list(state.drop_names),
-        'base_names': list(state.base_names),
-        'subs': dict([(name, values) for name, values in state.subs.items()]),
-        'pivots': state.pivots,
+        'names':
+        OrderedDict([(x, None) for x in state.names]),
+        'drop_names':
+        list(state.drop_names),
+        'base_names':
+        list(state.base_names),
+        'subs':
+        OrderedDict([(name, values) for name, values in state.subs.items()]),
+        'pivots':
+        state.pivots,
     }
     json.dump(j, fout, sort_keys=True, indent=4, separators=(',', ': '))
 
@@ -89,7 +95,7 @@ def Anp2matrix(Anp):
 
 
 def row_np2ds(rownp, names):
-    ret = {}
+    ret = OrderedDict()
     assert len(rownp) == len(names), (len(rownp), len(names))
     for namei, name in enumerate(names):
         v = rownp[namei]
@@ -102,7 +108,7 @@ def row_sym2dsf(rowsym, names):
     '''Convert a sympy row into a dictionary of keys to (numerator, denominator) tuples'''
     from sympy import fraction
 
-    ret = {}
+    ret = OrderedDict()
     assert len(rowsym) == len(names), (len(rowsym), len(names))
     for namei, name in enumerate(names):
         v = rowsym[namei]
@@ -145,7 +151,7 @@ def state_rref(state, verbose=False):
         print('rref')
         sympy.pprint(rref)
 
-    state.pivots = {}
+    state.pivots = OrderedDict()
 
     def row_solved(rowsym, row_pivot):
         for ci, c in enumerate(rowsym):
@@ -177,7 +183,7 @@ def state_rref(state, verbose=False):
         state.names.add(group_name)
         # Remove substituted variables
         # Note: variables may appear multiple times
-        state.names.difference_update(set(rowdsf.keys()))
+        state.names.difference_update(OrderedSet(rowdsf.keys()))
         pivot_name = names[row_pivot]
         state.pivots[group_name] = pivot_name
         if verbose:

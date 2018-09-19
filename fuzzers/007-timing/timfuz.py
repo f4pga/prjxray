@@ -13,10 +13,76 @@ import sys
 import random
 import glob
 from fractions import Fraction
+import collections
 
 from benchmark import Benchmark
 
-NAME_ZERO = set(
+
+# Equations are filtered out until nothing is left
+class SimplifiedToZero(Exception):
+    pass
+
+
+# http://code.activestate.com/recipes/576694/
+class OrderedSet(collections.MutableSet):
+    def __init__(self, iterable=None):
+        self.end = end = []
+        end += [None, end, end]  # sentinel node for doubly linked list
+        self.map = {}  # key --> [key, prev, next]
+        if iterable is not None:
+            self |= iterable
+
+    def __len__(self):
+        return len(self.map)
+
+    def __contains__(self, key):
+        return key in self.map
+
+    def add(self, key):
+        if key not in self.map:
+            end = self.end
+            curr = end[1]
+            curr[2] = end[1] = self.map[key] = [key, curr, end]
+
+    def discard(self, key):
+        if key in self.map:
+            key, prev, next = self.map.pop(key)
+            prev[2] = next
+            next[1] = prev
+
+    def __iter__(self):
+        end = self.end
+        curr = end[2]
+        while curr is not end:
+            yield curr[0]
+            curr = curr[2]
+
+    def __reversed__(self):
+        end = self.end
+        curr = end[1]
+        while curr is not end:
+            yield curr[0]
+            curr = curr[1]
+
+    def pop(self, last=True):
+        if not self:
+            raise KeyError('set is empty')
+        key = self.end[1][0] if last else self.end[2][0]
+        self.discard(key)
+        return key
+
+    def __repr__(self):
+        if not self:
+            return '%s()' % (self.__class__.__name__, )
+        return '%s(%r)' % (self.__class__.__name__, list(self))
+
+    def __eq__(self, other):
+        if isinstance(other, OrderedSet):
+            return len(self) == len(other) and list(self) == list(other)
+        return set(self) == set(other)
+
+
+NAME_ZERO = OrderedSet(
     [
         "BSW_CLK_ZERO",
         "BSW_ZERO",
@@ -38,11 +104,6 @@ corner_s2i = OrderedDict(
         ('slow_max', 2),
         ('slow_min', 3),
     ])
-
-
-# Equations are filtered out until nothing is left
-class SimplifiedToZero(Exception):
-    pass
 
 
 def allow_zero_eqns():
@@ -148,7 +209,7 @@ def check_feasible(A_ub, b_ub):
 def Ab_ub_dt2d(eqns):
     '''Convert dict using the rows as keys into a list of dicts + b_ub list (ie return A_ub, b_ub)'''
     #return [dict(rowt) for rowt in eqns]
-    rows = [(dict(rowt), b) for rowt, b in eqns.items()]
+    rows = [(OrderedDict(rowt), b) for rowt, b in eqns.items()]
     A_ubd, b_ub = zip(*rows)
     return list(A_ubd), list(b_ub)
 
@@ -411,7 +472,7 @@ def derive_eq_by_col(A_ubd, b_ub, verbose=0):
                 b_ub[row_refi] /= v
             knowns[k] = b_ub[row_refi]
     print(' done')
-    #knowns_set = set(knowns.keys())
+    #knowns_set = OrderedSet(knowns.keys())
     print('%d constrained' % len(knowns))
     '''
     Now see what we can do
@@ -648,7 +709,7 @@ def loadc_Ads_raw(fns):
 
 
 def index_names(Ads):
-    names = set()
+    names = OrderedSet()
     for row_ds in Ads:
         for k1 in row_ds.keys():
             names.add(k1)
@@ -740,7 +801,7 @@ def run_sub_json(Ads, sub_json, strict=False, verbose=False):
     ncols_new = 0
 
     print('Subbing %u rows' % len(Ads))
-    prints = set()
+    prints = OrderedSet()
 
     for rowi, row in enumerate(Ads):
         if 0 and verbose:

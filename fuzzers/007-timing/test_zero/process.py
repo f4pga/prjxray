@@ -7,7 +7,6 @@ import json
 
 
 def run_types(tilej, verbose=False):
-
     def process(etype):
         # dict[model] = set((tile, wire/pip))
         zeros = {}
@@ -19,7 +18,9 @@ def run_types(tilej, verbose=False):
                     zeros.setdefault(emodel, set()).add((tilek, ename))
         # Print out delay model instances
         print('%s ZERO types: %u, %s' % (etype, len(zeros), zeros.keys()))
-        print('%s ZERO instances: %u' % (etype, sum([len(x) for x in zeros.values()])))
+        print(
+            '%s ZERO instances: %u' %
+            (etype, sum([len(x) for x in zeros.values()])))
         for model in sorted(zeros.keys()):
             modelv = zeros[model]
             print('Model: %s' % model)
@@ -30,8 +31,8 @@ def run_types(tilej, verbose=False):
     print('')
     process('pips')
 
-def run_prefix(tilej, verbose=False):
 
+def run_prefix(tilej, verbose=False):
     def process(etype):
         prefixes = set()
         print('Processing %s' % etype)
@@ -48,6 +49,7 @@ def run_prefix(tilej, verbose=False):
     print('')
     process('pips')
 
+
 def run(fnin, verbose=False):
     tilej = json.load((open(fnin, 'r')))
     run_types(tilej)
@@ -55,11 +57,16 @@ def run(fnin, verbose=False):
     print('')
     run_prefix(tilej)
 
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Solve timing solution')
-    parser.add_argument('fnin', default="../timgrid/build/timgrid-s.json", nargs='?', help='input timgrid JSON')
+    parser.add_argument(
+        'fnin',
+        default="../timgrid/build/timgrid-s.json",
+        nargs='?',
+        help='input timgrid JSON')
     args = parser.parse_args()
 
     run(args.fnin, verbose=False)
