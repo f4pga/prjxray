@@ -192,7 +192,7 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--massage', action='store_true', help='')
-    parser.add_argument('--sub-csv', help='')
+    parser.add_argument('--bounds-csv', help='Previous solve result starting point')
     parser.add_argument(
         '--sub-json', help='Group substitutions to make fully ranked')
     parser.add_argument('--corner', required=True, default="slow_max", help='')
@@ -215,7 +215,7 @@ def main():
         timfuz_solve.run(
             run_corner=run_corner,
             sub_json=sub_json,
-            sub_csv=args.sub_csv,
+            bounds_csv=args.bounds_csv,
             fns_in=fns_in,
             corner=args.corner,
             massage=args.massage,

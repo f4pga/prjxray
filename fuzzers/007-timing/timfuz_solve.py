@@ -98,7 +98,7 @@ def run(
         corner,
         run_corner,
         sub_json=None,
-        sub_csv=None,
+        bounds_csv=None,
         dedup=True,
         massage=False,
         outfn=None,
@@ -132,8 +132,8 @@ def run(
     Special .csv containing one variable per line
     Used primarily for multiple optimization passes, such as different algorithms or additional constraints
     '''
-    if sub_csv:
-        Ads2, b2 = loadc_Ads_b([sub_csv], corner, ico=True)
+    if bounds_csv:
+        Ads2, b2 = loadc_Ads_b([bounds_csv], corner, ico=True)
         bounds = Ads2bounds(Ads2, b2)
         assert len(bounds), 'Failed to load bounds'
         rows_old = len(Ads)

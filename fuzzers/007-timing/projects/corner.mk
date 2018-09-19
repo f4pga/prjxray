@@ -32,7 +32,7 @@ build/$(CORNER)/leastsq.csv: build/sub.json build/grouped.csv build/checksub bui
 
 build/$(CORNER)/linprog.csv: build/$(CORNER)/leastsq.csv build/grouped.csv
 	# Tweak rough timing model, making sure all constraints are satisfied
-	ALLOW_ZERO_EQN=$(ALLOW_ZERO_EQN) python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json build/sub.json --sub-csv build/$(CORNER)/leastsq.csv --massage build/grouped.csv --corner $(CORNER) --out build/$(CORNER)/linprog.csv.tmp
+	ALLOW_ZERO_EQN=$(ALLOW_ZERO_EQN) python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json build/sub.json --bounds-csv build/$(CORNER)/leastsq.csv --massage build/grouped.csv --corner $(CORNER) --out build/$(CORNER)/linprog.csv.tmp
 	mv build/$(CORNER)/linprog.csv.tmp build/$(CORNER)/linprog.csv
 
 build/$(CORNER)/flat.csv: build/$(CORNER)/linprog.csv

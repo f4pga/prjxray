@@ -51,7 +51,7 @@ def main():
         default='build/timgrid-vc.json',
         help='tilegrid timing delay values at corner (timgrid-vc.json)')
     parser.add_argument(
-        'fn_ins', nargs='+', help='Input flattened timing csv (flat.json)')
+        'fn_ins', nargs='+', help='Input flattened timing csv (flat.csv)')
     args = parser.parse_args()
 
     run(args.fn_ins, args.out, args.timgrid_s, verbose=False)
