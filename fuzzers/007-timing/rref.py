@@ -78,22 +78,6 @@ def write_state(state, fout):
     json.dump(j, fout, sort_keys=True, indent=4, separators=(',', ': '))
 
 
-def Anp2matrix(Anp):
-    '''
-    Original idea was to make into a square matrix
-    but this loses too much information
-    so now this actually isn't doing anything and should probably be eliminated
-    '''
-
-    ncols = len(Anp[0])
-    A_ub2 = [np.zeros(ncols) for _i in range(ncols)]
-    dst_rowi = 0
-    for rownp in Anp:
-        A_ub2[dst_rowi] = np.add(A_ub2[dst_rowi], rownp)
-        dst_rowi = (dst_rowi + 1) % ncols
-    return A_ub2
-
-
 def row_np2ds(rownp, names):
     ret = OrderedDict()
     assert len(rownp) == len(names), (len(rownp), len(names))
@@ -123,11 +107,7 @@ def state_rref(state, verbose=False):
     names, Anp = A_ds2np(state.Ads)
 
     print('np: %u rows x %u cols' % (len(Anp), len(Anp[0])))
-    if 0:
-        print('Combining rows into matrix')
-        mnp = Anp2matrix(Anp)
-    else:
-        mnp = Anp
+    mnp = Anp
     print('Matrix: %u rows x %u cols' % (len(mnp), len(mnp[0])))
     print('Converting np to sympy matrix')
     mfrac = fracm_quick(mnp)
