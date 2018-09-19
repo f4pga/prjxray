@@ -9,6 +9,20 @@ import sympy
 from collections import OrderedDict
 from fractions import Fraction
 
+def rm_zero_cols(Ads, verbose=True):
+    removed = OrderedSet()
+
+    print('Removing ZERO elements')
+    for row_ds in Ads:
+        for k in set(row_ds.keys()):
+            if k in removed:
+                del row_ds[k]
+            elif k.find('ZERO') >= 0:
+                del row_ds[k]
+                removed.add(k)
+                if verbose:
+                    print('  Removing %s' % k)
+    return removed
 
 def fracr_quick(r):
     return [Fraction(numerator=int(x), denominator=1) for x in r]
@@ -20,14 +34,13 @@ def fracm_quick(m):
     print('fracm_quick type: %s' % t)
     return [fracr_quick(r) for r in m]
 
-
 class State(object):
-    def __init__(self, Ads, drop_names=[]):
+    def __init__(self, Ads, zero_names=[]):
         self.Ads = Ads
         self.names = index_names(self.Ads)
 
         # known zero delay elements
-        self.drop_names = OrderedSet(drop_names)
+        self.zero_names = OrderedSet(zero_names)
         # active names in rows
         # includes sub variables, excludes variables that have been substituted out
         self.base_names = OrderedSet(self.names)
@@ -46,30 +59,34 @@ class State(object):
                 "    Largest: %u" % max([len(x) for x in self.subs.values()]))
         print("  Rows: %u" % len(self.Ads))
         print(
-            "  Cols (in): %u" % (len(self.base_names) + len(self.drop_names)))
+            "  Cols (in): %u" % (len(self.base_names) + len(self.zero_names)))
         print("  Cols (preprocessed): %u" % len(self.base_names))
-        print("    Drop names: %u" % len(self.drop_names))
+        print("    ZERO names: %u" % len(self.zero_names))
         print("  Cols (out): %u" % len(self.names))
         print("  Solvable vars: %u" % len(self.names & self.base_names))
         assert len(self.names) >= len(self.subs)
 
     @staticmethod
-    def load(fn_ins, simplify=False, corner=None):
+    def load(fn_ins, simplify=False, corner=None, rm_zero=False):
+        zero_names = OrderedSet()
+
         Ads, b = loadc_Ads_b(fn_ins, corner=corner, ico=True)
+        if rm_zero:
+            zero_names = rm_zero_cols(Ads)
         if simplify:
             print('Simplifying corner %s' % (corner, ))
             Ads, b = simplify_rows(Ads, b, remove_zd=False, corner=corner)
-        return State(Ads)
+        return State(Ads, zero_names=zero_names)
 
 
 def write_state(state, fout):
     j = {
         'names':
         OrderedDict([(x, None) for x in state.names]),
-        'drop_names':
-        list(state.drop_names),
+        'zero_names':
+        sorted(list(state.zero_names)),
         'base_names':
-        list(state.base_names),
+        sorted(list(state.base_names)),
         'subs':
         OrderedDict([(name, values) for name, values in state.subs.items()]),
         'pivots':
@@ -172,11 +189,11 @@ def state_rref(state, verbose=False):
     return state
 
 
-def run(fnout, fn_ins, simplify=False, corner=None, verbose=0):
+def run(fnout, fn_ins, simplify=False, corner=None, rm_zero=False, verbose=0):
     print('Loading data')
 
     assert len(fn_ins) > 0
-    state = State.load(fn_ins, simplify=simplify, corner=corner)
+    state = State.load(fn_ins, simplify=simplify, corner=corner, rm_zero=rm_zero)
     state_rref(state, verbose=verbose)
     state.print_stats()
     if fnout:
@@ -195,6 +212,7 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--simplify', action='store_true', help='')
     parser.add_argument('--corner', default="slow_max", help='')
+    parser.add_argument('--rm-zero', action='store_true', help='Remove ZERO elements')
     parser.add_argument(
         '--speed-json',
         default='build_speed/speed.json',
@@ -214,6 +232,7 @@ def main():
             fn_ins=fns_in,
             simplify=args.simplify,
             corner=args.corner,
+            rm_zero=args.rm_zero,
             verbose=args.verbose)
     finally:
         print('Exiting after %s' % bench)

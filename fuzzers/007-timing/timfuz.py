@@ -107,6 +107,7 @@ corner_s2i = OrderedDict(
 
 
 def allow_zero_eqns():
+    '''If true, allow a system of equations with no equations'''
     return os.getenv('ALLOW_ZERO_EQN', 'N') == 'Y'
 
 
@@ -732,7 +733,7 @@ def row_sub_vars(row, sub_json, strict=False, verbose=False):
         print(row.items())
 
     delvars = 0
-    for k in sub_json['drop_names']:
+    for k in sub_json['zero_names']:
         try:
             del row[k]
             delvars += 1
@@ -908,3 +909,7 @@ def tilej_stats(tilej):
             print(
                 '  %s: %u / %u solved, %u / %u covered' %
                 (etype, solved, net, covered, net))
+
+def load_bounds(bounds_csv, corner, ico=True):
+    Ads, b = loadc_Ads_b([bounds_csv], corner, ico=ico)
+    return Ads2bounds(Ads, b)

@@ -6,36 +6,48 @@ from timfuz import Benchmark, loadc_Ads_bs, load_sub, Ads2bounds, corners2csv, c
 def gen_flat(fns_in, sub_json, corner=None):
     Ads, bs = loadc_Ads_bs(fns_in, ico=True)
     bounds = Ads2bounds(Ads, bs)
-    zeros = set()
+    # Elements with zero delay assigned due to sub group
+    group_zeros = set()
+    # Elements with a concrete delay
     nonzeros = set()
+
+    if corner:
+        zero_row = [None, None, None, None]
+        zero_row[corner_s2i[corner]] = 0
+    else:
+        zero_row = None
 
     for bound_name, bound_bs in bounds.items():
         sub = sub_json['subs'].get(bound_name, None)
-        if sub:
+        if bound_name in sub_json['zero_names']:
+            if zero_row:
+                yield bound_name, 0
+        elif sub:
+            print('sub', sub)
             # put entire delay into pivot
             pivot = sub_json['pivots'][bound_name]
-            assert pivot not in zeros
+            assert pivot not in group_zeros
             nonzeros.add(pivot)
             non_pivot = set(sub.keys() - set([pivot]))
             #for name in non_pivot:
             #    assert name not in nonzeros, (pivot, name, nonzeros)
-            zeros.update(non_pivot)
+            group_zeros.update(non_pivot)
             yield pivot, bound_bs
         else:
             nonzeros.add(bound_name)
             yield bound_name, bound_bs
     # non-pivots can appear multiple times, but they should always be zero
     # however, due to substitution limitations, just warn
-    violations = zeros.intersection(nonzeros)
+    violations = group_zeros.intersection(nonzeros)
     if len(violations):
         print('WARNING: %s non-0 non-pivot' % (len(violations)))
 
     # XXX: how to best handle these?
     # should they be fixed 0?
-    if corner:
-        zero_row = [None, None, None, None]
-        zero_row[corner_s2i[corner]] = 0
-        for zero in zeros - violations:
+    if zero_row:
+        print('zero_row', len(group_zeros), len(violations))
+        for zero in group_zeros - violations:
+            print('zero', zero)
             yield zero, zero_row
 
 

@@ -30,47 +30,6 @@ def mkestimate(Anp, b):
     return x0
 
 
-def save(outfn, xvals, names, corner):
-    # ballpark minimum actual observed delay is around 7 (carry chain)
-    # anything less than one is probably a solver artifact
-    delta = 0.5
-    corneri = corner_s2i[corner]
-
-    # Round conservatively
-    roundf = {
-        'fast_max': math.ceil,
-        'fast_min': math.floor,
-        'slow_max': math.ceil,
-        'slow_min': math.floor,
-    }[corner]
-
-    print('Writing results')
-    skips = 0
-    keeps = 0
-    with open(outfn, 'w') as fout:
-        # write as one variable per line
-        # this natively forms a bound if fed into linprog solver
-        fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-        for xval, name in zip(xvals, names):
-            row_ico = 1
-
-            # also review ceil vs floor choice for min vs max
-            # lets be more conservative for now
-            if xval < delta:
-                #print('Skipping %s: %0.6f' % (name, xval))
-                skips += 1
-                continue
-            keeps += 1
-            #xvali = round(xval)
-
-            items = [str(row_ico), acorner2csv(roundf(xval), corneri)]
-            items.append('%u %s' % (1, name))
-            fout.write(','.join(items) + '\n')
-    print(
-        'Wrote: skip %u => %u / %u valid delays' % (skips, keeps, len(names)))
-    assert keeps, 'Failed to estimate delay'
-
-
 def run_corner(
         Anp, b, names, corner, verbose=False, opts={}, meta={}, outfn=None):
     # Given timing scores for above delays (-ps)
@@ -140,7 +99,7 @@ def run_corner(
     print('Done')
 
     if outfn:
-        save(outfn, res.x, names, corner)
+        timfuz_solve.solve_save(outfn, res.x, names, corner, verbose=verbose)
 
 
 def main():
