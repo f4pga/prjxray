@@ -60,13 +60,12 @@ def create_site_pin_to_wire_maps(tile_name, nodes):
     site_pin_to_wires = {}
 
     for node in nodes:
+        if len(node['site_pins']) == 0:
+            continue
 
-        def get_generic_name_from_wire():
-            for wire in node["wires"]:
-                if wire.startswith(tile_prefix):
-                    yield wire[len(tile_prefix):]
-
-        wire_names = tuple(get_generic_name_from_wire())
+        wire_names = [
+            wire for wire in node['wires'] if wire.startswith(tile_prefix)
+        ]
         assert len(wire_names) == 1, (node, tile_prefix)
 
         for site_pin in node["site_pins"]:

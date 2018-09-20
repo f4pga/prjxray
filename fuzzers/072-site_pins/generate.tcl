@@ -35,21 +35,19 @@ dict for {tile_type tile} $prototype_tiles {
   foreach node $nodes {
     set site_pins [get_site_pins -of_objects $node]
     set wires [get_wires -of_objects $node]
-    if {[llength $site_pins] > 0} {
-      puts $tile_channel "\t\t\{"
-      puts $tile_channel "\t\t\t\"node\": \"$node\","
-      puts $tile_channel "\t\t\t\"site_pins\": \["
-      foreach site_pin $site_pins {
-        puts $tile_channel "\t\t\t\t\"$site_pin\","
-      }
-      puts $tile_channel "\t\t\t\],"
-      puts $tile_channel "\t\t\t\"wires\": \["
-      foreach wire $wires {
-        puts $tile_channel "\t\t\t\t\"$wire\","
-      }
-      puts $tile_channel "\t\t\t\]"
-      puts $tile_channel "\t\t\},"
+    puts $tile_channel "\t\t\{"
+    puts $tile_channel "\t\t\t\"node\": \"$node\","
+    puts $tile_channel "\t\t\t\"site_pins\": \["
+    foreach site_pin $site_pins {
+      puts $tile_channel "\t\t\t\t\"$site_pin\","
     }
+    puts $tile_channel "\t\t\t\],"
+    puts $tile_channel "\t\t\t\"wires\": \["
+    foreach wire $wires {
+      puts $tile_channel "\t\t\t\t\"$wire\","
+    }
+    puts $tile_channel "\t\t\t\]"
+    puts $tile_channel "\t\t\},"
   }
   puts $tile_channel "\t\],"
 
