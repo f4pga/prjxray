@@ -4,7 +4,7 @@
 N := 1
 SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
-CSVS := $(addsuffix /timing3.csv,$(SPECIMENS))
+CSVS := $(addsuffix /timing3i.csv,$(SPECIMENS))
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
 RREF_CORNER=slow_max
 # Allow an empty system of equations?

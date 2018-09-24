@@ -235,6 +235,10 @@ def run(speed_json_f, fout, f_ins, verbose=0, corner=None):
 
     fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
     for row_bs, row_ds, row_ico in zip(bs, Ads, ico):
+        # XXX: consider removing ico column
+        # its obsolete at this point
+        if not ico:
+            continue
         # like: 123 456 120 450, 1 a, 2 b
         # first column has delay corners, followed by delay element count
         items = [str(row_ico), ' '.join([str(x) for x in row_bs])]
@@ -248,18 +252,18 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=
-        'Convert obscure timing3.txt into more readable but roughly equivilent timing3.csv'
+        'Convert obscure timing3.txt into more readable but roughly equivilent timing3i.csv (interconnect)'
     )
 
     parser.add_argument('--verbose', type=int, help='')
     # made a bulk conversion easier...keep?
     parser.add_argument(
-        '--auto-name', action='store_true', help='timing3.txt => timing3.csv')
+        '--auto-name', action='store_true', help='timing3.txt => timing3i.csv')
     parser.add_argument(
         '--speed-json',
         default='build_speed/speed.json',
         help='Provides speed index to name translation')
-    parser.add_argument('--out', default=None, help='Output timing3.csv file')
+    parser.add_argument('--out', default=None, help='Output timing3i.csv file')
     parser.add_argument('fns_in', nargs='+', help='Input timing3.txt files')
     args = parser.parse_args()
     bench = Benchmark()
@@ -269,7 +273,7 @@ def main():
         if args.auto_name:
             assert len(args.fns_in) == 1
             fnin = args.fns_in[0]
-            fnout = fnin.replace('.txt', '.csv')
+            fnout = fnin.replace('.txt', 'i.csv')
             assert fnout != fnin, 'Expect .txt in'
         else:
             # practically there are too many stray prints to make this work as expected

@@ -46,6 +46,6 @@ $(BUILD_DIR)/$(CORNER)/timgrid-vc.json: $(BUILD_DIR)/$(CORNER)/flat.csv
 	python3 $(TIMFUZ_DIR)/tile_annotate.py --timgrid-s $(TIMFUZ_DIR)/timgrid/build/timgrid-s.json --out $(BUILD_DIR)/$(CORNER)/timgrid-vc.json $(BUILD_DIR)/$(CORNER)/flat.csv
 
 $(BUILD_DIR)/$(CORNER)/qor.txt: $(BUILD_DIR)/$(CORNER)/flat.csv
-	python3 $(TIMFUZ_DIR)/solve_qor.py --corner $(CORNER) --bounds-csv $(BUILD_DIR)/$(CORNER)/flat.csv specimen_*/timing3.csv >$(BUILD_DIR)/$(CORNER)/qor.txt.tmp
+	python3 $(TIMFUZ_DIR)/solve_qor.py --corner $(CORNER) --bounds-csv $(BUILD_DIR)/$(CORNER)/flat.csv specimen_*/timing3i.csv >$(BUILD_DIR)/$(CORNER)/qor.txt.tmp
 	mv $(BUILD_DIR)/$(CORNER)/qor.txt.tmp $(BUILD_DIR)/$(CORNER)/qor.txt
 

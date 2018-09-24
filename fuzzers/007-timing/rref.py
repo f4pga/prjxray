@@ -223,13 +223,13 @@ def main():
         default='build_speed/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('--out', help='Output sub.json substitution result')
-    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='*', help='timing3i.csv input files')
     args = parser.parse_args()
     bench = Benchmark()
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3.csv')
+        fns_in = glob.glob('specimen_*/timing3i.csv')
 
     try:
         run(
