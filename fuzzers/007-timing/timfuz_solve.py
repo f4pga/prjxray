@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from timfuz import simplify_rows, loadc_Ads_b, index_names, A_ds2np, run_sub_json, print_eqns, Ads2bounds, instances, SimplifiedToZero, allow_zero_eqns
+from timfuz import simplify_rows, loadc_Ads_b, index_names, A_ds2np, run_sub_json, print_eqns, Ads2bounds, instances, SimplifiedToZero, allow_zero_eqns, corner_s2i, acorner2csv
 from timfuz_massage import massage_equations
 import numpy as np
 import sys
+import math
 
 
 def check_feasible(A_ub, b_ub):
@@ -93,12 +94,50 @@ def filter_bounds(Ads, b, bounds, corner):
     return ret_Ads, ret_b
 
 
+def solve_save(outfn, xvals, names, corner, save_zero=True, verbose=False):
+    # ballpark minimum actual observed delay is around 7 (carry chain)
+    # anything less than one is probably a solver artifact
+    delta = 0.5
+    corneri = corner_s2i[corner]
+
+    roundf = {
+        'fast_max': math.ceil,
+        'fast_min': math.floor,
+        'slow_max': math.ceil,
+        'slow_min': math.floor,
+    }[corner]
+
+    print('Writing results')
+    zeros = 0
+    with open(outfn, 'w') as fout:
+        # write as one variable per line
+        # this natively forms a bound if fed into linprog solver
+        fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
+        for xval, name in zip(xvals, names):
+            row_ico = 1
+
+            if xval < delta:
+                if verbose:
+                    print('WARNING: near 0 delay on %s: %0.6f' % (name, xval))
+                zeros += 1
+                if not save_zero:
+                    continue
+            items = [str(row_ico), acorner2csv(roundf(xval), corneri)]
+            items.append('%u %s' % (1, name))
+            fout.write(','.join(items) + '\n')
+    nonzeros = len(names) - zeros
+    print(
+        'Wrote: %u / %u constrained delays, %u zeros' %
+        (nonzeros, len(names), zeros))
+    assert nonzeros, 'Failed to estimate delay'
+
+
 def run(
         fns_in,
         corner,
         run_corner,
         sub_json=None,
-        sub_csv=None,
+        bounds_csv=None,
         dedup=True,
         massage=False,
         outfn=None,
@@ -132,8 +171,8 @@ def run(
     Special .csv containing one variable per line
     Used primarily for multiple optimization passes, such as different algorithms or additional constraints
     '''
-    if sub_csv:
-        Ads2, b2 = loadc_Ads_b([sub_csv], corner, ico=True)
+    if bounds_csv:
+        Ads2, b2 = loadc_Ads_b([bounds_csv], corner, ico=True)
         bounds = Ads2bounds(Ads2, b2)
         assert len(bounds), 'Failed to load bounds'
         rows_old = len(Ads)
