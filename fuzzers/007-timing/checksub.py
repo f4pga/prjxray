@@ -111,14 +111,14 @@ def main():
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--sub-json', help='')
-    parser.add_argument('fns_in', nargs='*', help='timing3i.csv input files')
+    parser.add_argument('fns_in', nargs='*', help='timing4i.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3i.csv')
+        fns_in = glob.glob('specimen_*/timing4i.csv')
 
     sub_json = None
     if args.sub_json:

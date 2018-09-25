@@ -28,10 +28,12 @@ def main():
 
     parser.add_argument('--verbose', type=int, help='')
     parser.add_argument(
-        '--auto-name', action='store_true', help='timing3i.csv => timing3c.csv')
+        '--auto-name',
+        action='store_true',
+        help='timing4i.csv => timing4c.csv')
     parser.add_argument('--out', default=None, help='Output csv')
     parser.add_argument('--corner', help='Output csv')
-    parser.add_argument('fns_in', nargs='+', help='timing3i.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing4i.csv input files')
     args = parser.parse_args()
     bench = Benchmark()
 
@@ -40,8 +42,8 @@ def main():
         if args.auto_name:
             assert len(args.fns_in) == 1
             fnin = args.fns_in[0]
-            fnout = fnin.replace('timing3i.csv', 'timing3c.csv')
-            assert fnout != fnin, 'Expect timing3i.csv in'
+            fnout = fnin.replace('timing4i.csv', 'timing4c.csv')
+            assert fnout != fnin, 'Expect timing4i.csv in'
         else:
             fnout = '/dev/stdout'
     print("Writing to %s" % fnout)
@@ -49,7 +51,7 @@ def main():
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3i.csv')
+        fns_in = glob.glob('specimen_*/timing4i.csv')
 
     run(fout=fout, fns_in=fns_in, corner=args.corner, verbose=args.verbose)
 

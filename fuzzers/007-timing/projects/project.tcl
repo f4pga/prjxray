@@ -15,9 +15,9 @@ proc pin_bel {pin} {
 # This allows tracing the full path along with pips
 proc write_info3 {} {
     set outdir "."
-    set fp [open "$outdir/timing3.txt" w]
+    set fp [open "$outdir/timing4.txt" w]
     # bel as site/bel, so don't bother with site
-    puts $fp "net src_bel dst_bel ico fast_max fast_min slow_max slow_min pips inodes wires"
+    puts $fp "linetype net src_site src_site_pin src_bel src_bel_pin dst_site dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips inodes wires"
 
     set TIME_start [clock clicks -milliseconds]
     set verbose 0
@@ -43,6 +43,7 @@ proc write_info3 {} {
         # With OUT filter this seems to be sufficient
         set src_pin [get_pins -leaf -filter {DIRECTION == OUT} -of_objects $net]
         set src_bel [pin_bel $src_pin]
+        set src_bel_pin [get_bel_pins -of_objects $src_pin]
         set src_site [get_sites -of_objects $src_bel]
         # Only one net driver
         set src_site_pins [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]
@@ -76,12 +77,14 @@ proc write_info3 {} {
                 } else {
                     set delays [get_net_delays -of_objects $net]
                 }
+                puts $fp "GROUP $ico [llength $delays]"
                 foreach delay $delays {
                     set delaystr [get_property NAME $delay]
                     set dst_pins [get_property TO_PIN $delay]
                     set dst_pin [get_pins $dst_pins]
                     #puts "  $delaystr: $src_pin => $dst_pin"
                     set dst_bel [pin_bel $dst_pin]
+                    set dst_bel_pin [get_bel_pins -of_objects $dst_pin]
                     set dst_site [get_sites -of_objects $dst_bel]
                     if $verbose {
                         puts "  Dest: $dst_pin at site $dst_site:$dst_bel"
@@ -115,8 +118,7 @@ proc write_info3 {} {
                         #set wires [get_wires -of_objects $net -from $src_site_pin -to $dst_site_pin]
                         set wires [get_wires -of_objects $nodes]
 
-                        # puts $fp "$net $src_bel $dst_bel $ico $fast_max $fast_min $slow_max $slow_min $pips"
-                        puts -nonewline $fp "$net $src_bel $dst_bel $ico $fast_max $fast_min $slow_max $slow_min"
+                        puts -nonewline $fp "NET $net $src_site $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min"
         
                         # Write pips w/ speed index
                         puts -nonewline $fp " "
