@@ -7,21 +7,33 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 CSVS := $(addsuffix /timing3.csv,$(SPECIMENS))
 TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
 RREF_CORNER=slow_max
+# Allow an empty system of equations?
+# for testing only on small projects
 ALLOW_ZERO_EQN?=N
+# Constrained projects may fail to build
+# Set to Y to make a best effort to suck in the ones that did build
 BADPRJ_OK?=N
+# Set ZERO elements to zero delay (as is expected they should be)
+RMZERO?=N
+BUILD_DIR?=build
 
-TIMGRID_VCS=build/fast_max/timgrid-vc.json build/fast_min/timgrid-vc.json build/slow_max/timgrid-vc.json build/slow_min/timgrid-vc.json
+RREF_ARGS=
+ifeq ($(RMZERO),Y)
+RREF_ARGS+=--rm-zero
+endif
 
-all: build/timgrid-v.json
+TIMGRID_VCS=$(BUILD_DIR)/fast_max/timgrid-vc.json $(BUILD_DIR)/fast_min/timgrid-vc.json $(BUILD_DIR)/slow_max/timgrid-vc.json $(BUILD_DIR)/slow_min/timgrid-vc.json
 
-# make build/checksub first
-build/fast_max/timgrid-vc.json: build/checksub
+all: $(BUILD_DIR)/timgrid-v.json
+
+# make $(BUILD_DIR)/checksub first
+$(BUILD_DIR)/fast_max/timgrid-vc.json: $(BUILD_DIR)/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=fast_max
-build/fast_min/timgrid-vc.json: build/checksub
+$(BUILD_DIR)/fast_min/timgrid-vc.json: $(BUILD_DIR)/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=fast_min
-build/slow_max/timgrid-vc.json: build/checksub
+$(BUILD_DIR)/slow_max/timgrid-vc.json: $(BUILD_DIR)/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=slow_max
-build/slow_min/timgrid-vc.json: build/checksub
+$(BUILD_DIR)/slow_min/timgrid-vc.json: $(BUILD_DIR)/checksub
 	$(MAKE) -f $(TIMFUZ_DIR)/projects/corner.mk CORNER=slow_min
 
 $(SPECIMENS_OK):
@@ -36,7 +48,7 @@ run:
 clean:
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits __pycache__ run.ok
 	rm -rf vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit
-	rm -rf build
+	rm -rf $(BUILD_DIR)
 
 .PHONY: all run clean
 
@@ -51,27 +63,27 @@ exist_csvs = \
         done
 
 # rref should be the same regardless of corner
-build/sub.json: $(SPECIMENS_OK)
-	mkdir -p build
+$(BUILD_DIR)/sub.json: $(SPECIMENS_OK)
+	mkdir -p $(BUILD_DIR)
 	# Discover which variables can be separated
 	# This is typically the longest running operation
 	\
 	    csvs=$$(for f in $(CSVS); do if [ "$(BADPRJ_OK)" != 'Y' -o -f $$f ] ; then echo $$f; fi; done) ; \
-	    python3 $(TIMFUZ_DIR)/rref.py --corner $(RREF_CORNER) --simplify --out build/sub.json.tmp $$csvs
-	mv build/sub.json.tmp build/sub.json
+	    python3 $(TIMFUZ_DIR)/rref.py --corner $(RREF_CORNER) --simplify $(RREF_ARGS) --out $(BUILD_DIR)/sub.json.tmp $$csvs
+	mv $(BUILD_DIR)/sub.json.tmp $(BUILD_DIR)/sub.json
 
-build/grouped.csv: $(SPECIMENS_OK) build/sub.json
+$(BUILD_DIR)/grouped.csv: $(SPECIMENS_OK) $(BUILD_DIR)/sub.json
 	# Separate variables
 	\
 	    csvs=$$(for f in $(CSVS); do if [ "$(BADPRJ_OK)" != 'Y' -o -f $$f ] ; then echo $$f; fi; done) ; \
-	    python3 $(TIMFUZ_DIR)/csv_flat2group.py --sub-json build/sub.json --strict --out build/grouped.csv.tmp $$csvs
-	mv build/grouped.csv.tmp build/grouped.csv
+	    python3 $(TIMFUZ_DIR)/csv_flat2group.py --sub-json $(BUILD_DIR)/sub.json --strict --out $(BUILD_DIR)/grouped.csv.tmp $$csvs
+	mv $(BUILD_DIR)/grouped.csv.tmp $(BUILD_DIR)/grouped.csv
 
-build/checksub: build/grouped.csv build/sub.json
+$(BUILD_DIR)/checksub: $(BUILD_DIR)/grouped.csv $(BUILD_DIR)/sub.json
 	# Verify sub.json makes a cleanly solvable solution with no non-pivot leftover
-	python3 $(TIMFUZ_DIR)/checksub.py --sub-json build/sub.json build/grouped.csv
-	touch build/checksub
+	python3 $(TIMFUZ_DIR)/checksub.py --sub-json $(BUILD_DIR)/sub.json $(BUILD_DIR)/grouped.csv
+	touch $(BUILD_DIR)/checksub
 
-build/timgrid-v.json: $(TIMGRID_VCS)
-	python3 $(TIMFUZ_DIR)/timgrid_vc2v.py --out build/timgrid-v.json $(TIMGRID_VCS)
+$(BUILD_DIR)/timgrid-v.json: $(TIMGRID_VCS)
+	python3 $(TIMFUZ_DIR)/timgrid_vc2v.py --out $(BUILD_DIR)/timgrid-v.json $(TIMGRID_VCS)
 

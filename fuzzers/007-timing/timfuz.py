@@ -240,16 +240,16 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
     sys.stdout.write('SimpR ')
     sys.stdout.flush()
     progress = int(max(1, len(b_ub) / 100))
+    # Equations with a total delay of zero
     zero_ds = 0
+    # Equations with zero elements
+    # These should have zero delay
     zero_es = 0
     for loopi, (b, rowd) in enumerate(zip(b_ub, Ads)):
         if loopi % progress == 0:
             sys.stdout.write('.')
             sys.stdout.flush()
 
-        # TODO: elements have zero delay (ex: COUT)
-        # Remove these from now since they make me nervous
-        # Although they should just solve to 0
         if remove_zd and not b:
             zero_ds += 1
             continue
@@ -260,6 +260,24 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
                 assert zero_es == 0, 'Unexpected zero element row with non-zero delay'
             zero_es += 1
             continue
+        '''
+        Reduce any constants to canonical form
+        this simplifies later steps that optimize based on assuming there aren't duplicate constants
+
+        Ex:
+        a = 10
+        2 a = 30
+        max corner will get simplified to
+        a = 15
+
+        Otherwise these are not identical equations and would not get simplied
+        Don't try handling the general case of non-trivial equations
+        '''
+        if len(rowd) == 1:
+            k, v = list(rowd.items())[0]
+            if v != 1:
+                rowd = {k: 1}
+                b = 1.0 * b / v
 
         rowt = Ar_ds2t(rowd)
         eqns[rowt] = minmax(eqns.get(rowt, T_UNK), b)
@@ -267,11 +285,12 @@ def simplify_rows(Ads, b_ub, remove_zd=False, corner=None):
     print(' done')
 
     print(
-        'Simplify rows: %d => %d rows w/ zd %d, ze %d' %
+        'Simplify rows: %d => %d rows w/ rm zd %d, rm ze %d' %
         (len(b_ub), len(eqns), zero_ds, zero_es))
     if len(eqns) == 0:
         raise SimplifiedToZero()
     A_ubd_ret, b_ub_ret = Ab_ub_dt2d(eqns)
+    #print_eqns(A_ubd_ret, b_ub_ret, verbose=True, label='Debug')
     return A_ubd_ret, b_ub_ret
 
 
@@ -347,177 +366,6 @@ def sort_equations(Ads, b):
     res = sorted(tosort)
     A_ubtr, b_ubr = zip(*res)
     return [OrderedDict(rowt) for rowt in A_ubtr], b_ubr
-
-
-def derive_eq_by_row(A_ubd, b_ub, verbose=0, col_lim=0, tweak=False):
-    '''
-    Derive equations by subtracting whole rows
-
-    Given equations like:
-    t0           >= 10
-    t0 + t1      >= 15
-    t0 + t1 + t2 >= 17
-
-    When I look at these, I think of a solution something like:
-    t0 = 10f
-    t1 = 5
-    t2 = 2
-
-    However, linprog tends to choose solutions like:
-    t0 = 17
-    t1 = 0
-    t2 = 0
-
-    To this end, add additional constraints by finding equations that are subsets of other equations
-    How to do this in a reasonable time span?
-    Also equations are sparse, which makes this harder to compute
-    '''
-    rows = len(A_ubd)
-    assert rows == len(b_ub)
-
-    # Index equations into hash maps so can lookup sparse elements quicker
-    assert len(A_ubd) == len(b_ub)
-    A_ubd_ret = copy.copy(A_ubd)
-    assert len(A_ubd) == len(A_ubd_ret)
-
-    #print('Finding subsets')
-    ltes = 0
-    scs = 0
-    b_ub_ret = list(b_ub)
-    sys.stdout.write('Deriving rows ')
-    sys.stdout.flush()
-    progress = max(1, rows / 100)
-    for row_refi, row_ref in enumerate(A_ubd):
-        if row_refi % progress == 0:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        if col_lim and len(row_ref) > col_lim:
-            continue
-
-        for row_cmpi, row_cmp in enumerate(A_ubd):
-            if row_refi == row_cmpi or col_lim and len(row_cmp) > col_lim:
-                continue
-            # FIXME: this check was supposed to be removed
-            '''
-            Every elements in row_cmp is in row_ref
-            but this doesn't mean the constants are smaller
-            Filter these out
-            '''
-            # XXX: just reduce and filter out solutions with positive constants
-            # or actually are these also useful as is?
-            lte = lte_const(row_ref, row_cmp)
-            if lte:
-                ltes += 1
-            sc = 0 and shared_const(row_ref, row_cmp)
-            if sc:
-                scs += 1
-            if lte or sc:
-                if verbose:
-                    print('')
-                    print('match')
-                    print('  ', row_ref, b_ub[row_refi])
-                    print('  ', row_cmp, b_ub[row_cmpi])
-                # Reduce
-                A_new = reduce_const(row_ref, row_cmp)
-                # Did this actually significantly reduce the search space?
-                #if tweak and len(A_new) > 4 and len(A_new) > len(row_cmp) / 2:
-                if tweak and len(A_new) > 8 and len(A_new) > len(row_cmp) / 2:
-                    continue
-                b_new = b_ub[row_refi] - b_ub[row_cmpi]
-                # Definitely possible
-                # Maybe filter these out if they occur?
-                if verbose:
-                    print(b_new)
-                # Also inverted sign
-                if b_new <= 0:
-                    if verbose:
-                        print("Unexpected b")
-                    continue
-                if verbose:
-                    print('OK')
-                A_ubd_ret.append(A_new)
-                b_ub_ret.append(b_new)
-    print(' done')
-
-    #A_ub_ret = A_di2np(A_ubd2, cols=cols)
-    print(
-        'Derive row: %d => %d rows using %d lte, %d sc' %
-        (len(b_ub), len(b_ub_ret), ltes, scs))
-    assert len(A_ubd_ret) == len(b_ub_ret)
-    return A_ubd_ret, b_ub_ret
-
-
-def derive_eq_by_col(A_ubd, b_ub, verbose=0):
-    '''
-    Derive equations by subtracting out all bounded constants (ie "known" columns)
-    '''
-    rows = len(A_ubd)
-
-    # Find all entries where
-
-    # Index equations with a single constraint
-    knowns = {}
-    sys.stdout.write('Derive col indexing ')
-    #A_ubd = A_ub_np2d(A_ub)
-    sys.stdout.flush()
-    progress = max(1, rows / 100)
-    for row_refi, row_refd in enumerate(A_ubd):
-        if row_refi % progress == 0:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        if len(row_refd) == 1:
-            k, v = list(row_refd.items())[0]
-            # Reduce any constants to canonical form
-            if v != 1:
-                row_refd[k] = 1
-                b_ub[row_refi] /= v
-            knowns[k] = b_ub[row_refi]
-    print(' done')
-    #knowns_set = OrderedSet(knowns.keys())
-    print('%d constrained' % len(knowns))
-    '''
-    Now see what we can do
-    Rows that are already constrained: eliminate
-        TODO: maybe keep these if this would violate their constraint
-    Otherwise eliminate the original row and generate a simplified result now
-    '''
-    b_ub_ret = []
-    A_ubd_ret = []
-    sys.stdout.write('Derive col main ')
-    sys.stdout.flush()
-    progress = max(1, rows / 100)
-    for row_refi, row_refd in enumerate(A_ubd):
-        if row_refi % progress == 0:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        # Reduce as much as possible
-        #row_new = {}
-        row_new = OrderedDict()
-        b_new = b_ub[row_refi]
-        # Copy over single entries
-        if len(row_refd) == 1:
-            row_new = row_refd
-        else:
-            for k, v in row_refd.items():
-                if k in knowns:
-                    # Remove column and take out corresponding delay
-                    b_new -= v * knowns[k]
-                # Copy over
-                else:
-                    row_new[k] = v
-
-        # Possibly reduced all usable contants out
-        if len(row_new) == 0:
-            continue
-        if b_new <= 0:
-            continue
-
-        A_ubd_ret.append(row_new)
-        b_ub_ret.append(b_new)
-    print(' done')
-
-    print('Derive col: %d => %d rows' % (len(b_ub), len(b_ub_ret)))
-    return A_ubd_ret, b_ub_ret
 
 
 def col_dist(Ads, desc='of', names=[], lim=0):

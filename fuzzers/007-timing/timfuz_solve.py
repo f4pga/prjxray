@@ -64,8 +64,18 @@ def check_feasible(A_ub, b_ub):
 
 
 def filter_bounds(Ads, b, bounds, corner):
-    '''Given min variable delays, remove rows that won't constrain solution'''
-    #assert len(bounds) > 0
+    '''
+    Given min variable delays, remove rows that won't constrain solution
+       Ex for max corner:
+    Given bounds:
+        a >= 10
+        b >= 1
+        c >= 0
+    Given equations:
+        a + b >= 10
+        a + c >= 100
+    The first equation is already satisfied
+    However, the second needs either an increase in a or an increase in c    '''
 
     if 'max' in corner:
         # Keep delays possibly larger than current bound
@@ -84,13 +94,24 @@ def filter_bounds(Ads, b, bounds, corner):
 
     ret_Ads = []
     ret_b = []
+    unknowns = set()
     for row_ds, row_b in zip(Ads, b):
         # some variables get estimated at 0
-        est = sum([bounds.get(k, T_UNK) * v for k, v in row_ds.items()])
+        def getvar(k):
+            #return bounds.get(k, T_UNK)
+            ret = bounds.get(k, None)
+            if ret is not None:
+                return ret
+            unknowns.add(k)
+            return T_UNK
+
+        est = sum([getvar(k) * v for k, v in row_ds.items()])
         # will this row potentially constrain us more?
         if keep(row_b, est):
             ret_Ads.append(row_ds)
             ret_b.append(row_b)
+    if len(unknowns):
+        print('WARNING: %u encountered undefined bounds' % len(unknowns))
     return ret_Ads, ret_b
 
 

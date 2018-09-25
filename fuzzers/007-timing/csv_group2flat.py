@@ -23,7 +23,7 @@ def gen_flat(fns_in, sub_json, corner=None):
             if zero_row:
                 yield bound_name, 0
         elif sub:
-            print('sub', sub)
+            #print('sub', sub)
             # put entire delay into pivot
             pivot = sub_json['pivots'][bound_name]
             assert pivot not in group_zeros
@@ -32,6 +32,7 @@ def gen_flat(fns_in, sub_json, corner=None):
             #for name in non_pivot:
             #    assert name not in nonzeros, (pivot, name, nonzeros)
             group_zeros.update(non_pivot)
+            #print('yield PIVOT', pivot)
             yield pivot, bound_bs
         else:
             nonzeros.add(bound_name)
@@ -45,10 +46,19 @@ def gen_flat(fns_in, sub_json, corner=None):
     # XXX: how to best handle these?
     # should they be fixed 0?
     if zero_row:
-        print('zero_row', len(group_zeros), len(violations))
+        # ZERO names should always be zero
+        #print('ZEROs: %u' % len(sub_json['zero_names']))
         for zero in sub_json['zero_names']:
+            #print('yield ZERO', zero)
             yield zero, zero_row
-        for zero in group_zeros - violations:
+
+        real_zeros = group_zeros - violations
+        print(
+            'Zero candidates: %u w/ %u non-pivot conflicts => %u zeros as solved'
+            % (len(group_zeros), len(violations), len(real_zeros)))
+        # Only yield elements not already yielded
+        for zero in real_zeros:
+            #print('yield solve-0', zero)
             yield zero, zero_row
 
 

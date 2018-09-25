@@ -24,30 +24,8 @@ def lte_const(row_ref, row_cmp):
     return True
 
 
-def shared_const(row_ref, row_cmp):
-    '''Return true if more constants are equal than not equal'''
-    #return False
-    matches = 0
-    unmatches = 0
-    ks = list(row_ref.keys()) + list(row_cmp.keys())
-    for k in ks:
-        vr = row_ref.get(k, None)
-        vc = row_cmp.get(k, None)
-        # At least one
-        if vr is not None and vc is not None:
-            if vc == vr:
-                matches += 1
-            else:
-                unmatches += 1
-        else:
-            unmatches += 1
-
-    # Will equation reduce if subtracted?
-    return matches > unmatches
-
-
-def reduce_const(row_ref, row_cmp):
-    '''Subtract cmp constants from ref'''
+def sub_rows(row_ref, row_cmp):
+    '''Do row_ref - row_cmp'''
     #ret = {}
     ret = OrderedDict()
     ks = set(row_ref.keys())
@@ -61,9 +39,12 @@ def reduce_const(row_ref, row_cmp):
     return ret
 
 
-def derive_eq_by_row(Ads, b, verbose=0, col_lim=0, tweak=False):
+def derive_eq_by_row(Ads, b, verbose=0, col_lim=0, cmp_heuristic=True):
     '''
     Derive equations by subtracting whole rows
+
+    cmp_heuristic: drop large generated rows since these are unlikely to constrain the solution
+
 
     Given equations like:
     t0           >= 10
@@ -94,11 +75,11 @@ def derive_eq_by_row(Ads, b, verbose=0, col_lim=0, tweak=False):
 
     #print('Finding subsets')
     ltes = 0
-    scs = 0
     b_ret = list(b)
     sys.stdout.write('Deriving rows (%u) ' % rows)
     sys.stdout.flush()
     progress = int(max(1, rows / 100))
+    b_warns = 0
     for row_refi, row_ref in enumerate(Ads):
         if row_refi % progress == 0:
             sys.stdout.write('.')
@@ -109,165 +90,63 @@ def derive_eq_by_row(Ads, b, verbose=0, col_lim=0, tweak=False):
         for row_cmpi, row_cmp in enumerate(Ads):
             if row_refi == row_cmpi or col_lim and len(row_cmp) > col_lim:
                 continue
-            # FIXME: this check was supposed to be removed
-            '''
-            Every elements in row_cmp is in row_ref
-            but this doesn't mean the constants are smaller
-            Filter these out
-            '''
-            # XXX: just reduce and filter out solutions with positive constants
-            # or actually are these also useful as is?
-            lte = lte_const(row_ref, row_cmp)
-            if lte:
-                ltes += 1
-            sc = 0 and shared_const(row_ref, row_cmp)
-            if sc:
-                scs += 1
-            if lte or sc:
-                if verbose:
-                    print('')
-                    print('match')
-                    print('  ', row_ref, b[row_refi])
-                    print('  ', row_cmp, b[row_cmpi])
-                # Reduce
-                A_new = reduce_const(row_ref, row_cmp)
-                # Did this actually significantly reduce the search space?
-                #if tweak and len(A_new) > 4 and len(A_new) > len(row_cmp) / 2:
-                if tweak and len(A_new) > 8 and len(A_new) > len(row_cmp) / 2:
-                    continue
-                b_new = b[row_refi] - b[row_cmpi]
-                # Definitely possible
-                # Maybe filter these out if they occur?
-                if verbose:
-                    print(b_new)
-                # Also inverted sign
-                if b_new <= 0:
-                    if verbose:
-                        print("Unexpected b")
-                    continue
-                if verbose:
-                    print('OK')
-                Ads_ret.append(A_new)
-                b_ret.append(b_new)
-    print(' done')
-
-    #A_ub_ret = A_di2np(Ads2, cols=cols)
-    print(
-        'Derive row: %d => %d rows using %d lte, %d sc' %
-        (len(b), len(b_ret), ltes, scs))
-    assert len(Ads_ret) == len(b_ret)
-    return Ads_ret, b_ret
-
-
-def derive_eq_by_near_row(Ads, b, verbose=0, col_lim=0, tweak=False):
-    '''
-    Derive equations by subtracting whole rows
-
-    Given equations like:
-    t0           >= 10
-    t0 + t1      >= 15
-    t0 + t1 + t2 >= 17
-
-    When I look at these, I think of a solution something like:
-    t0 = 10f
-    t1 = 5
-    t2 = 2
-
-    However, linprog tends to choose solutions like:
-    t0 = 17
-    t1 = 0
-    t2 = 0
-
-    To this end, add additional constraints by finding equations that are subsets of other equations
-    How to do this in a reasonable time span?
-    Also equations are sparse, which makes this harder to compute
-    '''
-    rows = len(Ads)
-    assert rows == len(b)
-    rowdelta = int(rows / 2)
-
-    # Index equations into hash maps so can lookup sparse elements quicker
-    assert len(Ads) == len(b)
-    Ads_ret = copy.copy(Ads)
-    assert len(Ads) == len(Ads_ret)
-
-    #print('Finding subsets')
-    ltes = 0
-    scs = 0
-    b_ret = list(b)
-    sys.stdout.write('Deriving rows (%u) ' % rows)
-    sys.stdout.flush()
-    progress = int(max(1, rows / 100))
-    for row_refi, row_ref in enumerate(Ads):
-        if row_refi % progress == 0:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-        if col_lim and len(row_ref) > col_lim:
-            continue
-
-        #for row_cmpi, row_cmp in enumerate(Ads):
-        for row_cmpi in range(max(0, row_refi - rowdelta),
-                              min(len(Ads), row_refi + rowdelta)):
-            if row_refi == row_cmpi or col_lim and len(row_cmp) > col_lim:
+            if not lte_const(row_ref, row_cmp):
                 continue
-            row_cmp = Ads[row_cmpi]
-            # FIXME: this check was supposed to be removed
-            '''
-            Every elements in row_cmp is in row_ref
-            but this doesn't mean the constants are smaller
-            Filter these out
-            '''
-            # XXX: just reduce and filter out solutions with positive constants
-            # or actually are these also useful as is?
-            lte = lte_const(row_ref, row_cmp)
-            if lte:
-                ltes += 1
-            sc = 0 and shared_const(row_ref, row_cmp)
-            if sc:
-                scs += 1
-            if lte or sc:
+            ltes += 1
+            if verbose:
+                print('')
+                print('match')
+                print('  ', row_ref, b[row_refi])
+                print('  ', row_cmp, b[row_cmpi])
+
+            # Reduce
+            row_new = sub_rows(row_ref, row_cmp)
+
+            # Did this actually significantly reduce the search space?
+            # should be a relatively small number of rows and be significantly smaller than at least one of them
+            def is_smaller_row():
+                # Keep any generally small rows
+                if len(row_new) <= 8:
+                    return True
+                # And anything that reduced at least one row by half
+                # Ex: going from 120 and 100 element rows to a 20 element row
+                return len(row_new) <= len(row_cmp) / 2 or len(
+                    row_new) <= len(row_ref) / 2
+
+            if cmp_heuristic and not is_smaller_row():
+                continue
+            b_new = b[row_refi] - b[row_cmpi]
+            # Definitely possible
+            # Maybe filter these out if they occur?
+            if verbose:
+                print(b_new)
+            # Also inverted sign
+            if b_new < 0:
                 if verbose:
-                    print('')
-                    print('match')
-                    print('  ', row_ref, b[row_refi])
-                    print('  ', row_cmp, b[row_cmpi])
-                # Reduce
-                A_new = reduce_const(row_ref, row_cmp)
-                # Did this actually significantly reduce the search space?
-                #if tweak and len(A_new) > 4 and len(A_new) > len(row_cmp) / 2:
-                #if tweak and len(A_new) > 8 and len(A_new) > len(row_cmp) / 2:
-                #    continue
-                b_new = b[row_refi] - b[row_cmpi]
-                # Definitely possible
-                # Maybe filter these out if they occur?
-                if verbose:
-                    print(b_new)
-                # Also inverted sign
-                if b_new <= 0:
-                    if verbose:
-                        print("Unexpected b")
-                    continue
-                if verbose:
-                    print('OK')
-                Ads_ret.append(A_new)
-                b_ret.append(b_new)
+                    print("Unexpected b")
+                b_warns += 1
+                continue
+            if verbose:
+                print('OK')
+            Ads_ret.append(row_new)
+            b_ret.append(b_new)
     print(' done')
 
     #A_ub_ret = A_di2np(Ads2, cols=cols)
     print(
-        'Derive row: %d => %d rows using %d lte, %d sc' %
-        (len(b), len(b_ret), ltes, scs))
+        'Derive row: %d => %d rows using %d lte' % (len(b), len(b_ret), ltes))
+    print('Dropped %u invalid equations' % b_warns)
     assert len(Ads_ret) == len(b_ret)
     return Ads_ret, b_ret
 
 
-def derive_eq_by_col(Ads, b_ub, verbose=0):
+def derive_eq_by_col(Ads, b_ub, verbose=0, keep_orig=True):
     '''
     Derive equations by subtracting out all bounded constants (ie "known" columns)
+    XXX: is this now redundant with derive_row?
+    Seems like a degenerate case, although maybe quicker
     '''
     rows = len(Ads)
-
-    # Find all entries where
 
     # Index equations with a single constraint
     knowns = {}
@@ -280,11 +159,11 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
             sys.stdout.flush()
         if len(row_refd) == 1:
             k, v = list(row_refd.items())[0]
-            # Reduce any constants to canonical form
-            if v != 1:
-                row_refd[k] = 1
-                b_ub[row_refi] /= v
-            knowns[k] = b_ub[row_refi]
+            # assume simplify_equations handles de-duplicating
+            new_b = 1.0 * b_ub[row_refi] / v
+            assert k not in knowns, "Got new %s w/ val %u, old val %u" % (
+                k, new_b, knowns[k])
+            knowns[k] = new_b
     print(' done')
     #knowns_set = set(knowns.keys())
     print('%d constrained' % len(knowns))
@@ -303,10 +182,15 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
         if row_refi % progress == 0:
             sys.stdout.write('.')
             sys.stdout.flush()
+        b_ref = b_ub[row_refi]
+        if keep_orig:
+            Ads_ret.append(row_refd)
+            b_ret.append(b_ref)
+
         # Reduce as much as possible
         #row_new = {}
         row_new = OrderedDict()
-        b_new = b_ub[row_refi]
+        b_new = b_ref
         # Copy over single entries
         if len(row_refd) == 1:
             row_new = row_refd
@@ -322,11 +206,13 @@ def derive_eq_by_col(Ads, b_ub, verbose=0):
         # Possibly reduced all usable contants out
         if len(row_new) == 0:
             continue
-        if b_new <= 0:
+        # invalid?
+        if b_new < 0:
             continue
 
-        Ads_ret.append(row_new)
-        b_ret.append(b_new)
+        if not keep_orig or row_new != row_refd:
+            Ads_ret.append(row_new)
+            b_ret.append(b_new)
     print(' done')
 
     print('Derive col: %d => %d rows' % (len(b_ub), len(b_ret)))
@@ -358,12 +244,16 @@ def massage_equations(Ads, b, verbose=False, corner=None):
 
     assert len(Ads) == len(b), 'Ads, b length mismatch'
 
+    def check_cols():
+        assert len(index_names(Ads)) == cols
+
     def debug(what):
-        if verbose:
+        check_cols()
+        if 1 or verbose:
             print('')
             print_eqns(Ads, b, verbose=verbose, label=what, lim=20)
             col_dist(Ads, what)
-            check_feasible_d(Ads, b)
+            #check_feasible_d(Ads, b)
 
     # Try to (intelligently) subtract equations to generate additional constraints
     # This helps avoid putting all delay in a single shared variable
@@ -380,21 +270,27 @@ def massage_equations(Ads, b, verbose=False, corner=None):
 
         print('Loop %d, lim %d' % (di + 1, col_lim))
         # Meat of the operation
-        Ads, b = derive_eq_by_row(Ads, b, col_lim=col_lim, tweak=True)
+        Ads, b = derive_eq_by_row(Ads, b, col_lim=col_lim, cmp_heuristic=True)
         debug("der_rows")
         # Run another simplify pass since new equations may have overlap with original
         Ads, b = simplify_rows(Ads, b, corner=corner)
         print('Derive row: %d => %d equations' % (n_orig, len(b)))
         debug("der_rows simp")
 
-        n_orig2 = len(b)
-        # Meat of the operation
-        Ads, b = derive_eq_by_col(Ads, b)
-        debug("der_cols")
-        # Run another simplify pass since new equations may have overlap with original
-        Ads, b = simplify_rows(Ads, b, corner=corner)
-        print('Derive col %d: %d => %d equations' % (di + 1, n_orig2, len(b)))
-        debug("der_cols simp")
+        # derive_cols is mostly degenerate case of derive_rows
+        # however, it will sub out single variables a lot faster if there are a lot of them
+        # linear vs above quadratic, might as well keep it in
+        if 1:
+            n_orig2 = len(b)
+            # Meat of the operation
+            Ads, b = derive_eq_by_col(Ads, b)
+            debug("der_cols")
+            # Run another simplify pass since new equations may have overlap with original
+            Ads, b = simplify_rows(Ads, b, corner=corner)
+            print(
+                'Derive col %d: %d => %d equations' %
+                (di + 1, n_orig2, len(b)))
+            debug("der_cols simp")
 
         # Doesn't help computation, but helps debugging
         Ads, b = sort_equations(Ads, b)
@@ -419,4 +315,7 @@ def massage_equations(Ads, b, verbose=False, corner=None):
     debug("final (sorted)")
     print('')
     print('Massage final: %d => %d rows' % (dstart, dend))
+    cols_end = len(index_names(Ads))
+    print('Massage final: %d => %d cols' % (cols, cols_end))
+    assert cols_end == cols
     return Ads, b
