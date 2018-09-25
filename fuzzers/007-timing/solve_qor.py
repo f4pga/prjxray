@@ -6,7 +6,7 @@ import numpy as np
 
 def run(fns_in, corner, bounds_csv, verbose=False):
     print('Loading data')
-    Ads, borig = loadc_Ads_b(fns_in, corner, ico=True)
+    Ads, borig = loadc_Ads_b(fns_in, corner)
 
     bounds = load_bounds(bounds_csv, corner)
     # verify is flattened

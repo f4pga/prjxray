@@ -23,7 +23,31 @@ corner2minmax = {
 }
 
 
-def build_tilejo(fnins):
+def merge_bdict(vi, vo):
+    '''
+    vi: input dictionary
+    vo: output dictionary
+    values are corner delay 4 tuples
+    '''
+
+    for name, bis in vi.items():
+        bos = vo.get(name, [None, None, None, None])
+        for cornerk, corneri in corner_s2i.items():
+            bo = bos[corneri]
+            bi = bis[corneri]
+            # no new data
+            if bi is None:
+                pass
+            # no previous data
+            elif bo is None:
+                bos[corneri] = bi
+            # combine
+            else:
+                minmax = corner2minmax[cornerk]
+                bos[corneri] = minmax(bi, bo)
+
+
+def merge_tiles(tileji, tilejo):
     '''
     {
         "tiles": {
@@ -38,36 +62,37 @@ def build_tilejo(fnins):
                     ],
     '''
 
-    tilejo = {"tiles": {}}
+    for tilek, tilevi in tileji.items():
+        # No previous data? Copy
+        tilevo = tilejo.get(tilek, None)
+        if tilevo is None:
+            tilejo[tilek] = tilevi
+        # Otherwise combine
+        else:
+            merge_bdict(tilevi['pips'], tilevo['pips'])
+            merge_bdict(tilevi['wires'], tilevo['wires'])
+
+
+def merge_sites(siteji, sitejo):
+    for k, vi in siteji.items():
+        vo = sitejo.get(k, None)
+        # No previous data? Copy
+        if vo is None:
+            sitejo[k] = vi
+        # Otherwise combine
+        else:
+            merge_bdict(vi, vo)
+
+
+def build_tilejo(fnins):
+    # merge all inputs into blank output
+    tilejo = {"tiles": {}, "sites": {}}
     for fnin in fnins:
         tileji = json.load(open(fnin, 'r'))
-        for tilek, tilevi in tileji['tiles'].items():
-            # No previous data? Copy
-            tilevo = tilejo['tiles'].get(tilek, None)
-            if tilevo is None:
-                tilejo['tiles'][tilek] = tilevi
-            # Otherwise combine
-            else:
 
-                def process_type(etype):
-                    for pipk, pipvi in tilevi[etype].items():
-                        pipvo = tilevo[etype][pipk]
-                        for cornerk, corneri in corner_s2i.items():
-                            cornervo = pipvo[corneri]
-                            cornervi = pipvi[corneri]
-                            # no new data
-                            if cornervi is None:
-                                pass
-                            # no previous data
-                            elif cornervo is None:
-                                pipvo[corneri] = cornervi
-                            # combine
-                            else:
-                                minmax = corner2minmax[cornerk]
-                                pipvo[corneri] = minmax(cornervi, cornervo)
+        merge_tiles(tileji['tiles'], tilejo['tiles'])
+        merge_sites(tileji['sites'], tilejo['sites'])
 
-                process_type('pips')
-                process_type('wires')
     return tilejo
 
 
@@ -110,15 +135,11 @@ def check_corner_minmax(tilej, verbose=False):
     timfuz.tilej_stats(tilej)
 
 
-def check_corners_minmax(tilej, verbose=False):
-    # TODO: check fast vs slow
-    pass
-
-
 def run(fnins, fnout, verbose=False):
     tilejo = build_tilejo(fnins)
     check_corner_minmax(tilejo)
-    check_corners_minmax(tilejo)
+    # XXX: check fast vs slow?
+    # check_corners_minmax(tilejo)
     json.dump(
         tilejo,
         open(fnout, 'w'),

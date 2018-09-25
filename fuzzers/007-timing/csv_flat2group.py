@@ -5,7 +5,7 @@ from timfuz import Benchmark, loadc_Ads_bs, index_names, load_sub, run_sub_json,
 
 def gen_group(fnin, sub_json, strict=False, verbose=False):
     print('Loading data')
-    Ads, bs = loadc_Ads_bs([fnin], ico=True)
+    Ads, bs = loadc_Ads_bs([fnin])
 
     print('Sub: %u rows' % len(Ads))
     iold = instances(Ads)

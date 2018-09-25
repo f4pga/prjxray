@@ -73,7 +73,7 @@ class State(object):
     def load(fn_ins, simplify=False, corner=None, rm_zero=False):
         zero_names = OrderedSet()
 
-        Ads, b = loadc_Ads_b(fn_ins, corner=corner, ico=True)
+        Ads, b = loadc_Ads_b(fn_ins, corner=corner)
         if rm_zero:
             zero_names = rm_zero_cols(Ads)
         if simplify:

@@ -37,7 +37,7 @@ def parse_wire(s, speed_i2s):
 
 def gen_timing4(fn, speed_i2s):
     f = open(fn, 'r')
-    header_want = 'linetype net src_site src_site_pin src_bel src_bel_pin dst_site dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips inodes wires'
+    header_want = 'linetype net src_site src_site_type src_site_pin src_bel src_bel_pin dst_site dst_site_type dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips inodes wires'
     ncols = len(header_want.split())
 
     # src_bel dst_bel ico fast_max fast_min slow_max slow_min pips
@@ -50,6 +50,7 @@ def gen_timing4(fn, speed_i2s):
     bads = 0
     net_lines = 0
     for l in f:
+
         def group_line():
             ncols = len('lintype ico delays'.split())
             assert len(parts) == ncols
@@ -58,23 +59,25 @@ def gen_timing4(fn, speed_i2s):
 
         def net_line():
             assert len(parts) == ncols
-            _lintype, net, src_site, src_site_pin, src_bel, src_bel_pin, dst_site, dst_site_pin, dst_bel, dst_bel_pin, ico, fast_max, fast_min, slow_max, slow_min, pips, nodes, wires = parts
+            _lintype, net, src_site, src_site_type, src_site_pin, src_bel, src_bel_pin, dst_site, dst_site_type, dst_site_pin, dst_bel, dst_bel_pin, ico, fast_max, fast_min, slow_max, slow_min, pips, nodes, wires = parts
             pips = pips.split('|')
             nodes = nodes.split('|')
             wires = wires.split('|')
             return {
                 'net': net,
                 'src': {
-                    'site':     src_site,
+                    'site': src_site,
+                    'site_type': src_site_type,
                     'site_pin': src_site_pin,
-                    'bel':      src_bel,
-                    'bel_pin':  src_bel_pin,
+                    'bel': src_bel,
+                    'bel_pin': src_bel_pin,
                 },
                 'dst': {
-                    'site':     dst_site,
+                    'site': dst_site,
+                    'site_type': dst_site_type,
                     'site_pin': dst_site_pin,
-                    'bel':      dst_bel,
-                    'bel_pin':  dst_bel_pin,
+                    'bel': dst_bel,
+                    'bel_pin': dst_bel_pin,
                 },
                 't': {
                     # ps
@@ -99,13 +102,11 @@ def gen_timing4(fn, speed_i2s):
         val = {
             'NET': net_line,
             'GROUP': group_line,
-            }[lintype]()
+        }[lintype]()
         yield lintype, val
 
         rets += 1
-    print(
-        '  load %s: %d bad, %d good, %u net lines' %
-        (fn, bads, rets, net_lines))
+    print('  load %s: %d bad, %d good lines' % (fn, bads, rets))
 
 
 def gen_timing4n(fn, speed_i2s):
@@ -115,7 +116,7 @@ def gen_timing4n(fn, speed_i2s):
             yield val
 
 
-def gen_timing4i(fn, speed_i2s):
+def gen_timing4a(fn, speed_i2s):
     '''
     Like above, but aggregate ico + non-ico into single entries
     Key these based on uniqueness of (src_bel, dst_bel)
@@ -126,24 +127,26 @@ def gen_timing4i(fn, speed_i2s):
     '''
     entries = {}
     timgen = gen_timing4(fn, speed_i2s)
+    rets = 0
     while True:
+
         def get_ico(exp_ico):
             ret = []
             try:
-                lintype, val = gen.next()
+                lintype, val = next(timgen)
             except StopIteration:
                 return None
             assert lintype == 'GROUP'
             ico, delays = val
             assert ico == exp_ico
             for _ in range(delays):
-                lintype, val = gen.next()
+                lintype, val = next(timgen)
                 assert lintype == 'NET'
                 ret.append(val)
             return ret
 
         ico0s = get_ico(0)
-        if ico0 is None:
+        if ico0s is None:
             break
         ico1s = get_ico(1)
         # TODO: verify this is actually true
@@ -151,7 +154,8 @@ def gen_timing4i(fn, speed_i2s):
 
         def same_path(l, r):
             # if source and dest are the same, should be the same thing
-            return l['src']['bel_pin'] == r['src']['bel_pin'] and l['dst']['bel_pin'] == r['dst']['bel_pin']
+            return l['src']['bel_pin'] == r['src']['bel_pin'] and l['dst'][
+                'bel_pin'] == r['dst']['bel_pin']
 
         for ico0, ico1 in zip(ico0s, ico1s):
             # TODO: verify this is actually true
@@ -161,8 +165,11 @@ def gen_timing4i(fn, speed_i2s):
             ico0['t'] = (
                 ico0['t'],
                 ico1['t'],
-                )
+            )
             yield ico0
+            rets += 1
+    print('  load %s: %u aggregated lines' % (fn, rets))
+
 
 def load_speed_json(f):
     j = json.load(f)
@@ -175,6 +182,7 @@ def load_speed_json(f):
     return j, speed_i2s
 
 
+'''
 def run(speed_json_f, fout, fns_in, verbose=0, corner=None):
     print('Loading data')
     _speedj, speed_i2s = load_speed_json(speed_json_f)
@@ -235,3 +243,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+'''

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, A_di2ds
+from timfuz import Benchmark, A_di2ds, PREFIX_W, PREFIX_P
 from timing_txt2json import gen_timing4n, load_speed_json
 
 import glob
@@ -8,11 +8,6 @@ import math
 import json
 import sys
 from collections import OrderedDict
-
-# prefix to make easier to track
-# models do not overlap between PIPs and WIREs
-PREFIX_W = 'WIRE_'
-PREFIX_P = 'PIP_'
 
 
 # Verify the nodes and wires really do line up
@@ -32,11 +27,11 @@ def json2Ads(vals, verbose=False):
 
     def pip2speed(pip):
         _site, _name, pip_name = pip
-        return PREFIX_P + pip_name
+        return PREFIX_P + ':' + pip_name
 
     def wire2speed(wire):
         _site, _name, wire_name = wire
-        return PREFIX_W + wire_name
+        return PREFIX_W + ':' + wire_name
 
     print('Making equations')
 
@@ -96,7 +91,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=
-        'Convert obscure timing4.txt into more readable but roughly equivilent timing4i.csv (interconnect)'
+        'Convert obscure timing4.txt into timing4i.csv (interconnect delay variable occurances)'
     )
 
     parser.add_argument('--verbose', type=int, help='')

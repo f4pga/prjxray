@@ -17,7 +17,7 @@ proc write_info3 {} {
     set outdir "."
     set fp [open "$outdir/timing4.txt" w]
     # bel as site/bel, so don't bother with site
-    puts $fp "linetype net src_site src_site_pin src_bel src_bel_pin dst_site dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips inodes wires"
+    puts $fp "linetype net src_site src_site_type src_site_pin src_bel src_bel_pin dst_site dst_site_type dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips inodes wires"
 
     set TIME_start [clock clicks -milliseconds]
     set verbose 0
@@ -63,6 +63,7 @@ proc write_info3 {} {
             incr site_dst_nets
             continue
         }
+        set src_site_type [get_property SITE_TYPE $src_site]
         foreach src_site_pin $src_site_pins {
             if $verbose {
                 puts "Source: $src_pin at site $src_site:$src_bel, spin $src_site_pin"
@@ -93,9 +94,11 @@ proc write_info3 {} {
                     set dst_site_pins [get_site_pins -of_objects $dst_pin]
                     # Some nets are internal
                     # But should this happen on dest if we've already filtered source?
+                    # FIXME: need these for inter site model
                     if {"$dst_site_pins" eq ""} {
                         continue
                     }
+                    set dst_site_type [get_property SITE_TYPE $dst_site]
                     # Also apparantly you can have multiple of these as well
                     foreach dst_site_pin $dst_site_pins {
                         set fast_max [get_property "FAST_MAX" $delay]
@@ -118,7 +121,7 @@ proc write_info3 {} {
                         #set wires [get_wires -of_objects $net -from $src_site_pin -to $dst_site_pin]
                         set wires [get_wires -of_objects $nodes]
 
-                        puts -nonewline $fp "NET $net $src_site $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min"
+                        puts -nonewline $fp "NET $net $src_site $src_site_type $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_type $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min"
         
                         # Write pips w/ speed index
                         puts -nonewline $fp " "

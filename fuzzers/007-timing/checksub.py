@@ -60,7 +60,7 @@ def pds(Ads, s):
 def run(fns_in, sub_json=None, verbose=False):
     assert len(fns_in) > 0
     # arbitrary corner...data is thrown away
-    Ads, b = loadc_Ads_b(fns_in, "slow_max", ico=True)
+    Ads, b = loadc_Ads_b(fns_in, "slow_max")
 
     if sub_json:
         print('Subbing JSON %u rows' % len(Ads))

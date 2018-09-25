@@ -4,7 +4,7 @@ from timfuz import Benchmark, loadc_Ads_bs, load_sub, Ads2bounds, corners2csv, c
 
 
 def gen_flat(fns_in, sub_json, corner=None):
-    Ads, bs = loadc_Ads_bs(fns_in, ico=True)
+    Ads, bs = loadc_Ads_bs(fns_in)
     bounds = Ads2bounds(Ads, bs)
     # Elements with zero delay assigned due to sub group
     group_zeros = set()
