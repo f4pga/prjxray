@@ -3,3 +3,5 @@
 # Ignore database directories _except_ for their settings
 database/*/*
 !database/*/settings.sh
+**/specimen_*
+run.ok
