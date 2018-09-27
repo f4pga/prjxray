@@ -27,7 +27,7 @@ matrix:
           packages:
             - clang-format-3.9
       install:
-        - pip install --user -r requirements.txt
+        - pip3 install --user -r requirements.txt
       script:
         - make format
         - test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; } 
