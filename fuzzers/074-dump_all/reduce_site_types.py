@@ -40,6 +40,10 @@ def main():
             with open(os.path.join(args.output_dir, instance)) as f:
                 instance_site_type = json.load(f)
 
+                for site_pin in instance_site_type['site_pins'].values():
+                    if 'index_in_site' in site_pin:
+                        del site_pin['index_in_site']
+
             if proto_site_type is None:
                 proto_site_type = instance_site_type
             else:

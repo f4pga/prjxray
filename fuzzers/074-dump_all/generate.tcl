@@ -41,7 +41,6 @@ foreach tile [get_tiles] {
       # SPEED_INDEX
       puts $fp "\t\t\t\{"
       puts $fp "\t\t\t\t\"site_pin\":\"$site_pin\","
-      puts $fp "\t\t\t\t\"index_in_site\":\"[get_property INDEX_IN_SITE $site_pin]\","
       puts $fp "\t\t\t\t\"direction\":\"[get_property DIRECTION $site_pin]\","
       set site_pin_node [get_nodes -of_objects $site_pin]
       if {[llength $site_pin_node] == 0} {

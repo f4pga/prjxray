@@ -131,7 +131,6 @@ def get_prototype_site(site):
 
         proto['site_pins'][name] = {
             'direction': site_pin['direction'],
-            'index_in_site': site_pin['index_in_site'],
         }
 
     for site_pip in site['site_pips']:
