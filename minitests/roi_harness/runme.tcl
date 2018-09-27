@@ -2,9 +2,9 @@
 # Your ROI should at least have a SLICEL on the left
 
 # Number of package inputs going to ROI
-set DIN_N 8
+set DIN_N "$::env(DIN_N)"
 # Number of ROI outputs going to package
-set DOUT_N 8
+set DOUT_N "$::env(DOUT_N)"
 # How many rows between pins
 # Reduces routing pressure
 set PITCH 3
