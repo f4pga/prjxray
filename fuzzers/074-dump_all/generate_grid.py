@@ -10,7 +10,6 @@ import os.path
 import json
 import datetime
 import pickle
-import inspect
 import sys
 
 
@@ -561,6 +560,7 @@ def main():
     parser.add_argument('--root_dir', required=True)
     parser.add_argument('--output_dir', required=True)
     parser.add_argument('--verify_only', action='store_true')
+    parser.add_argument('--ignored_wires')
 
     args = parser.parse_args()
 
@@ -648,9 +648,7 @@ def main():
             json.dump(error_nodes, f, indent=2)
 
         ignored_wires = []
-        path_to_file = os.path.dirname(
-            os.path.abspath(inspect.getfile(inspect.currentframe())))
-        ignored_wires_file = os.path.join(path_to_file, 'ignored_wires.txt')
+        ignored_wires_file = args.ignored_wires
         if os.path.exists(ignored_wires_file):
             with open(ignored_wires_file) as f:
                 ignored_wires = set(l.strip() for l in f)
