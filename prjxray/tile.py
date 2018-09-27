@@ -1,11 +1,9 @@
 from collections import namedtuple
 import json
-
 """ Database files available for a tile """
 TileDbs = namedtuple('TileDbs', 'segbits mask tile_type')
 
 Pip = namedtuple('Pip', 'net_to net_from can_invert is_directional is_pseudo')
-
 """ Site - Represents an instance of a site within a tile.
 
 name - Name of site within tile, instance specific.
@@ -17,7 +15,6 @@ pins - Instaces of site pins within this site and tile.  This is an tuple of
 
 """
 Site = namedtuple('Site', 'name x y type site_pins')
-
 """ SitePin - Tuple representing a site pin within a tile.
 
 Sites are generic based on type, however sites are instanced
@@ -33,53 +30,55 @@ wire - Wire name within the tile.  This name is site instance specific.
 """
 SitePin = namedtuple('SitePin', 'name wire direction')
 
+
 class Tile(object):
-  """ Provides abstration of a tile in the database. """
-  def __init__(self, tilename, tile_dbs):
-    self.tilename = tilename
-    self.tilename_upper = self.tilename.upper()
-    self.tile_dbs = tile_dbs
+    """ Provides abstration of a tile in the database. """
 
-    self.wires = None
-    self.sites = None
-    self.pips = None
+    def __init__(self, tilename, tile_dbs):
+        self.tilename = tilename
+        self.tilename_upper = self.tilename.upper()
+        self.tile_dbs = tile_dbs
 
-    def yield_sites(sites):
-      for site in sites:
-        yield Site(
-            name = None,
-            type = site['type'],
-            x = None,
-            y = None,
-            site_pins = site['site_pins'],
-        )
+        self.wires = None
+        self.sites = None
+        self.pips = None
 
-    def yield_pips(pips):
-      for pip in pips:
-        yield Pip(
-            net_to = pip['dst_wire'],
-            net_from = pip['src_wire'],
-            can_invert = bool(int(pip['can_invert'])),
-            is_directional = bool(int(pip['is_directional'])),
-            is_pseudo = bool(int(pip['is_pseudo'])),
-        )
+        def yield_sites(sites):
+            for site in sites:
+                yield Site(
+                    name=None,
+                    type=site['type'],
+                    x=None,
+                    y=None,
+                    site_pins=site['site_pins'],
+                )
 
-    with open(self.tile_dbs.tile_type) as f:
-      tile_type = json.load(f)
-      assert self.tilename_upper == tile_type['tile_type']
-      self.wires = tile_type['wires']
-      self.sites = tuple(yield_sites(tile_type['sites']))
-      self.pips = tuple(yield_pips(tile_type['pips']))
+        def yield_pips(pips):
+            for pip in pips:
+                yield Pip(
+                    net_to=pip['dst_wire'],
+                    net_from=pip['src_wire'],
+                    can_invert=bool(int(pip['can_invert'])),
+                    is_directional=bool(int(pip['is_directional'])),
+                    is_pseudo=bool(int(pip['is_pseudo'])),
+                )
 
-  def get_wires(self):
-    """Returns a set of wire names present in this tile."""
-    return self.wires
+        with open(self.tile_dbs.tile_type) as f:
+            tile_type = json.load(f)
+            assert self.tilename_upper == tile_type['tile_type']
+            self.wires = tile_type['wires']
+            self.sites = tuple(yield_sites(tile_type['sites']))
+            self.pips = tuple(yield_pips(tile_type['pips']))
 
-  def get_sites(self):
-    """ Returns tuple of Site namedtuple's present in this tile. """
-    return self.sites
+    def get_wires(self):
+        """Returns a set of wire names present in this tile."""
+        return self.wires
 
-  def get_pips(self):
-    """ Returns tuple of Pip namedtuple's representing the PIPs in this tile.
+    def get_sites(self):
+        """ Returns tuple of Site namedtuple's present in this tile. """
+        return self.sites
+
+    def get_pips(self):
+        """ Returns tuple of Pip namedtuple's representing the PIPs in this tile.
     """
-    return self.pips
+        return self.pips
