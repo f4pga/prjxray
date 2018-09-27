@@ -19,6 +19,7 @@ class Grid(object):
         for tile in self.tilegrid['tiles']:
             tileinfo = self.tilegrid['tiles'][tile]
             grid_loc = GridLoc(tileinfo['grid_x'], tileinfo['grid_y'])
+            assert grid_loc not in self.loc
             self.loc[grid_loc] = tile
             self.tileinfo[tile] = GridInfo(
                 segment=tileinfo['segment'] if 'segment' in tileinfo else None,
