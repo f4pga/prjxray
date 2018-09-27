@@ -1,2 +1,4 @@
 futures
 yapf
+pyjson5
+progressbar2

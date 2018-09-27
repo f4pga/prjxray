@@ -1,10 +1,9 @@
-language: cpp
-
 matrix:
   include:
     # Job 1) Test C++ w/ GCC
     - os: linux
       dist: trusty
+      language: cpp
       addons:
         apt:
           sources:
@@ -22,12 +21,21 @@ matrix:
     # Job 2) Lint checks on Python and C++
     - os: linux
       dist: trusty
+      language: python
+      python: 3.6
       addons:
         apt:
+          sources:
+            - ubuntu-toolchain-r-test
           packages:
             - clang-format-3.9
+            - g++-6
       install:
-        - pip install --user -r requirements.txt
+        - export CC=gcc-6
+        - export CXX=g++-6
+        - pip install -r requirements.txt
       script:
+        - export CC=gcc-6
+        - export CXX=g++-6
         - make format
         - test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; } 
