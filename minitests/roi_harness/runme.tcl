@@ -2,12 +2,21 @@
 # Your ROI should at least have a SLICEL on the left
 
 # Number of package inputs going to ROI
-set DIN_N "$::env(DIN_N)"
+set DIN_N 8
+if { [info exists ::env(DIN_N) ] } {
+    set DIN_N "$::env(DIN_N)"
+}
 # Number of ROI outputs going to package
-set DOUT_N "$::env(DOUT_N)"
+set DOUT_N 8
+if { [info exists ::env(DOUT_N) ] } {
+    set DOUT_N "$::env(DOUT_N)"
+}
 # How many rows between pins
 # Reduces routing pressure
-set PITCH 3
+set PITCH 1
+if { [info exists ::env(PITCH) ] } {
+    set PITCH "$::env(PITCH)"
+}
 
 # X12 in the ROI, X10 just to the left
 # Start at bottom left of ROI and work up
@@ -25,7 +34,7 @@ set Y_BASE $XRAY_ROI_Y0
 # set Y_DIN_BASE 100
 set Y_CLK_BASE $Y_BASE
 # Clock lut in middle
-set Y_DIN_BASE [expr "$Y_CLK_BASE + 1"]
+set Y_DIN_BASE [expr "$Y_CLK_BASE + $PITCH"]
 # Sequential
 # set Y_DOUT_BASE [expr "$Y_DIN_BASE + $DIN_N"]
 # At top. This relieves routing pressure by spreading things out
@@ -37,12 +46,11 @@ set pincfg ""
 if { [info exists ::env(XRAY_PINCFG) ] } {
     set pincfg "$::env(XRAY_PINCFG)"
 }
-set roiv "roi_base.v"
+set roiv "../roi_base.v"
 if { [info exists ::env(XRAY_ROIV) ] } {
     set roiv "$::env(XRAY_ROIV)"
 }
 set roiv_trim [string map {.v v} $roiv]
-set outdir "out_${part}_${pincfg}_${roiv_trim}"
 
 puts "Environment"
 puts "  XRAY_ROI: $::env(XRAY_ROI)"
@@ -50,15 +58,11 @@ puts "  X_BASE: $X_BASE"
 puts "  Y_DIN_BASE: $Y_DIN_BASE"
 puts "  Y_CLK_BASE: $Y_CLK_BASE"
 puts "  Y_DOUT_BASE: $Y_DOUT_BASE"
-puts "  outdir: $outdir"
 
-file mkdir $outdir
-file link -symbolic out_last $outdir
-
-source ../../utils/utils.tcl
+source ../../../utils/utils.tcl
 
 create_project -force -part $::env(XRAY_PART) design design
-read_verilog top.v
+read_verilog ../top.v
 read_verilog $roiv
 set fixed_xdc ""
 if { [info exists ::env(XRAY_FIXED_XDC) ] } {
@@ -203,7 +207,7 @@ if {$fixed_xdc eq ""} {
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 
-    #write_checkpoint -force $outdir/synth.dcp
+    #write_checkpoint -force synth.dcp
 }
 
 
@@ -298,7 +302,7 @@ if {$fixed_xdc eq ""} {
 }
 
 place_design
-#write_checkpoint -force $outdir/placed.dcp
+#write_checkpoint -force placed.dcp
 
 # Version with more error checking for missing end node
 # Will do best effort in this case
@@ -357,7 +361,7 @@ proc node2wire {node} {
 }
 
 # XXX: maybe add IOB?
-set fp [open "$outdir/design.txt" w]
+set fp [open "design.txt" w]
 puts $fp "name node pin wire"
 # Manual routing
 if {$fixed_xdc eq ""} {
@@ -434,10 +438,10 @@ if {$fixed_xdc eq ""} {
     set_property IS_ROUTE_FIXED 1 [get_nets -hierarchical]
     #set_property IS_LOC_FIXED 1 [get_cells -hierarchical]
     #set_property IS_BEL_FIXED 1 [get_cells -hierarchical]
-    write_xdc -force $outdir/fixed.xdc
+    write_xdc -force fixed.xdc
 }
 
-write_checkpoint -force $outdir/design.dcp
+write_checkpoint -force design.dcp
 #set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
-write_bitstream -force $outdir/design.bit
+write_bitstream -force design.bit
 
