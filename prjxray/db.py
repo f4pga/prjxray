@@ -2,6 +2,7 @@ import os.path
 import json
 from prjxray import grid
 from prjxray import tile
+from prjxray import site_type
 from prjxray import connections
 
 
@@ -36,6 +37,7 @@ class Database(object):
         self.tile_types = None
 
         self.tile_types = {}
+        self.site_types = {}
         for f in os.listdir(self.db_root):
             if f.endswith('.json') and f.startswith('tile_type_'):
                 tile_type = f[len('tile_type_'):-len('.json')].lower()
@@ -61,6 +63,11 @@ class Database(object):
                     mask=mask,
                     tile_type=tile_type_file,
                 )
+
+            if f.endswith('.json') and f.startswith('site_type_'):
+                site_type_name = f[len('site_type_'):-len('.json')]
+
+                self.site_types[site_type_name] = os.path.join(self.db_root, f)
 
     def get_tile_types(self):
         """ Return list of tile types """
@@ -102,3 +109,12 @@ class Database(object):
             for tile_type, db in self.tile_types.items())
         return connections.Connections(
             self.tilegrid, self.tileconn, tile_wires)
+
+    def get_site_types(self):
+        return self.site_types.keys()
+
+    def get_site_type(self, site_type_name):
+        with open(self.site_types[site_type_name]) as f:
+            site_type_data = json.load(f)
+
+        return site_type.SiteType(site_type_data)

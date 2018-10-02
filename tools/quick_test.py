@@ -11,14 +11,46 @@ def quick_test(db_root):
     tile_types_in_grid = set(
         g.gridinfo_at_loc(loc).tile_type for loc in g.tile_locations())
     tile_types_in_db = set(db.get_tile_types())
+    site_types = set(db.get_site_types())
     assert len(tile_types_in_grid - tile_types_in_db) == 0
 
     # Verify that all tile types can be loaded.
     for tile_type in db.get_tile_types():
         tile = db.get_tile_type(tile_type)
-        tile.get_wires()
-        tile.get_sites()
-        tile.get_pips()
+        wires = tile.get_wires()
+        for site in tile.get_sites():
+            assert site.type in site_types
+            site_type = db.get_site_type(site.type)
+            site_pins = site_type.get_site_pins()
+            for site_pin in site.site_pins:
+                if site_pin.wire is not None:
+                    assert site_pin.wire in wires, (site_pin.wire, )
+
+                assert site_pin.name in site_pins
+
+        for pip in tile.get_pips():
+            assert pip.net_to in wires
+            assert pip.net_from in wires
+
+    for loc in g.tile_locations():
+        gridinfo = g.gridinfo_at_loc(loc)
+        assert gridinfo.tile_type in db.get_tile_types()
+        for site_name, site_type in gridinfo.sites.items():
+            assert site_type in site_types
+
+        tile = db.get_tile_type(gridinfo.tile_type)
+
+        # FIXME: The way sites are named in Tile.get_instance_sites is broken
+        # for thes tile types, skip them until the underlying data is fixed.
+        BROKEN_TILE_TYPES = [
+            'BRAM_L', 'BRAM_R', 'HCLK_IOI3', 'CMT_TOP_L_UPPER_B',
+            'CMT_TOP_R_UPPER_B'
+        ]
+        if gridinfo.tile_type in BROKEN_TILE_TYPES:
+            continue
+
+        instance_sites = list(tile.get_instance_sites(gridinfo))
+        assert len(instance_sites) == len(tile.get_sites())
 
 
 def main():

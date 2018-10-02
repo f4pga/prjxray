@@ -3,6 +3,8 @@ import csv
 import pickle
 import pyjson5 as json5
 import progressbar
+import re
+from collections import namedtuple
 
 
 def read_root_csv(root_dir):
@@ -148,3 +150,55 @@ def compare_prototype_site(proto_a, proto_b):
 
   """
     assert proto_a == proto_b, repr((proto_a, proto_b))
+
+
+# All site names appear to follow the pattern <type>_X<abs coord>Y<abs coord>.
+# Generally speaking, only the tile relatively coordinates are required to
+# assemble arch defs, so we re-origin the coordinates to be relative to the tile
+# (e.g. start at X0Y0) and discard the prefix from the name.
+SITE_COORDINATE_PATTERN = re.compile('^(.+)_X([0-9]+)Y([0-9]+)$')
+
+SiteCoordinate = namedtuple('SiteCoordinate', 'prefix x_coord y_coord')
+
+
+def get_site_coordinate_from_name(name):
+    """
+    >>> get_site_coordinate_from_name('SLICE_X1Y0')
+    SiteCoordinate(prefix='SLICE', x_coord=1, y_coord=0)
+
+    >>> get_site_coordinate_from_name('SLICE_X0Y0')
+    SiteCoordinate(prefix='SLICE', x_coord=0, y_coord=0)
+
+    >>> get_site_coordinate_from_name('INT_L_X500Y999')
+    SiteCoordinate(prefix='INT_L', x_coord=500, y_coord=999)
+
+    """
+    coordinate = SITE_COORDINATE_PATTERN.match(name)
+    assert coordinate is not None, name
+
+    return SiteCoordinate(
+        prefix=coordinate.group(1),
+        x_coord=int(coordinate.group(2)),
+        y_coord=int(coordinate.group(3)),
+    )
+
+
+def find_origin_coordinate(site_names):
+    """ Find the coordinates of each site within the tile, and then subtract the
+      smallest coordinate to re-origin them all to be relative to the tile.
+  """
+
+    if len(site_names) == 0:
+        return 0, 0
+
+    def inner_():
+        for site in site_names:
+            coordinate = get_site_coordinate_from_name(site)
+
+            yield coordinate.x_coord, coordinate.y_coord
+
+    x_coords, y_coords = zip(*inner_())
+    min_x_coord = min(x_coords)
+    min_y_coord = min(y_coords)
+
+    return min_x_coord, min_y_coord

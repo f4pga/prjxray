@@ -1,5 +1,6 @@
 from collections import namedtuple
 import json
+from prjxray import lib
 """ Database files available for a tile """
 TileDbs = namedtuple('TileDbs', 'segbits mask tile_type')
 
@@ -14,7 +15,7 @@ pins - Instaces of site pins within this site and tile.  This is an tuple of
        the tile.
 
 """
-Site = namedtuple('Site', 'name x y type site_pins')
+Site = namedtuple('Site', 'name prefix x y type site_pins')
 """ SitePin - Tuple representing a site pin within a tile.
 
 Sites are generic based on type, however sites are instanced
@@ -28,7 +29,7 @@ direction - Direction of this site pin.  This direction is expected to be the
 wire - Wire name within the tile.  This name is site instance specific.
 
 """
-SitePin = namedtuple('SitePin', 'name wire direction')
+SitePin = namedtuple('SitePin', 'name wire')
 
 
 class Tile(object):
@@ -46,15 +47,19 @@ class Tile(object):
         def yield_sites(sites):
             for site in sites:
                 yield Site(
-                    name=None,
+                    name=site['name'],
+                    prefix=site['prefix'],
                     type=site['type'],
-                    x=None,
-                    y=None,
-                    site_pins=site['site_pins'],
-                )
+                    x=site['x_coord'],
+                    y=site['y_coord'],
+                    site_pins=tuple(
+                        SitePin(
+                            name=name,
+                            wire=wire,
+                        ) for name, wire in site['site_pins'].items()))
 
         def yield_pips(pips):
-            for pip in pips:
+            for pip in pips.values():
                 yield Pip(
                     net_to=pip['dst_wire'],
                     net_from=pip['src_wire'],
@@ -82,3 +87,41 @@ class Tile(object):
         """ Returns tuple of Pip namedtuple's representing the PIPs in this tile.
     """
         return self.pips
+
+    def get_instance_sites(self, grid_info):
+        """ get_sites returns abstract sites for all tiles of type.
+            get_instance_sites converts site info from generic to specific
+            based on a tile location.
+            """
+        origin_x, origin_y = lib.find_origin_coordinate(grid_info.sites.keys())
+
+        site_names = set()
+
+        for site in self.sites:
+            x = site.x + origin_x
+            y = site.y + origin_y
+
+            site_name = '{}_X{}Y{}'.format(site.prefix, x, y)
+
+            if site_name not in grid_info.sites:
+                type_count = 0
+                for site_name_from_grid, site_type in grid_info.sites.items():
+                    if site.type == site_type:
+                        type_count += 1
+                        site_name = site_name_from_grid
+
+                assert type_count == 1, (site_name, type_count)
+
+            site_names.add(site_name)
+            assert site.type == grid_info.sites[site_name]
+
+            yield Site(
+                name=site_name,
+                prefix=site.prefix,
+                type=site.type,
+                x=x,
+                y=y,
+                site_pins=site.site_pins,
+            )
+
+        assert site_names == set(grid_info.sites.keys())

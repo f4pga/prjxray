@@ -17,7 +17,6 @@ import progressbar
 import multiprocessing
 import os
 import functools
-import re
 
 
 def check_and_strip_prefix(name, prefix):
@@ -43,67 +42,6 @@ def flatten_site_pins(tile, site, site_pins, site_pin_node_to_wires):
                 wires[0])
 
     return dict(inner())
-
-
-# All site names appear to follow the pattern <type>_X<abs coord>Y<abs coord>.
-# Generally speaking, only the tile relatively coordinates are required to
-# assemble arch defs, so we re-origin the coordinates to be relative to the tile
-# (e.g. start at X0Y0) and discard the prefix from the name.
-SITE_COORDINATE_PATTERN = re.compile('^(.+)_X([0-9]+)Y([0-9]+)$')
-
-
-def find_origin_coordinate(sites):
-    """ Find the coordinates of each site within the tile, and then subtract the
-      smallest coordinate to re-origin them all to be relative to the tile.
-  """
-
-    if len(sites) == 0:
-        return 0, 0
-
-    def inner_():
-        for site in sites:
-            coordinate = SITE_COORDINATE_PATTERN.match(site['site'])
-            assert coordinate is not None, site
-
-            x_coord = int(coordinate.group(2))
-            y_coord = int(coordinate.group(3))
-            yield x_coord, y_coord
-
-    x_coords, y_coords = zip(*inner_())
-    min_x_coord = min(x_coords)
-    min_y_coord = min(y_coords)
-
-    return min_x_coord, min_y_coord
-
-
-def get_sites(tile, site_pin_node_to_wires):
-    min_x_coord, min_y_coord = find_origin_coordinate(tile['sites'])
-
-    for site in tile['sites']:
-        orig_site_name = site['site']
-        coordinate = SITE_COORDINATE_PATTERN.match(orig_site_name)
-
-        x_coord = int(coordinate.group(2))
-        y_coord = int(coordinate.group(3))
-
-        yield (
-            {
-                'name':
-                'X{}Y{}'.format(x_coord - min_x_coord, y_coord - min_y_coord),
-                'prefix':
-                coordinate.group(1),
-                'x_coord':
-                x_coord - min_x_coord,
-                'y_coord':
-                y_coord - min_y_coord,
-                'type':
-                site['type'],
-                'site_pins':
-                dict(
-                    flatten_site_pins(
-                        tile['tile'], site['site'], site['site_pins'],
-                        site_pin_node_to_wires)),
-            })
 
 
 def compare_sites_and_update(tile, sites, new_sites):
@@ -217,6 +155,37 @@ def check_wires(wires, sites, pips):
                 assert pip['src_wire'] in wires, repr((pip['src_wire'], wires))
             if pip['dst_wire'] is not None:
                 assert pip['dst_wire'] in wires, repr((pip['dst_wire'], wires))
+
+
+def get_sites(tile, site_pin_node_to_wires):
+    min_x_coord, min_y_coord = prjxray.lib.find_origin_coordinate(
+        site['site'] for site in tile['sites'])
+
+    for site in tile['sites']:
+        orig_site_name = site['site']
+        coordinate = prjxray.lib.get_site_coordinate_from_name(orig_site_name)
+
+        x_coord = coordinate.x_coord
+        y_coord = coordinate.y_coord
+
+        yield (
+            {
+                'name':
+                'X{}Y{}'.format(x_coord - min_x_coord, y_coord - min_y_coord),
+                'prefix':
+                coordinate.prefix,
+                'x_coord':
+                x_coord - min_x_coord,
+                'y_coord':
+                y_coord - min_y_coord,
+                'type':
+                site['type'],
+                'site_pins':
+                dict(
+                    flatten_site_pins(
+                        tile['tile'], site['site'], site['site_pins'],
+                        site_pin_node_to_wires)),
+            })
 
 
 def read_json5(fname, nodes):
