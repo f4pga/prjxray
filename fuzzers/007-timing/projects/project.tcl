@@ -13,7 +13,7 @@ proc pin_bel {pin} {
 
 # Changed to group wires and nodes
 # This allows tracing the full path along with pips
-proc write_info3 {} {
+proc write_info4 {} {
     set outdir "."
     set fp [open "$outdir/timing4.txt" w]
     # bel as site/bel, so don't bother with site

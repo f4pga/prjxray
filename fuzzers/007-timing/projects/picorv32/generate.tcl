@@ -44,5 +44,5 @@ proc build_design {} {
 }
 
 build_design
-write_info3
+write_info4
 
