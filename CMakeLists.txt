@@ -9,9 +9,6 @@ if(NOT CMAKE_BUILD_TYPE)
 		FORCE)
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
-add_compile_options(-Wall -Werror)
-
 # Hack for missing option in cctz
 option(BUILD_TESTING "" OFF)
 
@@ -29,6 +26,10 @@ add_subdirectory(third_party/yaml-cpp EXCLUDE_FROM_ALL)
 target_include_directories(yaml-cpp PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/yaml-cpp/include>
 	)
+
+# Set the CXX standard and compile time for our code only.
+set(CMAKE_CXX_STANDARD 14)
+add_compile_options(-Wall -Werror)
 
 add_subdirectory(lib)
 add_subdirectory(tools)
