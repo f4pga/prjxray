@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, A_di2ds, PREFIX_SITEW, sitew_vals2s
+from timfuz import Benchmark, A_di2ds, sw_ei_vals2s, sw_eo_vals2s, sw_i_vals2s
 from timing_txt2json import gen_timing4a, load_speed_json
 
 import glob
@@ -59,8 +59,13 @@ def sd_parts(sd):
     site, bel_type, bel_pin = sd['bel_pin'].split('/')
     assert sd['site'] == site
     assert sd['bel'] == site + '/' + bel_type
-    site, site_pin = sd['site_pin'].split('/')
-    assert sd['site_pin'] == sd['site'] + '/' + site_pin
+
+    site_pin_str = sd['site_pin']
+    if site_pin_str:
+        site, site_pin = sd['site_pin'].split('/')
+        assert sd['site_pin'] == sd['site'] + '/' + site_pin
+    else:
+        site_pin = None
     return site_type, site_pin, bel_type, bel_pin
 
 
@@ -87,28 +92,47 @@ def run(speed_json_f, fout, fns_in, verbose=0, corner=None):
         bstr = ' '.join([str(x) for x in mkb(tsites)])
 
         # Identify inter site transaction (SITEI)
-        if val['src']['site_pin'] is None and val['dst']['site_pin'] is None:
+        if not val['src']['site_pin'] and not val['dst']['site_pin']:
             # add one delay model for the path
-            assert 0, 'FIXME: inter site transaction'
-            row_ds = {'SITEI_BLAH': None}
-        else:
+            # XXX: can these be solved exactly?
+            # might still have fanout and such
+
+            src_site_type, _src_site_pin, src_bel_type, src_bel_pin = sd_parts(
+                val['src'])
+            dst_site_type, _dst_site_pin, dst_bel_type, dst_bel_pin = sd_parts(
+                val['dst'])
+            assert src_site_type == dst_site_type
+            assert (src_bel_type, src_bel_pin) != (dst_bel_type, dst_bel_pin)
+
+            k = sw_i_vals2s(
+                src_site_type, src_bel_type, src_bel_pin, dst_bel_type,
+                dst_bel_pin)
+            row_ds = {k: 1}
+        elif val['src']['site_pin'] and val['dst']['site_pin']:
             # if it exits a site it should enter another (possibly the same site)
             # site in (SITEI) or site out (SITEO)?
             # nah, keep things simple and just call them SITEW
-            assert val['src']['site_pin'] and val['dst']['site_pin']
             row_ds = {}
 
-            def add_delay(sd):
-                site_type, site_pin, bel_type, bel_pin = sd_parts(sd)
-                # there are _ in some of the names
-                # use some other chars
-                k = sitew_vals2s(site_type, site_pin, bel_type, bel_pin)
-                # even if its the same site src and dst, input and output should be different types
+            def add_dst_delay():
+                sd = val['dst']
+                site_type, src_site_pin, dst_bel, dst_bel_pin = sd_parts(sd)
+                k = sw_ei_vals2s(site_type, src_site_pin, dst_bel, dst_bel_pin)
                 assert k not in row_ds
                 row_ds[k] = 1
 
-            add_delay(val['src'])
-            add_delay(val['dst'])
+            def add_src_delay():
+                sd = val['src']
+                site_type, dst_site_pin, src_bel, src_bel_pin = sd_parts(sd)
+                k = sw_eo_vals2s(site_type, src_bel, src_bel_pin, dst_site_pin)
+                assert k not in row_ds
+                row_ds[k] = 1
+
+            add_dst_delay()
+            add_src_delay()
+        else:
+            # dropped by the tcl script
+            raise Exception("FIXME: handle destination but no source")
 
         row_ico = 0
         items = [str(row_ico), bstr]

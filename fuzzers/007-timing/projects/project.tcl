@@ -193,5 +193,3 @@ proc write_info4 {} {
     puts "  Has interconnect: $lines_some_int"
 }
 
-write_info4
-

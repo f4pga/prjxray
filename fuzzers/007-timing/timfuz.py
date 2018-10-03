@@ -21,20 +21,46 @@ from benchmark import Benchmark
 # models do not overlap between PIPs and WIREs
 PREFIX_W = 'WIRE'
 PREFIX_P = 'PIP'
-# site wire (a to b)
-PREFIX_SITEW = 'SITEW'
+# extneral site wire (ie site a to b)
+PREFIX_SW_EI = 'SITEW-EI'
+PREFIX_SW_EO = 'SITEW-EO'
+# internal site wire (ie bel a to b within a site)
+PREFIX_SW_I = 'SITEW-I'
 
 
-def sitew_vals2s(site_type, site_pin, bel_type, bel_pin):
+def sw_ei_vals2s(site_type, src_site_pin, dst_bel, dst_bel_pin):
     '''Pack site wire components into a variable string'''
     return '%s:%s:%s:%s:%s' % (
-        PREFIX_SITEW, site_type, site_pin, bel_type, bel_pin)
+        PREFIX_SW_EI, site_type, src_site_pin, dst_bel, dst_bel_pin)
 
 
-def sitew_s2vals(s):
-    prefix, site_type, site_pin, bel_type, bel_pin = s.split(':')
-    assert prefix == 'SITEW'
-    return site_type, site_pin, bel_type, bel_pin
+def sw_ei_s2vals(s):
+    prefix, site_type, src_site_pin, dst_bel, dst_bel_pin = s.split(':')
+    assert prefix == PREFIX_SW_EI
+    return site_type, src_site_pin, dst_bel, dst_bel_pin
+
+
+def sw_eo_vals2s(site_type, src_bel, src_bel_pin, dst_site_pin):
+    return '%s:%s:%s:%s:%s' % (
+        PREFIX_SW_EO, site_type, src_bel, src_bel_pin, dst_site_pin)
+
+
+def sw_eo_s2vals(s):
+    prefix, site_type, src_bel, src_bel_pin, dst_site_pin = s.split(':')
+    assert prefix == PREFIX_SW_EO
+    return site_type, src_bel, src_bel_pin, dst_site_pin
+
+
+def sw_i_vals2s(site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin):
+    return '%s:%s:%s:%s:%s:%s' % (
+        PREFIX_SW_I, site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin)
+
+
+def sw_i_s2vals(s):
+    prefix, site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin = s.split(
+        ':')
+    assert prefix == PREFIX_SW_I
+    return site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin
 
 
 # Equations are filtered out until nothing is left

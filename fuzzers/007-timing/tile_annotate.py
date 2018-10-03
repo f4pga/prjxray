@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import timfuz
-from timfuz import loadc_Ads_bs, Ads2bounds, PREFIX_W, PREFIX_P, PREFIX_SITEW, sitew_s2vals
+from timfuz import loadc_Ads_bs, Ads2bounds, PREFIX_W, PREFIX_P, PREFIX_SW_EI, PREFIX_SW_EO, PREFIX_SW_I, sw_ei_s2vals, sw_eo_s2vals, sw_i_s2vals
 
 import sys
 import os
@@ -50,32 +50,59 @@ def add_pip_wire(tilej, bounds, verbose=False):
 def add_sites(tilej, bounds):
     # XXX: no source of truth currently
     # is there a way we could get this?
+    # Naming discussion https://github.com/SymbiFlow/prjxray/pull/126
 
     sitej = tilej.setdefault('sites', {})
-    for variable, bound in bounds.items():
-        # group delays by site
-        site_type, site_pin, bel_type, bel_pin = sitew_s2vals(variable)
-        asitej = sitej.setdefault(site_type, {})
-        # group together?
-        # wish there was a way to do tuple keys
-        k = ('%s:%s:%s' % (site_pin, bel_type, bel_pin))
-        #print(site_type, k)
-        asitej[k] = bound
-    #nsites = sum([len(v) for v in sitej.values()])
-    print('Sites: added %u sites, %u site wires' % (len(sitej), len(bounds)))
+
+    def add_ei():
+        for variable, bound in bounds[PREFIX_SW_EI].items():
+            site_type, src_site_pin, dst_bel_type, dst_bel_pin = sw_ei_s2vals(
+                variable)
+            # ex: SLICEL:AX->AFF.D
+            k = (
+                '%s:%s->%s.%s' %
+                (site_type, src_site_pin, dst_bel_type, dst_bel_pin))
+            sitej.setdefault(site_type, {})[k] = bound
+
+    def add_eo():
+        for variable, bound in bounds[PREFIX_SW_EO].items():
+            site_type, src_bel_type, src_bel_pin, dst_site_pin = sw_eo_s2vals(
+                variable)
+            # ex: SLICEL:AFF.Q->AQ
+            k = (
+                '%s:%s.%s->%s' %
+                (site_type, src_bel_type, src_bel_pin, dst_site_pin))
+            sitej.setdefault(site_type, {})[k] = bound
+
+    def add_i():
+        for variable, bound in bounds[PREFIX_SW_I].items():
+            site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin = sw_i_s2vals(
+                variable)
+            # ex: SLICEL:LUT6.O2->AFF.D
+            k = (
+                '%s:%s.%s->%s.%s' %
+                (site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin))
+            sitej.setdefault(site_type, {})[k] = bound
+
+    add_ei()
+    add_eo()
+    add_i()
+    print('Sites: added %u sites' % len(sitej))
+    print('Added site wires')
+    print('  Site external in: %u' % len(bounds[PREFIX_SW_EI]))
+    print('  Site external out: %u' % len(bounds[PREFIX_SW_EO]))
+    print('  Site internal: %u' % len(bounds[PREFIX_SW_I]))
 
 
 def sep_bounds(bounds):
     pw = {}
-    sites = {}
+    sites = {PREFIX_SW_EI: {}, PREFIX_SW_EO: {}, PREFIX_SW_I: {}}
     for k, v in bounds.items():
         prefix = k.split(':')[0]
-        if prefix == PREFIX_W:
+        if prefix in (PREFIX_W, PREFIX_P):
             pw[k] = v
-        elif prefix == PREFIX_P:
-            pw[k] = v
-        elif prefix == PREFIX_SITEW:
-            sites[k] = v
+        elif prefix in (PREFIX_SW_EI, PREFIX_SW_EO, PREFIX_SW_I):
+            sites[prefix][k] = v
         else:
             assert 0, 'Unknown delay: %s %s' % (k, prefix)
     return pw, sites
