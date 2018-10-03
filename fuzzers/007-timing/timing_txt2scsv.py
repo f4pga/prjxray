@@ -25,31 +25,6 @@ def gen_diffs(speed_json_f, fns_in):
             yield val, tsites
 
 
-'''
-def run(speed_json_f, fout, fns_in, verbose=0, corner=None):
-    fout.write('fast_max fast_min slow_max slow_min,src_site_type,src_site,src_bel,src_bel_pin,dst_site_type,dst_site,dst_bel,dst_bel_pin\n')
-    for val, tsites in gen_diffs(speed_json_f, fns_in):
-        def mkb(t):
-            return (t['fast_max'], t['fast_min'], t['slow_max'], t['slow_min'])
-        bstr = ' '.join([str(x) for x in mkb(tsites)])
-
-        def srcdst(which):
-            sd = val[which]
-            # IOB_X0Y106 IOB_X0Y106/INBUF_EN IOB_X0Y106/INBUF_EN/OUT
-            # print(sd['site'], sd['bel'], sd['bel_pin'])
-            site, bel, bel_pin = sd['bel_pin'].split('/')
-            assert sd['site'] == site
-            assert sd['bel'] == site + '/' + bel
-            return sd['site_type'], site, bel, bel_pin
-                                                       
-        items = [bstr]
-        items.extend(srcdst('src'))
-        items.extend(srcdst('dst'))
-        fout.write(','.join(items) + '\n')
-    print('done')
-'''
-
-
 # XXX: move to json converter?
 def sd_parts(sd):
     '''Return site_type, site_pin, bel_type, bel_pin as non-prefixed strings'''
