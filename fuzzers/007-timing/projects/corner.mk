@@ -28,12 +28,12 @@ $(BUILD_DIR)/checksub:
 
 $(BUILD_DIR)/$(CORNER)/leastsq.csv: $(BUILD_DIR)/sub.json $(BUILD_DIR)/grouped.csv $(BUILD_DIR)/checksub $(BUILD_DIR)/$(CORNER)
 	# Create a rough timing model that approximately fits the given paths
-	python3 $(TIMFUZ_DIR)/solve_leastsq.py --sub-json $(BUILD_DIR)/sub.json $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/leastsq.csv.tmp
+	python3 $(TIMFUZ_DIR)/solve_leastsq.py $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/leastsq.csv.tmp
 	mv $(BUILD_DIR)/$(CORNER)/leastsq.csv.tmp $(BUILD_DIR)/$(CORNER)/leastsq.csv
 
 $(BUILD_DIR)/$(CORNER)/linprog.csv: $(BUILD_DIR)/$(CORNER)/leastsq.csv $(BUILD_DIR)/grouped.csv
 	# Tweak rough timing model, making sure all constraints are satisfied
-	ALLOW_ZERO_EQN=$(ALLOW_ZERO_EQN) python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json $(BUILD_DIR)/sub.json --bounds-csv $(BUILD_DIR)/$(CORNER)/leastsq.csv --massage $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/linprog.csv.tmp
+	ALLOW_ZERO_EQN=$(ALLOW_ZERO_EQN) python3 $(TIMFUZ_DIR)/solve_linprog.py --bounds-csv $(BUILD_DIR)/$(CORNER)/leastsq.csv --massage $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/linprog.csv.tmp
 	mv $(BUILD_DIR)/$(CORNER)/linprog.csv.tmp $(BUILD_DIR)/$(CORNER)/linprog.csv
 
 $(BUILD_DIR)/$(CORNER)/flat.csv: $(BUILD_DIR)/$(CORNER)/linprog.csv
