@@ -45,18 +45,21 @@ proc write_info4 {} {
 
     set TIME_start [clock clicks -milliseconds]
     set equations 0
+    set nets_no_src_cell 0
     set nets_no_src_bel 0
     set lines_no_int 0
     set lines_some_int 0
     set neti 0
     set nets [get_nets -hierarchical]
-    #set nets [get_nets roi/counter_reg_n_0_[8]]
+    #set nets [get_nets clk]
     set nnets [llength $nets]
     foreach net $nets {
         incr neti
 
         puts "Net $neti / $nnets: $net"
 
+        # there are some special places like on IOB where you may not have a cell source pin
+        # this is due to special treatment where BEL vs SITE are blurred
         # The semantics of get_pins -leaf is kind of odd
         # When no passthrough LUTs exist, it has no effect
         # When passthrough LUT present:
@@ -64,6 +67,12 @@ proc write_info4 {} {
         # -w/ -leaf: different pins + passthrough LUT pins
         # With OUT filter this seems to be sufficient
         set src_cell_pins [get_pins -leaf -filter {DIRECTION == OUT} -of_objects $net]
+        if {$src_cell_pins eq ""} {
+            incr nets_no_src_cell
+            # ex: IOB internal bel net
+            puts "  SKIP: no source cell"
+            continue
+        }
         # 0 to 2 of these
         # Seems when 2 of them they basically have the same bel + cell
         # Make a best effort and move forward
@@ -73,14 +82,11 @@ proc write_info4 {} {
         # Only applicable if in a site
         set src_bel [get_bels -of_objects $src_cell]
         if {$src_bel eq ""} {
-            incr nets_no_src_bel
-            set src_site ""
-            set src_site_type ""
-            set src_site_pin ""
-
-            # actually just throw out cases where source site doesn't exist
+            # just throw out cases where source site doesn't exist
             # these are very special, don't really have timing info anyway
             # rework these later if they become problematic
+            incr nets_no_src_bel
+            puts "  SKIP: no source bel"
             continue
         }
 
@@ -151,6 +157,10 @@ proc write_info4 {} {
                     # XXX: remove? don't think I care about these
                     # most for debugging at this point
                     set nodes [get_nodes -of_objects $net -from $src_site_pin -to $dst_site_pin]
+                    if {$nodes eq ""} {
+                        puts "ERROR: no nodes"
+                        return
+                    }
                     foreach node $nodes {
                         set nwires [llength [get_wires -of_objects $node]]
                         lappend nodes_out "$node:$nwires"
@@ -176,7 +186,8 @@ proc write_info4 {} {
     puts "Took ms: $TIME_taken"
     puts "Generated $equations equations"
     puts "Nets: $nnets"
-    puts "  No source bel: $nets_no_src_bel"
+    puts "  Skipped (no source cell): $nets_no_src_cell"
+    puts "  Skipped (no source bel): $nets_no_src_bel"
     puts "Lines"
     puts "  No interconnect: $lines_no_int"
     puts "  Has interconnect: $lines_some_int"
