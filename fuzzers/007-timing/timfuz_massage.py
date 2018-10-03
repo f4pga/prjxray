@@ -220,7 +220,9 @@ def derive_eq_by_col(Ads, b_ub, verbose=0, keep_orig=True):
 
 
 # iteratively increasing column limit until all columns are added
-def massage_equations(Ads, b, verbose=False, corner=None):
+def massage_equations(
+        Ads, b, verbose=False, corner=None, iter_lim=1, col_lim=100000):
+    #col_lim = 15
     '''
     Subtract equations from each other to generate additional constraints
     Helps provide additional guidance to solver for realistic delays
@@ -262,7 +264,6 @@ def massage_equations(Ads, b, verbose=False, corner=None):
 
     # Each iteration one more column is allowed until all columns are included
     # (and the system is stable)
-    col_lim = 15
     di = 0
     while True:
         print
@@ -298,13 +299,13 @@ def massage_equations(Ads, b, verbose=False, corner=None):
         col_dist(Ads, 'derive done iter %d, lim %d' % (di, col_lim), lim=12)
 
         rows = len(Ads)
+        di += 1
+        dend = len(b)
         # possible that a new equation was generated and taken away, but close enough
-        if n_orig == len(b) and col_lim >= cols:
+        if n_orig == len(b) and col_lim >= cols or di >= iter_lim:
             break
         col_lim += col_lim / 5
-        di += 1
 
-        dend = len(b)
         print('')
         print('Derive net: %d => %d' % (dstart, dend))
         print('')

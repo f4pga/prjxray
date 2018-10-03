@@ -23,9 +23,21 @@ def parse_pip(s, speed_i2s):
     return site, instance, speed_i2s[int(speed_index)]
 
 
+def parse_pips(pips, speed_i2s):
+    if not pips:
+        return []
+    return [parse_pip(pip, speed_i2s) for pip in pips.split('|')]
+
+
 def parse_node(s):
     node, nwires = s.split(':')
     return node, int(nwires)
+
+
+def parse_nodes(nodes):
+    if not nodes:
+        return []
+    return [parse_node(node) for node in nodes.split('|')]
 
 
 def parse_wire(s, speed_i2s):
@@ -35,10 +47,16 @@ def parse_wire(s, speed_i2s):
     return site, instance, speed_i2s[int(speed_index)]
 
 
+def parse_wires(wires, speed_i2s):
+    if not wires:
+        return []
+    return [parse_wire(wire, speed_i2s) for wire in wires.split('|')]
+
+
 def gen_timing4(fn, speed_i2s):
     f = open(fn, 'r')
-    header_want = 'linetype net src_site src_site_type src_site_pin src_bel src_bel_pin dst_site dst_site_type dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips inodes wires'
-    ncols = len(header_want.split())
+    header_want = "linetype,net,src_site,src_site_type,src_site_pin,src_bel,src_bel_pin,dst_site,dst_site_type,dst_site_pin,dst_bel,dst_bel_pin,ico,fast_max,fast_min,slow_max,slow_min,pips,inodes,wires"
+    ncols = len(header_want.split(','))
 
     # src_bel dst_bel ico fast_max fast_min slow_max slow_min pips
     header_got = f.readline().strip()
@@ -52,17 +70,15 @@ def gen_timing4(fn, speed_i2s):
     for l in f:
 
         def group_line():
-            ncols = len('lintype ico delays'.split())
+            ncols = len('lintype,ico,delays'.split(','))
             assert len(parts) == ncols
             _lintype, ico, delays = parts
             return int(ico), int(delays)
 
         def net_line():
-            assert len(parts) == ncols
+            assert len(parts) == ncols, "Expected %u parts, got %u" % (
+                ncols, len(parts))
             _lintype, net, src_site, src_site_type, src_site_pin, src_bel, src_bel_pin, dst_site, dst_site_type, dst_site_pin, dst_bel, dst_bel_pin, ico, fast_max, fast_min, slow_max, slow_min, pips, nodes, wires = parts
-            pips = pips.split('|')
-            nodes = nodes.split('|')
-            wires = wires.split('|')
             return {
                 'net': net,
                 'src': {
@@ -87,16 +103,16 @@ def gen_timing4(fn, speed_i2s):
                     'slow_min': int(slow_min),
                 },
                 'ico': int(ico),
-                'pips': [parse_pip(pip, speed_i2s) for pip in pips],
-                'nodes': [parse_node(node) for node in nodes],
-                'wires': [parse_wire(wire, speed_i2s) for wire in wires],
+                'pips': parse_pips(pips, speed_i2s),
+                'nodes': parse_nodes(nodes),
+                'wires': parse_wires(wires, speed_i2s),
                 'line': l,
             }
 
         l = l.strip()
         if not l:
             continue
-        parts = l.split(' ')
+        parts = l.split(',')
         lintype = parts[0]
 
         val = {
@@ -180,67 +196,3 @@ def load_speed_json(f):
         if i != SI_NONE:
             speed_i2s[i] = k
     return j, speed_i2s
-
-
-'''
-def run(speed_json_f, fout, fns_in, verbose=0, corner=None):
-    print('Loading data')
-    _speedj, speed_i2s = load_speed_json(speed_json_f)
-
-    fnout = open(fout, 'w')
-
-    vals = []
-    for fn_in in fns_in:
-        for j in load_timing4(fn_in, speed_i2s):
-            fnout.write(json.dumps(j) + '\n')
-
-
-def main():
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description=
-        'Convert obscure timing4.txt into more readable but roughly equivilent timing4.json'
-    )
-
-    parser.add_argument('--verbose', type=int, help='')
-    # made a bulk conversion easier...keep?
-    parser.add_argument(
-        '--auto-name', action='store_true', help='timing4.txt => timing4i.csv')
-    parser.add_argument(
-        '--speed-json',
-        default='build_speed/speed.json',
-        help='Provides speed index to name translation')
-    parser.add_argument('--out', default=None, help='Output timing4i.csv file')
-    parser.add_argument('fns_in', nargs='+', help='Input timing4.txt files')
-    args = parser.parse_args()
-    bench = Benchmark()
-
-    fnout = args.out
-    if fnout is None:
-        if args.auto_name:
-            assert len(args.fns_in) == 1
-            fnin = args.fns_in[0]
-            fnout = fnin.replace('.txt', '.json')
-            assert fnout != fnin, 'Expect .txt in'
-        else:
-            # practically there are too many stray prints to make this work as expected
-            assert 0, 'File name required'
-            fnout = '/dev/stdout'
-    print("Writing to %s" % fnout)
-    fout = open(fnout, 'w')
-
-    fns_in = args.fns_in
-    if not fns_in:
-        fns_in = glob.glob('specimen_*/timing4.txt')
-
-    run(
-        speed_json_f=open(args.speed_json, 'r'),
-        fout=fout,
-        fns_in=fns_in,
-        verbose=args.verbose)
-
-
-if __name__ == '__main__':
-    main()
-'''

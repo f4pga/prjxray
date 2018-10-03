@@ -150,7 +150,10 @@ def solve_save(outfn, xvals, names, corner, save_zero=True, verbose=False):
     print(
         'Wrote: %u / %u constrained delays, %u zeros' %
         (nonzeros, len(names), zeros))
-    assert nonzeros, 'Failed to estimate delay'
+    # max only...min corner seems to like 0
+    # see https://github.com/SymbiFlow/prjxray/issues/136
+    if 'max' in corner:
+        assert nonzeros, 'Failed to estimate delay'
 
 
 def run(

@@ -37,11 +37,32 @@ proc list_format {l delim} {
     }
     return $ret
 }
+
+proc line_net_external {fp net src_site src_site_type src_site_pin src_bel src_bel_pin dst_site dst_site_type dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips_out nodes_out wires_out} {
+    puts $fp "NET,$net,$src_site,$src_site_type,$src_site_pin,$src_bel,$src_bel_pin,$dst_site,$dst_site_type,$dst_site_pin,$dst_bel,$dst_bel_pin,$ico,$fast_max,$fast_min,$slow_max,$slow_min,$pips_out,$nodes_out,$wires_out"
+}
+
+proc line_net_internal {fp net site site_type src_bel src_bel_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min} {
+    set src_site $site
+    set src_site_type $site_type
+    set src_site_pin ""
+
+    set dst_site $site
+    set dst_site_type $site_type
+    set dst_site_pin ""
+
+    set pips_out ""
+    set nodes_out ""
+    set wires_out ""
+
+    puts $fp "NET,$net,$src_site,$src_site_type,$src_site_pin,$src_bel,$src_bel_pin,$dst_site,$dst_site_type,$dst_site_pin,$dst_bel,$dst_bel_pin,$ico,$fast_max,$fast_min,$slow_max,$slow_min,$pips_out,$nodes_out,$wires_out"
+}
+
 proc write_info4 {} {
     set outdir "."
     set fp [open "$outdir/timing4.txt" w]
     # bel as site/bel, so don't bother with site
-    puts $fp "linetype net src_site src_site_type src_site_pin src_bel src_bel_pin dst_site dst_site_type dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips inodes wires"
+    puts $fp "linetype,net,src_site,src_site_type,src_site_pin,src_bel,src_bel_pin,dst_site,dst_site_type,dst_site_pin,dst_bel,dst_bel_pin,ico,fast_max,fast_min,slow_max,slow_min,pips,inodes,wires"
 
     set TIME_start [clock clicks -milliseconds]
     set equations 0
@@ -52,6 +73,7 @@ proc write_info4 {} {
     set neti 0
     set nets [get_nets -hierarchical]
     #set nets [get_nets clk]
+    #set nets [get_nets roi/counter[0]_i_2_n_0]
     set nnets [llength $nets]
     foreach net $nets {
         incr neti
@@ -105,7 +127,7 @@ proc write_info4 {} {
                 # only increment on one of the paths
                 set equations [expr "$equations + [llength $delays]"]
             }
-            puts $fp "GROUP $ico [llength $delays]"
+            puts $fp "GROUP,$ico,[llength $delays]"
             foreach delay $delays {
                 #set delaystr [get_property NAME $delay]
 
@@ -128,10 +150,19 @@ proc write_info4 {} {
                 # No fabric on this net?
                 # don't try querying sites and such
                 if {[get_nodes -of_objects $net] eq ""} {
+                    if {$src_site ne $dst_site} {
+                        puts "ERROR: site mismatch"
+                        return
+                    }
+                    if {$src_site_type ne $dst_site_type} {
+                        puts "ERROR: site mismatch"
+                        return
+                    }
+
                     # Already have everything we could query
                     # Just output
                     incr lines_no_int
-                    puts $fp "NET $net $src_site $src_site_type $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_type $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min $pips_out $nodes_out $wires_out"
+                    line_net_internal $fp $net $src_site $src_site_type $src_bel $src_bel_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min
                 # At least some fabric exists
                 # Does dest BEL exist but not source BEL?
                 } elseif {$src_bel eq ""} {
@@ -139,7 +170,7 @@ proc write_info4 {} {
                     return
                 # Ideally query from and to cell pins
                 } else {
-                    # Nested list delimination precedence: " |:"
+                    # Nested list delimination precedence: ",|:"
 
                     # Pips in between
                     # Walk net, looking for interesting elements in between
@@ -176,7 +207,7 @@ proc write_info4 {} {
                     set wires_out [list_format "$wires_out" "|"]
 
                     incr lines_some_int
-                    puts $fp "NET $net $src_site $src_site_type $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_type $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min $pips_out $nodes_out $wires_out"
+                    line_net_external $fp $net $src_site $src_site_type $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_type $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min $pips_out $nodes_out $wires_out
                 }
             }
         }
@@ -192,4 +223,8 @@ proc write_info4 {} {
     puts "  No interconnect: $lines_no_int"
     puts "  Has interconnect: $lines_some_int"
 }
+
+# for debugging
+# source ../project.tcl
+# write_info4
 
