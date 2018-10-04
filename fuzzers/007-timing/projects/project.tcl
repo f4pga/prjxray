@@ -64,7 +64,7 @@ proc write_info4 {} {
     puts $fp "linetype,net,src_site,src_site_type,src_site_pin,src_bel,src_bel_pin,dst_site,dst_site_type,dst_site_pin,dst_bel,dst_bel_pin,ico,fast_max,fast_min,slow_max,slow_min,pips,wires"
 
     set TIME_start [clock clicks -milliseconds]
-    set equations 0
+    set delays_net 0
     set nets_no_src_cell 0
     set nets_no_src_bel 0
     set lines_no_int 0
@@ -123,9 +123,8 @@ proc write_info4 {} {
                 set delays [get_net_delays -interconnect_only -of_objects $net]
             } else {
                 set delays [get_net_delays -of_objects $net]
-                # only increment on one of the paths
-                set equations [expr "$equations + [llength $delays]"]
             }
+            set delays_net [expr "$delays_net + [llength $delays]"]
             puts $fp "GROUP,$ico,[llength $delays]"
             foreach delay $delays {
                 #set delaystr [get_property NAME $delay]
@@ -206,7 +205,7 @@ proc write_info4 {} {
     close $fp
     set TIME_taken [expr [clock clicks -milliseconds] - $TIME_start]
     puts "Took ms: $TIME_taken"
-    puts "Generated $equations equations"
+    puts "Checked $delays_net delays"
     puts "Nets: $nnets"
     puts "  Skipped (no source cell): $nets_no_src_cell"
     puts "  Skipped (no source bel): $nets_no_src_bel"
