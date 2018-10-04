@@ -29,17 +29,6 @@ def parse_pips(pips, speed_i2s):
     return [parse_pip(pip, speed_i2s) for pip in pips.split('|')]
 
 
-def parse_node(s):
-    node, nwires = s.split(':')
-    return node, int(nwires)
-
-
-def parse_nodes(nodes):
-    if not nodes:
-        return []
-    return [parse_node(node) for node in nodes.split('|')]
-
-
 def parse_wire(s, speed_i2s):
     # CLBLM_R_X3Y80/CLBLM_M_D6:952
     wirestr, speed_index = s.split(':')
@@ -55,7 +44,7 @@ def parse_wires(wires, speed_i2s):
 
 def gen_timing4(fn, speed_i2s):
     f = open(fn, 'r')
-    header_want = "linetype,net,src_site,src_site_type,src_site_pin,src_bel,src_bel_pin,dst_site,dst_site_type,dst_site_pin,dst_bel,dst_bel_pin,ico,fast_max,fast_min,slow_max,slow_min,pips,inodes,wires"
+    header_want = "linetype,net,src_site,src_site_type,src_site_pin,src_bel,src_bel_pin,dst_site,dst_site_type,dst_site_pin,dst_bel,dst_bel_pin,ico,fast_max,fast_min,slow_max,slow_min,pips,wires"
     ncols = len(header_want.split(','))
 
     # src_bel dst_bel ico fast_max fast_min slow_max slow_min pips
@@ -78,7 +67,7 @@ def gen_timing4(fn, speed_i2s):
         def net_line():
             assert len(parts) == ncols, "Expected %u parts, got %u" % (
                 ncols, len(parts))
-            _lintype, net, src_site, src_site_type, src_site_pin, src_bel, src_bel_pin, dst_site, dst_site_type, dst_site_pin, dst_bel, dst_bel_pin, ico, fast_max, fast_min, slow_max, slow_min, pips, nodes, wires = parts
+            _lintype, net, src_site, src_site_type, src_site_pin, src_bel, src_bel_pin, dst_site, dst_site_type, dst_site_pin, dst_bel, dst_bel_pin, ico, fast_max, fast_min, slow_max, slow_min, pips, wires = parts
             return {
                 'net': net,
                 'src': {
@@ -104,7 +93,6 @@ def gen_timing4(fn, speed_i2s):
                 },
                 'ico': int(ico),
                 'pips': parse_pips(pips, speed_i2s),
-                'nodes': parse_nodes(nodes),
                 'wires': parse_wires(wires, speed_i2s),
                 'line': l,
             }

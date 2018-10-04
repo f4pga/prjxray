@@ -38,8 +38,8 @@ proc list_format {l delim} {
     return $ret
 }
 
-proc line_net_external {fp net src_site src_site_type src_site_pin src_bel src_bel_pin dst_site dst_site_type dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips_out nodes_out wires_out} {
-    puts $fp "NET,$net,$src_site,$src_site_type,$src_site_pin,$src_bel,$src_bel_pin,$dst_site,$dst_site_type,$dst_site_pin,$dst_bel,$dst_bel_pin,$ico,$fast_max,$fast_min,$slow_max,$slow_min,$pips_out,$nodes_out,$wires_out"
+proc line_net_external {fp net src_site src_site_type src_site_pin src_bel src_bel_pin dst_site dst_site_type dst_site_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min pips_out wires_out} {
+    puts $fp "NET,$net,$src_site,$src_site_type,$src_site_pin,$src_bel,$src_bel_pin,$dst_site,$dst_site_type,$dst_site_pin,$dst_bel,$dst_bel_pin,$ico,$fast_max,$fast_min,$slow_max,$slow_min,$pips_out,$wires_out"
 }
 
 proc line_net_internal {fp net site site_type src_bel src_bel_pin dst_bel dst_bel_pin ico fast_max fast_min slow_max slow_min} {
@@ -52,17 +52,16 @@ proc line_net_internal {fp net site site_type src_bel src_bel_pin dst_bel dst_be
     set dst_site_pin ""
 
     set pips_out ""
-    set nodes_out ""
     set wires_out ""
 
-    puts $fp "NET,$net,$src_site,$src_site_type,$src_site_pin,$src_bel,$src_bel_pin,$dst_site,$dst_site_type,$dst_site_pin,$dst_bel,$dst_bel_pin,$ico,$fast_max,$fast_min,$slow_max,$slow_min,$pips_out,$nodes_out,$wires_out"
+    puts $fp "NET,$net,$src_site,$src_site_type,$src_site_pin,$src_bel,$src_bel_pin,$dst_site,$dst_site_type,$dst_site_pin,$dst_bel,$dst_bel_pin,$ico,$fast_max,$fast_min,$slow_max,$slow_min,$pips_out,$wires_out"
 }
 
 proc write_info4 {} {
     set outdir "."
     set fp [open "$outdir/timing4.txt" w]
     # bel as site/bel, so don't bother with site
-    puts $fp "linetype,net,src_site,src_site_type,src_site_pin,src_bel,src_bel_pin,dst_site,dst_site_type,dst_site_pin,dst_bel,dst_bel_pin,ico,fast_max,fast_min,slow_max,slow_min,pips,inodes,wires"
+    puts $fp "linetype,net,src_site,src_site_type,src_site_pin,src_bel,src_bel_pin,dst_site,dst_site_type,dst_site_pin,dst_bel,dst_bel_pin,ico,fast_max,fast_min,slow_max,slow_min,pips,wires"
 
     set TIME_start [clock clicks -milliseconds]
     set equations 0
@@ -184,19 +183,11 @@ proc write_info4 {} {
                     }
                     set pips_out [list_format "$pips_out" "|"]
 
-                    # Write nodes
-                    # XXX: remove? don't think I care about these
-                    # most for debugging at this point
                     set nodes [get_nodes -of_objects $net -from $src_site_pin -to $dst_site_pin]
                     if {$nodes eq ""} {
                         puts "ERROR: no nodes"
                         return
                     }
-                    foreach node $nodes {
-                        set nwires [llength [get_wires -of_objects $node]]
-                        lappend nodes_out "$node:$nwires"
-                    }
-                    set nodes_out [list_format "$nodes_out" "|"]
 
                     set wires [get_wires -of_objects $nodes]
                     # Write wires
@@ -207,7 +198,7 @@ proc write_info4 {} {
                     set wires_out [list_format "$wires_out" "|"]
 
                     incr lines_some_int
-                    line_net_external $fp $net $src_site $src_site_type $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_type $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min $pips_out $nodes_out $wires_out
+                    line_net_external $fp $net $src_site $src_site_type $src_site_pin $src_bel $src_bel_pin $dst_site $dst_site_type $dst_site_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min $pips_out $wires_out
                 }
             }
         }
