@@ -22,7 +22,7 @@ def vals2Adi_check(vals, names):
     assert 0
 
 
-def json2Ads(vals, verbose=False):
+def row_json2Ads(val, verbose=False):
     '''Convert timing4 JSON into Ads interconnect equations'''
 
     def pip2speed(pip):
@@ -33,47 +33,40 @@ def json2Ads(vals, verbose=False):
         _site, _name, wire_name = wire
         return PREFIX_W + ':' + wire_name
 
-    print('Making equations')
+    def add_name(name):
+        row_ds[name] = row_ds.get(name, 0) + 1
 
-    def mk_row(val):
-        def add_name(name):
-            row_ds[name] = row_ds.get(name, 0) + 1
+    row_ds = {}
 
-        row_ds = {}
-
-        for pip in val['pips']:
-            add_name(pip2speed(pip))
-        for wire in val['wires']:
-            add_name(wire2speed(wire))
-        return row_ds
-
-    return [mk_row(val) for val in vals]
+    for pip in val['pips']:
+        add_name(pip2speed(pip))
+    for wire in val['wires']:
+        add_name(wire2speed(wire))
+    return row_ds
 
 
-def load_Ads(speed_json_f, fn_ins):
+def load_Ads_gen(speed_json_f, fn_ins):
 
     print('Loading data')
 
     _speedj, speed_i2s = load_speed_json(speed_json_f)
 
     for fn_in in fn_ins:
-        vals = list(gen_timing4n(fn_in, speed_i2s))
-        Ads = json2Ads(vals)
-
         def mkb(val):
             t = val['t']
             return (t['fast_max'], t['fast_min'], t['slow_max'], t['slow_min'])
 
-        bs = [mkb(val) for val in vals]
-        ico = [val['ico'] for val in vals]
-
-        for row_bs, row_ds, row_ico in zip(bs, Ads, ico):
+        for val in gen_timing4n(fn_in, speed_i2s):
+            row_ds = row_json2Ads(val)
+            row_bs = mkb(val)
+            row_ico = val['ico']
+    
             yield row_bs, row_ds, row_ico
 
 
 def run(speed_json_f, fout, fns_in, verbose=0, corner=None):
     fout.write('ico,fast_max fast_min slow_max slow_min,rows...\n')
-    for row_bs, row_ds, row_ico in load_Ads(speed_json_f, fns_in):
+    for row_bs, row_ds, row_ico in load_Ads_gen(speed_json_f, fns_in):
         # XXX: consider removing ico column
         # its obsolete at this point
         if not row_ico:
