@@ -810,7 +810,15 @@ def tilej_stats(tilej):
             'wires_solved': {},
         }
         for corneri in corner_s2i.values():
-            ret['wires_solved'][corneri] = sum([sum([1 if site_wire[corneri] else 0 for site_wire in sitej.values()]) for sitej in sitesj.values()])
+            ret['wires_solved'][corneri] = sum(
+                [
+                    sum(
+                        [
+                            1 if site_wire[corneri] else 0
+                            for site_wire in sitej.values()
+                        ])
+                    for sitej in sitesj.values()
+                ])
         return ret
 
     tstats = tile_stats()
@@ -826,8 +834,9 @@ def tilej_stats(tilej):
                 '  %s: %u / %u solved, %u / %u covered' %
                 (etype, solved, net, covered, net))
         print(
-            '  sites: %u sites w/ %u solved / %u covered site wires' %
-            (sstats['sites'], sstats['wires_solved'][corneri], sstats['wires']))
+            '  sites: %u sites w/ %u solved / %u covered site wires' % (
+                sstats['sites'], sstats['wires_solved'][corneri],
+                sstats['wires']))
 
 
 def load_bounds(bounds_csv, corner):
