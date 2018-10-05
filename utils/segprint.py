@@ -51,21 +51,19 @@ with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
     new_grid = json.load(f)
 
 # TODO: Migrate to new tilegrid format via library.
-grid = {
-        'tiles': new_grid,
-        'segments': {}
-}
+grid = {'tiles': new_grid, 'segments': {}}
 
 for tile in grid['tiles'].values():
     if 'segment' in tile:
         segment = tile['segment']
         grid['segments'][segment] = {
-                'baseaddr': [
-                        tile['baseaddr'], tile['offset'],
-                ],
-                'type': tile['segment_type'],
-                'frames': tile['frames'],
-                'words': tile['words'],
+            'baseaddr': [
+                tile['baseaddr'],
+                tile['offset'],
+            ],
+            'type': tile['segment_type'],
+            'frames': tile['frames'],
+            'words': tile['words'],
         }
 
 bitdata = dict()

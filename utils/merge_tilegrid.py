@@ -1,6 +1,7 @@
 import json
 import argparse
 
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -24,7 +25,8 @@ def main():
         if tile in base_grid:
             for k in overlay_grid[tile]:
                 if k in base_grid[tile]:
-                    assert base_grid[tile][k] == overlay_grid[tile][k], (k, base_grid[tile][k], overlay_grid[tile][k])
+                    assert base_grid[tile][k] == overlay_grid[tile][k], (
+                        k, base_grid[tile][k], overlay_grid[tile][k])
                 else:
                     base_grid[tile][k] = overlay_grid[tile][k]
         else:
@@ -32,6 +34,7 @@ def main():
 
     with open(args.output_grid, 'w') as f:
         json.dump(base_grid, f, indent=2)
+
 
 if __name__ == '__main__':
     main()

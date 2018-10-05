@@ -76,10 +76,7 @@ def run(f_in, f_out, sparse=False):
         new_grid = json.load(f)
 
     # TODO: Migrate to new tilegrid format via library.
-    grid = {
-            'tiles': new_grid,
-            'segments': {}
-    }
+    grid = {'tiles': new_grid, 'segments': {}}
 
     for tilename, tile in grid['tiles'].items():
         if 'segment' in tile:
@@ -87,19 +84,22 @@ def run(f_in, f_out, sparse=False):
 
             if segment not in grid['segments']:
                 grid['segments'][segment] = {
-                        'baseaddr': (
-                                tile['baseaddr'], tile['offset'],
-                        ),
-                        'type': tile['segment_type'],
-                        'frames': tile['frames'],
-                        'words': tile['words'],
-                        'tiles': [tilename]
+                    'baseaddr': (
+                        tile['baseaddr'],
+                        tile['offset'],
+                    ),
+                    'type': tile['segment_type'],
+                    'frames': tile['frames'],
+                    'words': tile['words'],
+                    'tiles': [tilename]
                 }
             else:
                 assert grid['segments'][segment]['baseaddr'] == (
-                                tile['baseaddr'], tile['offset'],
-                        )
-                assert grid['segments'][segment]['type'] == tile['segment_type']
+                    tile['baseaddr'],
+                    tile['offset'],
+                )
+                assert grid['segments'][segment]['type'] == tile[
+                    'segment_type']
                 assert grid['segments'][segment]['frames'] == tile['frames']
                 assert grid['segments'][segment]['words'] == tile['words']
 

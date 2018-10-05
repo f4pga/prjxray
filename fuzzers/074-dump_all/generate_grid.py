@@ -540,8 +540,7 @@ def generate_tileconn(pool, node_tree, nodes, wire_map, grid):
             bar.update(idx)
             raw_node_data.append(node)
             process_node(
-                tileconn, key_history, node, wire_map, node_tree,
-                grid)
+                tileconn, key_history, node, wire_map, node_tree, grid)
             bar.update(idx + 1)
 
     tileconn = flatten_tile_conn(tileconn)
