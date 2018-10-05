@@ -226,11 +226,14 @@ for segment_name in database["segments"].keys():
             # print(tile_type, offset)
             assert False
 
-database = database["tiles"]
 
-for tiledata in database.values():
+for tiledata in database['tiles'].values():
     if "segment" in tiledata:
-        del tiledata["segment"]
+        segment = tiledata['segment']
+        tiledata['frame'] = database['segments'][segment]['frames']
+        tiledata['words'] = database['segments'][segment]['words']
+
+database = database["tiles"]
 
 #######################################
 # Write

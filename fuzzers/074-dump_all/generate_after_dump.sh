@@ -18,5 +18,5 @@ if [ -f $BASE_TILEGRID ]; then
   mv output/tilegrid.json output/tilegrid_full.json.tmp
   python3 ../../utils/merge_tilegrid.py \
     --base_grid $BASE_TILEGRID \
-    --overlay_grid output/tilegrid_full.json.tmp \
+    --overlay_grid output/tilegrid_full.json.tm \
     --output_grid output/tilegrid.json
