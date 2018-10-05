@@ -6,7 +6,7 @@ Connection = namedtuple('Connection', 'wire_a wire_b')
 
 class Connections(object):
     def __init__(self, tilegrid, tileconn, tile_wires):
-        self.grid = tilegrid['tiles']
+        self.grid = tilegrid
         self.tile_wires = tile_wires
         self.coord_to_tile = {}
         self.coord_to_tile_type = {}

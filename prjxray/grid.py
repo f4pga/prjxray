@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 GridLoc = namedtuple('GridLoc', 'grid_x grid_y')
-GridInfo = namedtuple('GridInfo', 'segment sites tile_type')
+GridInfo = namedtuple('GridInfo', 'segment sites tile_type in_roi')
 
 
 class Grid(object):
@@ -16,15 +16,23 @@ class Grid(object):
         self.loc = {}
         self.tileinfo = {}
 
-        for tile in self.tilegrid['tiles']:
-            tileinfo = self.tilegrid['tiles'][tile]
+        for tile in self.tilegrid:
+            tileinfo = self.tilegrid[tile]
             grid_loc = GridLoc(tileinfo['grid_x'], tileinfo['grid_y'])
             assert grid_loc not in self.loc
             self.loc[grid_loc] = tile
+
+            if 'in_roi' in tileinfo:
+                in_roi = tileinfo['in_roi']
+            else:
+                in_roi = True
+
             self.tileinfo[tile] = GridInfo(
                 segment=tileinfo['segment'] if 'segment' in tileinfo else None,
                 sites=tileinfo['sites'],
-                tile_type=tileinfo['type'])
+                tile_type=tileinfo['type'],
+                in_roi=in_roi,
+            )
 
         x, y = zip(*self.loc.keys())
         self._dims = (min(x), max(x), min(y), max(y))
@@ -45,7 +53,7 @@ class Grid(object):
         return grid_loc in self.loc
 
     def loc_of_tilename(self, tilename):
-        tileinfo = self.tilegrid['tiles'][tilename]
+        tileinfo = self.tilegrid[tilename]
         return GridLoc(tileinfo['grid_x'], tileinfo['grid_y'])
 
     def tilename_at_loc(self, grid_loc):
