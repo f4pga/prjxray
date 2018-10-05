@@ -4,8 +4,8 @@ from prjxray import lib
 """ Database files available for a tile """
 TileDbs = namedtuple('TileDbs', 'segbits mask tile_type')
 
-Pip = namedtuple('Pip', 'name net_to net_from can_invert is_directional is_pseudo')
-
+Pip = namedtuple(
+    'Pip', 'name net_to net_from can_invert is_directional is_pseudo')
 """ Site - Represents an instance of a site within a tile.
 
 name - Name of site within tile, instance specific.
@@ -17,7 +17,6 @@ pins - Instaces of site pins within this site and tile.  This is an tuple of
 
 """
 Site = namedtuple('Site', 'name prefix x y type site_pins')
-
 """ SitePin - Tuple representing a site pin within a tile.
 
 Sites are generic based on type, however sites are instanced
@@ -64,7 +63,7 @@ class Tile(object):
         def yield_pips(pips):
             for name, pip in pips.items():
                 yield Pip(
-                        name = name,
+                    name=name,
                     net_to=pip['dst_wire'],
                     net_from=pip['src_wire'],
                     can_invert=bool(int(pip['can_invert'])),
@@ -114,7 +113,8 @@ class Tile(object):
 
                 for pip in self.pips:
                     pseudo_filter = (not pip.is_pseudo) or allow_pseudo
-                    if (wire == pip.net_to or wire == pip.net_from) and pseudo_filter:
+                    if (wire == pip.net_to
+                            or wire == pip.net_from) and pseudo_filter:
                         pips.append(pip.name)
 
                 assert wire not in self.wire_info
@@ -159,6 +159,7 @@ class Tile(object):
             )
 
         assert site_names == set(grid_info.sites.keys())
+
 
 def get_other_wire_from_pip(pip, wire):
     if wire == pip.net_to:

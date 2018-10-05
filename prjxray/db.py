@@ -78,7 +78,8 @@ class Database(object):
     def get_tile_type(self, tile_type):
         """ Return Tile object for given tilename. """
         if tile_type not in self.tile_types_obj:
-            self.tile_types_obj[tile_type] = tile.Tile(tile_type, self.tile_types[tile_type])
+            self.tile_types_obj[tile_type] = tile.Tile(
+                tile_type, self.tile_types[tile_type])
 
         return self.tile_types_obj[tile_type]
 
