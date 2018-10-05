@@ -171,6 +171,7 @@ def run(f_in, f_out, sparse=False, debug=False):
                     'baseaddr': [
                             tile['baseaddr'], tile['offset'],
                     ],
+                    'type': tile['segment_type'],
                     'frames': tile['frames'],
                     'words': tile['words'],
             }

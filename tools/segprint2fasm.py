@@ -73,7 +73,36 @@ def tag2fasm(grid, seg, tag):
 def run(f_in, f_out, sparse=False):
     with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
-        grid = json.load(f)
+        new_grid = json.load(f)
+
+    grid = {
+            'tiles': new_grid,
+            'segments': {}
+    }
+
+    for tilename, tile in grid['tiles'].items():
+        if 'segment' in tile:
+            segment = tile['segment']
+
+            if segment not in grid['segments']:
+                grid['segments'][segment] = {
+                        'baseaddr': (
+                                tile['baseaddr'], tile['offset'],
+                        ),
+                        'type': tile['segment_type'],
+                        'frames': tile['frames'],
+                        'words': tile['words'],
+                        'tiles': [tilename]
+                }
+            else:
+                assert grid['segments'][segment]['baseaddr'] == (
+                                tile['baseaddr'], tile['offset'],
+                        )
+                assert grid['segments'][segment]['type'] == tile['segment_type']
+                assert grid['segments'][segment]['frames'] == tile['frames']
+                assert grid['segments'][segment]['words'] == tile['words']
+
+                grid['segments'][segment]['tiles'].append(tilename)
 
     seg = None
     for l in f_in:

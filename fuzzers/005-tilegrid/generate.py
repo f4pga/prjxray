@@ -230,8 +230,9 @@ for segment_name in database["segments"].keys():
 for tiledata in database['tiles'].values():
     if "segment" in tiledata:
         segment = tiledata['segment']
-        tiledata['frame'] = database['segments'][segment]['frames']
+        tiledata['frames'] = database['segments'][segment]['frames']
         tiledata['words'] = database['segments'][segment]['words']
+        tiledata['segment_type'] = database['segments'][segment]['type']
 
 database = database["tiles"]
 

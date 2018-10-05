@@ -62,6 +62,7 @@ for tile in grid['tiles'].values():
                 'baseaddr': [
                         tile['baseaddr'], tile['offset'],
                 ],
+                'type': tile['segment_type'],
                 'frames': tile['frames'],
                 'words': tile['words'],
         }
