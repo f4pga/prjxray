@@ -75,6 +75,7 @@ def run(f_in, f_out, sparse=False):
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         new_grid = json.load(f)
 
+    # TODO: Migrate to new tilegrid format via library.
     grid = {
             'tiles': new_grid,
             'segments': {}
