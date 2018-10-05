@@ -226,11 +226,17 @@ for segment_name in database["segments"].keys():
             # print(tile_type, offset)
             assert False
 
-database = database["tiles"]
-
-for tiledata in database.values():
+# TODO: Migrate to new tilegrid format via library.  This data is added for
+# compability with unconverted tools.  Update tools then remove this data from
+# tilegrid.json.
+for tiledata in database['tiles'].values():
     if "segment" in tiledata:
-        del tiledata["segment"]
+        segment = tiledata['segment']
+        tiledata['frames'] = database['segments'][segment]['frames']
+        tiledata['words'] = database['segments'][segment]['words']
+        tiledata['segment_type'] = database['segments'][segment]['type']
+
+database = database["tiles"]
 
 #######################################
 # Write
