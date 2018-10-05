@@ -489,10 +489,7 @@ def connect_wires(tiles, tileconn, wire_map):
 def generate_tilegrid(pool, tiles):
     wire_map = {}
 
-    grid = {
-        'segments': {},
-        'tiles': {},
-    }
+    grid = {}
 
     num_tiles = 0
     for tile_type in tiles:
@@ -522,7 +519,7 @@ def generate_tilegrid(pool, tiles):
                     }
 
                 del tile[tilename]['wires']
-                grid['tiles'].update(tile)
+                grid.update(tile)
 
                 idx += 1
                 bar.update(idx)
@@ -544,7 +541,7 @@ def generate_tileconn(pool, node_tree, nodes, wire_map, grid):
             raw_node_data.append(node)
             process_node(
                 tileconn, key_history, node, wire_map, node_tree,
-                grid['tiles'])
+                grid)
             bar.update(idx + 1)
 
     tileconn = flatten_tile_conn(tileconn)
@@ -629,7 +626,7 @@ def main():
         print(
             "{} Connecting wires to verify tileconn".format(
                 datetime.datetime.now()))
-        wire_nodes = connect_wires(grid['tiles'], tileconn, wire_map)
+        wire_nodes = connect_wires(grid, tileconn, wire_map)
         with open(wire_nodes_file, 'wb') as f:
             pickle.dump(wire_nodes, f)
 
