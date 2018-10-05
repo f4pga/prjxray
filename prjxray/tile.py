@@ -4,7 +4,8 @@ from prjxray import lib
 """ Database files available for a tile """
 TileDbs = namedtuple('TileDbs', 'segbits mask tile_type')
 
-Pip = namedtuple('Pip', 'net_to net_from can_invert is_directional is_pseudo')
+Pip = namedtuple(
+    'Pip', 'name net_to net_from can_invert is_directional is_pseudo')
 """ Site - Represents an instance of a site within a tile.
 
 name - Name of site within tile, instance specific.
@@ -24,12 +25,12 @@ information and tile type specific information.
 
 name - Site type specific name.  This name is expected to be the same for all
        sites of the same type.
-direction - Direction of this site pin.  This direction is expected to be the
-       same for all sites of the same type.
 wire - Wire name within the tile.  This name is site instance specific.
 
 """
 SitePin = namedtuple('SitePin', 'name wire')
+
+WireInfo = namedtuple('WireInfo', 'pips sites')
 
 
 class Tile(object):
@@ -43,6 +44,7 @@ class Tile(object):
         self.wires = None
         self.sites = None
         self.pips = None
+        self.pips_by_name = {}
 
         def yield_sites(sites):
             for site in sites:
@@ -59,8 +61,9 @@ class Tile(object):
                         ) for name, wire in site['site_pins'].items()))
 
         def yield_pips(pips):
-            for pip in pips.values():
+            for name, pip in pips.items():
                 yield Pip(
+                    name=name,
                     net_to=pip['dst_wire'],
                     net_from=pip['src_wire'],
                     can_invert=bool(int(pip['can_invert'])),
@@ -75,6 +78,8 @@ class Tile(object):
             self.sites = tuple(yield_sites(tile_type['sites']))
             self.pips = tuple(yield_pips(tile_type['pips']))
 
+        self.wire_info = {}
+
     def get_wires(self):
         """Returns a set of wire names present in this tile."""
         return self.wires
@@ -87,6 +92,35 @@ class Tile(object):
         """ Returns tuple of Pip namedtuple's representing the PIPs in this tile.
     """
         return self.pips
+
+    def get_pip_by_name(self, name):
+        if len(self.pips_by_name) == 0:
+            for pip in self.pips:
+                self.pips_by_name[pip.name] = pip
+
+        return self.pips_by_name[name]
+
+    def get_wire_info(self, target_wire, allow_pseudo=False):
+        if len(self.wire_info) == 0:
+            for wire in self.wires:
+                pips = list()
+                sites = list()
+
+                for site in self.sites:
+                    for site_pin in site.site_pins:
+                        if site_pin.wire == wire:
+                            sites.append((site.name, site_pin.name))
+
+                for pip in self.pips:
+                    pseudo_filter = (not pip.is_pseudo) or allow_pseudo
+                    if (wire == pip.net_to
+                            or wire == pip.net_from) and pseudo_filter:
+                        pips.append(pip.name)
+
+                assert wire not in self.wire_info
+                self.wire_info[wire] = WireInfo(pips=pips, sites=sites)
+
+        return self.wire_info[target_wire]
 
     def get_instance_sites(self, grid_info):
         """ get_sites returns abstract sites for all tiles of type.
@@ -125,3 +159,12 @@ class Tile(object):
             )
 
         assert site_names == set(grid_info.sites.keys())
+
+
+def get_other_wire_from_pip(pip, wire):
+    if wire == pip.net_to:
+        return pip.net_from
+    elif wire == pip.net_from:
+        return pip.net_to
+    else:
+        assert False, (pip, wire)

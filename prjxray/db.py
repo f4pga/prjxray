@@ -69,13 +69,19 @@ class Database(object):
 
                 self.site_types[site_type_name] = os.path.join(self.db_root, f)
 
+        self.tile_types_obj = {}
+
     def get_tile_types(self):
         """ Return list of tile types """
         return self.tile_types.keys()
 
     def get_tile_type(self, tile_type):
         """ Return Tile object for given tilename. """
-        return tile.Tile(tile_type, self.tile_types[tile_type])
+        if tile_type not in self.tile_types_obj:
+            self.tile_types_obj[tile_type] = tile.Tile(
+                tile_type, self.tile_types[tile_type])
+
+        return self.tile_types_obj[tile_type]
 
     def _read_tilegrid(self):
         """ Read tilegrid database if not already read. """

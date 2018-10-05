@@ -29,6 +29,10 @@ class Grid(object):
         x, y = zip(*self.loc.keys())
         self._dims = (min(x), max(x), min(y), max(y))
 
+    def tiles(self):
+        """ Return list of tiles. """
+        return self.tileinfo.keys()
+
     def tile_locations(self):
         """ Return list of tile locations. """
         return self.loc.keys()

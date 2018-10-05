@@ -1,8 +1,6 @@
 import os.path
 import csv
 import pickle
-import pyjson5 as json5
-import progressbar
 import re
 from collections import namedtuple
 
@@ -112,6 +110,8 @@ class NodeLookup(object):
         self.nodes = nodes
 
     def load_from_root_csv(self, nodes):
+        import pyjson5 as json5
+        import progressbar
         for node in progressbar.progressbar(nodes):
             with open(node) as f:
                 node_wires = json5.load(f)
