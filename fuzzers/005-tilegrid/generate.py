@@ -203,7 +203,11 @@ for segment_name in start_segments:
 # Transfer segment data into tiles
 
 for segment_name in database["segments"].keys():
-    baseaddr, offset = database["segments"][segment_name]["baseaddr"]
+    try:
+        baseaddr, offset = database["segments"][segment_name]["baseaddr"]
+    except:
+        print('Failed on segment name %s' % segment_name)
+        raise
     for tile_name in database["segments"][segment_name]["tiles"]:
         tile_type = database["tiles"][tile_name]["type"]
         if tile_type in ["CLBLL_L", "CLBLL_R", "CLBLM_L", "CLBLM_R", "INT_L",
