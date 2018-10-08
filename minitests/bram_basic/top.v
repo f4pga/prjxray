@@ -26,7 +26,10 @@ module top(input clk, stb, di, output do);
 
 	assign do = dout_shr[DOUT_N-1];
 
-	roi roi (
+	//roi_hck
+    roi_brams
+    //roi_invalid
+	    roi (
 		.clk(clk),
 		.din(din),
 		.dout(dout)
@@ -34,7 +37,8 @@ module top(input clk, stb, di, output do);
 endmodule
 
 //HCK test
-module roi_(input clk, input [255:0] din, output [255:0] dout);
+//XXX: what specifically was this testing?
+module roi_hck(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y24"), .INIT({256{1'b1}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y25"), .INIT({256{1'b1}}))
@@ -49,7 +53,7 @@ endmodule
 /*
 One BRAM per tile
 */
-module roi(input clk, input [255:0] din, output [255:0] dout);
+module roi_brams(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b1), .INIT({256{1'b0}}))
