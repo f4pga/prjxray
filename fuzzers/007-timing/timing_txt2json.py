@@ -68,6 +68,21 @@ def gen_timing4(fn, speed_i2s):
             assert len(parts) == ncols, "Expected %u parts, got %u" % (
                 ncols, len(parts))
             _lintype, net, src_site, src_site_type, src_site_pin, src_bel, src_bel_pin, dst_site, dst_site_type, dst_site_pin, dst_bel, dst_bel_pin, ico, fast_max, fast_min, slow_max, slow_min, pips, wires = parts
+
+            def filt_passthru_lut(bel_pins):
+                '''
+                Ex: SLICE_X11Y110/A6LUT/A6 SLICE_X11Y110/AFF/D
+                '''
+                parts = bel_pins.split()
+                if len(parts) == 1:
+                    return parts[0]
+                else:
+                    assert len(parts) == 2
+                    # the LUT shoudl always go first?
+                    bel_pin_lut, bel_pin_dst = parts
+                    assert '6LUT' in bel_pin_lut
+                    return bel_pin_dst
+
             return {
                 'net': net,
                 'src': {
@@ -82,7 +97,7 @@ def gen_timing4(fn, speed_i2s):
                     'site_type': dst_site_type,
                     'site_pin': dst_site_pin,
                     'bel': dst_bel,
-                    'bel_pin': dst_bel_pin,
+                    'bel_pin': filt_passthru_lut(dst_bel_pin),
                 },
                 't': {
                     # ps

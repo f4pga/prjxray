@@ -139,6 +139,8 @@ proc write_info4 {} {
                 set dst_cell_pin [get_pins $dst_cell_pin_str]
                 set dst_cell [get_cells -of_objects $dst_cell_pin]
                 set dst_bel [get_bels -of_objects $dst_cell]
+                # WARNING: when there is a passthrough LUT, this can be multiple values
+                # (one for the real dest pin, and one for the passthrough lut input)
                 set dst_bel_pin [get_bel_pins -of_objects $dst_cell_pin]
                 set dst_site [get_sites -of_objects $dst_bel]
                 set dst_site_type [get_property SITE_TYPE $dst_site]
