@@ -7,7 +7,7 @@ from segmaker import segmaker
 
 c2i = {'0': 0, '1': 1}
 
-segmk = segmaker("design.bits")
+segmk = segmaker("design.bits", verbose=True)
 
 print("Loading tags")
 '''
@@ -17,7 +17,6 @@ f.readline()
 for l in f:
     l = l.strip()
     module, loc, pdata, data = l.split(',')
-    print(loc)
 
     segmk.addtag(loc, "STUFF", 1)
 
