@@ -21,16 +21,16 @@ block_type_i2s = {
 }
 
 
-def load_tiles():
+def load_tiles(tiles_fn, deltas_fns):
     tiles = list()
     site_baseaddr = dict()
     tile_baseaddr = dict()
 
-    with open("tiles.txt") as f:
+    with open(tiles_fn) as f:
         for line in f:
             tiles.append(line.split())
 
-    for arg in sys.argv[1:]:
+    for arg in deltas_fns:
         with open(arg) as f:
             line = f.read().strip()
             site = arg[7:-6]
@@ -71,6 +71,15 @@ def make_database(tiles, site_baseaddr, tile_baseaddr):
 
 
 def make_segments(database, tiles_by_grid, tile_baseaddr):
+    '''
+    Create segments data structure
+    Indicates how tiles are related to bitstream locations
+    Also modify database to annotate which segment the tiles belong to
+
+    segments key examples:
+        SEG_CLBLM_R_X13Y72
+        SEG_BRAM3_L_X6Y85
+    '''
     segments = dict()
 
     for tile_name, tile_data in database.items():
@@ -78,7 +87,20 @@ def make_segments(database, tiles_by_grid, tile_baseaddr):
         grid_x = tile_data["grid_x"]
         grid_y = tile_data["grid_y"]
 
-        if tile_type in ["CLBLL_L", "CLBLL_R", "CLBLM_L", "CLBLM_R"]:
+        def add_segment(name, tiles, segtype, frames, words, baseaddr=None):
+            assert name not in segments
+            segment = segments.setdefault(name, {})
+            segment["tiles"] = tiles
+            segment["type"] = segtype
+            segment["frames"] = frames
+            segment["words"] = words
+            if baseaddr:
+                segment["baseaddr"] = baseaddr
+
+            for tile_name in tiles:
+                database[tile_name]["segment"] = name
+
+        def process_clb():
             if tile_type in ["CLBLL_L", "CLBLM_L"]:
                 int_tile_name = tiles_by_grid[(grid_x + 1, grid_y)]
             else:
@@ -86,62 +108,54 @@ def make_segments(database, tiles_by_grid, tile_baseaddr):
 
             segment_name = "SEG_" + tile_name
             segtype = tile_type.lower()
+            add_segment(
+                segment_name, [tile_name, int_tile_name],
+                segtype,
+                36,
+                2,
+                baseaddr=tile_baseaddr.get(tile_name, None))
 
-            segments[segment_name] = dict()
-            segments[segment_name]["tiles"] = [tile_name, int_tile_name]
-            segments[segment_name]["type"] = segtype
-            segments[segment_name]["frames"] = 36
-            segments[segment_name]["words"] = 2
-
-            if tile_name in tile_baseaddr:
-                segments[segment_name]["baseaddr"] = tile_baseaddr[tile_name]
-
-            database[tile_name]["segment"] = segment_name
-            database[int_tile_name]["segment"] = segment_name
-
-        if tile_type in ["HCLK_L", "HCLK_R"]:
+        def process_hclk():
             segment_name = "SEG_" + tile_name
             segtype = tile_type.lower()
 
-            segments[segment_name] = dict()
-            segments[segment_name]["tiles"] = [tile_name]
-            segments[segment_name]["type"] = segtype
-            segments[segment_name]["frames"] = 26
-            segments[segment_name]["words"] = 1
-            database[tile_name]["segment"] = segment_name
+            add_segment(segment_name, [tile_name], segtype, 26, 1)
 
-        if tile_type in ["BRAM_L", "DSP_L", "BRAM_R", "DSP_R"]:
+        def process_bram_dsp():
             for k in range(5):
                 if tile_type in ["BRAM_L", "DSP_L"]:
                     interface_tile_name = tiles_by_grid[(
                         grid_x + 1, grid_y - k)]
                     int_tile_name = tiles_by_grid[(grid_x + 2, grid_y - k)]
-                else:
+                elif tile_type in ["BRAM_R", "DSP_R"]:
                     interface_tile_name = tiles_by_grid[(
                         grid_x - 1, grid_y - k)]
                     int_tile_name = tiles_by_grid[(grid_x - 2, grid_y - k)]
+                else:
+                    assert 0
 
                 segment_name = "SEG_" + tile_name.replace("_", "%d_" % k, 1)
                 segtype = tile_type.lower().replace("_", "%d_" % k, 1)
 
-                segments[segment_name] = dict()
-                segments[segment_name]["type"] = segtype
-                segments[segment_name]["frames"] = 28
-                segments[segment_name]["words"] = 2
-
                 if k == 0:
-                    segments[segment_name]["tiles"] = [
-                        tile_name, interface_tile_name, int_tile_name
-                    ]
-                    database[tile_name]["segment"] = segment_name
-                    database[interface_tile_name]["segment"] = segment_name
-                    database[int_tile_name]["segment"] = segment_name
+                    tiles = [tile_name, interface_tile_name, int_tile_name]
                 else:
-                    segments[segment_name]["tiles"] = [
-                        interface_tile_name, int_tile_name
-                    ]
-                    database[interface_tile_name]["segment"] = segment_name
-                    database[int_tile_name]["segment"] = segment_name
+                    tiles = [interface_tile_name, int_tile_name]
+
+                add_segment(segment_name, tiles, segtype, 28, 2)
+
+        {
+            "CLBLL_L": process_clb,
+            "CLBLL_R": process_clb,
+            "CLBLM_L": process_clb,
+            "CLBLM_R": process_clb,
+            "HCLK_L": process_hclk,
+            "HCLK_R": process_hclk,
+            "BRAM_L": process_bram_dsp,
+            "DSP_L": process_bram_dsp,
+            "BRAM_R": process_bram_dsp,
+            "DSP_R": process_bram_dsp,
+        }.get(tile_type, lambda: None)()
 
     return segments
 
@@ -235,15 +249,11 @@ def add_tile_bits(tile_db, baseaddr, offset, height):
     Notes on multiple block types:
     https://github.com/SymbiFlow/prjxray/issues/145
     '''
-    '''
     bits = tile_db.setdefault('bits', {})
     block_type = base_addr_2_block_type(int(baseaddr, 0))
 
     assert block_type not in bits
     block = bits.setdefault(block_type, {})
-    '''
-    # TODO: remove, just make compatible for initial cleanup commit
-    block = tile_db
 
     block["baseaddr"] = baseaddr
     block["offset"] = offset
@@ -289,7 +299,7 @@ def annotate_segments(database, segments):
 
 
 def run(tiles_fn, json_fn, deltas_fns):
-    tiles, site_baseaddr, tile_baseaddr = load_tiles()
+    tiles, site_baseaddr, tile_baseaddr = load_tiles(tiles_fn, deltas_fns)
     database, tiles_by_grid = make_database(
         tiles, site_baseaddr, tile_baseaddr)
     segments = make_segments(database, tiles_by_grid, tile_baseaddr)
@@ -316,10 +326,7 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--out', default='/dev/stdout', help='Output JSON')
     parser.add_argument(
-        'tiles',
-        default='tiles.txt',
-        nargs='?',
-        help='Input tiles.txt tcl output')
+        '--tiles', default='tiles.txt', help='Input tiles.txt tcl output')
     parser.add_argument(
         'deltas', nargs='+', help='.bit diffs to create base addresses from')
     args = parser.parse_args()
