@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from timfuz import Benchmark, load_sub, corner_s2i, acorner2csv
+from timfuz import Benchmark, load_sub
 import timfuz
 import numpy as np
 import math
@@ -22,11 +22,20 @@ def mkestimate(Anp, b):
     x0 = np.array([1e3 for _x in range(cols)])
     for row_np, row_b in zip(Anp, b):
         for coli, val in enumerate(row_np):
-            if val:
-                # Scale by number occurances
-                ub = row_b / val
-                if ub >= 0:
-                    x0[coli] = min(x0[coli], ub)
+            # favor non-trivial values
+            if val <= 0:
+                continue
+            # Scale by number occurances
+            ub = row_b / val
+            if ub <= 0:
+                continue
+            if x0[coli] == 0:
+                x0[coli] = ub
+            else:
+                x0[coli] = min(x0[coli], ub)
+    # reject solutions that don't provide a seed value
+    # these lead to bad optimizations
+    assert sum(x0) != 0
     return x0
 
 
@@ -119,14 +128,14 @@ def main():
     parser.add_argument('--corner', required=True, default="slow_max", help='')
     parser.add_argument(
         '--out', default=None, help='output timing delay .json')
-    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing4i.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3.csv')
+        fns_in = glob.glob('specimen_*/timing4i.csv')
 
     sub_json = None
     if args.sub_json:

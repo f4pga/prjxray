@@ -6,7 +6,7 @@ import numpy as np
 
 def run(fns_in, corner, bounds_csv, verbose=False):
     print('Loading data')
-    Ads, borig = loadc_Ads_b(fns_in, corner, ico=True)
+    Ads, borig = loadc_Ads_b(fns_in, corner)
 
     bounds = load_bounds(bounds_csv, corner)
     # verify is flattened
@@ -37,14 +37,14 @@ def main():
         '--bounds-csv',
         required=True,
         help='Previous solve result starting point')
-    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing4i.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3.csv')
+        fns_in = glob.glob('specimen_*/timing4i.csv')
 
     try:
         run(

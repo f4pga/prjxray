@@ -17,6 +17,51 @@ import collections
 
 from benchmark import Benchmark
 
+# prefix to make easier to track
+# models do not overlap between PIPs and WIREs
+PREFIX_W = 'WIRE'
+PREFIX_P = 'PIP'
+# extneral site wire (ie site a to b)
+PREFIX_SW_EI = 'SITEW-EI'
+PREFIX_SW_EO = 'SITEW-EO'
+# internal site wire (ie bel a to b within a site)
+PREFIX_SW_I = 'SITEW-I'
+
+
+def sw_ei_vals2s(site_type, src_site_pin, dst_bel, dst_bel_pin):
+    '''Pack site wire components into a variable string'''
+    return '%s:%s:%s:%s:%s' % (
+        PREFIX_SW_EI, site_type, src_site_pin, dst_bel, dst_bel_pin)
+
+
+def sw_ei_s2vals(s):
+    prefix, site_type, src_site_pin, dst_bel, dst_bel_pin = s.split(':')
+    assert prefix == PREFIX_SW_EI
+    return site_type, src_site_pin, dst_bel, dst_bel_pin
+
+
+def sw_eo_vals2s(site_type, src_bel, src_bel_pin, dst_site_pin):
+    return '%s:%s:%s:%s:%s' % (
+        PREFIX_SW_EO, site_type, src_bel, src_bel_pin, dst_site_pin)
+
+
+def sw_eo_s2vals(s):
+    prefix, site_type, src_bel, src_bel_pin, dst_site_pin = s.split(':')
+    assert prefix == PREFIX_SW_EO
+    return site_type, src_bel, src_bel_pin, dst_site_pin
+
+
+def sw_i_vals2s(site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin):
+    return '%s:%s:%s:%s:%s:%s' % (
+        PREFIX_SW_I, site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin)
+
+
+def sw_i_s2vals(s):
+    prefix, site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin = s.split(
+        ':')
+    assert prefix == PREFIX_SW_I
+    return site_type, src_bel, src_bel_pin, dst_bel, dst_bel_pin
+
 
 # Equations are filtered out until nothing is left
 class SimplifiedToZero(Exception):
@@ -524,11 +569,14 @@ def loadc_Ads_mkb(fns, mkb, filt):
 def loadc_Ads_b(fns, corner, ico=None):
     corner = corner or "slow_max"
     corneri = corner_s2i[corner]
-
+    '''
     if ico is not None:
         filt = lambda ico_, corners, vars: ico_ == ico
     else:
         filt = lambda ico_, corners, vars: True
+    '''
+    assert ico is None, 'ICO filtering moved to higher levels'
+    filt = lambda ico_, corners, vars: True
 
     def mkb(val):
         return val[corneri]
@@ -537,10 +585,14 @@ def loadc_Ads_b(fns, corner, ico=None):
 
 
 def loadc_Ads_bs(fns, ico=None):
+    '''
     if ico is not None:
         filt = lambda ico_, corners, vars: ico_ == ico
     else:
         filt = lambda ico_, corners, vars: True
+    '''
+    assert ico is None, 'ICO filtering moved to higher levels'
+    filt = lambda ico_, corners, vars: True
 
     def mkb(val):
         return val
@@ -730,35 +782,63 @@ def corners2csv(bs):
 
 
 def tilej_stats(tilej):
-    stats = {}
-    for etype in ('pips', 'wires'):
-        tm = stats.setdefault(etype, {})
-        tm['net'] = 0
-        tm['solved'] = [0, 0, 0, 0]
-        tm['covered'] = [0, 0, 0, 0]
-
-    for tile in tilej['tiles'].values():
+    def tile_stats():
+        stats = {}
         for etype in ('pips', 'wires'):
-            pips = tile[etype]
-            for k, v in pips.items():
-                stats[etype]['net'] += 1
-                for i in range(4):
-                    if pips[k][i]:
-                        stats[etype]['solved'][i] += 1
-                    if pips[k][i] is not None:
-                        stats[etype]['covered'][i] += 1
+            tm = stats.setdefault(etype, {})
+            tm['net'] = 0
+            tm['solved'] = [0, 0, 0, 0]
+            tm['covered'] = [0, 0, 0, 0]
+
+        for tile in tilej['tiles'].values():
+            for etype in ('pips', 'wires'):
+                pips = tile[etype]
+                for k, v in pips.items():
+                    stats[etype]['net'] += 1
+                    for i in range(4):
+                        if pips[k][i]:
+                            stats[etype]['solved'][i] += 1
+                        if pips[k][i] is not None:
+                            stats[etype]['covered'][i] += 1
+        return stats
+
+    def site_stats():
+        sitesj = tilej['sites']
+        ret = {
+            'sites': len(sitesj),
+            'wires': sum([len(wiresj) for wiresj in sitesj.values()]),
+            'wires_solved': {},
+        }
+        for corneri in corner_s2i.values():
+            ret['wires_solved'][corneri] = sum(
+                [
+                    sum(
+                        [
+                            1 if site_wire[corneri] else 0
+                            for site_wire in sitej.values()
+                        ])
+                    for sitej in sitesj.values()
+                ])
+        return ret
+
+    tstats = tile_stats()
+    sstats = site_stats()
 
     for corner, corneri in corner_s2i.items():
         print('Corner %s' % corner)
         for etype in ('pips', 'wires'):
-            net = stats[etype]['net']
-            solved = stats[etype]['solved'][corneri]
-            covered = stats[etype]['covered'][corneri]
+            net = tstats[etype]['net']
+            solved = tstats[etype]['solved'][corneri]
+            covered = tstats[etype]['covered'][corneri]
             print(
                 '  %s: %u / %u solved, %u / %u covered' %
                 (etype, solved, net, covered, net))
+        print(
+            '  sites: %u sites w/ %u solved / %u covered site wires' % (
+                sstats['sites'], sstats['wires_solved'][corneri],
+                sstats['wires']))
 
 
-def load_bounds(bounds_csv, corner, ico=True):
-    Ads, b = loadc_Ads_b([bounds_csv], corner, ico=ico)
+def load_bounds(bounds_csv, corner):
+    Ads, b = loadc_Ads_b([bounds_csv], corner)
     return Ads2bounds(Ads, b)

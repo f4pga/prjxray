@@ -150,7 +150,10 @@ def solve_save(outfn, xvals, names, corner, save_zero=True, verbose=False):
     print(
         'Wrote: %u / %u constrained delays, %u zeros' %
         (nonzeros, len(names), zeros))
-    assert nonzeros, 'Failed to estimate delay'
+    # max only...min corner seems to like 0
+    # see https://github.com/SymbiFlow/prjxray/issues/136
+    if 'max' in corner:
+        assert nonzeros, 'Failed to estimate delay'
 
 
 def run(
@@ -165,7 +168,7 @@ def run(
         verbose=False,
         **kwargs):
     print('Loading data')
-    Ads, b = loadc_Ads_b(fns_in, corner, ico=True)
+    Ads, b = loadc_Ads_b(fns_in, corner)
 
     # Remove duplicate rows
     # is this necessary?
@@ -193,7 +196,7 @@ def run(
     Used primarily for multiple optimization passes, such as different algorithms or additional constraints
     '''
     if bounds_csv:
-        Ads2, b2 = loadc_Ads_b([bounds_csv], corner, ico=True)
+        Ads2, b2 = loadc_Ads_b([bounds_csv], corner)
         bounds = Ads2bounds(Ads2, b2)
         assert len(bounds), 'Failed to load bounds'
         rows_old = len(Ads)

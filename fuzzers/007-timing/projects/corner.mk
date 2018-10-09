@@ -4,7 +4,8 @@ TIMFUZ_DIR=$(XRAY_DIR)/fuzzers/007-timing
 CORNER=slow_max
 ALLOW_ZERO_EQN?=N
 BADPRJ_OK?=N
-BUILD_DIR?=build
+BUILD_DIR?=build/MUST_SET
+CSV_BASENAME=timing4i.csv
 
 all: $(BUILD_DIR)/$(CORNER)/timgrid-vc.json $(BUILD_DIR)/$(CORNER)/qor.txt
 
@@ -19,7 +20,7 @@ clean:
 .PHONY: all run clean
 
 $(BUILD_DIR)/$(CORNER):
-	mkdir $(BUILD_DIR)/$(CORNER)
+	mkdir -p $(BUILD_DIR)/$(CORNER)
 
 # parent should have built this
 $(BUILD_DIR)/checksub:
@@ -27,12 +28,12 @@ $(BUILD_DIR)/checksub:
 
 $(BUILD_DIR)/$(CORNER)/leastsq.csv: $(BUILD_DIR)/sub.json $(BUILD_DIR)/grouped.csv $(BUILD_DIR)/checksub $(BUILD_DIR)/$(CORNER)
 	# Create a rough timing model that approximately fits the given paths
-	python3 $(TIMFUZ_DIR)/solve_leastsq.py --sub-json $(BUILD_DIR)/sub.json $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/leastsq.csv.tmp
+	python3 $(TIMFUZ_DIR)/solve_leastsq.py $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/leastsq.csv.tmp
 	mv $(BUILD_DIR)/$(CORNER)/leastsq.csv.tmp $(BUILD_DIR)/$(CORNER)/leastsq.csv
 
 $(BUILD_DIR)/$(CORNER)/linprog.csv: $(BUILD_DIR)/$(CORNER)/leastsq.csv $(BUILD_DIR)/grouped.csv
 	# Tweak rough timing model, making sure all constraints are satisfied
-	ALLOW_ZERO_EQN=$(ALLOW_ZERO_EQN) python3 $(TIMFUZ_DIR)/solve_linprog.py --sub-json $(BUILD_DIR)/sub.json --bounds-csv $(BUILD_DIR)/$(CORNER)/leastsq.csv --massage $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/linprog.csv.tmp
+	ALLOW_ZERO_EQN=$(ALLOW_ZERO_EQN) python3 $(TIMFUZ_DIR)/solve_linprog.py --bounds-csv $(BUILD_DIR)/$(CORNER)/leastsq.csv --massage $(BUILD_DIR)/grouped.csv --corner $(CORNER) --out $(BUILD_DIR)/$(CORNER)/linprog.csv.tmp
 	mv $(BUILD_DIR)/$(CORNER)/linprog.csv.tmp $(BUILD_DIR)/$(CORNER)/linprog.csv
 
 $(BUILD_DIR)/$(CORNER)/flat.csv: $(BUILD_DIR)/$(CORNER)/linprog.csv
@@ -46,6 +47,11 @@ $(BUILD_DIR)/$(CORNER)/timgrid-vc.json: $(BUILD_DIR)/$(CORNER)/flat.csv
 	python3 $(TIMFUZ_DIR)/tile_annotate.py --timgrid-s $(TIMFUZ_DIR)/timgrid/build/timgrid-s.json --out $(BUILD_DIR)/$(CORNER)/timgrid-vc.json $(BUILD_DIR)/$(CORNER)/flat.csv
 
 $(BUILD_DIR)/$(CORNER)/qor.txt: $(BUILD_DIR)/$(CORNER)/flat.csv
-	python3 $(TIMFUZ_DIR)/solve_qor.py --corner $(CORNER) --bounds-csv $(BUILD_DIR)/$(CORNER)/flat.csv specimen_*/timing3.csv >$(BUILD_DIR)/$(CORNER)/qor.txt.tmp
+ifeq ($(SOLVING),i)
+	python3 $(TIMFUZ_DIR)/solve_qor.py --corner $(CORNER) --bounds-csv $(BUILD_DIR)/$(CORNER)/flat.csv specimen_*/timing4i.csv >$(BUILD_DIR)/$(CORNER)/qor.txt.tmp
 	mv $(BUILD_DIR)/$(CORNER)/qor.txt.tmp $(BUILD_DIR)/$(CORNER)/qor.txt
+else
+    # FIXME
+	touch $(BUILD_DIR)/$(CORNER)/qor.txt
+endif
 

@@ -73,7 +73,7 @@ class State(object):
     def load(fn_ins, simplify=False, corner=None, rm_zero=False):
         zero_names = OrderedSet()
 
-        Ads, b = loadc_Ads_b(fn_ins, corner=corner, ico=True)
+        Ads, b = loadc_Ads_b(fn_ins, corner=corner)
         if rm_zero:
             zero_names = rm_zero_cols(Ads)
         if simplify:
@@ -223,13 +223,13 @@ def main():
         default='build_speed/speed.json',
         help='Provides speed index to name translation')
     parser.add_argument('--out', help='Output sub.json substitution result')
-    parser.add_argument('fns_in', nargs='*', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='*', help='timing4i.csv input files')
     args = parser.parse_args()
     bench = Benchmark()
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3.csv')
+        fns_in = glob.glob('specimen_*/timing4i.csv')
 
     try:
         run(

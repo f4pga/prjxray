@@ -5,7 +5,7 @@ from timfuz import Benchmark, loadc_Ads_bs, index_names, load_sub, run_sub_json,
 
 def gen_group(fnin, sub_json, strict=False, verbose=False):
     print('Loading data')
-    Ads, bs = loadc_Ads_bs([fnin], ico=True)
+    Ads, bs = loadc_Ads_bs([fnin])
 
     print('Sub: %u rows' % len(Ads))
     iold = instances(Ads)
@@ -45,14 +45,14 @@ def main():
         required=True,
         help='Group substitutions to make fully ranked')
     parser.add_argument('--out', help='Output sub.json substitution result')
-    parser.add_argument('fns_in', nargs='+', help='timing3.csv input files')
+    parser.add_argument('fns_in', nargs='+', help='timing4i.csv input files')
     args = parser.parse_args()
     # Store options in dict to ease passing through functions
     bench = Benchmark()
 
     fns_in = args.fns_in
     if not fns_in:
-        fns_in = glob.glob('specimen_*/timing3.csv')
+        fns_in = glob.glob('specimen_*/timing4i.csv')
 
     sub_json = load_sub(args.sub_json)
 

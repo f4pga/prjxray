@@ -1,7 +1,7 @@
 # for now hammering on just picorv32
 # consider instead aggregating multiple projects
-PRJ?=picorv32
-PRJN?=8
+PRJ?=oneblinkw
+PRJN?=1
 
 all: build/timgrid-v.json
 
