@@ -24,7 +24,6 @@ for arg in sys.argv[1:]:
 # Create initial database
 
 database = dict()
-database = dict()
 segments = dict()
 tiles_by_grid = dict()
 
@@ -235,10 +234,10 @@ for segment_name in segments.keys():
 # tilegrid.json.
 for tiledata in database.values():
     if "segment" in tiledata:
-        segment = tiledata['segment']
-        tiledata['frames'] = segments[segment]['frames']
-        tiledata['words'] = segments[segment]['words']
-        tiledata['segment_type'] = segments[segment]['type']
+        segment = tiledata["segment"]
+        tiledata["frames"] = segments[segment]["frames"]
+        tiledata["words"] = segments[segment]["words"]
+        tiledata["segment_type"] = segments[segment]["type"]
 
 
 #######################################
