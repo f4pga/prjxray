@@ -106,20 +106,21 @@ def make_segments(database, tiles_by_grid, tile_baseaddr):
             else:
                 int_tile_name = tiles_by_grid[(grid_x - 1, grid_y)]
 
-            segment_name = "SEG_" + tile_name
-            segtype = tile_type.lower()
             add_segment(
-                segment_name, [tile_name, int_tile_name],
-                segtype,
-                36,
-                2,
+                name="SEG_" + tile_name,
+                tiles=[tile_name, int_tile_name],
+                segtype=tile_type.lower(),
+                frames=36,
+                words=2,
                 baseaddr=tile_baseaddr.get(tile_name, None))
 
         def process_hclk():
-            segment_name = "SEG_" + tile_name
-            segtype = tile_type.lower()
-
-            add_segment(segment_name, [tile_name], segtype, 26, 1)
+            add_segment(
+                name="SEG_" + tile_name,
+                tiles=[tile_name],
+                segtype=tile_type.lower(),
+                frames=26,
+                words=1)
 
         def process_bram_dsp():
             for k in range(5):
@@ -134,15 +135,17 @@ def make_segments(database, tiles_by_grid, tile_baseaddr):
                 else:
                     assert 0
 
-                segment_name = "SEG_" + tile_name.replace("_", "%d_" % k, 1)
-                segtype = tile_type.lower().replace("_", "%d_" % k, 1)
-
                 if k == 0:
                     tiles = [tile_name, interface_tile_name, int_tile_name]
                 else:
                     tiles = [interface_tile_name, int_tile_name]
 
-                add_segment(segment_name, tiles, segtype, 28, 2)
+                add_segment(
+                    name="SEG_" + tile_name.replace("_", "%d_" % k, 1),
+                    tiles=tiles,
+                    segtype=tile_type.lower().replace("_", "%d_" % k, 1),
+                    frames=28,
+                    words=2)
 
         {
             "CLBLL_L": process_clb,
