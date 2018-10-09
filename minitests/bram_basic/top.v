@@ -26,9 +26,10 @@ module top(input clk, stb, di, output do);
 
 	assign do = dout_shr[DOUT_N-1];
 
-	//roi_hck
-    roi_brams
-    //roi_invalid
+    //sweep through these three values to see small config vs data changes
+    //roi_bram0
+    //roi_bram1
+    roi_bram_inv
 	    roi (
 		.clk(clk),
 		.din(din),
@@ -48,6 +49,38 @@ module roi_hck(input clk, input [255:0] din, output [255:0] dout);
             r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y27"), .INIT({256{1'b1}}))
             r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+endmodule
+
+/*
+One BRAM per tile
+*/
+module roi_bram0(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+module roi_bram1(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+//too much churn to be useful to compare vs above
+module roi_bram36(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+//instead lets change something more subtle
+// ERROR: [DRC REQP-1931] RAMB18E1_WEA_NO_CONNECT_OR_TIED_GND: roi/r0/ram programming
+// per UG473 requires that for SDP mode the WEA bus must be unconnected or tied to GND.
+module roi_bram_sdp(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .RAM_MODE("SDP"))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+module roi_bram_inv(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
 /*
@@ -101,6 +134,8 @@ module ram_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
     parameter INIT0 = 256'h0000000000000000000000000000000000000000000000000000000000000000;
     parameter INIT = 256'h0000000000000000000000000000000000000000000000000000000000000000;
+    parameter RAM_MODE = "TDP";
+    parameter IS_ENARDEN_INVERTED = 1'b0;
 
     (* LOC=LOC *)
     RAMB18E1 #(
@@ -180,13 +215,13 @@ module ram_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
 
             .IS_CLKARDCLK_INVERTED(1'b0),
             .IS_CLKBWRCLK_INVERTED(1'b0),
-            .IS_ENARDEN_INVERTED(1'b0),
+            .IS_ENARDEN_INVERTED(IS_ENARDEN_INVERTED),
             .IS_ENBWREN_INVERTED(1'b0),
             .IS_RSTRAMARSTRAM_INVERTED(1'b0),
             .IS_RSTRAMB_INVERTED(1'b0),
             .IS_RSTREGARSTREG_INVERTED(1'b0),
             .IS_RSTREGB_INVERTED(1'b0),
-            .RAM_MODE("TDP"),
+            .RAM_MODE(RAM_MODE),
             .WRITE_MODE_A("WRITE_FIRST"),
             .WRITE_MODE_B("WRITE_FIRST"),
             .SIM_DEVICE("VIRTEX6")
@@ -218,6 +253,7 @@ endmodule
 
 module ram_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
+    parameter INIT0 = 256'h0000000000000000000000000000000000000000000000000000000000000000;
     parameter INIT = 256'h0000000000000000000000000000000000000000000000000000000000000000;
 
     RAMB36E1 #(
@@ -238,7 +274,7 @@ module ram_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
             .INITP_0E(INIT),
             .INITP_0F(INIT),
 
-            .INIT_00(INIT),
+            .INIT_00(INIT0),
             .INIT_01(INIT),
             .INIT_02(INIT),
             .INIT_03(INIT),
