@@ -52,6 +52,7 @@ def load_Ads_gen(speed_json_f, fn_ins):
     _speedj, speed_i2s = load_speed_json(speed_json_f)
 
     for fn_in in fn_ins:
+
         def mkb(val):
             t = val['t']
             return (t['fast_max'], t['fast_min'], t['slow_max'], t['slow_min'])
@@ -60,7 +61,7 @@ def load_Ads_gen(speed_json_f, fn_ins):
             row_ds = row_json2Ads(val)
             row_bs = mkb(val)
             row_ico = val['ico']
-    
+
             yield row_bs, row_ds, row_ico
 
 
