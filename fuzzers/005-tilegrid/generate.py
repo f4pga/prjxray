@@ -21,6 +21,19 @@ block_type_i2s = {
 }
 
 
+def nolr(tile_type):
+    '''
+    Remove _L or _R suffix tile_type suffix, if present
+    Ex: BRAM_INT_INTERFACE_L => BRAM_INT_INTERFACE
+    Ex: VBRK => VBRK
+    '''
+    postfix = tile_type[-2:]
+    if postfix in ('_L', '_R'):
+        return tile_type[:-2]
+    else:
+        return tile_type
+
+
 def load_tiles(tiles_fn):
     '''
     "$type $tile $grid_x $grid_y $typed_sites"
@@ -181,17 +194,12 @@ def make_segments(database, tiles_by_grid, tile_baseaddr):
                     words=2)
 
         {
-            "CLBLL_L": process_clb,
-            "CLBLL_R": process_clb,
-            "CLBLM_L": process_clb,
-            "CLBLM_R": process_clb,
-            "HCLK_L": process_hclk,
-            "HCLK_R": process_hclk,
-            "BRAM_L": process_bram_dsp,
-            "DSP_L": process_bram_dsp,
-            "BRAM_R": process_bram_dsp,
-            "DSP_R": process_bram_dsp,
-        }.get(tile_type, lambda: None)()
+            "CLBLL": process_clb,
+            "CLBLM": process_clb,
+            "HCLK": process_hclk,
+            "BRAM": process_bram_dsp,
+            "DSP": process_bram_dsp,
+        }.get(nolr(tile_type), lambda: None)()
 
     return segments
 
@@ -310,19 +318,20 @@ def add_bits(database, segments):
 
         for tile_name in segments[segment_name]["tiles"]:
             tile_type = database[tile_name]["type"]
-            if tile_type in ["CLBLL_L", "CLBLL_R", "CLBLM_L", "CLBLM_R",
-                             "INT_L", "INT_R"]:
-                add_tile_bits(database[tile_name], baseaddr, offset, 2)
-            elif tile_type in ["HCLK_L", "HCLK_R"]:
-                add_tile_bits(database[tile_name], baseaddr, offset, 1)
-            elif tile_type in ["BRAM_L", "BRAM_R", "DSP_L", "DSP_R"]:
-                add_tile_bits(database[tile_name], baseaddr, offset, 10)
-            elif tile_type in ["INT_INTERFACE_L", "INT_INTERFACE_R",
-                               "BRAM_INT_INTERFACE_L", "BRAM_INT_INTERFACE_R"]:
-                continue
-            else:
-                # print(tile_type, offset)
-                assert False
+            height = {
+                "CLBLL":    2,
+                "CLBLM":    2,
+                "INT":      2,
+                "HCLK":     1,
+                "BRAM":     10,
+                "DSP":      10,
+                "INT_INTERFACE":        0,
+                "BRAM_INT_INTERFACE":   0,
+            }.get(nolr(tile_type), None)
+            if height is None:
+                raise ValueError("Unknown tile type %s" % tile_type)
+            if height:
+                add_tile_bits(database[tile_name], baseaddr, offset, height)
 
 
 def annotate_segments(database, segments):
