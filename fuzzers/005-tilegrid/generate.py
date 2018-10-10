@@ -21,19 +21,37 @@ block_type_i2s = {
 }
 
 
-def load_tiles(tiles_fn, deltas_fns):
+def load_tiles(tiles_fn):
     '''
     "$type $tile $grid_x $grid_y $typed_sites"
     typed_sites: foreach t $site_types s $sites
     '''
     tiles = list()
-    site_baseaddr = dict()
 
     with open(tiles_fn) as f:
         for line in f:
             # CLBLM_L CLBLM_L_X10Y98 30 106 SLICEL SLICE_X13Y98 SLICEM SLICE_X12Y98
-            tiles.append(line.split())
+            record = line.split()
+            tile_type, tile_name, grid_x, grid_y = record[0:4]
+            grid_x, grid_y = int(grid_x), int(grid_y)
+            sites = {}
+            for i in range(4, len(record), 2):
+                site_type, site_name = record[i:i + 2]
+                sites[site_name] = site_type
+            tile = {
+                'type': tile_type,
+                'name': tile_name,
+                'grid_x': grid_x,
+                'grid_y': grid_y,
+                'sites': sites,
+            }
+            tiles.append(tile)
 
+    return tiles
+
+
+def load_baseaddrs(deltas_fns):
+    site_baseaddr = dict()
     for arg in deltas_fns:
         with open(arg) as f:
             line = f.read().strip()
@@ -41,36 +59,32 @@ def load_tiles(tiles_fn, deltas_fns):
             frame = int(line[5:5 + 8], 16)
             site_baseaddr[site] = "0x%08x" % (frame & ~0x7f)
 
-    return tiles, site_baseaddr
+    return site_baseaddr
 
 
 def make_database(tiles, site_baseaddr):
+    # tile database with X, Y, and list of sites
+    # tile name as keys
     database = dict()
+    # lookup tile names by (X, Y)
     tiles_by_grid = dict()
+    # Look up a base address by tile name
     tile_baseaddr = dict()
 
-    for record in tiles:
-        tile_type, tile_name, grid_x, grid_y = record[0:4]
-        grid_x, grid_y = int(grid_x), int(grid_y)
-        tiles_by_grid[(grid_x, grid_y)] = tile_name
-        framebaseaddr = None
+    for tile in tiles:
+        tiles_by_grid[(tile['grid_x'], tile['grid_y'])] = tile["name"]
 
-        database[tile_name] = {
-            "type": tile_type,
-            "sites": dict(),
-            "grid_x": grid_x,
-            "grid_y": grid_y
+        database[tile['name']] = {
+            "type": tile['type'],
+            "sites": tile['sites'],
+            "grid_x": tile['grid_x'],
+            "grid_y": tile['grid_y'],
         }
 
-        if len(record) > 4:
-            for i in range(4, len(record), 2):
-                site_type, site_name = record[i:i + 2]
-                if site_name in site_baseaddr:
-                    framebaseaddr = site_baseaddr[site_name]
-                database[tile_name]["sites"][site_name] = site_type
-
-        if framebaseaddr is not None:
-            tile_baseaddr[tile_name] = [framebaseaddr, 0]
+        for site_name in tile['sites'].keys():
+            if site_name in site_baseaddr:
+                framebaseaddr = site_baseaddr[site_name]
+                tile_baseaddr[tile['name']] = [framebaseaddr, 0]
 
     return database, tiles_by_grid, tile_baseaddr
 
@@ -312,14 +326,22 @@ def annotate_segments(database, segments):
 
 
 def run(tiles_fn, json_fn, deltas_fns):
-    tiles, site_baseaddr = load_tiles(tiles_fn, deltas_fns)
+    # Load input files
+    tiles = load_tiles(tiles_fn)
+    site_baseaddr = load_baseaddrs(deltas_fns)
+
     database, tiles_by_grid, tile_baseaddr = make_database(
         tiles, site_baseaddr)
     segments = make_segments(database, tiles_by_grid, tile_baseaddr)
+
+    # Reference adjacent CLBs to locate adjacent tiles by known offsets
     seg_base_addr_lr_INT(database, segments, tiles_by_grid)
     seg_base_addr_up_INT(database, segments, tiles_by_grid)
+
     add_bits(database, segments)
     annotate_segments(database, segments)
+
+    # Save
     json.dump(
         database,
         open(json_fn, 'w'),
