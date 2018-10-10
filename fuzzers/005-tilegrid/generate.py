@@ -62,18 +62,12 @@ def load_baseaddrs(deltas_fns):
     return site_baseaddr
 
 
-def make_database(tiles, site_baseaddr):
+def make_database(tiles):
     # tile database with X, Y, and list of sites
     # tile name as keys
     database = dict()
-    # lookup tile names by (X, Y)
-    tiles_by_grid = dict()
-    # Look up a base address by tile name
-    tile_baseaddr = dict()
 
     for tile in tiles:
-        tiles_by_grid[(tile['grid_x'], tile['grid_y'])] = tile["name"]
-
         database[tile['name']] = {
             "type": tile['type'],
             "sites": tile['sites'],
@@ -81,12 +75,30 @@ def make_database(tiles, site_baseaddr):
             "grid_y": tile['grid_y'],
         }
 
+    return database
+
+
+def make_tile_baseaddr(tiles, site_baseaddr):
+    # Look up a base address by tile name
+    tile_baseaddr = dict()
+
+    for tile in tiles:
         for site_name in tile['sites'].keys():
             if site_name in site_baseaddr:
                 framebaseaddr = site_baseaddr[site_name]
                 tile_baseaddr[tile['name']] = [framebaseaddr, 0]
 
-    return database, tiles_by_grid, tile_baseaddr
+    return tile_baseaddr
+
+
+def make_tiles_by_grid(tiles):
+    # lookup tile names by (X, Y)
+    tiles_by_grid = dict()
+
+    for tile in tiles:
+        tiles_by_grid[(tile['grid_x'], tile['grid_y'])] = tile["name"]
+
+    return tiles_by_grid
 
 
 def make_segments(database, tiles_by_grid, tile_baseaddr):
@@ -330,8 +342,11 @@ def run(tiles_fn, json_fn, deltas_fns):
     tiles = load_tiles(tiles_fn)
     site_baseaddr = load_baseaddrs(deltas_fns)
 
-    database, tiles_by_grid, tile_baseaddr = make_database(
-        tiles, site_baseaddr)
+    # Index input
+    database = make_database(tiles)
+    tile_baseaddr = make_tile_baseaddr(tiles, site_baseaddr)
+    tiles_by_grid = make_tiles_by_grid(tiles)
+
     segments = make_segments(database, tiles_by_grid, tile_baseaddr)
 
     # Reference adjacent CLBs to locate adjacent tiles by known offsets
