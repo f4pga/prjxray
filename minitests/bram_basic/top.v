@@ -5,6 +5,10 @@ ROM32X1: 32-Deep by 1-Wide ROM
 ROM64X1: 64-Deep by 1-Wide ROM
 */
 
+`ifndef ROI
+`define ROI
+`endif
+
 module top(input clk, stb, di, output do);
 	localparam integer DIN_N = 256;
 	localparam integer DOUT_N = 256;
@@ -26,10 +30,16 @@ module top(input clk, stb, di, output do);
 
 	assign do = dout_shr[DOUT_N-1];
 
+    //`ROI
+
     //sweep through these three values to see small config vs data changes
     //roi_bram0
     //roi_bram1
-    roi_bram_inv
+    //roi_bram_inv
+
+    //sweep through to see all data bits toggle to get idea of size
+    //roi_bram36_0s
+    roi_bram36_1s
 	    roi (
 		.clk(clk),
 		.din(din),
@@ -64,12 +74,7 @@ module roi_bram1(input clk, input [255:0] din, output [255:0] dout);
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
-//too much churn to be useful to compare vs above
-module roi_bram36(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-endmodule
-
+//ram_RAMB36E1 too much churn to be useful to compare vs above
 //instead lets change something more subtle
 // ERROR: [DRC REQP-1931] RAMB18E1_WEA_NO_CONNECT_OR_TIED_GND: roi/r0/ram programming
 // per UG473 requires that for SDP mode the WEA bus must be unconnected or tied to GND.
@@ -80,6 +85,16 @@ endmodule
 
 module roi_bram_inv(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+module roi_bram36_0s(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0({256{1'b0}}), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+module roi_bram36_1s(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0({256{1'b1}}), .INIT({256{1'b1}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
