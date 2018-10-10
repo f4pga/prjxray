@@ -28,18 +28,18 @@ proc loc_luts {} {
 
     # LOC one LUT (a "selected_lut") into each CLB segment configuration column (ie 50 per CMT column)
     foreach lut $luts {
-	    set tile [get_tile -of_objects $lut]
-	    set grid_x [get_property GRID_POINT_X $tile]
-	    set grid_y [get_property GRID_POINT_Y $tile]
+        set tile [get_tile -of_objects $lut]
+        set grid_x [get_property GRID_POINT_X $tile]
+        set grid_y [get_property GRID_POINT_Y $tile]
 
-	    # 50 per column => 50, 100, 150, etc
-	    # ex: SLICE_X2Y50/A6LUT
-	    if [regexp "Y.*[05]0/" $lut] {
-		    set cell [get_cells roi/luts[$lut_index].lut]
-		    set_property LOC [get_sites -of_objects $lut] $cell
-		    set lut_index [expr $lut_index + 1]
-		    lappend selected_luts $lut
-	    }
+        # 50 per column => 50, 100, 150, etc
+        # ex: SLICE_X2Y50/A6LUT
+        if [regexp "Y.*[05]0/" $lut] {
+            set cell [get_cells roi/luts[$lut_index].lut]
+            set_property LOC [get_sites -of_objects $lut] $cell
+            set lut_index [expr $lut_index + 1]
+            lappend selected_luts $lut
+        }
     }
     return $selected_luts
 }
@@ -53,18 +53,18 @@ proc loc_brams {} {
 
     # LOC one BRAM (a "selected_lut") into each BRAM segment configuration column (ie 10 per CMT column)
     foreach bram $brams {
-	    set tile [get_tile -of_objects $bram]
-	    set grid_x [get_property GRID_POINT_X $tile]
-	    set grid_y [get_property GRID_POINT_Y $tile]
+        set tile [get_tile -of_objects $bram]
+        set grid_x [get_property GRID_POINT_X $tile]
+        set grid_y [get_property GRID_POINT_Y $tile]
 
         # 10 per column => 10, 20, ,etc
         # ex: RAMB36_X0Y10/RAMBFIFO36E1
-	    if [regexp "Y.*0/" $bram] {
-		    set cell [get_cells roi/brams[$bram_index].bram]
-		    set_property LOC [get_sites -of_objects $bram] $cell
-		    set bram_index [expr $bram_index + 1]
-		    lappend selected_brams $bram
-	    }
+        if [regexp "Y.*0/" $bram] {
+            set cell [get_cells roi/brams[$bram_index].bram]
+            set_property LOC [get_sites -of_objects $bram] $cell
+            set bram_index [expr $bram_index + 1]
+            lappend selected_brams $bram
+        }
     }
     return $selected_brams
 }
@@ -80,20 +80,20 @@ proc write_tiles_txt {} {
     # Write tiles.txt with site metadata
     set fp [open "tiles.txt" w]
     foreach tile $tiles {
-	    set type [get_property TYPE $tile]
-	    set grid_x [get_property GRID_POINT_X $tile]
-	    set grid_y [get_property GRID_POINT_Y $tile]
-	    set sites [get_sites -quiet -of_objects $tile]
-	    set typed_sites {}
+        set type [get_property TYPE $tile]
+        set grid_x [get_property GRID_POINT_X $tile]
+        set grid_y [get_property GRID_POINT_Y $tile]
+        set sites [get_sites -quiet -of_objects $tile]
+        set typed_sites {}
 
-	    if [llength $sites] {
-		    set site_types [get_property SITE_TYPE $sites]
-		    foreach t $site_types s $sites {
-			    lappend typed_sites $t $s
-		    }
-	    }
+        if [llength $sites] {
+            set site_types [get_property SITE_TYPE $sites]
+            foreach t $site_types s $sites {
+                lappend typed_sites $t $s
+            }
+        }
 
-	    puts $fp "$type $tile $grid_x $grid_y $typed_sites"
+        puts $fp "$type $tile $grid_x $grid_y $typed_sites"
     }
     close $fp
 }
@@ -101,33 +101,41 @@ proc write_tiles_txt {} {
 proc write_clbs { selected_luts } {
     # Toggle one bit in each selected LUT to generate base addresses
     for {set i 0} {$i < [llength $selected_luts]} {incr i} {
-	    set cell [get_cells roi/luts[$i].lut]
-	    set orig_init [get_property INIT $cell]
-	    # Flip a bit by changing MSB 0 => 1
-	    set new_init [regsub "h8" $orig_init "h0"]
-	    set_property INIT $new_init $cell
-	    write_bitstream -force design_[get_sites -of_objects [lindex $selected_luts $i]].bit
-	    set_property INIT $orig_init $cell
+        puts ""
+        set cell [get_cells roi/luts[$i].lut]
+        puts "LUT $cell"
+        set orig_init [get_property INIT $cell]
+        # Flip a bit by changing MSB 0 => 1
+        set new_init [regsub "h8" $orig_init "h0"]
+        puts "INIT $orig_init => $new_init"
+        set_property INIT $new_init $cell
+        write_bitstream -force design_[get_sites -of_objects [lindex $selected_luts $i]].bit
+        set_property INIT $orig_init $cell
     }
 }
 
 proc write_brams { selected_brams } {
     # Toggle one bit in each selected BRAM to generate base addresses
     for {set i 0} {$i < [llength $selected_brams]} {incr i} {
-	    set cell [get_cells roi/brams[$i].bram]
-	    set orig_init [get_property INIT_00 $cell]
-	    # Flip a bit by changing MSB 0 => 1
-	    set new_init [regsub "h8" $orig_init "h0"]
-	    set_property INIT_00 $new_init $cell
-	    write_bitstream -force design_[get_sites -of_objects [lindex $selected_brams $i]].bit
-	    set_property INIT_00 $orig_init $cell
+        puts ""
+        set cell [get_cells roi/brams[$i].bram]
+        puts "BRAM $cell"
+        set orig_init [get_property INIT_00 $cell]
+        # Flip a bit by changing MSB 0 => 1
+        set new_init [regsub "h8" $orig_init "h0"]
+        puts "INIT_00 $orig_init => $new_init"
+        set_property INIT_00 $new_init $cell
+        write_bitstream -force design_[get_sites -of_objects [lindex $selected_brams $i]].bit
+        set_property INIT_00 $orig_init $cell
     }
 }
 
 proc run {} {
     make_project
     set selected_luts [loc_luts]
+    puts "Selected LUTs: [llength $selected_luts]"
     set selected_brams [loc_brams]
+    puts "Selected LUTs: [llength $selected_brams]"
 
     place_design
     route_design
