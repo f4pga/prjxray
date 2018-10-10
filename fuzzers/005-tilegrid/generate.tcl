@@ -34,7 +34,8 @@ proc loc_luts {} {
 
         # 50 per column => 50, 100, 150, etc
         # ex: SLICE_X2Y50/A6LUT
-        if [regexp "Y.*[05]0/" $lut] {
+        # Only take one of the CLBs within a slice
+        if [regexp "X.*[02468]Y.*[05]0/" $lut] {
             set cell [get_cells roi/luts[$lut_index].lut]
             set_property LOC [get_sites -of_objects $lut] $cell
             set lut_index [expr $lut_index + 1]
