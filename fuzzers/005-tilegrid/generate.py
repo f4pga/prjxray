@@ -217,8 +217,10 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 '''
                 if k == 0:
                     tiles = [tile_name, interface_tile_name, int_tile_name]
+                    baseaddr = tile_baseaddrs.get(tile_name, None)
                 else:
                     tiles = [interface_tile_name, int_tile_name]
+                    baseaddr = None
 
                 add_segment(
                     # BRAM_L_X6Y70 => SEG_BRAM4_L_X6Y70
@@ -227,7 +229,8 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                     # BRAM_L => bram4_l
                     segtype=tile_type.lower().replace("_", "%d_" % k, 1),
                     frames=28,
-                    words=2)
+                    words=2,
+                    baseaddr=baseaddr)
 
         def process_default():
             #verbose and nolr(tile_type) not in ('VBRK', 'INT', 'NULL') and print('make_segment: drop %s' % (tile_type,))
@@ -448,8 +451,6 @@ def run(tiles_fn, json_fn, deltas_fns, verbose=False):
 
     add_bits(database, segments)
     annotate_segments(database, segments)
-
-    #database = {'BRAM_L_X6Y50': database["BRAM_L_X6Y50"]}
 
     # Save
     json.dump(
