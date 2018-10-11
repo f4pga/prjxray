@@ -1,3 +1,4 @@
+/env/
 /build/
 .Xil
 # Ignore database directories _except_ for their settings
