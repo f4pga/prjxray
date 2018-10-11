@@ -257,6 +257,15 @@ def get_inttile(database, segment):
     return inttiles[0]
 
 
+def get_bramtile(database, segment):
+    inttiles = [
+        tile for tile in segment["tiles"]
+        if database[tile]["type"] in ["BRAM_L", "BRAM_R"]
+    ]
+    assert len(inttiles) == 1
+    return inttiles[0]
+
+
 def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
     '''Populate segment base addresses: L/R along INT column'''
     '''
@@ -348,32 +357,71 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
             verbose and print(
                 'up_INT: %s: %s.0x%08X:%u' %
                 (src_segment_name, block_type, framebase, wordbase))
-            # Ignore BRAM base addresses
-            # TODO: BRAM data needs to be populated in its own special way
-            if block_type != 'CLB_IO_CLK':
-                verbose and print('  Skip non CLB')
-                continue
 
-            inttile = get_inttile(database, src_segment)
-            verbose and print(
-                '  up_INT: %s => inttile %s' % (src_segment_name, inttile))
-            grid_x = database[inttile]["grid_x"]
-            grid_y = database[inttile]["grid_y"]
+            def process_CLB_IO_CLK(wordbase):
+                '''
+                Lookup interconnect tile associated with this segment
+                Use it to locate in the grid, and find other segments related by tile offset
+                '''
 
-            for i in range(50):
-                grid_y -= 1
-                dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
+                inttile = get_inttile(database, src_segment)
+                verbose and print(
+                    '  up_INT CLK_IO_CLK: %s => inttile %s' %
+                    (src_segment_name, inttile))
+                grid_x = database[inttile]["grid_x"]
+                grid_y = database[inttile]["grid_y"]
 
-                if wordbase == 50:
-                    wordbase += 1
-                else:
-                    wordbase += 2
+                for i in range(50):
+                    grid_y -= 1
+                    dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
 
-                #verbose and print('  dst_tile', dst_tile)
-                dst_segment_name = dst_tile["segment"]
-                #verbose and print('up_INT: %s => %s' % (src_segment_name, dst_segment_name))
-                segments[dst_segment_name].setdefault(
-                    "baseaddr", {})[block_type] = [framebase, wordbase]
+                    if wordbase == 50:
+                        wordbase += 1
+                    else:
+                        wordbase += 2
+
+                    #verbose and print('  dst_tile', dst_tile)
+                    dst_segment_name = dst_tile["segment"]
+                    #verbose and print('up_INT: %s => %s' % (src_segment_name, dst_segment_name))
+                    segments[dst_segment_name].setdefault(
+                        "baseaddr", {})[block_type] = [framebase, wordbase]
+
+            def process_BLOCK_RAM(wordbase):
+                '''
+                Lookup BRAM0 tile associated with this segment
+                Use it to locate in the grid, and find other BRAM0 related by tile offset
+                '''
+                src_tile_name = get_bramtile(database, src_segment)
+                verbose and print(
+                    '  up_INT BLOCK_RAM: %s => %s' %
+                    (src_segment_name, src_tile_name))
+                grid_x = database[src_tile_name]["grid_x"]
+                grid_y = database[src_tile_name]["grid_y"]
+
+                for i in range(9):
+                    grid_y -= 5
+                    if i == 4:
+                        grid_y -= 1
+
+                    dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
+                    assert nolr(dst_tile['type']) == 'BRAM', dst_tile
+
+                    # FIXME: get actual numbers
+                    if i == 4:
+                        wordbase += 1
+                    else:
+                        wordbase += 2
+
+                    dst_segment_name = dst_tile["segment"]
+                    assert 'BRAM0' in dst_segment_name
+                    segments[dst_segment_name].setdefault(
+                        "baseaddr", {})[block_type] = [framebase, wordbase]
+
+            {
+                'CLB_IO_CLK': process_CLB_IO_CLK,
+                'BLOCK_RAM': process_BLOCK_RAM,
+            }[block_type](
+                wordbase)
 
 
 def add_tile_bits(tile_db, baseaddr, offset, height):
@@ -451,6 +499,8 @@ def run(tiles_fn, json_fn, deltas_fns, verbose=False):
 
     add_bits(database, segments)
     annotate_segments(database, segments)
+
+    #database = {'BRAM_L_X6Y50': database["BRAM_L_X6Y50"], 'BRAM_L_X6Y80': database["BRAM_L_X6Y80"]}
 
     # Save
     json.dump(
