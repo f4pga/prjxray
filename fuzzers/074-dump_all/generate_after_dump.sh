@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-rm -r output
+rm -rf output
 mkdir -p output
 python3 reduce_tile_types.py \
   --root_dir specimen_001/ \
