@@ -21,3 +21,4 @@ if [ -f $BASE_TILEGRID ]; then
     --overlay_grid output/tilegrid_full.json.tmp \
     --output_grid output/tilegrid.json \
     --mark_roi
+fi
