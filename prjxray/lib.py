@@ -188,16 +188,16 @@ def find_origin_coordinate(site_names):
       smallest coordinate to re-origin them all to be relative to the tile.
   """
 
-    if len(site_names) == 0:
+    x_coords = []
+    y_coords = []
+    for site in site_names:
+        coordinate = get_site_coordinate_from_name(site)
+        x_coords.append(coordinate.x_coord)
+        y_coords.append(coordinate.y_coord)
+
+    if len(x_coords) == 0 or len(y_coords) == 0:
         return 0, 0
 
-    def inner_():
-        for site in site_names:
-            coordinate = get_site_coordinate_from_name(site)
-
-            yield coordinate.x_coord, coordinate.y_coord
-
-    x_coords, y_coords = zip(*inner_())
     min_x_coord = min(x_coords)
     min_y_coord = min(y_coords)
 

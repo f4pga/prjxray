@@ -1,6 +1,11 @@
 CLANG_FORMAT ?= clang-format
 
-.PHONY: database format clean
+.PHONY: database format clean env
+
+env:
+	virtualenv --python=python3 env
+	. env/bin/activate; pip install -r requirements.txt
+	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
 
 build:
 	git submodule update --init --recursive
