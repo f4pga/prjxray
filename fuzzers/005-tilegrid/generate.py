@@ -213,7 +213,7 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 '''
                 BRAM/DSP itself is at the base y address
                 There is one huge switchbox on the right for the 5 tiles
-                These fan into 5 BRAM_INT_INTERFACE tiles each which feed into their own CENTER_INTER (just like a CLB has) 
+                These fan into 5 BRAM_INT_INTERFACE tiles each which feed into their own CENTER_INTER (just like a CLB has)
                 '''
                 if k == 0:
                     tiles = [tile_name, interface_tile_name, int_tile_name]
@@ -270,7 +270,7 @@ def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
     '''Populate segment base addresses: L/R along INT column'''
     '''
     Create BRAM base addresses based on nearby CLBs
-    ie if we have a BRAM_L, compute as nearby CLB_R base address + offset 
+    ie if we have a BRAM_L, compute as nearby CLB_R base address + offset
     '''
 
     verbose and print('')
@@ -336,18 +336,14 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
     '''Populate segment base addresses: Up along INT/HCLK columns'''
 
     verbose and print('')
-    '''
-    All baseaddrs so far have 50 tiles above them to be derived
-    However, once we start deriving, this is no longer true
-    Copy the initial list so that any baseaddr encountered can safely be swept up
-    '''
+    # Copy the initial list containing only base addresses
+    # and soon to have derived addresses
     src_segment_names = list()
     for segment_name in segments.keys():
         if "baseaddr" in segments[segment_name]:
             src_segment_names.append(segment_name)
 
     verbose and print('up_INT: %u base addresses' % len(src_segment_names))
-    #verbose and print('\n'.join(sorted(src_segment_names)))
 
     for src_segment_name in sorted(src_segment_names):
         src_segment = segments[src_segment_name]
@@ -390,6 +386,24 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                 '''
                 Lookup BRAM0 tile associated with this segment
                 Use it to locate in the grid, and find other BRAM0 related by tile offset
+
+
+                From minitest:
+
+                build/roi_bramd_bit01.diff (lowest BRAM coordinate)
+                > bit_00c00000_000_00
+
+                build/roi_bramds_bit01.diff
+                > bit_00c00000_000_00
+                > bit_00c00000_010_00
+                > bit_00c00000_020_00
+                > bit_00c00000_030_00
+                > bit_00c00000_040_00
+                > bit_00c00000_051_00
+                > bit_00c00000_061_00
+                > bit_00c00000_071_00
+                > bit_00c00000_081_00
+                > bit_00c00000_091_00
                 '''
                 src_tile_name = get_bramtile(database, src_segment)
                 verbose and print(
@@ -400,17 +414,14 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
 
                 for i in range(9):
                     grid_y -= 5
+                    wordbase += 0x10
+                    # Skip HCLK
                     if i == 4:
                         grid_y -= 1
+                        wordbase += 1
 
                     dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
                     assert nolr(dst_tile['type']) == 'BRAM', dst_tile
-
-                    # FIXME: get actual numbers
-                    if i == 4:
-                        wordbase += 1
-                    else:
-                        wordbase += 2
 
                     dst_segment_name = dst_tile["segment"]
                     assert 'BRAM0' in dst_segment_name
@@ -438,10 +449,14 @@ def add_tile_bits(tile_db, baseaddr, offset, height):
     assert block_type not in bits
     block = bits.setdefault(block_type, {})
 
+    # FDRI base address
     block["baseaddr"] = '0x%08X' % baseaddr
+    # FDRI offset from baseaddr
     block["offset"] = offset
+    # Number of words consumed (was: "words")
     block["height"] = height
-
+    # Number of frames this entry is sretched across
+    #block["frames"] = frames
 
 def add_bits(database, segments):
     '''Transfer segment data into tiles'''
@@ -452,14 +467,14 @@ def add_bits(database, segments):
             for tile_name in segments[segment_name]["tiles"]:
                 tile_type = database[tile_name]["type"]
                 height = {
-                    "CLBLL": 2,
-                    "CLBLM": 2,
-                    "INT": 2,
-                    "HCLK": 1,
-                    "BRAM": 10,
-                    "DSP": 10,
-                    "INT_INTERFACE": 0,
-                    "BRAM_INT_INTERFACE": 0,
+                    "CLBLL":    2,
+                    "CLBLM":    2,
+                    "INT":      2,
+                    "HCLK":     1,
+                    "BRAM":     10,
+                    "DSP":      10,
+                    "INT_INTERFACE":        0,
+                    "BRAM_INT_INTERFACE":   0,
                 }.get(nolr(tile_type), None)
                 if height is None:
                     raise ValueError("Unknown tile type %s" % tile_type)
