@@ -46,79 +46,141 @@ DATA ROI
 Toggle a single data bit to locate a single instance
 ******************************************************************************/
 module roi_bramd_bit0(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
 module roi_bramd_bit1(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+module roi_bram18d_bit0(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+module roi_bram18d_bit1(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y20"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
 /******************************************************************************
 Toggle all bits to show the size of the data section
 ******************************************************************************/
+
 module roi_bramd_bits0(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0({256{1'b0}}), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0({256{1'b0}}), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
 module roi_bramd_bits1(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0({256{1'b1}}), .INIT({256{1'b1}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0({256{1'b1}}), .INIT({256{1'b1}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
 /******************************************************************************
 Toggle all the data bits in the ROI to show pitch between entries
 ******************************************************************************/
+
 module roi_bramds_bit0(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y11"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y44"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y12"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y46"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y13"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y48"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y14"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y50"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y15"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y52"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y16"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y54"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y17"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y56"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y18"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y58"), .INIT0(1'b0), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y19"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
 endmodule
 
 module roi_bramds_bit1(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y11"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y44"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y12"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y46"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y13"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y48"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y14"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y50"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y15"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y52"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y16"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y54"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y17"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y56"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y18"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y58"), .INIT0(1'b1), .INIT({256{1'b0}}))
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y19"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
 endmodule
 
 /******************************************************************************
 CONFIG ROI
+******************************************************************************/
+
+module roi_bramis_bit0(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y11"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y12"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y13"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y14"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y15"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y16"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y17"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y18"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y19"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+            r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
+endmodule
+
+module roi_bramis_bit1(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y11"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y12"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y13"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y14"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y15"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y16"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y17"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y18"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y19"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+            r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
+endmodule
+
+/******************************************************************************
+Misc ROI
 ******************************************************************************/
 
 //ram_RAMB36E1 too much churn to be useful to compare vs above
@@ -146,32 +208,6 @@ module roi_bram36_1s(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 /*
-One BRAM per tile
-*/
-module roi_brams(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y44"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y46"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y48"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y50"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y52"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y54"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y56"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y58"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
-endmodule
-
-/*
 Place everything into first tile
 This is invalid since 18/36 share resources
 */
@@ -183,10 +219,6 @@ module roi_invalid(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT({256{1'b1}}))
             r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
 endmodule
-
-/******************************************************************************
-Misc ROI
-******************************************************************************/
 
 //HCK test
 //XXX: what specifically was this testing?
@@ -341,6 +373,7 @@ module ram_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
     parameter INIT0 = 256'h0000000000000000000000000000000000000000000000000000000000000000;
     parameter INIT = 256'h0000000000000000000000000000000000000000000000000000000000000000;
+    parameter IS_ENARDEN_INVERTED = 1'b0;
 
     RAMB36E1 #(
             .INITP_00(INIT),
@@ -492,7 +525,7 @@ module ram_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
 
             .IS_CLKARDCLK_INVERTED(1'b0),
             .IS_CLKBWRCLK_INVERTED(1'b0),
-            .IS_ENARDEN_INVERTED(1'b0),
+            .IS_ENARDEN_INVERTED(IS_ENARDEN_INVERTED),
             .IS_ENBWREN_INVERTED(1'b0),
             .IS_RSTRAMARSTRAM_INVERTED(1'b0),
             .IS_RSTRAMB_INVERTED(1'b0),
