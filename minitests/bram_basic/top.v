@@ -6,7 +6,7 @@ ROM64X1: 64-Deep by 1-Wide ROM
 */
 
 `ifndef ROI
-`define ROI
+ERROR: must set ROI
 `endif
 
 module top(input clk, stb, di, output do);
@@ -30,16 +30,7 @@ module top(input clk, stb, di, output do);
 
 	assign do = dout_shr[DOUT_N-1];
 
-    //`ROI
-
-    //sweep through these three values to see small config vs data changes
-    //roi_bram0
-    //roi_bram1
-    //roi_bram_inv
-
-    //sweep through to see all data bits toggle to get idea of size
-    //roi_bram36_0s
-    roi_bram36_1s
+    `ROI
 	    roi (
 		.clk(clk),
 		.din(din),
@@ -47,43 +38,99 @@ module top(input clk, stb, di, output do);
 	);
 endmodule
 
-//HCK test
-//XXX: what specifically was this testing?
-module roi_hck(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y24"), .INIT({256{1'b1}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y25"), .INIT({256{1'b1}}))
-            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    //HCK
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y26"), .INIT({256{1'b1}}))
-            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y27"), .INIT({256{1'b1}}))
-            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
-endmodule
+/******************************************************************************
+DATA ROI
+******************************************************************************/
 
-/*
-One BRAM per tile
-*/
-module roi_bram0(input clk, input [255:0] din, output [255:0] dout);
+/******************************************************************************
+Toggle a single data bit to locate a single instance
+******************************************************************************/
+module roi_bramd_bit0(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
-module roi_bram1(input clk, input [255:0] din, output [255:0] dout);
+module roi_bramd_bit1(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
+
+/******************************************************************************
+Toggle all bits to show the size of the data section
+******************************************************************************/
+module roi_bramd_bits0(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0({256{1'b0}}), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+module roi_bramd_bits1(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0({256{1'b1}}), .INIT({256{1'b1}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+/******************************************************************************
+Toggle all the data bits in the ROI to show pitch between entries
+******************************************************************************/
+module roi_bramds_bit0(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y44"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y46"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y48"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y50"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y52"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y54"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y56"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y58"), .INIT0(1'b0), .INIT({256{1'b0}}))
+            r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
+endmodule
+
+module roi_bramds_bit1(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y44"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y46"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y48"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r4(.clk(clk), .din(din[  32 +: 8]), .dout(dout[  32 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y50"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r5(.clk(clk), .din(din[  40 +: 8]), .dout(dout[  40 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y52"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r6(.clk(clk), .din(din[  48 +: 8]), .dout(dout[  48 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y54"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r7(.clk(clk), .din(din[  56 +: 8]), .dout(dout[  56 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y56"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r8(.clk(clk), .din(din[  64 +: 8]), .dout(dout[  64 +: 8]));
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y58"), .INIT0(1'b1), .INIT({256{1'b0}}))
+            r9(.clk(clk), .din(din[  72 +: 8]), .dout(dout[  72 +: 8]));
+endmodule
+
+/******************************************************************************
+CONFIG ROI
+******************************************************************************/
 
 //ram_RAMB36E1 too much churn to be useful to compare vs above
 //instead lets change something more subtle
 // ERROR: [DRC REQP-1931] RAMB18E1_WEA_NO_CONNECT_OR_TIED_GND: roi/r0/ram programming
 // per UG473 requires that for SDP mode the WEA bus must be unconnected or tied to GND.
-module roi_bram_sdp(input clk, input [255:0] din, output [255:0] dout);
+module roi_bramd_sdp(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .RAM_MODE("SDP"))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
-module roi_bram_inv(input clk, input [255:0] din, output [255:0] dout);
+module roi_bramd_inv(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
@@ -136,6 +183,30 @@ module roi_invalid(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT({256{1'b1}}))
             r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
 endmodule
+
+/******************************************************************************
+Misc ROI
+******************************************************************************/
+
+//HCK test
+//XXX: what specifically was this testing?
+module roi_hck(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y24"), .INIT({256{1'b1}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y25"), .INIT({256{1'b1}}))
+            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
+    //HCK
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y26"), .INIT({256{1'b1}}))
+            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y27"), .INIT({256{1'b1}}))
+            r3(.clk(clk), .din(din[  24 +: 8]), .dout(dout[  24 +: 8]));
+
+endmodule
+
+/******************************************************************************
+Library
+******************************************************************************/
+
 
 /*
 Site RAMB18_X0Y42
