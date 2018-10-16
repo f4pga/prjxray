@@ -158,13 +158,11 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
         grid_x = tile_data["grid_x"]
         grid_y = tile_data["grid_y"]
 
-        def add_segment(name, tiles, segtype, frames, words, baseaddr=None):
+        def add_segment(name, tiles, segtype, baseaddr=None):
             assert name not in segments
             segment = segments.setdefault(name, {})
             segment["tiles"] = tiles
             segment["type"] = segtype
-            segment["frames"] = frames
-            segment["words"] = words
             if baseaddr:
                 verbose and print(
                     'make_segment: %s baseaddr %s' % (
@@ -186,17 +184,13 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 name="SEG_" + tile_name,
                 tiles=[tile_name, int_tile_name],
                 segtype=tile_type.lower(),
-                frames=36,
-                words=2,
                 baseaddr=tile_baseaddrs.get(tile_name, None))
 
         def process_hclk():
             add_segment(
                 name="SEG_" + tile_name,
                 tiles=[tile_name],
-                segtype=tile_type.lower(),
-                frames=26,
-                words=1)
+                segtype=tile_type.lower())
 
         def process_bram_dsp():
             for k in range(5):
@@ -228,8 +222,6 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                     tiles=tiles,
                     # BRAM_L => bram4_l
                     segtype=tile_type.lower().replace("_", "%d_" % k, 1),
-                    frames=28,
-                    words=2,
                     baseaddr=baseaddr)
 
         def process_default():
@@ -414,7 +406,7 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
 
                 for i in range(9):
                     grid_y -= 5
-                    wordbase += 0x10
+                    wordbase += 10
                     # Skip HCLK
                     if i == 4:
                         grid_y -= 1
@@ -435,7 +427,7 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                 wordbase)
 
 
-def add_tile_bits(tile_db, baseaddr, offset, height):
+def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
     '''
     Record data structure geometry for the given tile baseaddr
     For most tiles there is only one baseaddr, but some like BRAM have multiple
@@ -443,47 +435,69 @@ def add_tile_bits(tile_db, baseaddr, offset, height):
     Notes on multiple block types:
     https://github.com/SymbiFlow/prjxray/issues/145
     '''
+
     bits = tile_db.setdefault('bits', {})
     block_type = addr2btype(baseaddr)
+
+    assert 0 <= offset <= 100, offset
+    assert 1 <= words <= 101
+    assert offset + words <= 101, (
+        tile_db, offset + words, offset, words, block_type)
 
     assert block_type not in bits
     block = bits.setdefault(block_type, {})
 
-    # FDRI base address
+    # FDRI address
     block["baseaddr"] = '0x%08X' % baseaddr
-    # FDRI offset from baseaddr
-    block["offset"] = offset
-    # Number of words consumed (was: "words")
-    block["height"] = height
     # Number of frames this entry is sretched across
-    #block["frames"] = frames
+    # that is the following FDRI addresses are used: range(baseaddr, baseaddr + frames)
+    block["frames"] = frames
+
+    # Index of first word used within each frame
+    block["offset"] = offset
+    # Number of words consumed in each frame
+    block["words"] = words
+
+    # related to words...
+    # deprecated field? Don't worry about for now
+    if height is not None:
+        block["height"] = height
+
 
 def add_bits(database, segments):
     '''Transfer segment data into tiles'''
     for segment_name in segments.keys():
-        for _block_type, (
-                baseaddr,
-                offset) in segments[segment_name]["baseaddr"].items():
+        for block_type, (baseaddr,
+                         offset) in segments[segment_name]["baseaddr"].items():
             for tile_name in segments[segment_name]["tiles"]:
                 tile_type = database[tile_name]["type"]
-                height = {
-                    "CLBLL":    2,
-                    "CLBLM":    2,
-                    "INT":      2,
-                    "HCLK":     1,
-                    "BRAM":     10,
-                    "DSP":      10,
-                    "INT_INTERFACE":        0,
-                    "BRAM_INT_INTERFACE":   0,
-                }.get(nolr(tile_type), None)
-                if height is None:
-                    raise ValueError("Unknown tile type %s" % tile_type)
-                if height:
+                entry = {
+                    # (tile_type, block_type): (frames, words, height)
+                    ("CLBLL", "CLB_IO_CLK"): (36, 2, 2),
+                    ("CLBLM", "CLB_IO_CLK"): (36, 2, 2),
+                    ("HCLK", "CLB_IO_CLK"): (26, 1, 1),
+                    ("INT", "CLB_IO_CLK"): (28, 2, 2),
+                    ("BRAM", "CLB_IO_CLK"): (28, 2, None),
+                    ("BRAM", "BLOCK_RAM"): (128, 5, None),
+                    ("DSP", "CLB_IO_CLK"): (28, 2, 10),
+                    ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
+                    ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
+                }.get((nolr(tile_type), block_type), None)
+                if entry is None:
+                    if block_type == "CLB_IO_CLK":
+                        raise ValueError("Unknown tile type %s" % tile_type)
+                    continue
+                frames, words, height = entry
+                if frames:
+                    # if we have a width, we should have a height
+                    assert frames and words
                     add_tile_bits(
-                        database[tile_name], baseaddr, offset, height)
+                        database[tile_name], baseaddr, offset, frames, words,
+                        height)
 
 
 def annotate_segments(database, segments):
+    '''
     # TODO: Migrate to new tilegrid format via library.  This data is added for
     # compability with unconverted tools.  Update tools then remove this data from
     # tilegrid.json.
@@ -493,6 +507,7 @@ def annotate_segments(database, segments):
             tiledata["frames"] = segments[segment]["frames"]
             tiledata["words"] = segments[segment]["words"]
             tiledata["segment_type"] = segments[segment]["type"]
+    '''
 
 
 def run(tiles_fn, json_fn, deltas_fns, verbose=False):
