@@ -15,6 +15,8 @@ import os, json, re
 XRAY_DATABASE = os.getenv("XRAY_DATABASE")
 XRAY_DIR = os.getenv("XRAY_DIR")
 
+BLOCK_TYPES = set(('CLB_IO_CLK', 'BLOCK_RAM', 'CFG_CLB'))
+
 
 def recurse_sum(x):
     '''Count number of nested iterable occurances'''
@@ -46,7 +48,8 @@ class segmaker:
         -site: ex 'SLICE_X13Y101'
         -name: ex 'CLB.SLICE_X0.AFF.DMUX.CY'
         '''
-        self.tags = dict()
+        self.site_tags = dict()
+        self.tile_tags = dict()
 
         # output after compiling
         self.segments_by_type = None
@@ -94,7 +97,7 @@ class segmaker:
                 'Loaded bits: %u bits in %u base frames' %
                 (recurse_sum(self.bits), len(self.bits)))
 
-    def addtag(self, site_tile, name, value):
+    def add_site_tag(self, site, name, value):
         '''
         XXX: can add tags in two ways:
         -By site name
@@ -107,7 +110,10 @@ class segmaker:
         self.addtag('SLICE_X13Y101', 'CLB.SLICE_X0.AFF.DMUX.CY', 1)
         Indicates that the SLICE_X13Y101 site has an element called 'CLB.SLICE_X0.AFF.DMUX.CY'
         '''
-        self.tags.setdefault(site_tile, dict())[name] = value
+        self.site_tags.setdefault(site, dict())[name] = value
+
+    def add_site_tag(self, tile, name, value):
+        self.tile_tags.setdefault(tile, dict())[name] = value
 
     def compile(self, bitfilter=None):
         print("Compiling segment data.")
@@ -131,26 +137,34 @@ class segmaker:
             tiledata: tilegrid info for this tile
             '''
             assert segname not in segments
-            segments[segname] = {"bits": set(), "tags": dict()}
+            segment = segments.setdefault(
+                segment, {
+                    "bits": {},
+                    "tags": dict()
+                })
 
-            base_frame = json_hex2i(tiledata["baseaddr"])
-            for wordidx in range(tiledata["offset"],
-                                 tiledata["offset"] + tiledata["height"]):
-                if base_frame not in self.bits:
-                    continue
-                if wordidx not in self.bits[base_frame]:
-                    continue
-                for bit_frame, bit_wordidx, bit_bitidx in self.bits[
-                        base_frame][wordidx]:
-                    bitname_frame = bit_frame - base_frame
-                    bitname_bit = 32 * (
-                        bit_wordidx - tiledata["offset"]) + bit_bitidx
-                    # some bits are hard to de-correlate
-                    # allow force dropping some bits from search space for practicality
-                    if bitfilter is None or bitfilter(bitname_frame,
-                                                      bitname_bit):
-                        bitname = "%02d_%02d" % (bitname_frame, bitname_bit)
-                        segments[segname]["bits"].add(bitname)
+            for block_type, bitj in segment['bits'].items():
+                segment["bits"][block_type] = set()
+
+                base_frame = json_hex2i(bitj["baseaddr"])
+                for wordidx in range(bitj["offset"],
+                                     bitj["offset"] + bitj["height"]):
+                    if base_frame not in self.bits:
+                        continue
+                    if wordidx not in self.bits[base_frame]:
+                        continue
+                    for bit_frame, bit_wordidx, bit_bitidx in self.bits[
+                            base_frame][wordidx]:
+                        bitname_frame = bit_frame - base_frame
+                        bitname_bit = 32 * (
+                            bit_wordidx - bitj["offset"]) + bit_bitidx
+                        # some bits are hard to de-correlate
+                        # allow force dropping some bits from search space for practicality
+                        if bitfilter is None or bitfilter(bitname_frame,
+                                                          bitname_bit):
+                            bitname = "%02d_%02d" % (
+                                bitname_frame, bitname_bit)
+                            segment["bits"][block_type].add(bitname)
 
         '''
         XXX: wouldn't it be better to iterate over tags? Easy to drop tags
@@ -163,7 +177,7 @@ class segmaker:
                     add_segbits(
                         segments, segname, tiledata, bitfilter=bitfilter)
 
-                for name, value in self.tags[tilename].items():
+                for name, value in self.tile_tags[tilename].items():
                     tags_used.add((tilename, name))
                     tag = "%s.%s" % (tile_type_norm, name)
                     segments[segname]["tags"][tag] = value
@@ -188,7 +202,7 @@ class segmaker:
                 else:
                     assert 0, 'Unhandled site type'
 
-                for name, value in self.tags[site].items():
+                for name, value in self.site_tags[site].items():
                     tags_used.add((site, name))
                     tag = "%s.%s.%s" % (tile_type_norm, sitekey, name)
                     # XXX: does this come from name?
@@ -197,7 +211,7 @@ class segmaker:
                     segments[segname]["tags"][tag] = value
 
             # ignore dummy tiles (ex: VBRK)
-            if "baseaddr" not in tiledata:
+            if "bits" not in tiledata:
                 continue
 
             tile_type = tiledata["type"]
@@ -216,12 +230,12 @@ class segmaker:
                 tiledata["offset"])
 
             # process tile name tags
-            if tilename in self.tags:
+            if tilename in self.tile_tags:
                 add_tilename_tags()
 
             # process site name tags
             for site in tiledata["sites"]:
-                if site not in self.tags:
+                if site not in self.site_tags:
                     continue
                 add_site_tags()
 
@@ -244,19 +258,9 @@ class segmaker:
 
             with open(filename, "w") as f:
                 segments = self.segments_by_type[segtype]
-                if True:
-                    for segname, segdata in sorted(segments.items()):
-                        print("seg %s" % segname, file=f)
-                        for bitname in sorted(segdata["bits"]):
-                            print("bit %s" % bitname, file=f)
-                        for tagname, tagval in sorted(segdata["tags"].items()):
-                            print("tag %s %d" % (tagname, tagval), file=f)
-                else:
-                    print("seg roi", file=f)
-                    for segname, segdata in sorted(segments.items()):
-                        for bitname in sorted(segdata["bits"]):
-                            print("bit %s_%s" % (segname, bitname), file=f)
-                        for tagname, tagval in sorted(segdata["tags"].items()):
-                            print(
-                                "tag %s_%s %d" % (segname, tagname, tagval),
-                                file=f)
+                for segname, segdata in sorted(segments.items()):
+                    print("seg %s" % segname, file=f)
+                    for bitname in sorted(segdata["bits"]):
+                        print("bit %s" % bitname, file=f)
+                    for tagname, tagval in sorted(segdata["tags"].items()):
+                        print("tag %s %d" % (tagname, tagval), file=f)

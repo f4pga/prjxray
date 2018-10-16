@@ -18,7 +18,7 @@ with open("design_%s.txt" % sys.argv[1], "r") as f:
         for i in range(64):
             bitname = "%s.INIT[%02d]" % (bel, i)
             bitname = bitname.replace("6LUT", "LUT")
-            segmk.addtag(site, bitname, ((init >> i) & 1) != 0)
+            segmk.add_site_tag(site, bitname, ((init >> i) & 1) != 0)
 
 segmk.compile()
 segmk.write(sys.argv[1])
