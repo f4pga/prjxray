@@ -1,4 +1,6 @@
 '''
+NOTE: "segments" as used in this file is mostly unrelated to tilegrid.json usage
+ie tilegrid.json has names like SEG_CLBLL_L_X2Y50 where as here they are tile based and named like seg_00400100_02
 
 Sample segdata.txt output (from 015-clbnffmux/specimen_001/segdata_clbll_r.txt):
 seg 00020880_048
@@ -38,7 +40,9 @@ def json_hex2i(s):
 
 
 class segmaker:
-    def __init__(self, bitsfile, verbose=False):
+    def __init__(self, bitsfile, verbose=None):
+        self.verbose = verbose if verbose is not None else os.getenv(
+            'VERBOSE', 'N') == 'Y'
         self.verbose = verbose
         self.load_grid()
         self.load_bits(bitsfile)
@@ -112,7 +116,7 @@ class segmaker:
         '''
         self.site_tags.setdefault(site, dict())[name] = value
 
-    def add_site_tag(self, tile, name, value):
+    def add_tile_tag(self, tile, name, value):
         self.tile_tags.setdefault(tile, dict())[name] = value
 
     def compile(self, bitfilter=None):
@@ -138,33 +142,29 @@ class segmaker:
             '''
             assert segname not in segments
             segment = segments.setdefault(
-                segment, {
-                    "bits": {},
+                segname, {
+                    "bits": set(),
                     "tags": dict()
                 })
 
-            for block_type, bitj in segment['bits'].items():
-                segment["bits"][block_type] = set()
-
-                base_frame = json_hex2i(bitj["baseaddr"])
-                for wordidx in range(bitj["offset"],
-                                     bitj["offset"] + bitj["height"]):
-                    if base_frame not in self.bits:
-                        continue
-                    if wordidx not in self.bits[base_frame]:
-                        continue
-                    for bit_frame, bit_wordidx, bit_bitidx in self.bits[
-                            base_frame][wordidx]:
-                        bitname_frame = bit_frame - base_frame
-                        bitname_bit = 32 * (
-                            bit_wordidx - bitj["offset"]) + bit_bitidx
-                        # some bits are hard to de-correlate
-                        # allow force dropping some bits from search space for practicality
-                        if bitfilter is None or bitfilter(bitname_frame,
-                                                          bitname_bit):
-                            bitname = "%02d_%02d" % (
-                                bitname_frame, bitname_bit)
-                            segment["bits"][block_type].add(bitname)
+            base_frame = json_hex2i(bitj["baseaddr"])
+            for wordidx in range(bitj["offset"],
+                                 bitj["offset"] + bitj["height"]):
+                if base_frame not in self.bits:
+                    continue
+                if wordidx not in self.bits[base_frame]:
+                    continue
+                for bit_frame, bit_wordidx, bit_bitidx in self.bits[
+                        base_frame][wordidx]:
+                    bitname_frame = bit_frame - base_frame
+                    bitname_bit = 32 * (
+                        bit_wordidx - bitj["offset"]) + bit_bitidx
+                    # some bits are hard to de-correlate
+                    # allow force dropping some bits from search space for practicality
+                    if bitfilter is None or bitfilter(bitname_frame,
+                                                      bitname_bit):
+                        bitname = "%02d_%02d" % (bitname_frame, bitname_bit)
+                        segment["bits"].add(bitname)
 
         '''
         XXX: wouldn't it be better to iterate over tags? Easy to drop tags
@@ -224,29 +224,35 @@ class segmaker:
             '''
             tile_type_norm = re.sub("(LL|LM)?_[LR]$", "", tile_type)
 
-            segname = "%s_%03d" % (
-                # truncate 0x to leave hex string
-                tiledata["baseaddr"][2:],
-                tiledata["offset"])
+            for block_type, bitj in tiledata['bits'].items():
+                # NOTE: multiple tiles may have the same base addr + offset
+                segname = "%s_%03d" % (
+                    # truncate 0x to leave hex string
+                    bitj["baseaddr"][2:],
+                    bitj["offset"])
 
-            # process tile name tags
-            if tilename in self.tile_tags:
-                add_tilename_tags()
+                # process tile name tags
+                if tilename in self.tile_tags:
+                    add_tilename_tags()
 
-            # process site name tags
-            for site in tiledata["sites"]:
-                if site not in self.site_tags:
-                    continue
-                add_site_tags()
+                # process site name tags
+                for site in tiledata["sites"]:
+                    if site not in self.site_tags:
+                        continue
+                    add_site_tags()
 
         if self.verbose:
-            ntags = recurse_sum(self.tags)
+            ntags = recurse_sum(self.site_tags) + recurse_sum(self.tile_tags)
             print("Used %u / %u tags" % (len(tags_used), ntags))
             print("Grid DB had %u tile types" % len(tile_types_found))
             assert ntags and ntags == len(tags_used)
 
     def write(self, suffix=None, roi=False):
         assert self.segments_by_type, 'No data to write'
+
+        assert sum(
+            [len(segments) for segments in self.segments_by_type.values()
+             ]) != 0
 
         for segtype in self.segments_by_type.keys():
             if suffix is not None:
