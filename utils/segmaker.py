@@ -1,6 +1,7 @@
 '''
 NOTE: "segments" as used in this file is mostly unrelated to tilegrid.json usage
 ie tilegrid.json has names like SEG_CLBLL_L_X2Y50 where as here they are tile based and named like seg_00400100_02
+Instead of using tilegrid.json "segments, segments are formed by looking for tiles that use the same address + offset
 
 Sample segdata.txt output (from 015-clbnffmux/specimen_001/segdata_clbll_r.txt):
 seg 00020880_048
@@ -43,7 +44,6 @@ class segmaker:
     def __init__(self, bitsfile, verbose=None):
         self.verbose = verbose if verbose is not None else os.getenv(
             'VERBOSE', 'N') == 'Y'
-        self.verbose = verbose
         self.load_grid()
         self.load_bits(bitsfile)
         '''
@@ -142,9 +142,14 @@ class segmaker:
             '''
             assert segname not in segments
             segment = segments.setdefault(
-                segname, {
+                segname,
+                {
                     "bits": set(),
-                    "tags": dict()
+                    "tags": dict(),
+                    # verify new entries match this
+                    "offset": bitj["offset"],
+                    "words": bitj["words"],
+                    "frames": bitj["frames"],
                 })
 
             base_frame = json_hex2i(bitj["baseaddr"])
@@ -165,6 +170,7 @@ class segmaker:
                                                       bitname_bit):
                         bitname = "%02d_%02d" % (bitname_frame, bitname_bit)
                         segment["bits"].add(bitname)
+            return segment
 
         '''
         XXX: wouldn't it be better to iterate over tags? Easy to drop tags
@@ -172,20 +178,27 @@ class segmaker:
         '''
         for tilename, tiledata in self.grid.items():
 
-            def add_tilename_tags():
+            def getseg(segname):
                 if not segname in segments:
-                    add_segbits(
+                    return add_segbits(
                         segments, segname, tiledata, bitfilter=bitfilter)
+                else:
+                    segment = segments[segname]
+                    assert segment["offset"] == bitj["offset"]
+                    assert segment["words"] == bitj["words"]
+                    assert segment["frames"] == bitj["frames"]
+                    return segment
+
+            def add_tilename_tags():
+                segment = getseg(segname)
 
                 for name, value in self.tile_tags[tilename].items():
                     tags_used.add((tilename, name))
                     tag = "%s.%s" % (tile_type_norm, name)
-                    segments[segname]["tags"][tag] = value
+                    segment["tags"][tag] = value
 
             def add_site_tags():
-                if not segname in segments:
-                    add_segbits(
-                        segments, segname, tiledata, bitfilter=bitfilter)
+                segment = getseg(segname)
 
                 if 'SLICE_' in site:
                     '''
