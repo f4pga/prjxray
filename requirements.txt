@@ -1,4 +1,7 @@
 futures
-yapf
-pyjson5
+numpy
 progressbar2
+pyjson5
+scipy
+sympy
+yapf
