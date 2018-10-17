@@ -100,6 +100,7 @@ def make_database(tiles):
             "sites": tile["sites"],
             "grid_x": tile["grid_x"],
             "grid_y": tile["grid_y"],
+            "bits": {},
         }
 
     return database
@@ -436,7 +437,7 @@ def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
     https://github.com/SymbiFlow/prjxray/issues/145
     '''
 
-    bits = tile_db.setdefault('bits', {})
+    bits = tile_db['bits']
     block_type = addr2btype(baseaddr)
 
     assert 0 <= offset <= 100, offset
@@ -484,9 +485,11 @@ def add_bits(database, segments):
                     ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
                 }.get((nolr(tile_type), block_type), None)
                 if entry is None:
+                    # Other types are rare, not expected to have these
                     if block_type == "CLB_IO_CLK":
                         raise ValueError("Unknown tile type %s" % tile_type)
                     continue
+
                 frames, words, height = entry
                 if frames:
                     # if we have a width, we should have a height
