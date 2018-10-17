@@ -163,10 +163,12 @@ def mk_grid():
             }
     return grid
 
+
 def frame_init(frames, addr):
     '''Set given frame to 0'''
     if not addr in frames:
         frames[addr] = [0 for _i in range(101)]
+
 
 def frames_init(frames, grid):
     '''Set all frames to 0'''
@@ -176,9 +178,11 @@ def frames_init(frames, grid):
         for coli in range(segj['frames']):
             frame_init(frames, seg_baseaddr + coli)
 
+
 def frame_set(frames, frame_addr, word_addr, bit_index):
     '''Set given bit in given frame address and word'''
     frames[frame_addr][word_addr] |= 1 << bit_index
+
 
 def frame_clear(frames, frame_addr, word_addr, bit_index):
     '''Set given bit in given frame address and word'''
@@ -209,6 +213,7 @@ def parse_line(l):
 
     return tile, name, value
 
+
 def check_duplicate(used_names, tile, name, l, line_number):
     '''Throw an exception if a conflicting FASM directive was given'''
     used_name = (tile, name)
@@ -219,7 +224,10 @@ def check_duplicate(used_names, tile, name, l, line_number):
             (old_line_number, line_number, l))
     used_names[used_name] = line_number
 
-def update_segbit(frames, seg_word_column, word_bit_n, isset, seg_baseaddr, seg_word_base):
+
+def update_segbit(
+        frames, seg_word_column, word_bit_n, isset, seg_baseaddr,
+        seg_word_base):
     '''Set  or clear a single bit in a segment at the given word column and word bit position'''
     # Now we have the word column and word bit index
     # Combine with the segments relative frame position to fully get the position
@@ -231,6 +239,7 @@ def update_segbit(frames, seg_word_column, word_bit_n, isset, seg_baseaddr, seg_
         frame_set(frames, frame_addr, word_addr, bit_index)
     else:
         frame_clear(frames, frame_addr, word_addr, bit_index)
+
 
 def default_value(db_vals, name):
     # If its binary, allow omitted value default to 1
@@ -256,15 +265,15 @@ def process_line(line_number, l, grid, frames, used_names):
         segj = grid['segments'][segname]
         seg_baseaddr, seg_word_base = segj['baseaddr']
         seg_baseaddr = int(seg_baseaddr, 0)
-    
+
         # Ensure that all frames exist for this segment
         # FIXME: type dependent
         for coli in range(segj['frames']):
             frame_init(frames, seg_baseaddr + coli)
-    
+
         # Now lets look up the bits we need frames for
         segdb = get_database(segj['type'])
-    
+
         db_k = '%s.%s' % (tilej['type'], name)
         try:
             db_vals = segdb[db_k]
@@ -272,10 +281,10 @@ def process_line(line_number, l, grid, frames, used_names):
             raise FASMSyntaxError(
                 "Segment DB %s, key %s not found from line '%s'" %
                 (segj['type'], db_k, l)) from None
-    
+
         if not value:
             value = default_value(db_vals, name)
-    
+
         # Get the specific entry we need
         try:
             db_vals = db_vals[value]
@@ -283,9 +292,11 @@ def process_line(line_number, l, grid, frames, used_names):
             raise FASMSyntaxError(
                 "Invalid entry %s. Valid entries are %s" %
                 (value, db_vals.keys()))
-    
+
         for seg_word_column, word_bit_n, isset in db_vals:
-            update_segbit(frames, seg_word_column, word_bit_n, isset, seg_baseaddr, seg_word_base)
+            update_segbit(
+                frames, seg_word_column, word_bit_n, isset, seg_baseaddr,
+                seg_word_base)
 
 
 def run(f_in, f_out, sparse=False, debug=False):

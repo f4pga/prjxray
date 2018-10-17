@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
 # TODO: need better coverage for different tile types
 
 import fasm2frames
 
 import unittest
-import StringIO
+from io import StringIO
 import re
 
 
@@ -23,7 +24,7 @@ def frm2bits(txt):
         assert (101 == len(words))
         for wordi, word in enumerate(words):
             word = int(word, 0)
-            for biti in xrange(32):
+            for biti in range(32):
                 val = word & (1 << biti)
                 if val:
                     bits_out.add((addr, wordi, biti))
@@ -51,11 +52,11 @@ def bitread2bits(txt):
 class TestStringMethods(unittest.TestCase):
     def test_lut(self):
         '''Simple smoke test on just the LUTs'''
-        fout = StringIO.StringIO()
+        fout = StringIO()
         fasm2frames.run(open('test_data/lut.fasm', 'r'), fout)
 
     def bitread_frm_equals(self, frm_fn, bitread_fn):
-        fout = StringIO.StringIO()
+        fout = StringIO()
         fasm2frames.run(open(frm_fn, 'r'), fout)
 
         # Build a list of output used bits
@@ -84,20 +85,20 @@ class TestStringMethods(unittest.TestCase):
     # Same check as above, but isolated test case
     def test_opkey_01_default(self):
         '''Optional key with binary omitted value should produce valid result'''
-        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX")
-        fout = StringIO.StringIO()
+        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX")
+        fout = StringIO()
         fasm2frames.run(fin, fout)
 
     def test_opkey_01_1(self):
-        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1")
-        fout = StringIO.StringIO()
+        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1")
+        fout = StringIO()
         fasm2frames.run(fin, fout)
 
     def test_opkey_enum(self):
         '''Optional key with enumerated value should produce syntax error'''
         # CLBLM_L.SLICEM_X0.AMUX.O6 !30_06 !30_07 !30_08 30_11
-        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.AMUX.O6")
-        fout = StringIO.StringIO()
+        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.AMUX.O6")
+        fout = StringIO()
         try:
             fasm2frames.run(fin, fout)
             self.fail("Expected syntax error")
@@ -111,8 +112,8 @@ class TestStringMethods(unittest.TestCase):
 
     def test_badkey(self):
         '''Bad key should throw syntax error'''
-        fin = StringIO.StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 2")
-        fout = StringIO.StringIO()
+        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 2")
+        fout = StringIO()
         try:
             fasm2frames.run(fin, fout)
             self.fail("Expected syntax error")
@@ -121,12 +122,12 @@ class TestStringMethods(unittest.TestCase):
 
     def test_dupkey(self):
         '''Duplicate key should throw syntax error'''
-        fin = StringIO.StringIO(
+        fin = StringIO(
             """\
 CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 0
 CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1
 """)
-        fout = StringIO.StringIO()
+        fout = StringIO()
         try:
             fasm2frames.run(fin, fout)
             self.fail("Expected syntax error")
@@ -137,12 +138,12 @@ CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1
         '''Verify sparse equivilent to normal encoding'''
         frm_fn = 'test_data/lut_int.fasm'
 
-        fout_sparse = StringIO.StringIO()
+        fout_sparse = StringIO()
         fasm2frames.run(open(frm_fn, 'r'), fout_sparse, sparse=True)
         fout_sparse_txt = fout_sparse.getvalue()
         bits_sparse = frm2bits(fout_sparse_txt)
 
-        fout_full = StringIO.StringIO()
+        fout_full = StringIO()
         fasm2frames.run(open(frm_fn, 'r'), fout_full, sparse=False)
         fout_full_txt = fout_full.getvalue()
         bits_full = frm2bits(fout_full_txt)
