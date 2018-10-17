@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+'''
+Take raw .bits files and decode them to higher level functionality
+This output is intended for debugging and not directly related to FASM
+However, as of 2018-10-16, the output is being parsed to create FASM,
+so be mindful when changing output format
+
+TODO: 
+'''
 
 import sys, os, json, re
 
@@ -40,8 +48,9 @@ def get_database(segtype):
     return segbitsdb[segtype]
 
 
+'''
 def handle_split_segment(
-        segname, grid, bitdata, flag_d, flag_D, omit_empty_segs):
+        segname, grid, bitdata, flag_decode_emit, flag_decode_omit, omit_empty_segs):
     seg1, seg2 = segname.split(":")
 
     if seg1 in grid["tiles"]:
@@ -74,7 +83,8 @@ def handle_split_segment(
             segs.append((frame, word, seg))
 
     for _, _, seg in sorted(segs):
-        handle_segment(segname, grid, bitdata, flag_d, flag_D, omit_empty_segs)
+        handle_segment(segname, grid, bitdata, flag_decode_emit, flag_decode_omit, omit_empty_segs)
+'''
 
 
 def mk_segbits(seginfo, bitdata):
@@ -124,7 +134,7 @@ def print_unknown_bits(grid, bitdata):
                 print("bit_%08x_%03d_%02d" % (frame, wordidx, bitidx))
 
 
-def seg_decode(flag_d, seginfo, segbits, segtags):
+def seg_decode(flag_decode_emit, seginfo, segbits, segtags):
     try:
         for entry in get_database(seginfo["type"]):
             match_entry = True
@@ -137,13 +147,15 @@ def seg_decode(flag_d, seginfo, segbits, segtags):
                 for bit in entry[1:]:
                     if bit[0] != "!":
                         segbits.remove(bit)
-                if flag_d:
+                if flag_decode_emit:
                     segtags.add(entry[0])
     except NoDB:
         print("WARNING: failed to load DB for %s" % seginfo["type"])
 
 
-def handle_segment(segname, grid, bitdata, flag_d, flag_D, omit_empty_segs):
+def handle_segment(
+        segname, grid, bitdata, flag_decode_emit, flag_decode_omit,
+        omit_empty_segs):
     '''
     segname: tile name
     '''
@@ -152,7 +164,7 @@ def handle_segment(segname, grid, bitdata, flag_d, flag_D, omit_empty_segs):
 
     # ? probably legacy
     #if ":" in segname:
-    #    handle_split_segment(segname, grid, bitdata, flag_d, flag_D, omit_empty_segs)
+    #    handle_split_segment(segname, grid, bitdata, flag_decode_emit, flag_decode_omit, omit_empty_segs)
     #    return
 
     # compatibility?
@@ -168,13 +180,13 @@ def handle_segment(segname, grid, bitdata, flag_d, flag_D, omit_empty_segs):
     segtags = set()
     segbits = mk_segbits(seginfo, bitdata)
 
-    if flag_d or flag_D:
-        seg_decode(flag_d, seginfo, segbits, segtags)
+    if flag_decode_emit or flag_decode_omit:
+        seg_decode(flag_decode_emit, seginfo, segbits, segtags)
 
     # Found something to print?
     if not omit_empty_segs or len(segbits) > 0 or len(segtags) > 0:
         print()
-        print("tile %s" % segname)
+        print("seg %s" % (segname, ))
 
     for bit in sorted(segbits):
         print("bit %s" % bit)
@@ -204,6 +216,8 @@ def load_bitdata(bits_file):
 
 
 def mk_grid():
+    '''Load tilegrid, flattening all blocks into one dictionary'''
+
     with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         new_grid = json.load(f)
@@ -215,50 +229,74 @@ def mk_grid():
         bits = tile.get('bits', None)
         if not bits:
             continue
-        block = bits.get('CLB_IO_CLK', None)
-        if not block:
-            continue
-
-        grid['segments'][tile_name] = {
-            'baseaddr': [
-                block['baseaddr'],
-                block['offset'],
-            ],
-            'type': tile['type'],
-            'frames': block['frames'],
-            'words': block['words'],
-        }
+        for block_name, block in bits.items():
+            segname = mksegment(tile_name, block_name)
+            grid['segments'][segname] = {
+                'baseaddr': [
+                    block['baseaddr'],
+                    block['offset'],
+                ],
+                'type': tile['type'],
+                'frames': block['frames'],
+                'words': block['words'],
+                'tile_name': tile_name,
+                'block_name': block_name,
+            }
     return grid
+
+
+def mksegment(tile_name, block_name):
+    '''Create a segment name'''
+    return '%s:%s' % (tile_name, block_name)
+
+
+def tile_segnames(grid):
+    ret = []
+    for tile_name, tile in grid['tiles'].items():
+        for block_name in tile['bits'].keys():
+            ret.append(mksegment(tile_name, block_name))
+    return ret
 
 
 def run(
         bits_file,
-        segments,
+        segnames,
         omit_empty_segs=False,
-        flag_b=False,
-        flag_d=False,
-        flag_D=False):
+        flag_unknown_bits=False,
+        flag_decode_emit=False,
+        flag_decode_omit=False):
     grid = mk_grid()
 
     bitdata = load_bitdata(bits_file)
 
-    if flag_b:
+    if flag_unknown_bits:
         print_unknown_bits(grid, bitdata)
 
-    if segments:
-        for segment in segments:
-            handle_segment(
-                segment, grid, bitdata, flag_d, flag_D, omit_empty_segs)
+    # Default: print all
+    if segnames:
+        for i, segname in enumerate(segnames):
+            # Default to common tile config area if tile given without explicit block
+            if ':' not in segname:
+                segnames[i] = mksegment(segname, 'CLB_IO_CLK')
     else:
-        for segname in sorted(grid['tiles'].keys()):
-            handle_segment(
-                segname, grid, bitdata, flag_d, flag_D, omit_empty_segs)
+        segnames = sorted(tile_segnames(grid))
+    print('Segments: %u' % len(segnames))
+
+    # XXX: previously this was sorted by address, not name
+    # revisit?
+    for segname in segnames:
+        handle_segment(
+            segname, grid, bitdata, flag_decode_emit, flag_decode_omit,
+            omit_empty_segs)
 
 
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='')
+    # XXX: tool still works, but not well
+    # need to eliminate segments entirely
+    parser = argparse.ArgumentParser(
+        description='XXX: does not print all data?')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument(
@@ -277,10 +315,10 @@ def main():
         action='store_true',
         help='decode known segment bits and omit them in the output')
     parser.add_argument('bits_file', help='')
-    parser.add_argument('segments', nargs='*', help='')
+    parser.add_argument('tiles', nargs='*', help='')
     args = parser.parse_args()
 
-    run(args.bits_file, args.segments, args.z, args.b, args.d, args.D)
+    run(args.bits_file, args.tiles, args.z, args.b, args.d, args.D)
 
 
 if __name__ == '__main__':
