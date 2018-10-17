@@ -4,6 +4,7 @@ while [ -h "$XRAY_ENV_PATH" ]; do # resolve $XRAY_ENV_PATH until the file is no 
   XRAY_ENV_PATH="$(readlink "$XRAY_ENV_PATH")"
   [[ $XRAY_ENV_PATH != /* ]] && XRAY_ENV_PATH="$XRAY_UTILS_DIR/$XRAY_ENV_PATH" # if $XRAY_ENV_PATH was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
+export PYTHONPATH="${XRAY_DIR}:$PYTHONPATH"
 export XRAY_UTILS_DIR="$( cd -P "$( dirname "$XRAY_ENV_PATH" )" && pwd )"
 
 export XRAY_DIR="$( dirname "$XRAY_UTILS_DIR" )"
@@ -21,3 +22,6 @@ export XRAY_DBCHECK="bash ${XRAY_UTILS_DIR}/dbcheck.sh"
 export XRAY_MASKMERGE="bash ${XRAY_UTILS_DIR}/maskmerge.sh"
 export XRAY_SEGMATCH="${XRAY_TOOLS_DIR}/segmatch"
 export XRAY_SEGPRINT="python3 ${XRAY_UTILS_DIR}/segprint.py"
+export XRAY_BITS2FASM="python3 ${XRAY_UTILS_DIR}/bits2fasm.py"
+
+
