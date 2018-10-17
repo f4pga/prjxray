@@ -26,6 +26,26 @@ def comment(s):
 enumdb = dict()
 
 
+# TODO: migrate to library
+def process_db(tile_type, process):
+    fns = [
+        # sites
+        "%s/%s/segbits_%s.db" % (
+            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+            tile_type.lower()),
+        # interconnect
+        "%s/%s/segbits_int_%s.db" % (
+            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+            tile_type[-1].lower()),
+    ]
+
+    for fn in fns:
+        if os.path.exists(fn):
+            with open(fn, "r") as f:
+                for line in f:
+                    process(line)
+
+
 def get_enums(tile_type):
     if tile_type in enumdb:
         return enumdb[tile_type]
@@ -33,10 +53,8 @@ def get_enums(tile_type):
     enumdb[tile_type] = {}
 
     def process(l):
-        l = l.strip()
-
         # CLBLM_L.SLICEL_X1.ALUT.INIT[10] 29_14
-        parts = line.split()
+        parts = l.strip().split()
         name = parts[0]
         bit_vals = parts[1:]
 
@@ -44,23 +62,7 @@ def get_enums(tile_type):
         # only 1 bit => non-enumerated value
         enumdb[tile_type][name] = len(bit_vals) != 1
 
-    main_fn = "%s/%s/segbits_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        tile_type.lower())
-    int_fn = "%s/%s/segbits_int_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        tile_type[-1].lower())
-
-    if not os.path.exists(main_fn) or not os.path.exists(int_fn):
-        raise NoDB(tile_type)
-
-    with open(main_fn, "r") as f:
-        for line in f:
-            process(line)
-
-    with open(int_fn, "r") as f:
-        for line in f:
-            process(line)
+    process_db(tile_type, process)
 
     return enumdb[tile_type]
 
@@ -158,8 +160,15 @@ def tag_matched(entry, segbits):
             segbits.remove(bit)
 
 
-def seg_decode(seginfo, segbits):
+decode_warnings = set()
+
+
+def seg_decode(seginfo, segbits, verbose=False):
     fasms = set()
+
+    # already failed?
+    if seginfo["type"] in decode_warnings:
+        return fasms
 
     try:
         for entry in get_database(seginfo["type"]):
@@ -169,7 +178,9 @@ def seg_decode(seginfo, segbits):
             #fasms.add('%s.%s 1' % (seginfo['tile_name'], entry[0]))
             fasms.add(mk_fasm(seginfo, entry))
     except NoDB:
-        print("WARNING: failed to load DB for %s" % seginfo["type"])
+        verbose and comment(
+            "WARNING: failed to load DB for %s" % seginfo["type"])
+        decode_warnings.add(seginfo["type"])
     return fasms
 
 
@@ -184,7 +195,7 @@ def handle_segment(segname, grid, bitdata, verbose=False):
 
     segbits = mk_segbits(seginfo, bitdata)
 
-    fasms = seg_decode(seginfo, segbits)
+    fasms = seg_decode(seginfo, segbits, verbose=verbose)
 
     # Found something to print?
     if len(segbits) == 0 and len(fasms) == 0:

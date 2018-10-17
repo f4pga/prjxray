@@ -16,33 +16,41 @@ segbitsdb = dict()
 
 
 # TODO: migrate to library
+def process_db(tile_type, process):
+    fns = [
+        # sites
+        "%s/%s/segbits_%s.db" % (
+            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+            tile_type.lower()),
+        # interconnect
+        "%s/%s/segbits_int_%s.db" % (
+            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+            tile_type[-1].lower()),
+    ]
+
+    for fn in fns:
+        if os.path.exists(fn):
+            with open(fn, "r") as f:
+                for line in f:
+                    process(line)
+
+
 def get_database(tile_type):
+    tags = list()
+
     if tile_type in segbitsdb:
         return segbitsdb[tile_type]
 
-    main_fn = "%s/%s/segbits_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        tile_type.lower())
-    int_fn = "%s/%s/segbits_int_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        tile_type[-1].lower())
+    def process(l):
+        tags.append(l.split())
 
-    if not os.path.exists(main_fn) or not os.path.exists(int_fn):
+    process_db(tile_type, process)
+
+    if len(tags) == 0:
         raise NoDB(tile_type)
 
-    segbitsdb[tile_type] = list()
-
-    with open(main_fn, "r") as f:
-        for line in f:
-            line = line.split()
-            segbitsdb[tile_type].append(line)
-
-    with open(int_fn, "r") as f:
-        for line in f:
-            line = line.split()
-            segbitsdb[tile_type].append(line)
-
-    return segbitsdb[tile_type]
+    segbitsdb[tile_type] = tags
+    return tags
 
 
 def mk_segbits(seginfo, bitdata):
@@ -107,8 +115,16 @@ def tag_matched(entry, segbits):
             segbits.remove(bit)
 
 
-def seg_decode(flag_decode_emit, seginfo, segbits):
+decode_warnings = set()
+
+
+def seg_decode(flag_decode_emit, seginfo, segbits, verbose=False):
     segtags = set()
+
+    # already failed?
+    if seginfo["type"] in decode_warnings:
+        return segtags
+
     try:
         for entry in get_database(seginfo["type"]):
             if not tagmatch(entry, segbits):
@@ -117,13 +133,20 @@ def seg_decode(flag_decode_emit, seginfo, segbits):
             if flag_decode_emit:
                 segtags.add(entry[0])
     except NoDB:
-        print("WARNING: failed to load DB for %s" % seginfo["type"])
+        verbose and print(
+            "WARNING: failed to load DB for %s" % seginfo["type"])
+        decode_warnings.add(seginfo["type"])
     return segtags
 
 
 def handle_segment(
-        segname, grid, bitdata, flag_decode_emit, flag_decode_omit,
-        omit_empty_segs):
+        segname,
+        grid,
+        bitdata,
+        flag_decode_emit,
+        flag_decode_omit,
+        omit_empty_segs,
+        verbose=False):
 
     assert segname
 
@@ -135,7 +158,8 @@ def handle_segment(
     segbits = mk_segbits(seginfo, bitdata)
 
     if flag_decode_emit or flag_decode_omit:
-        segtags = seg_decode(flag_decode_emit, seginfo, segbits)
+        segtags = seg_decode(
+            flag_decode_emit, seginfo, segbits, verbose=verbose)
     else:
         segtags = set()
 
@@ -222,7 +246,8 @@ def run(
         omit_empty_segs=False,
         flag_unknown_bits=False,
         flag_decode_emit=False,
-        flag_decode_omit=False):
+        flag_decode_omit=False,
+        verbose=False):
     grid = mk_grid()
 
     bitdata = load_bitdata(bits_file)
@@ -244,8 +269,13 @@ def run(
     # revisit?
     for segname in segnames:
         handle_segment(
-            segname, grid, bitdata, flag_decode_emit, flag_decode_omit,
-            omit_empty_segs)
+            segname,
+            grid,
+            bitdata,
+            flag_decode_emit,
+            flag_decode_omit,
+            omit_empty_segs,
+            verbose=verbose)
 
 
 def main():
@@ -277,7 +307,9 @@ def main():
         'segnames', nargs='*', help='List of tile or tile:block to print')
     args = parser.parse_args()
 
-    run(args.bits_file, args.segnames, args.z, args.b, args.d, args.D)
+    run(
+        args.bits_file, args.segnames, args.z, args.b, args.d, args.D,
+        args.verbose)
 
 
 if __name__ == '__main__':

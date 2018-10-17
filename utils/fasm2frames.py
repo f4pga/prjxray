@@ -23,6 +23,26 @@ def parsebit(val):
     return int(seg_word_column), int(word_bit_n), isset
 
 
+# TODO: migrate to library
+def process_db(tile_type, process):
+    fns = [
+        # sites
+        "%s/%s/segbits_%s.db" % (
+            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+            tile_type.lower()),
+        # interconnect
+        "%s/%s/segbits_int_%s.db" % (
+            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+            tile_type[-1].lower()),
+    ]
+
+    for fn in fns:
+        if os.path.exists(fn):
+            with open(fn, "r") as f:
+                for line in f:
+                    process(line)
+
+
 '''
 Loosely based on segprint function
 Maybe better to return as two distinct dictionaries?
@@ -44,10 +64,8 @@ def get_database(tile_type):
     segbitsdb[tile_type] = {}
 
     def process(l):
-        l = l.strip()
-
         # CLBLM_L.SLICEL_X1.ALUT.INIT[10] 29_14
-        parts = line.split()
+        parts = l.strip().split()
         name = parts[0]
         bit_vals = parts[1:]
 
@@ -59,6 +77,7 @@ def get_database(tile_type):
                 raise Exception(
                     "Expect single bit DB entries to be set, got %s" % l)
             # Treat like an enumerated value with keys 0 or 1
+            assert name not in segbitsdb[tile_type]
             segbitsdb[tile_type][name] = {
                 '0': [(seg_word_column, word_bit_n, 0)],
                 '1': [(seg_word_column, word_bit_n, 1)],
@@ -67,30 +86,14 @@ def get_database(tile_type):
             # An enumerated value
             # Split the base name and selected key
             m = re.match(r'(.+)[.](.+)', name)
-            name = m.group(1)
+            namepart = m.group(1)
             key = m.group(2)
 
             # May or may not be the first key encountered
-            bits_map = segbitsdb[tile_type].setdefault(name, {})
+            bits_map = segbitsdb[tile_type].setdefault(namepart, {})
             bits_map[key] = [parsebit(x) for x in bit_vals]
 
-    main_fn = "%s/%s/segbits_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        tile_type.lower())
-    int_fn = "%s/%s/segbits_int_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        tile_type[-1].lower())
-
-    if not os.path.exists(main_fn) or not os.path.exists(int_fn):
-        raise Exception(tile_type)
-
-    with open(main_fn, "r") as f:
-        for line in f:
-            process(line)
-
-    with open(int_fn, "r") as f:
-        for line in f:
-            process(line)
+    process_db(tile_type, process)
 
     return segbitsdb[tile_type]
 
