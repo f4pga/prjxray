@@ -549,7 +549,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=
-        'Generate a simple wrapper to test synthesizing an arbitrary verilog module'
+        'Generate tilegrid.json from bitstream deltas'
     )
 
     parser.add_argument('--verbose', action='store_true', help='')
