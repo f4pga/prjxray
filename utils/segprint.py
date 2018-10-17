@@ -2,10 +2,6 @@
 '''
 Take raw .bits files and decode them to higher level functionality
 This output is intended for debugging and not directly related to FASM
-However, as of 2018-10-16, the output is being parsed to create FASM,
-so be mindful when changing output format
-
-TODO: 
 '''
 
 import sys, os, json, re
