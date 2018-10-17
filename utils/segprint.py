@@ -49,45 +49,6 @@ def get_database(tile_type):
     return segbitsdb[tile_type]
 
 
-'''
-def handle_split_segment(
-        segname, grid, bitdata, flag_decode_emit, flag_decode_omit, omit_empty_segs):
-    seg1, seg2 = segname.split(":")
-
-    if seg1 in grid["tiles"]:
-        seg1 = grid["tiles"][seg1]["segment"]
-
-    if seg2 in grid["tiles"]:
-        seg2 = grid["tiles"][seg2]["segment"]
-
-    seginfo1 = grid["segments"][seg1]
-    seginfo2 = grid["segments"][seg2]
-
-    frame1 = int(seginfo1["baseaddr"][0], 16)
-    word1 = int(seginfo1["baseaddr"][1])
-
-    frame2 = int(seginfo2["baseaddr"][0], 16)
-    word2 = int(seginfo2["baseaddr"][1])
-
-    if frame1 > frame2:
-        frame1, frame2 = frame2, frame1
-
-    if word1 > word2:
-        word1, word2 = word2, word1
-
-    segs = list()
-
-    for seg, seginfo in sorted(grid["segments"].items()):
-        frame = int(seginfo["baseaddr"][0], 16)
-        word = int(seginfo["baseaddr"][1])
-        if frame1 <= frame <= frame2 and word1 <= word <= word2:
-            segs.append((frame, word, seg))
-
-    for _, _, seg in sorted(segs):
-        handle_segment(segname, grid, bitdata, flag_decode_emit, flag_decode_omit, omit_empty_segs)
-'''
-
-
 def mk_segbits(seginfo, bitdata):
     baseframe = int(seginfo["baseaddr"][0], 16)
     basewordidx = int(seginfo["baseaddr"][1])
@@ -167,21 +128,8 @@ def seg_decode(flag_decode_emit, seginfo, segbits):
 def handle_segment(
         segname, grid, bitdata, flag_decode_emit, flag_decode_omit,
         omit_empty_segs):
-    '''
-    segname: tile name
-    '''
 
     assert segname
-
-    # ? probably legacy
-    #if ":" in segname:
-    #    handle_split_segment(segname, grid, bitdata, flag_decode_emit, flag_decode_omit, omit_empty_segs)
-    #    return
-
-    # compatibility?
-    # now dealing only with tile names...?
-    #if segname in grid["tiles"]:
-    #    segname = grid["tiles"][segname]["segment"]
 
     # only print bitstream tiles
     if segname not in grid["segments"]:
