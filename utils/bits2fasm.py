@@ -173,7 +173,7 @@ def seg_decode(seginfo, segbits):
     return fasms
 
 
-def handle_segment(segname, grid, bitdata):
+def handle_segment(segname, grid, bitdata, verbose=False):
 
     assert segname
 
@@ -196,8 +196,8 @@ def handle_segment(segname, grid, bitdata):
     for fasm in sorted(fasms):
         print(fasm)
 
-    if len(segbits) > 0:
-        comment('WARNING: %u unknown bits' % len(segbits))
+    if verbose and len(segbits) > 0:
+        comment('%u unknown bits' % len(segbits))
         for bit in sorted(segbits):
             comment("bit %s" % bit)
 
@@ -284,7 +284,7 @@ def run(bits_file, segnames, verbose=False):
     # XXX: previously this was sorted by address, not name
     # revisit?
     for segname in segnames:
-        handle_segment(segname, grid, bitdata)
+        handle_segment(segname, grid, bitdata, verbose=verbose)
 
 
 def main():
