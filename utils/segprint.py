@@ -20,33 +20,33 @@ segbitsdb = dict()
 
 
 # TODO: migrate to library
-def get_database(segtype):
-    if segtype in segbitsdb:
-        return segbitsdb[segtype]
+def get_database(tile_type):
+    if tile_type in segbitsdb:
+        return segbitsdb[tile_type]
 
     main_fn = "%s/%s/segbits_%s.db" % (
         os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        segtype.lower())
+        tile_type.lower())
     int_fn = "%s/%s/segbits_int_%s.db" % (
         os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        segtype[-1].lower())
+        tile_type[-1].lower())
 
     if not os.path.exists(main_fn) or not os.path.exists(int_fn):
-        raise NoDB(segtype)
+        raise NoDB(tile_type)
 
-    segbitsdb[segtype] = list()
+    segbitsdb[tile_type] = list()
 
     with open(main_fn, "r") as f:
         for line in f:
             line = line.split()
-            segbitsdb[segtype].append(line)
+            segbitsdb[tile_type].append(line)
 
     with open(int_fn, "r") as f:
         for line in f:
             line = line.split()
-            segbitsdb[segtype].append(line)
+            segbitsdb[tile_type].append(line)
 
-    return segbitsdb[segtype]
+    return segbitsdb[tile_type]
 
 
 '''

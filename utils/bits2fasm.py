@@ -23,38 +23,104 @@ def comment(s):
     print('# %s' % s)
 
 
+enumdb = dict()
+
+
+def get_enums(tile_type):
+    if tile_type in enumdb:
+        return enumdb[tile_type]
+
+    enumdb[tile_type] = {}
+
+    def process(l):
+        l = l.strip()
+
+        # CLBLM_L.SLICEL_X1.ALUT.INIT[10] 29_14
+        parts = line.split()
+        name = parts[0]
+        bit_vals = parts[1:]
+
+        # Assumption
+        # only 1 bit => non-enumerated value
+        enumdb[tile_type][name] = len(bit_vals) != 1
+
+    main_fn = "%s/%s/segbits_%s.db" % (
+        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+        tile_type.lower())
+    int_fn = "%s/%s/segbits_int_%s.db" % (
+        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+        tile_type[-1].lower())
+
+    if not os.path.exists(main_fn) or not os.path.exists(int_fn):
+        raise NoDB(tile_type)
+
+    with open(main_fn, "r") as f:
+        for line in f:
+            process(line)
+
+    with open(int_fn, "r") as f:
+        for line in f:
+            process(line)
+
+    return enumdb[tile_type]
+
+
+def isenum(tilename, tag):
+    return get_enums(tilename)[tag]
+
+
 # cache
 segbitsdb = dict()
 
 
 # TODO: migrate to library
-def get_database(segtype):
-    if segtype in segbitsdb:
-        return segbitsdb[segtype]
+def get_database(tile_type):
+    if tile_type in segbitsdb:
+        return segbitsdb[tile_type]
 
     main_fn = "%s/%s/segbits_%s.db" % (
         os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        segtype.lower())
+        tile_type.lower())
     int_fn = "%s/%s/segbits_int_%s.db" % (
         os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-        segtype[-1].lower())
+        tile_type[-1].lower())
 
     if not os.path.exists(main_fn) or not os.path.exists(int_fn):
-        raise NoDB(segtype)
+        raise NoDB(tile_type)
 
-    segbitsdb[segtype] = list()
+    segbitsdb[tile_type] = list()
 
     with open(main_fn, "r") as f:
         for line in f:
             line = line.split()
-            segbitsdb[segtype].append(line)
+            segbitsdb[tile_type].append(line)
 
     with open(int_fn, "r") as f:
         for line in f:
             line = line.split()
-            segbitsdb[segtype].append(line)
+            segbitsdb[tile_type].append(line)
 
-    return segbitsdb[segtype]
+    return segbitsdb[tile_type]
+
+
+def mk_fasm(segj, entry):
+    tile_name = segj['tile_name']
+
+    # ex: CLBLL_L.SLICEL_X0.AFF.DMUX.O6
+    tag = entry[0]
+    m = re.match(r'([A-Za-z0-9_]+)[.](.*)', tag)
+    # tile_type = m.group(1)
+    # the postfix, O6 in the above example
+    tag_post = m.group(2)
+
+    if not isenum(segj['type'], tag):
+        return '%s.%s 1' % (tile_name, tag_post)
+    else:
+        # Make the selection an argument of the configruation
+        m = re.match(r'(.*)[.]([A-Za-z0-9_]+)', tag_post)
+        which = m.group(1)
+        value = m.group(2)
+        return '%s.%s %s' % (tile_name, which, value)
 
 
 def mk_segbits(seginfo, bitdata):
@@ -100,7 +166,8 @@ def seg_decode(seginfo, segbits):
             if not tagmatch(entry, segbits):
                 continue
             tag_matched(entry, segbits)
-            fasms.add('%s.%s 1' % (seginfo['tile_name'], entry[0]))
+            #fasms.add('%s.%s 1' % (seginfo['tile_name'], entry[0]))
+            fasms.add(mk_fasm(seginfo, entry))
     except NoDB:
         print("WARNING: failed to load DB for %s" % seginfo["type"])
     return fasms
