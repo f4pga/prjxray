@@ -23,5 +23,6 @@ export XRAY_MASKMERGE="bash ${XRAY_UTILS_DIR}/maskmerge.sh"
 export XRAY_SEGMATCH="${XRAY_TOOLS_DIR}/segmatch"
 export XRAY_SEGPRINT="python3 ${XRAY_UTILS_DIR}/segprint.py"
 export XRAY_BITS2FASM="python3 ${XRAY_UTILS_DIR}/bits2fasm.py"
+export XRAY_FASM2BITS="python3 ${XRAY_UTILS_DIR}/fasm2bits.py"
 
 
