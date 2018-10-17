@@ -111,6 +111,8 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
     tile_baseaddrs = dict()
 
     verbose and print('')
+    verbose and print('%u tiles' % len(tiles))
+    added = 0
     for tile in tiles:
         for site_name in tile["sites"].keys():
             if site_name not in site_baseaddr:
@@ -127,7 +129,9 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
             verbose and print(
                 "baseaddr: %s.%s @ %s.0x%08x" %
                 (tile["name"], site_name, bt, framebaseaddr))
+            added += 1
 
+    assert added
     return tile_baseaddrs
 
 
@@ -465,7 +469,7 @@ def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
         block["height"] = height
 
 
-def add_bits(database, segments):
+def db_add_bits(database, segments):
     '''Transfer segment data into tiles'''
     for segment_name in segments.keys():
         for block_type, (baseaddr,
@@ -499,18 +503,15 @@ def add_bits(database, segments):
                         height)
 
 
-def annotate_segments(database, segments):
-    '''
+def db_add_segments(database, segments):
     # TODO: Migrate to new tilegrid format via library.  This data is added for
     # compability with unconverted tools.  Update tools then remove this data from
     # tilegrid.json.
+    # looks like only htmlgen is using this?
     for tiledata in database.values():
         if "segment" in tiledata:
             segment = tiledata["segment"]
-            tiledata["frames"] = segments[segment]["frames"]
-            tiledata["words"] = segments[segment]["words"]
             tiledata["segment_type"] = segments[segment]["type"]
-    '''
 
 
 def run(tiles_fn, json_fn, deltas_fns, verbose=False):
@@ -530,10 +531,8 @@ def run(tiles_fn, json_fn, deltas_fns, verbose=False):
     seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=verbose)
     seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=verbose)
 
-    add_bits(database, segments)
-    annotate_segments(database, segments)
-
-    #database = {'BRAM_L_X6Y50': database["BRAM_L_X6Y50"], 'BRAM_L_X6Y80': database["BRAM_L_X6Y80"]}
+    db_add_bits(database, segments)
+    db_add_segments(database, segments)
 
     # Save
     json.dump(
@@ -546,6 +545,7 @@ def run(tiles_fn, json_fn, deltas_fns, verbose=False):
 
 def main():
     import argparse
+    import glob
 
     parser = argparse.ArgumentParser(
         description=
@@ -557,10 +557,14 @@ def main():
     parser.add_argument(
         '--tiles', default='tiles.txt', help='Input tiles.txt tcl output')
     parser.add_argument(
-        'deltas', nargs='+', help='.bit diffs to create base addresses from')
+        'deltas', nargs='*', help='.bit diffs to create base addresses from')
     args = parser.parse_args()
 
-    run(args.tiles, args.out, args.deltas, verbose=args.verbose)
+    deltas = args.deltas
+    if not args.deltas:
+        deltas = glob.glob('*.delta')
+
+    run(args.tiles, args.out, deltas, verbose=args.verbose)
 
 
 if __name__ == '__main__':
