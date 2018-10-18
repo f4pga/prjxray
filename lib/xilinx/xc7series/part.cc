@@ -11,7 +11,7 @@ absl::optional<Part> Part::FromFile(const std::string& path) {
 	try {
 		YAML::Node yaml = YAML::LoadFile(path);
 		return yaml.as<Part>();
-	} catch (YAML::Exception e) {
+	} catch (YAML::Exception& e) {
 		return {};
 	}
 }
