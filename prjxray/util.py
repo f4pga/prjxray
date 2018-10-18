@@ -71,3 +71,8 @@ def gen_sites(site_types=None, tilegrid=None):
 #print(list(gen_tiles(['CLBLL_L', 'CLBLL_R', 'CLBLM_L', 'CLBLM_R'])))
 #print(list(gen_sites(['SLICEL', 'SLICEM'])))
 #print(list(gen_sites(['SLICEM'])))
+
+
+# we know that all bits for CLB MUXes are in frames 30 and 31, so filter all other bits
+def bitfilter_clb_mux(frame_idx, bit_idx):
+    return frame_idx in [30, 31]

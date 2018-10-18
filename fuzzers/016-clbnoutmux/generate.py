@@ -3,6 +3,7 @@
 import sys, os, re
 
 from prjxray.segmaker import Segmaker
+from prjxray import util
 
 segmk = Segmaker("design.bits")
 cache = dict()
@@ -69,8 +70,6 @@ for loc, muxes in cache.items():
 
 
 def bitfilter(frame_idx, bit_idx):
-    assert os.getenv("XRAY_DATABASE") == "artix7"
-
     # locations of A5MA, B5MA, C5MA, D5MA bits. because of the way we generate specimens
     # in this fuzzer we get some aliasing with those bits, so we have to manually exclude
     # them. (Maybe FIXME: read the bit locations from the database files)
@@ -86,8 +85,7 @@ def bitfilter(frame_idx, bit_idx):
     ]:
         return False
 
-    # we know that all bits for those MUXes are in frames 30 and 31, so filter all other bits
-    return frame_idx in [30, 31]
+    return util.bitfilter_clb_mux(frame_idx, bit_idx)
 
 
 segmk.compile(bitfilter=bitfilter)
