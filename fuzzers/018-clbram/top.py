@@ -25,8 +25,6 @@ CLBN = 50
 print('//Requested CLBs: %s' % str(CLBN))
 
 
-# Rearranged to sweep Y so that carry logic is easy to allocate
-# XXX: careful...if odd number of Y in ROI will break carry
 def gen_slicems():
     for _tile_name, site_name, _site_type in util.gen_sites(['SLICEM']):
         yield site_name
