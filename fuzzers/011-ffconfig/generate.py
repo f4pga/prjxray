@@ -92,29 +92,29 @@ with open("design.txt", "r") as f:
         is5 = '5' in ff_name
 
         if used:
-            segmk.addtag(site, "%s.ZINI" % ff_name, 1 ^ init)
+            segmk.add_site_tag(site, "%s.ZINI" % ff_name, 1 ^ init)
 
             # CLKINV turns out to be more complicated than origianlly thought
             if isff(cel_prim):
-                segmk.addtag(site, "CLKINV", cinv)
+                segmk.add_site_tag(site, "CLKINV", cinv)
             else:
-                segmk.addtag(site, "CLKINV", 1 ^ cinv)
+                segmk.add_site_tag(site, "CLKINV", 1 ^ cinv)
 
             # Synchronous vs asynchronous FF
             # Unlike most bits, shared between all CLB FFs
-            segmk.addtag(site, "FFSYNC", cel_prim in ('FDSE', 'FDRE'))
+            segmk.add_site_tag(site, "FFSYNC", cel_prim in ('FDSE', 'FDRE'))
 
             # Latch bit
             # Only applies to LUT6 (non-5) FF's
             if not is5:
-                segmk.addtag(site, "LATCH", isl(cel_prim))
+                segmk.add_site_tag(site, "LATCH", isl(cel_prim))
             '''
             On name:
             The primitives you listed have a control input to set the FF value to zero (clear/reset),
             the other three primitives have a control input that sets the FF value to one.
             Z => inversion
             '''
-            segmk.addtag(
+            segmk.add_site_tag(
                 site, "%s.ZRST" % ff_name,
                 cel_prim in ('FDRE', 'FDCE', 'LDCE'))
 

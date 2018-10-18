@@ -53,7 +53,7 @@ for l in f:
 
     # add the 1-tag for this connection
     tag = "%sOUTMUX.%s" % (which, src)
-    segmk.addtag(loc, tag, 1)
+    segmk.add_site_tag(loc, tag, 1)
 
     # remove this MUX from the cache, preventing generation of 0-tags for this MUX
     cache[loc].remove(which)
@@ -66,7 +66,7 @@ for loc, muxes in cache.items():
             if src == "F8" and which not in "B": continue
             if src == "5Q": src = which + "5Q"
             tag = "%sOUTMUX.%s" % (which, src)
-            segmk.addtag(loc, tag, 0)
+            segmk.add_site_tag(loc, tag, 0)
 
 
 def bitfilter(frame_idx, bit_idx):

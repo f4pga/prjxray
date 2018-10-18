@@ -26,7 +26,7 @@ for l in f:
     # parameter nFORCE_R0=1;
     # .CE(din[0] | FORCE_CE1),
     # .R(din[1] & nFORCE_R0),
-    segmk.addtag(site, "CEUSEDMUX", ce ^ 1)
-    segmk.addtag(site, "SRUSEDMUX", r)
+    segmk.add_site_tag(site, "CEUSEDMUX", ce ^ 1)
+    segmk.add_site_tag(site, "SRUSEDMUX", r)
 segmk.compile()
 segmk.write()

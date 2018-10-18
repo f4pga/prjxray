@@ -36,9 +36,9 @@ for tile, pips_nodes in tiledata.items():
 
     for dst, src in pipdata:
         if (dst, src) in pips:
-            segmk.addtag(tile, "%s.%s" % (dst, src), 1)
+            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
         elif dst not in nodes and src not in nodes:
-            segmk.addtag(tile, "%s.%s" % (dst, src), 0)
+            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
 
 def bitfilter(frame_idx, bit_idx):

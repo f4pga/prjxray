@@ -27,9 +27,9 @@ for l in f:
     c31 = int(c31)
     b31 = int(b31)
     a31 = int(a31)
-    segmk.addtag(loc, "ADI1MUX.AI", 1 ^ a31)
-    segmk.addtag(loc, "BDI1MUX.BI", 1 ^ b31)
-    segmk.addtag(loc, "CDI1MUX.CI", 1 ^ c31)
+    segmk.add_site_tag(loc, "ADI1MUX.AI", 1 ^ a31)
+    segmk.add_site_tag(loc, "BDI1MUX.BI", 1 ^ b31)
+    segmk.add_site_tag(loc, "CDI1MUX.CI", 1 ^ c31)
 
 segmk.compile()
 segmk.write()

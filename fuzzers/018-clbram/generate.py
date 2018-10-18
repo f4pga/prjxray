@@ -40,10 +40,10 @@ for l in f:
     l = l.strip()
     module, loc, p0, p1, p2, p3 = l.split(',')
 
-    segmk.addtag(
+    segmk.add_site_tag(
         loc, "WA7USED",
         module in ('my_RAM128X1D', 'my_RAM128X1S', 'my_RAM256X1S'))
-    segmk.addtag(loc, "WA8USED", module == 'my_RAM256X1S')
+    segmk.add_site_tag(loc, "WA8USED", module == 'my_RAM256X1S')
 
     # (a, b, c, d)
     # Size set for RAM32X1S, RAM32X1D, and SRL16E
@@ -59,7 +59,8 @@ for l in f:
 
         # Clock Enable (CE) clock gate only enabled if we have clocked elements
         # A pure LUT6 does not, but everything else should
-        segmk.addtag(loc, "WEMUX.CE", bels != ['LUT6', 'LUT6', 'LUT6', 'LUT6'])
+        segmk.add_site_tag(
+            loc, "WEMUX.CE", bels != ['LUT6', 'LUT6', 'LUT6', 'LUT6'])
 
         beli = 0
         for which, bel in zip('ABCD', bels):
@@ -123,10 +124,10 @@ for l in f:
 
     # Now commit bits after marking 1's
     for beli, bel in enumerate('ABCD'):
-        segmk.addtag(loc, "%sLUT.RAM" % bel, ram[beli])
-        segmk.addtag(loc, "%sLUT.SRL" % bel, srl[beli])
+        segmk.add_site_tag(loc, "%sLUT.RAM" % bel, ram[beli])
+        segmk.add_site_tag(loc, "%sLUT.SRL" % bel, srl[beli])
         # FIXME
-        module == segmk.addtag(loc, "%sLUT.SMALL" % bel, size[beli])
+        module == segmk.add_site_tag(loc, "%sLUT.SMALL" % bel, size[beli])
 
 
 def bitfilter(frame_idx, bit_idx):
