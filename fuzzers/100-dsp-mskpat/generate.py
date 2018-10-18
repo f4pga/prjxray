@@ -20,8 +20,9 @@ with open("design_%s.txt" % sys.argv[1], "r") as f:
         pattern = int(pattern.replace("48'h", ""), 16)
 
         for i in range(48):
-            segmk.addtag(tile, "%s.MASK[%d]" % (dsp, i), (mask >> i) & 1)
-            segmk.addtag(tile, "%s.PATTERN[%d]" % (dsp, i), (pattern >> i) & 1)
+            segmk.add_tile_tag(tile, "%s.MASK[%d]" % (dsp, i), (mask >> i) & 1)
+            segmk.add_tile_tag(
+                tile, "%s.PATTERN[%d]" % (dsp, i), (pattern >> i) & 1)
 
 segmk.compile()
 segmk.write(suffix=sys.argv[1])

@@ -53,7 +53,7 @@ for l in f:
 
     # add the 1-tag for this connection
     tag = "%sFFMUX.%s" % (which, src)
-    segmk.addtag(loc, tag, 1)
+    segmk.add_site_tag(loc, tag, 1)
 
     # remove this MUX from the cache, preventing generation of 0-tags for this MUX
     cache[loc].remove(which)
@@ -66,7 +66,7 @@ for loc, muxes in cache.items():
             if src == "F8" and which not in "B": continue
             if src == "AX": src = which + "X"
             tag = "%sFFMUX.%s" % (which, src)
-            segmk.addtag(loc, tag, 0)
+            segmk.add_site_tag(loc, tag, 0)
 
 
 # we know that all bits for those MUXes are in frames 30 and 31, so filter all other bits

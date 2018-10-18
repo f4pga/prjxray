@@ -23,6 +23,6 @@ for l in f:
     which = bel[0]
 
     # One bit, set on O5
-    segmk.addtag(loc, "CARRY4.%cCY0" % which, module == 'clb_NCY0_O5')
+    segmk.add_site_tag(loc, "CARRY4.%cCY0" % which, module == 'clb_NCY0_O5')
 segmk.compile()
 segmk.write()

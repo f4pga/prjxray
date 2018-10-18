@@ -50,9 +50,9 @@ for tile, pips_srcs_dsts in tiledata.items():
         if pip in ignpip:
             pass
         elif pip in pips:
-            segmk.addtag(tile, "%s.%s" % (dst, src), 1)
+            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
         elif src_dst[1] not in dsts:
-            segmk.addtag(tile, "%s.%s" % (dst, src), 0)
+            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
 
 def bitfilter(frame_idx, bit_idx):

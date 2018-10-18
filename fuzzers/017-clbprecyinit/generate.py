@@ -24,7 +24,7 @@ for l in f:
     '''
     srcs = ('0', '1', 'AX', 'CIN')
     for asrc in srcs:
-        segmk.addtag(loc, "PRECYINIT.%s" % asrc, int(src == asrc))
+        segmk.add_site_tag(loc, "PRECYINIT.%s" % asrc, int(src == asrc))
 
 segmk.compile()
 segmk.write()
