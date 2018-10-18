@@ -132,7 +132,6 @@ for l in f:
 def bitfilter(frame_idx, bit_idx):
     # Hack to remove aliased PIP bits on CE
     # We should either mix up routing more or exclude previous DB entries
-    assert os.getenv("XRAY_DATABASE") == "artix7"
     return (frame_idx, bit_idx) not in [(0, 27), (1, 25), (1, 26), (1, 29)]
 
 

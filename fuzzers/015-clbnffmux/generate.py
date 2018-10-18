@@ -3,6 +3,7 @@
 import sys, os, re
 
 from prjxray.segmaker import Segmaker
+from prjxray import util
 
 segmk = Segmaker("design.bits")
 cache = dict()
@@ -67,12 +68,5 @@ for loc, muxes in cache.items():
             tag = "%sFFMUX.%s" % (which, src)
             segmk.add_site_tag(loc, tag, 0)
 
-
-# we know that all bits for those MUXes are in frames 30 and 31, so filter all other bits
-def bitfilter(frame_idx, bit_idx):
-    assert os.getenv("XRAY_DATABASE") == "artix7"
-    return frame_idx in [30, 31]
-
-
-segmk.compile(bitfilter=bitfilter)
+segmk.compile(bitfilter=util.bitfilter_clb_mux)
 segmk.write()
