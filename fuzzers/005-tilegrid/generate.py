@@ -548,9 +548,7 @@ def main():
     import glob
 
     parser = argparse.ArgumentParser(
-        description=
-        'Generate tilegrid.json from bitstream deltas'
-    )
+        description='Generate tilegrid.json from bitstream deltas')
 
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--out', default='/dev/stdout', help='Output JSON')
