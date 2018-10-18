@@ -15,7 +15,8 @@ class NoDB(Exception):
 segbitsdb = dict()
 
 
-# TODO: migrate to library
+# int and sites are loaded together so that bit coverage can be checked together
+# however, as currently written, each segment is essentially printed twice
 def process_db(tile_type, process):
     fns = [
         # sites
