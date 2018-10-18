@@ -2,8 +2,7 @@
 
 import sys, os, re
 
-sys.path.append("../../../utils/")
-from segmaker import segmaker
+from prjxray.segmaker import Segmaker
 
 tags = dict()
 en_tags = dict()
@@ -24,7 +23,7 @@ for arg in sys.argv[1:]:
 
 for arg in sys.argv[1:]:
     print("Processing %s." % arg)
-    segmk = segmaker(arg + ".bits")
+    segmk = Segmaker(arg + ".bits")
 
     tiledata = dict()
     pipdata = dict()

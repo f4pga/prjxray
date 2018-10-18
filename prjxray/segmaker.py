@@ -40,7 +40,7 @@ def json_hex2i(s):
     return int(s[2:], 16)
 
 
-class segmaker:
+class Segmaker:
     def __init__(self, bitsfile, verbose=None):
         self.verbose = verbose if verbose is not None else os.getenv(
             'VERBOSE', 'N') == 'Y'

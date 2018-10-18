@@ -2,10 +2,9 @@
 
 import sys, os, re
 
-sys.path.append("../../../utils/")
-from segmaker import segmaker
+from prjxray.segmaker import Segmaker
 
-segmk = segmaker("design_%s.bits" % sys.argv[1])
+segmk = Segmaker("design_%s.bits" % sys.argv[1])
 
 pipdata = dict()
 ignpip = set()
