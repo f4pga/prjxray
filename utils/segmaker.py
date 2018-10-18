@@ -1,4 +1,7 @@
 '''
+NOTE: "segments" as used in this file is mostly unrelated to tilegrid.json usage
+ie tilegrid.json has names like SEG_CLBLL_L_X2Y50 where as here they are tile based and named like seg_00400100_02
+Instead of using tilegrid.json "segments, segments are formed by looking for tiles that use the same address + offset
 
 Sample segdata.txt output (from 015-clbnffmux/specimen_001/segdata_clbll_r.txt):
 seg 00020880_048
@@ -14,6 +17,8 @@ import os, json, re
 
 XRAY_DATABASE = os.getenv("XRAY_DATABASE")
 XRAY_DIR = os.getenv("XRAY_DIR")
+
+BLOCK_TYPES = set(('CLB_IO_CLK', 'BLOCK_RAM', 'CFG_CLB'))
 
 
 def recurse_sum(x):
@@ -36,8 +41,9 @@ def json_hex2i(s):
 
 
 class segmaker:
-    def __init__(self, bitsfile, verbose=False):
-        self.verbose = verbose
+    def __init__(self, bitsfile, verbose=None):
+        self.verbose = verbose if verbose is not None else os.getenv(
+            'VERBOSE', 'N') == 'Y'
         self.load_grid()
         self.load_bits(bitsfile)
         '''
@@ -46,7 +52,8 @@ class segmaker:
         -site: ex 'SLICE_X13Y101'
         -name: ex 'CLB.SLICE_X0.AFF.DMUX.CY'
         '''
-        self.tags = dict()
+        self.site_tags = dict()
+        self.tile_tags = dict()
 
         # output after compiling
         self.segments_by_type = None
@@ -94,7 +101,7 @@ class segmaker:
                 'Loaded bits: %u bits in %u base frames' %
                 (recurse_sum(self.bits), len(self.bits)))
 
-    def addtag(self, site_tile, name, value):
+    def add_site_tag(self, site, name, value):
         '''
         XXX: can add tags in two ways:
         -By site name
@@ -107,7 +114,10 @@ class segmaker:
         self.addtag('SLICE_X13Y101', 'CLB.SLICE_X0.AFF.DMUX.CY', 1)
         Indicates that the SLICE_X13Y101 site has an element called 'CLB.SLICE_X0.AFF.DMUX.CY'
         '''
-        self.tags.setdefault(site_tile, dict())[name] = value
+        self.site_tags.setdefault(site, dict())[name] = value
+
+    def add_tile_tag(self, tile, name, value):
+        self.tile_tags.setdefault(tile, dict())[name] = value
 
     def compile(self, bitfilter=None):
         print("Compiling segment data.")
@@ -131,11 +141,20 @@ class segmaker:
             tiledata: tilegrid info for this tile
             '''
             assert segname not in segments
-            segments[segname] = {"bits": set(), "tags": dict()}
+            segment = segments.setdefault(
+                segname,
+                {
+                    "bits": set(),
+                    "tags": dict(),
+                    # verify new entries match this
+                    "offset": bitj["offset"],
+                    "words": bitj["words"],
+                    "frames": bitj["frames"],
+                })
 
-            base_frame = json_hex2i(tiledata["baseaddr"])
-            for wordidx in range(tiledata["offset"],
-                                 tiledata["offset"] + tiledata["height"]):
+            base_frame = json_hex2i(bitj["baseaddr"])
+            for wordidx in range(bitj["offset"],
+                                 bitj["offset"] + bitj["height"]):
                 if base_frame not in self.bits:
                     continue
                 if wordidx not in self.bits[base_frame]:
@@ -144,13 +163,14 @@ class segmaker:
                         base_frame][wordidx]:
                     bitname_frame = bit_frame - base_frame
                     bitname_bit = 32 * (
-                        bit_wordidx - tiledata["offset"]) + bit_bitidx
+                        bit_wordidx - bitj["offset"]) + bit_bitidx
                     # some bits are hard to de-correlate
                     # allow force dropping some bits from search space for practicality
                     if bitfilter is None or bitfilter(bitname_frame,
                                                       bitname_bit):
                         bitname = "%02d_%02d" % (bitname_frame, bitname_bit)
-                        segments[segname]["bits"].add(bitname)
+                        segment["bits"].add(bitname)
+            return segment
 
         '''
         XXX: wouldn't it be better to iterate over tags? Easy to drop tags
@@ -158,20 +178,27 @@ class segmaker:
         '''
         for tilename, tiledata in self.grid.items():
 
-            def add_tilename_tags():
+            def getseg(segname):
                 if not segname in segments:
-                    add_segbits(
+                    return add_segbits(
                         segments, segname, tiledata, bitfilter=bitfilter)
+                else:
+                    segment = segments[segname]
+                    assert segment["offset"] == bitj["offset"]
+                    assert segment["words"] == bitj["words"]
+                    assert segment["frames"] == bitj["frames"]
+                    return segment
 
-                for name, value in self.tags[tilename].items():
+            def add_tilename_tags():
+                segment = getseg(segname)
+
+                for name, value in self.tile_tags[tilename].items():
                     tags_used.add((tilename, name))
                     tag = "%s.%s" % (tile_type_norm, name)
-                    segments[segname]["tags"][tag] = value
+                    segment["tags"][tag] = value
 
             def add_site_tags():
-                if not segname in segments:
-                    add_segbits(
-                        segments, segname, tiledata, bitfilter=bitfilter)
+                segment = getseg(segname)
 
                 if 'SLICE_' in site:
                     '''
@@ -188,7 +215,7 @@ class segmaker:
                 else:
                     assert 0, 'Unhandled site type'
 
-                for name, value in self.tags[site].items():
+                for name, value in self.site_tags[site].items():
                     tags_used.add((site, name))
                     tag = "%s.%s.%s" % (tile_type_norm, sitekey, name)
                     # XXX: does this come from name?
@@ -197,7 +224,7 @@ class segmaker:
                     segments[segname]["tags"][tag] = value
 
             # ignore dummy tiles (ex: VBRK)
-            if "baseaddr" not in tiledata:
+            if "bits" not in tiledata:
                 continue
 
             tile_type = tiledata["type"]
@@ -210,29 +237,35 @@ class segmaker:
             '''
             tile_type_norm = re.sub("(LL|LM)?_[LR]$", "", tile_type)
 
-            segname = "%s_%03d" % (
-                # truncate 0x to leave hex string
-                tiledata["baseaddr"][2:],
-                tiledata["offset"])
+            for block_type, bitj in tiledata['bits'].items():
+                # NOTE: multiple tiles may have the same base addr + offset
+                segname = "%s_%03d" % (
+                    # truncate 0x to leave hex string
+                    bitj["baseaddr"][2:],
+                    bitj["offset"])
 
-            # process tile name tags
-            if tilename in self.tags:
-                add_tilename_tags()
+                # process tile name tags
+                if tilename in self.tile_tags:
+                    add_tilename_tags()
 
-            # process site name tags
-            for site in tiledata["sites"]:
-                if site not in self.tags:
-                    continue
-                add_site_tags()
+                # process site name tags
+                for site in tiledata["sites"]:
+                    if site not in self.site_tags:
+                        continue
+                    add_site_tags()
 
         if self.verbose:
-            ntags = recurse_sum(self.tags)
+            ntags = recurse_sum(self.site_tags) + recurse_sum(self.tile_tags)
             print("Used %u / %u tags" % (len(tags_used), ntags))
             print("Grid DB had %u tile types" % len(tile_types_found))
             assert ntags and ntags == len(tags_used)
 
     def write(self, suffix=None, roi=False):
         assert self.segments_by_type, 'No data to write'
+
+        assert sum(
+            [len(segments) for segments in self.segments_by_type.values()
+             ]) != 0
 
         for segtype in self.segments_by_type.keys():
             if suffix is not None:
@@ -244,19 +277,9 @@ class segmaker:
 
             with open(filename, "w") as f:
                 segments = self.segments_by_type[segtype]
-                if True:
-                    for segname, segdata in sorted(segments.items()):
-                        print("seg %s" % segname, file=f)
-                        for bitname in sorted(segdata["bits"]):
-                            print("bit %s" % bitname, file=f)
-                        for tagname, tagval in sorted(segdata["tags"].items()):
-                            print("tag %s %d" % (tagname, tagval), file=f)
-                else:
-                    print("seg roi", file=f)
-                    for segname, segdata in sorted(segments.items()):
-                        for bitname in sorted(segdata["bits"]):
-                            print("bit %s_%s" % (segname, bitname), file=f)
-                        for tagname, tagval in sorted(segdata["tags"].items()):
-                            print(
-                                "tag %s_%s %d" % (segname, tagname, tagval),
-                                file=f)
+                for segname, segdata in sorted(segments.items()):
+                    print("seg %s" % segname, file=f)
+                    for bitname in sorted(segdata["bits"]):
+                        print("bit %s" % bitname, file=f)
+                    for tagname, tagval in sorted(segdata["tags"].items()):
+                        print("tag %s %d" % (tagname, tagval), file=f)

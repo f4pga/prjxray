@@ -1,124 +1,47 @@
 #!/usr/bin/env python3
+# https://symbiflow.github.io/prjxray-db/
+# https://symbiflow.github.io/prjxray-db/artix7/
 
 import os, sys, json, re
 from io import StringIO
 
-import argparse
 
-parser = argparse.ArgumentParser(
-    description="Generate a pretty HTML version of the documentation.")
-parser.add_argument(
-    '--output',
-    default=os.path.join(os.path.curdir, 'html'),
-    help='Put the generated files in this directory (default current dir).')
-parser.add_argument(
-    '--settings',
-    default=None,
-    help='Read the settings from file (default to environment).')
+def mk_get_setting(settings_filename):
+    if settings_filename:
+        settings = {
+            'XRAY_DATABASE_DIR':
+            os.path.abspath(
+                os.path.join(os.path.dirname(settings_filename), '..')),
+        }
+        with open(settings_filename) as f:
+            for line in f:
+                line = line.strip()
+                if not line.startswith("export "):
+                    continue
+                key, value = line[7:].split('=', 1)
+                settings[key] = value[1:-1]
 
-args = parser.parse_args()
-
-if args.settings:
-    settings_filename = args.settings
-
-    settings = {
-        'XRAY_DATABASE_DIR':
-        os.path.abspath(
-            os.path.join(os.path.dirname(settings_filename), '..')),
-    }
-    with open(settings_filename) as f:
-        for line in f:
-            line = line.strip()
-            if not line.startswith("export "):
-                continue
-            key, value = line[7:].split('=', 1)
-            settings[key] = value[1:-1]
-
-    def get_setting(name):
-        return settings[name]
-else:
-
-    def get_setting(name):
-        return os.getenv(name)
+        return lambda name: settings[name]
+    else:
+        return os.getenv
 
 
-db_dir = os.path.join(
-    get_setting("XRAY_DATABASE_DIR"), get_setting("XRAY_DATABASE"))
+get_setting = mk_get_setting(None)
 
 
-def db_open(fn):
+def db_open(fn, db_dir):
     filename = os.path.join(db_dir, fn)
     if not os.path.exists(filename):
         return StringIO("")
     return open(os.path.join(db_dir, fn))
 
 
-def out_open(fn):
-    out_dir = os.path.join(args.output, get_setting("XRAY_DATABASE"))
+def out_open(fn, output):
+    out_dir = os.path.join(output, get_setting("XRAY_DATABASE"))
     os.makedirs(out_dir, exist_ok=True)
     fp = os.path.join(out_dir, fn)
     print("Writing %s" % fp)
     return open(fp, "w")
-
-
-clb_bitgroups_db = [
-    # copy&paste from zero_db in dbfixup.py
-    "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
-    "00_23 00_30 01_22 01_25|00_27 00_29 01_26 01_29",
-    "01_12 01_14 01_16 01_18|00_10 00_11 01_09 01_10",
-    "00_13 01_17 00_15 00_17|00_18 00_19 01_13 00_14",
-    "00_34 00_38 01_33 01_37|00_35 00_39 01_38 01_40",
-    "00_33 00_41 01_32 01_34|00_37 00_42 01_36 01_41",
-
-    # other manual groupings for individual bits
-    "00_02 00_05 00_09 01_04|00_07 01_05 01_06",
-    "00_01 00_06 01_00 01_08|00_03 01_01 01_02",
-    "00_59 01_54 01_58 01_61|00_57 00_58 01_56",
-    "00_55 00_63 01_57 01_62|00_61 00_62 01_60",
-    "00_43 00_47 00_50 00_53 00_54 01_42|00_51 01_50 01_52",
-    "00_49 01_44 01_45 01_48 01_49 01_53|00_45 00_46 01_46",
-]
-
-hclk_bitgroups_db = [
-    # manual groupings
-    "03_14 03_15 04_14 04_15|00_15 00_16 01_14 01_15",
-    "02_16 03_16 04_16 05_16|02_14 02_15 05_14 05_15",
-    "02_18 02_19 05_18 05_19|00_17 00_18 01_16 01_17",
-    "03_18 03_19 04_18 04_19|02_17 03_17 04_17 05_17",
-    "02_20 02_21 05_20 05_21|02_22 03_22 04_22 05_22",
-    "02_29 03_29 04_29 05_29|03_30 03_31 04_30 04_31",
-    "02_26 02_27 05_26 05_27|02_28 03_28 04_28 05_28",
-    "02_23 03_23 04_23 05_23|03_24 03_25 04_24 04_25",
-]
-
-# groupings for SNWE bits in frames 2..7
-for i in range(0, 64, 4):
-    clb_bitgroups_db.append(
-        "02_%02d 03_%02d 05_%02d 06_%02d 07_%02d|05_%02d 03_%02d 04_%02d 04_%02d"
-        % (i + 1, i, i, i, i + 1, i + 3, i + 1, i + 1, i + 2))
-    clb_bitgroups_db.append(
-        "02_%02d 04_%02d 05_%02d 05_%02d 06_%02d|02_%02d 03_%02d 04_%02d 07_%02d"
-        % (i + 2, i, i + 1, i + 2, i + 2, i + 3, i + 2, i + 3, i + 3))
-
-clb_left_bits = set()
-clb_right_bits = set()
-
-for entry in clb_bitgroups_db:
-    a, b = entry.split("|")
-    for bit in a.split():
-        clb_left_bits.add(bit)
-    for bit in b.split():
-        clb_right_bits.add(bit)
-
-hclk_left_bits = set()
-hclk_right_bits = set()
-
-for entry in hclk_bitgroups_db:
-    a, b = entry.split("|")
-    for bit in a.split():
-        hclk_left_bits.add(bit)
-    for bit in b.split():
-        hclk_right_bits.add(bit)
 
 
 class UnionFind:
@@ -143,64 +66,38 @@ class UnionFind:
             self.parents[a] = b
 
 
-#################################################
-# Loading Raw Source Data
-
-grid = None
-cfgbits = dict()
-cfgbits_r = dict()
-maskbits = dict()
-ppips = dict()
-routebits = dict()
-routezbits = dict()
-
-print("Loading tilegrid.")
-with db_open("tilegrid.json") as f:
-    data = f.read()
-    if not data:
-        grid = {
-            "NULL": {
-                "grid_x": 0,
-                "grid_y": 0,
-                "type": "NULL",
-            }
-        }
-    else:
-        grid = json.loads(data)
-
-
-def db_read(tiletype):
-    cfgbits[tiletype] = dict()
-    cfgbits_r[tiletype] = dict()
-    maskbits[tiletype] = set()
-    ppips[tiletype] = dict()
-    routebits[tiletype] = dict()
-    routezbits[tiletype] = dict()
+def db_read(dbstate, tiletype, db_dir):
+    dbstate.cfgbits[tiletype] = dict()
+    dbstate.cfgbits_r[tiletype] = dict()
+    dbstate.maskbits[tiletype] = set()
+    dbstate.ppips[tiletype] = dict()
+    dbstate.routebits[tiletype] = dict()
+    dbstate.routezbits[tiletype] = dict()
 
     def add_pip_bits(tag, bits):
-        if tag not in routebits[tiletype]:
-            routebits[tiletype][tag] = set()
-            routezbits[tiletype][tag] = set()
+        if tag not in dbstate.routebits[tiletype]:
+            dbstate.routebits[tiletype][tag] = set()
+            dbstate.routezbits[tiletype][tag] = set()
         for bit in bits:
             if bit[0] == "!":
-                if bit[1:] not in routezbits[tiletype]:
-                    routezbits[tiletype][bit[1:]] = set()
-                routezbits[tiletype][bit[1:]].add(tag)
+                if bit[1:] not in dbstate.routezbits[tiletype]:
+                    dbstate.routezbits[tiletype][bit[1:]] = set()
+                dbstate.routezbits[tiletype][bit[1:]].add(tag)
             else:
-                if bit not in routebits[tiletype]:
-                    routebits[tiletype][bit] = set()
-                routebits[tiletype][bit].add(tag)
+                if bit not in dbstate.routebits[tiletype]:
+                    dbstate.routebits[tiletype][bit] = set()
+                dbstate.routebits[tiletype][bit].add(tag)
 
     def add_cfg_bits(tag, bits):
-        if tag not in cfgbits[tiletype]:
-            cfgbits[tiletype][tag] = set()
+        if tag not in dbstate.cfgbits[tiletype]:
+            dbstate.cfgbits[tiletype][tag] = set()
         for bit in bits:
-            cfgbits[tiletype][tag].add(bit)
-            if bit not in cfgbits_r[tiletype]:
-                cfgbits_r[tiletype][bit] = set()
-            cfgbits_r[tiletype][bit].add(tag)
+            dbstate.cfgbits[tiletype][tag].add(bit)
+            if bit not in dbstate.cfgbits_r[tiletype]:
+                dbstate.cfgbits_r[tiletype][bit] = set()
+            dbstate.cfgbits_r[tiletype][bit].add(tag)
 
-    with db_open("segbits_%s.db" % tiletype) as f:
+    with db_open("segbits_%s.db" % tiletype, db_dir) as f:
         for line in f:
             line = line.split()
             tag, bits = line[0], line[1:]
@@ -215,67 +112,157 @@ def db_read(tiletype):
             else:
                 add_cfg_bits(tag, bits)
 
-    with db_open("ppips_%s.db" % tiletype) as f:
+    with db_open("ppips_%s.db" % tiletype, db_dir) as f:
         for line in f:
             tag, typ = line.split()
-            ppips[tiletype][tag] = typ
+            dbstate.ppips[tiletype][tag] = typ
 
     if tiletype not in ["int_l", "int_r"]:
-        with db_open("mask_%s.db" % tiletype) as f:
+        with db_open("mask_%s.db" % tiletype, db_dir) as f:
             for line in f:
                 tag, bit = line.split()
                 assert tag == "bit"
-                maskbits[tiletype].add(bit)
+                dbstate.maskbits[tiletype].add(bit)
     else:
         for t in ["clbll_l", "clbll_r", "clblm_l", "clblm_r", "dsp_l", "dsp_r",
                   "bram_l", "bram_r"]:
-            with db_open("mask_%s.db" % t) as f:
+            with db_open("mask_%s.db" % t, db_dir) as f:
                 for line in f:
                     tag, bit = line.split()
                     assert tag == "bit"
                     frameidx, bitidx = bit.split("_")
-                    maskbits[tiletype].add(
+                    dbstate.maskbits[tiletype].add(
                         "%02d_%02d" % (int(frameidx), int(bitidx) % 64))
 
 
-db_read("int_l")
-db_read("int_r")
+def init_bitdb():
+    clb_bitgroups_db = [
+        # copy&paste from zero_db in dbfixup.py
+        "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
+        "00_23 00_30 01_22 01_25|00_27 00_29 01_26 01_29",
+        "01_12 01_14 01_16 01_18|00_10 00_11 01_09 01_10",
+        "00_13 01_17 00_15 00_17|00_18 00_19 01_13 00_14",
+        "00_34 00_38 01_33 01_37|00_35 00_39 01_38 01_40",
+        "00_33 00_41 01_32 01_34|00_37 00_42 01_36 01_41",
 
-db_read("hclk_l")
-db_read("hclk_r")
+        # other manual groupings for individual bits
+        "00_02 00_05 00_09 01_04|00_07 01_05 01_06",
+        "00_01 00_06 01_00 01_08|00_03 01_01 01_02",
+        "00_59 01_54 01_58 01_61|00_57 00_58 01_56",
+        "00_55 00_63 01_57 01_62|00_61 00_62 01_60",
+        "00_43 00_47 00_50 00_53 00_54 01_42|00_51 01_50 01_52",
+        "00_49 01_44 01_45 01_48 01_49 01_53|00_45 00_46 01_46",
+    ]
 
-db_read("clbll_l")
-db_read("clbll_r")
+    hclk_bitgroups_db = [
+        # manual groupings
+        "03_14 03_15 04_14 04_15|00_15 00_16 01_14 01_15",
+        "02_16 03_16 04_16 05_16|02_14 02_15 05_14 05_15",
+        "02_18 02_19 05_18 05_19|00_17 00_18 01_16 01_17",
+        "03_18 03_19 04_18 04_19|02_17 03_17 04_17 05_17",
+        "02_20 02_21 05_20 05_21|02_22 03_22 04_22 05_22",
+        "02_29 03_29 04_29 05_29|03_30 03_31 04_30 04_31",
+        "02_26 02_27 05_26 05_27|02_28 03_28 04_28 05_28",
+        "02_23 03_23 04_23 05_23|03_24 03_25 04_24 04_25",
+    ]
 
-db_read("clblm_l")
-db_read("clblm_r")
+    # groupings for SNWE bits in frames 2..7
+    for i in range(0, 64, 4):
+        clb_bitgroups_db.append(
+            "02_%02d 03_%02d 05_%02d 06_%02d 07_%02d|05_%02d 03_%02d 04_%02d 04_%02d"
+            % (i + 1, i, i, i, i + 1, i + 3, i + 1, i + 1, i + 2))
+        clb_bitgroups_db.append(
+            "02_%02d 04_%02d 05_%02d 05_%02d 06_%02d|02_%02d 03_%02d 04_%02d 07_%02d"
+            % (i + 2, i, i + 1, i + 2, i + 2, i + 3, i + 2, i + 3, i + 3))
 
-db_read("dsp_l")
-db_read("dsp_r")
+    return clb_bitgroups_db, hclk_bitgroups_db
 
-db_read("bram_l")
-db_read("bram_r")
 
-#################################################
-# Create Tilegrid Page
+def init_hclk_bits(hclk_bitgroups_db):
+    hclk_left_bits = set()
+    hclk_right_bits = set()
 
-grid_range = None
-grid_map = dict()
+    for entry in hclk_bitgroups_db:
+        a, b = entry.split("|")
+        for bit in a.split():
+            hclk_left_bits.add(bit)
+        for bit in b.split():
+            hclk_right_bits.add(bit)
 
-with out_open("index.html") as f:
-    print(
-        "<html><title>X-Ray %s Database</title><body>" %
-        get_setting("XRAY_DATABASE").upper(),
-        file=f)
-    print(
-        "<h3>X-Ray %s Database</h3>" % get_setting("XRAY_DATABASE").upper(),
-        file=f)
+    return hclk_left_bits, hclk_right_bits
 
-    print(
-        "<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" % (
-            get_setting("XRAY_PART"), get_setting("XRAY_ROI"),
-            get_setting("XRAY_ROI_FRAMES")),
-        file=f)
+
+def init_clb_bits(clb_bitgroups_db):
+    clb_left_bits = set()
+    clb_right_bits = set()
+
+    for entry in clb_bitgroups_db:
+        a, b = entry.split("|")
+        for bit in a.split():
+            clb_left_bits.add(bit)
+        for bit in b.split():
+            clb_right_bits.add(bit)
+
+    return clb_left_bits, clb_right_bits
+
+
+class DBState():
+    def __init__(self):
+        self.cfgbits = dict()
+        self.cfgbits_r = dict()
+        self.maskbits = dict()
+        self.ppips = dict()
+        self.routebits = dict()
+        self.routezbits = dict()
+
+
+class Tweaks():
+    def __init__(self):
+        pass
+
+
+def load_tilegrid(db_dir, verbose=False):
+    print("Loading tilegrid.")
+    with db_open("tilegrid.json", db_dir) as f:
+        data = f.read()
+        if not data:
+            print('WARNING: loading fake tilegrid')
+            grid = {
+                "NULL": {
+                    "grid_x": 0,
+                    "grid_y": 0,
+                    "type": "NULL",
+                }
+            }
+        else:
+            grid = json.loads(data)
+    return grid
+
+
+def db_reads(dbstate, db_dir):
+
+    db_read(dbstate, "int_l", db_dir)
+    db_read(dbstate, "int_r", db_dir)
+
+    db_read(dbstate, "hclk_l", db_dir)
+    db_read(dbstate, "hclk_r", db_dir)
+
+    db_read(dbstate, "clbll_l", db_dir)
+    db_read(dbstate, "clbll_r", db_dir)
+
+    db_read(dbstate, "clblm_l", db_dir)
+    db_read(dbstate, "clblm_r", db_dir)
+
+    db_read(dbstate, "dsp_l", db_dir)
+    db_read(dbstate, "dsp_r", db_dir)
+
+    db_read(dbstate, "bram_l", db_dir)
+    db_read(dbstate, "bram_r", db_dir)
+
+
+def place_tiles(grid):
+    grid_map = dict()
+    grid_range = None
 
     for tilename, tiledata in grid.items():
         grid_x = tiledata["grid_x"]
@@ -289,111 +276,140 @@ with out_open("index.html") as f:
             grid_range[1] = min(grid_range[1], grid_y)
             grid_range[2] = max(grid_range[2], grid_x)
             grid_range[3] = max(grid_range[3], grid_y)
+    return grid_map, grid_range
 
-    print("<table border>", file=f)
 
-    for grid_y in range(grid_range[1], grid_range[3] + 1):
-        print("<tr>", file=f)
+def tile_bgcolor(tiledata):
+    bgcolor = "#aaaaaa"
+    if tiledata["type"] in ["INT_L", "INT_R"]: bgcolor = "#aaaaff"
+    if tiledata["type"] in ["CLBLL_L", "CLBLL_R"]: bgcolor = "#ffffaa"
+    if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]: bgcolor = "#ffaaaa"
+    if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor = "#aaffaa"
 
-        for grid_x in range(grid_range[0], grid_range[2] + 1):
-            tilename = grid_map[(grid_x, grid_y)]
-            tiledata = grid[tilename]
-            segdata = None
+    if tiledata["type"] in ["BRAM_INT_INTERFACE_L", "BRAM_L"]:
+        bgcolor = "#aaffff"
+    if tiledata["type"] in ["BRAM_INT_INTERFACE_R", "BRAM_R"]:
+        bgcolor = "#aaffff"
 
-            bgcolor = "#aaaaaa"
-            if tiledata["type"] in ["INT_L", "INT_R"]: bgcolor = "#aaaaff"
-            if tiledata["type"] in ["CLBLL_L", "CLBLL_R"]: bgcolor = "#ffffaa"
-            if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]: bgcolor = "#ffaaaa"
-            if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor = "#aaffaa"
+    if tiledata["type"] in ["INT_INTERFACE_L", "DSP_L"]:
+        bgcolor = "#ffaaff"
+    if tiledata["type"] in ["INT_INTERFACE_R", "DSP_R"]:
+        bgcolor = "#ffaaff"
 
-            if tiledata["type"] in ["BRAM_INT_INTERFACE_L", "BRAM_L"]:
-                bgcolor = "#aaffff"
-            if tiledata["type"] in ["BRAM_INT_INTERFACE_R", "BRAM_R"]:
-                bgcolor = "#aaffff"
+    return bgcolor
 
-            if tiledata["type"] in ["INT_INTERFACE_L", "DSP_L"]:
-                bgcolor = "#ffaaff"
-            if tiledata["type"] in ["INT_INTERFACE_R", "DSP_R"]:
-                bgcolor = "#ffaaff"
 
-            title = [tilename]
+def tile_print_td(f, title, tilename, bgcolor, tiledata, dbstate):
+    tilename = tilename.replace("INT_INTERFACE_", "INTF_")
+    tilename = tilename.replace("_X", "<br/>X")
+    tilename = tilename.replace("B_TERM", "B<br/>TERM")
 
-            if "segment" in tiledata:
-                segdata = grid["segments"][tiledata["segment"]]
-                title.append(tiledata["segment"])
+    print(
+        "<td bgcolor=\"%s\" align=\"center\" title=\"%s\"><span style=\"font-size:10px\">"
+        % (bgcolor, "\n".join(title)),
+        file=f)
+    if tiledata["type"].lower() in dbstate.cfgbits:
+        print(
+            "<a style=\"text-decoration: none; color: black\" href=\"tile_%s.html\">%s</a></span></td>"
+            % (tiledata["type"].lower(), tilename.replace("_X", "<br/>X")),
+            file=f)
+    else:
+        print(
+            "%s</span></td>" % tilename.replace("_X", "<br/>X").replace(
+                "B_TERM", "B<br/>TERM"),
+            file=f)
 
-            title.append("GRID_POSITION: %d %d" % (grid_x, grid_y))
 
-            if "sites" in tiledata:
-                for sitename, sitetype in tiledata["sites"].items():
-                    title.append("%s site: %s" % (sitetype, sitename))
+def tile_title(tilename, tiledata, grid_x, grid_y, grid):
+    title = [tilename]
+    segdata = None
 
-            if "segment" in tiledata:
-                if "baseaddr" in segdata:
-                    title.append(
-                        "Baseaddr: %s %d" % tuple(segdata["baseaddr"]))
-                else:
-                    print(
-                        "Warning: no baseaddr in segment %s (via tile %s)." %
-                        (tiledata["segment"], tilename))
+    if "segment" in tiledata:
+        # FIXME: BRAM support
+        segdata = grid[tilename]['bits'].get('CLB_IO_CLK', None)
+        title.append(tiledata["segment"])
 
-            tilename = tilename.replace("INT_INTERFACE_", "INTF_")
-            tilename = tilename.replace("_X", "<br/>X")
-            tilename = tilename.replace("B_TERM", "B<br/>TERM")
+    title.append("GRID_POSITION: %d %d" % (grid_x, grid_y))
 
+    if "sites" in tiledata:
+        for sitename, sitetype in tiledata["sites"].items():
+            title.append("%s site: %s" % (sitetype, sitename))
+
+    if "segment" in tiledata:
+        if "baseaddr" in segdata:
+            #title.append("Baseaddr: %s %d" % tuple(segdata["baseaddr"]))
+            title.append("Baseaddr: %s" % segdata["baseaddr"])
+        else:
             print(
-                "<td bgcolor=\"%s\" align=\"center\" title=\"%s\"><span style=\"font-size:10px\">"
-                % (bgcolor, "\n".join(title)),
-                file=f)
-            if tiledata["type"].lower() in cfgbits:
-                print(
-                    "<a style=\"text-decoration: none; color: black\" href=\"tile_%s.html\">%s</a></span></td>"
-                    % (
-                        tiledata["type"].lower(),
-                        tilename.replace("_X", "<br/>X")),
-                    file=f)
-            else:
-                print(
-                    "%s</span></td>" % tilename.replace(
-                        "_X", "<br/>X").replace("B_TERM", "B<br/>TERM"),
-                    file=f)
+                "Warning: no baseaddr in segment %s (via tile %s)." %
+                (tiledata["segment"], tilename))
 
-        print("</tr>", file=f)
-
-    print("</table>", file=f)
-    print("</body></html>", file=f)
-
-#################################################
-# Create Segment Pages
+    return title
 
 
-def get_bit_info(frameidx, bitidx, tiletype):
-    bit_pos = "%02d_%02d" % (frameidx, bitidx)
-    bit_name = cfgbits_r[tiletype][bit_pos] if bit_pos in cfgbits_r[
-        tiletype] else None
+def mk_tilegrid_page(dbstate, output, grid):
+    with out_open("index.html", output) as f:
+        print(
+            "<html><title>X-Ray %s Database</title><body>" %
+            get_setting("XRAY_DATABASE").upper(),
+            file=f)
+        print(
+            "<h3>X-Ray %s Database</h3>" %
+            get_setting("XRAY_DATABASE").upper(),
+            file=f)
 
-    if bit_name is None and bit_pos in routebits[tiletype]:
-        bit_name = routebits[tiletype][bit_pos]
+        print(
+            "<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" % (
+                get_setting("XRAY_PART"), get_setting("XRAY_ROI"),
+                get_setting("XRAY_ROI_FRAMES")),
+            file=f)
 
-    if bit_name is None and bit_pos in routezbits[tiletype]:
-        bit_name = routezbits[tiletype][bit_pos]
+        grid_map, grid_range = place_tiles(grid)
+
+        print("<table border>", file=f)
+
+        for grid_y in range(grid_range[1], grid_range[3] + 1):
+            print("<tr>", file=f)
+
+            for grid_x in range(grid_range[0], grid_range[2] + 1):
+                tilename = grid_map[(grid_x, grid_y)]
+                tiledata = grid[tilename]
+
+                bgcolor = tile_bgcolor(tiledata)
+                title = tile_title(tilename, tiledata, grid_x, grid_y, grid)
+                tile_print_td(f, title, tilename, bgcolor, tiledata, dbstate)
+
+            print("</tr>", file=f)
+
+        print("</table>", file=f)
+        print("</body></html>", file=f)
+
+
+def get_bit_name(dbstate, frameidx, bitidx, bit_pos, tiletype):
+    bit_name = dbstate.cfgbits_r[tiletype][
+        bit_pos] if bit_pos in dbstate.cfgbits_r[tiletype] else None
+
+    if bit_name is None and bit_pos in dbstate.routebits[tiletype]:
+        bit_name = dbstate.routebits[tiletype][bit_pos]
+
+    if bit_name is None and bit_pos in dbstate.routezbits[tiletype]:
+        bit_name = dbstate.routezbits[tiletype][bit_pos]
 
     if bit_name is None and tiletype in ["clbll_l", "clbll_r", "clblm_l",
                                          "clblm_r", "dsp_l", "dsp_r", "bram_l",
                                          "bram_r"]:
         int_tile_type = "int_" + tiletype[-1]
         bit_int_pos = "%02d_%02d" % (frameidx, bitidx % 64)
-        bit_name = cfgbits_r[int_tile_type][
-            bit_int_pos] if bit_int_pos in cfgbits_r[int_tile_type] else None
+        bit_name = dbstate.cfgbits_r[int_tile_type][
+            bit_int_pos] if bit_int_pos in dbstate.cfgbits_r[
+                int_tile_type] else None
 
-        if bit_name is None and bit_int_pos in routebits[int_tile_type]:
-            bit_name = routebits[int_tile_type][bit_int_pos]
+        if bit_name is None and bit_int_pos in dbstate.routebits[int_tile_type]:
+            bit_name = dbstate.routebits[int_tile_type][bit_int_pos]
 
-        if bit_name is None and bit_int_pos in routezbits[int_tile_type]:
-            bit_name = routezbits[int_tile_type][bit_int_pos]
-
-        if bit_name is not None:
-            return bit_pos, "INT", [bit_pos], "#88aaff"
+        if bit_name is None and bit_int_pos in dbstate.routezbits[
+                int_tile_type]:
+            bit_name = dbstate.routezbits[int_tile_type][bit_int_pos]
 
     if bit_name is not None:
         if len(bit_name) <= 1:
@@ -402,11 +418,23 @@ def get_bit_info(frameidx, bitidx, tiletype):
             for n in bit_name:
                 bit_name = ".".join(n.split(".")[:-1])
 
+    return bit_name
+
+
+def get_bit_info(dbstate, frameidx, bitidx, tiletype):
+    bit_pos = "%02d_%02d" % (frameidx, bitidx)
+
+    bit_name = get_bit_name(dbstate, frameidx, bitidx, bit_pos, tiletype)
+    if tiletype in ["clbll_l", "clbll_r", "clblm_l", "clblm_r", "dsp_l",
+                    "dsp_r", "bram_l", "bram_r"]:
+        if bit_name is not None:
+            return bit_pos, "INT", [bit_pos], "#88aaff"
+
     label = None
     title = [bit_pos]
     bgcolor = "#aaaaaa"
 
-    if bit_pos not in maskbits[tiletype]:
+    if bit_pos not in dbstate.maskbits[tiletype]:
         label = "&nbsp;"
         bgcolor = "#444444"
         title.append("UNUSED ?")
@@ -580,7 +608,7 @@ def get_bit_info(frameidx, bitidx, tiletype):
     return bit_pos, label, title, bgcolor
 
 
-def gen_table(tiletype, f):
+def gen_table(dbstate, tiletype, f):
     print(
         """
 <script><!--
@@ -670,11 +698,10 @@ function oml() {
                 continue
 
             bit_pos, label, title, bgcolor = get_bit_info(
-                frameidx, bitidx, tiletype)
+                dbstate, frameidx, bitidx, tiletype)
 
             if label is None:
                 label = "&nbsp;"
-                onclick = ""
 
             if label == "INT":
                 onclick = " onmousedown=\"location.href = 'tile_int_%s.html#b%s'\"" % (
@@ -715,185 +742,240 @@ function oml() {
             (unknown_bits + unused_bits + known_bits)))
 
 
-for tiletype in sorted(cfgbits.keys()):
-    with out_open("tile_%s.html" % tiletype) as f:
-        print(
-            "<html><title>X-Ray %s Database: %s</title><body>" %
-            (get_setting("XRAY_DATABASE").upper(), tiletype.upper()),
-            file=f)
-        print(
-            "<h3><a href=\"index.html\">X-Ray %s Database</a>: %s Segment</h3>"
-            % (get_setting("XRAY_DATABASE").upper(), tiletype.upper()),
-            file=f)
-
-        gen_table(tiletype, f)
-
-        print("<div>", file=f)
-
-        bits_by_prefix = dict()
-
-        for bit_name, bits_pos in cfgbits[tiletype].items():
-            prefix = ".".join(bit_name.split(".")[0:-1])
-
-            if prefix not in bits_by_prefix:
-                bits_by_prefix[prefix] = set()
-
-            for bit_pos in bits_pos:
-                bits_by_prefix[prefix].add((bit_name, bit_pos))
-
-        for prefix, bits in sorted(bits_by_prefix.items()):
-            for bit_name, bit_pos in sorted(bits):
-                print("<a id=\"b%s\"/>" % bit_pos, file=f)
-
-            print("<p/>", file=f)
-            print("<h4>%s</h4>" % prefix, file=f)
-            print("<table cellspacing=0>", file=f)
+def mk_segment_pages(dbstate, output, tweaks):
+    for tiletype in sorted(dbstate.cfgbits.keys()):
+        with out_open("tile_%s.html" % tiletype, output) as f:
             print(
-                "<tr><th width=\"400\" align=\"left\">Bit Name</th><th>Position</th></tr>",
+                "<html><title>X-Ray %s Database: %s</title><body>" %
+                (get_setting("XRAY_DATABASE").upper(), tiletype.upper()),
+                file=f)
+            print(
+                "<h3><a href=\"index.html\">X-Ray %s Database</a>: %s Segment</h3>"
+                % (get_setting("XRAY_DATABASE").upper(), tiletype.upper()),
                 file=f)
 
-            trstyle = ""
-            for bit_name, bit_pos in sorted(bits):
-                trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
+            gen_table(dbstate, tiletype, f)
+
+            print("<div>", file=f)
+
+            bits_by_prefix = dict()
+
+            for bit_name, bits_pos in dbstate.cfgbits[tiletype].items():
+                prefix = ".".join(bit_name.split(".")[0:-1])
+
+                if prefix not in bits_by_prefix:
+                    bits_by_prefix[prefix] = set()
+
+                for bit_pos in bits_pos:
+                    bits_by_prefix[prefix].add((bit_name, bit_pos))
+
+            for prefix, bits in sorted(bits_by_prefix.items()):
+                for bit_name, bit_pos in sorted(bits):
+                    print("<a id=\"b%s\"/>" % bit_pos, file=f)
+
+                print("<p/>", file=f)
+                print("<h4>%s</h4>" % prefix, file=f)
+                print("<table cellspacing=0>", file=f)
                 print(
-                    "<tr%s><td>%s</td><td>%s</td></tr>" %
-                    (trstyle, bit_name, bit_pos),
+                    "<tr><th width=\"400\" align=\"left\">Bit Name</th><th>Position</th></tr>",
                     file=f)
 
-            print("</table>", file=f)
-
-        ruf = UnionFind()
-        routebits_routezbits = list(routebits[tiletype].items())
-        routebits_routezbits += list(routezbits[tiletype].items())
-
-        for bit, pips in routebits_routezbits:
-            for pip in pips:
-                grp = ".".join(pip.split('.')[:-1])
-                ruf.union(grp, bit)
-
-        rgroups = dict()
-        rgroup_names = dict()
-
-        for bit, pips in routebits_routezbits:
-            for pip in pips:
-                grp_name = ".".join(pip.split('.')[:-1])
-                grp = ruf.find(grp_name)
-                if grp not in rgroup_names:
-                    rgroup_names[grp] = set()
-                rgroup_names[grp].add(grp_name)
-                if grp not in rgroups:
-                    rgroups[grp] = dict()
-                if pip not in rgroups[grp]:
-                    rgroups[grp][pip] = set()
-                rgroups[grp][pip].add(bit)
-
-        shared_bits = dict()
-        for bit, pips in routebits_routezbits:
-            for pip in pips:
-                grp_name = ".".join(pip.split('.')[:-1])
-                if bit not in shared_bits:
-                    shared_bits[bit] = set()
-                shared_bits[bit].add(grp_name)
-
-        rgroups_with_title = list()
-
-        for grp, gdata in sorted(rgroups.items()):
-            title = "PIPs driving " + ", ".join(sorted(rgroup_names[grp]))
-            rgroups_with_title.append((title, grp, gdata))
-
-        for title, grp, gdata in sorted(rgroups_with_title):
-            grp_bits = set()
-            for pip, bits in gdata.items():
-                grp_bits |= bits
-
-            def bit_key(b):
-                if tiletype in ["hclk_l", "hclk_r"]:
-                    if b in hclk_left_bits:
-                        return "a" + b
-                    if b in hclk_right_bits:
-                        return "c" + b
-                if tiletype in ["clblm_l", "clblm_r", "clbll_l", "clbll_r",
-                                "int_l", "int_r"]:
-                    if b in clb_left_bits:
-                        return "a" + b
-                    if b in clb_right_bits:
-                        return "c" + b
-                return "b" + b
-
-            grp_bits = sorted(grp_bits, key=bit_key)
-
-            for bit in grp_bits:
-                print("<a id=\"b%s\"/>" % bit, file=f)
-
-            print("<script><!--", file=f)
-            print(
-                "grp2bits['%s'] = ['%s'];" %
-                (grp_bits[0], "', '".join(grp_bits)),
-                file=f)
-            for bit in grp_bits:
-                print("bit2grp['%s'] = '%s';" % (bit, grp_bits[0]), file=f)
-            print("//--></script>", file=f)
-
-            print("<p/>", file=f)
-            print("<h4>%s</h4>" % title, file=f)
-            print("<table cellspacing=0>", file=f)
-            print("<tr><th width=\"400\" align=\"left\">PIP</th>", file=f)
-
-            for bit in grp_bits:
-                print("<th>&nbsp;%s&nbsp;</th>" % bit, file=f)
-            print("</tr>", file=f)
-
-            lines = list()
-            for pip, bits in sorted(gdata.items()):
-                line = " --><td>%s</td>" % (pip)
-                for bit in grp_bits:
-                    c = "-"
-                    if bit in routebits[tiletype] and pip in routebits[
-                            tiletype][bit]:
-                        c = "1"
-                    if bit in routezbits[tiletype] and pip in routezbits[
-                            tiletype][bit]:
-                        c = "0"
-                    line = "%s%s<td align=\"center\">%s</td>" % (c, line, c)
-                lines.append(line)
-
-            trstyle = ""
-            for line in sorted(lines):
-                trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
-                print("<tr%s><!-- %s</tr>" % (trstyle, line), file=f)
-
-            print("</table>", file=f)
-
-            first_note = True
-            for bit in grp_bits:
-                if len(shared_bits[bit]) > 1:
-                    if first_note:
-                        print("<p><b>Note(s):</b><br/>", file=f)
+                trstyle = ""
+                for bit_name, bit_pos in sorted(bits):
+                    trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
                     print(
-                        "Warning: Groups sharing bit %s: %s." %
-                        (bit, ", ".join(sorted(shared_bits[bit]))))
-                    print(
-                        "Groups sharing bit <b>%s</b>: %s.<br/>" %
-                        (bit, ", ".join(sorted(shared_bits[bit]))),
+                        "<tr%s><td>%s</td><td>%s</td></tr>" %
+                        (trstyle, bit_name, bit_pos),
                         file=f)
-                    first_note = False
-            if not first_note:
-                print("</p>", file=f)
 
-        if len(ppips[tiletype]) > 0:
-            print("<h4>Pseudo PIPs</h4>", file=f)
-            print("<table cellspacing=0>", file=f)
-            print(
-                "<tr><th width=\"500\" align=\"left\">PIP</th><th>Type</th></tr>",
-                file=f)
-            trstyle = ""
-            for typ, tag in sorted(
-                [(b, a) for a, b in ppips[tiletype].items()]):
-                trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
+                print("</table>", file=f)
+
+            ruf = UnionFind()
+            routebits_routezbits = list(dbstate.routebits[tiletype].items())
+            routebits_routezbits += list(dbstate.routezbits[tiletype].items())
+
+            for bit, pips in routebits_routezbits:
+                for pip in pips:
+                    grp = ".".join(pip.split('.')[:-1])
+                    ruf.union(grp, bit)
+
+            rgroups = dict()
+            rgroup_names = dict()
+
+            for bit, pips in routebits_routezbits:
+                for pip in pips:
+                    grp_name = ".".join(pip.split('.')[:-1])
+                    grp = ruf.find(grp_name)
+                    if grp not in rgroup_names:
+                        rgroup_names[grp] = set()
+                    rgroup_names[grp].add(grp_name)
+                    if grp not in rgroups:
+                        rgroups[grp] = dict()
+                    if pip not in rgroups[grp]:
+                        rgroups[grp][pip] = set()
+                    rgroups[grp][pip].add(bit)
+
+            shared_bits = dict()
+            for bit, pips in routebits_routezbits:
+                for pip in pips:
+                    grp_name = ".".join(pip.split('.')[:-1])
+                    if bit not in shared_bits:
+                        shared_bits[bit] = set()
+                    shared_bits[bit].add(grp_name)
+
+            rgroups_with_title = list()
+
+            for grp, gdata in sorted(rgroups.items()):
+                title = "PIPs driving " + ", ".join(sorted(rgroup_names[grp]))
+                rgroups_with_title.append((title, grp, gdata))
+
+            for title, grp, gdata in sorted(rgroups_with_title):
+                grp_bits = set()
+                for pip, bits in gdata.items():
+                    grp_bits |= bits
+
+                def bit_key(b):
+                    if tiletype in ["hclk_l", "hclk_r"]:
+                        if b in tweaks.hclk_left_bits:
+                            return "a" + b
+                        if b in tweaks.hclk_right_bits:
+                            return "c" + b
+                    if tiletype in ["clblm_l", "clblm_r", "clbll_l", "clbll_r",
+                                    "int_l", "int_r"]:
+                        if b in tweaks.clb_left_bits:
+                            return "a" + b
+                        if b in tweaks.clb_right_bits:
+                            return "c" + b
+                    return "b" + b
+
+                grp_bits = sorted(grp_bits, key=bit_key)
+
+                for bit in grp_bits:
+                    print("<a id=\"b%s\"/>" % bit, file=f)
+
+                print("<script><!--", file=f)
                 print(
-                    "<tr%s><td>%s</td><td>%s</td></tr>" % (trstyle, tag, typ),
+                    "grp2bits['%s'] = ['%s'];" %
+                    (grp_bits[0], "', '".join(grp_bits)),
                     file=f)
-            print("</table>", file=f)
+                for bit in grp_bits:
+                    print("bit2grp['%s'] = '%s';" % (bit, grp_bits[0]), file=f)
+                print("//--></script>", file=f)
 
-        print("</div>", file=f)
-        print("</body></html>", file=f)
+                print("<p/>", file=f)
+                print("<h4>%s</h4>" % title, file=f)
+                print("<table cellspacing=0>", file=f)
+                print("<tr><th width=\"400\" align=\"left\">PIP</th>", file=f)
+
+                for bit in grp_bits:
+                    print("<th>&nbsp;%s&nbsp;</th>" % bit, file=f)
+                print("</tr>", file=f)
+
+                lines = list()
+                for pip, bits in sorted(gdata.items()):
+                    line = " --><td>%s</td>" % (pip)
+                    for bit in grp_bits:
+                        c = "-"
+                        if bit in dbstate.routebits[
+                                tiletype] and pip in dbstate.routebits[
+                                    tiletype][bit]:
+                            c = "1"
+                        if bit in dbstate.routezbits[
+                                tiletype] and pip in dbstate.routezbits[
+                                    tiletype][bit]:
+                            c = "0"
+                        line = "%s%s<td align=\"center\">%s</td>" % (
+                            c, line, c)
+                    lines.append(line)
+
+                trstyle = ""
+                for line in sorted(lines):
+                    trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
+                    print("<tr%s><!-- %s</tr>" % (trstyle, line), file=f)
+
+                print("</table>", file=f)
+
+                first_note = True
+                for bit in grp_bits:
+                    if len(shared_bits[bit]) > 1:
+                        if first_note:
+                            print("<p><b>Note(s):</b><br/>", file=f)
+                        print(
+                            "Warning: Groups sharing bit %s: %s." %
+                            (bit, ", ".join(sorted(shared_bits[bit]))))
+                        print(
+                            "Groups sharing bit <b>%s</b>: %s.<br/>" %
+                            (bit, ", ".join(sorted(shared_bits[bit]))),
+                            file=f)
+                        first_note = False
+                if not first_note:
+                    print("</p>", file=f)
+
+            if len(dbstate.ppips[tiletype]) > 0:
+                print("<h4>Pseudo PIPs</h4>", file=f)
+                print("<table cellspacing=0>", file=f)
+                print(
+                    "<tr><th width=\"500\" align=\"left\">PIP</th><th>Type</th></tr>",
+                    file=f)
+                trstyle = ""
+                for typ, tag in sorted(
+                    [(b, a) for a, b in dbstate.ppips[tiletype].items()]):
+                    trstyle = " bgcolor=\"#dddddd\"" if trstyle == "" else ""
+                    print(
+                        "<tr%s><td>%s</td><td>%s</td></tr>" %
+                        (trstyle, tag, typ),
+                        file=f)
+                print("</table>", file=f)
+
+            print("</div>", file=f)
+            print("</body></html>", file=f)
+
+
+def run(settings, output, verbose=False):
+    global get_setting
+
+    get_setting = mk_get_setting(settings)
+
+    db_dir = os.path.join(
+        get_setting("XRAY_DATABASE_DIR"), get_setting("XRAY_DATABASE"))
+
+    # Load tweaks
+    tweaks = Tweaks()
+    clb_bitgroups_db, hclk_bitgroups_db = init_bitdb()
+    tweaks.hclk_left_bits, tweaks.hclk_right_bits = init_hclk_bits(
+        hclk_bitgroups_db)
+    tweaks.clb_left_bits, tweaks.clb_right_bits = init_clb_bits(
+        clb_bitgroups_db)
+
+    # Load source data
+    dbstate = DBState()
+    grid = load_tilegrid(db_dir, verbose=verbose)
+    db_reads(dbstate, db_dir)
+
+    # Create pages
+    mk_tilegrid_page(dbstate, output, grid)
+    mk_segment_pages(dbstate, output, tweaks)
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Generate a pretty HTML version of the documentation.")
+    parser.add_argument('--verbose', action='store_true')
+    parser.add_argument(
+        '--output',
+        default=os.path.join(os.path.curdir, 'html'),
+        help='Put the generated files in this directory (default current dir).'
+    )
+    parser.add_argument(
+        '--settings',
+        default=None,
+        help='Read the settings from file (default to environment).')
+
+    args = parser.parse_args()
+    run(settings=args.settings, output=args.output, verbose=args.verbose)
+
+
+if __name__ == '__main__':
+    main()
