@@ -2,15 +2,14 @@
 
 import sys, re
 
-sys.path.append("../../../utils/")
-from segmaker import segmaker
+from prjxray.segmaker import Segmaker
 
 pipdata = dict()
 ignpip = set()
 
 
 def handle_design(prefix, second_pass):
-    segmk = segmaker(prefix + ".bits")
+    segmk = Segmaker(prefix + ".bits")
 
     tiledata = dict()
     nlines = 0

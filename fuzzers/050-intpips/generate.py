@@ -2,10 +2,9 @@
 
 import sys, re
 
-sys.path.append("../../../utils/")
-from segmaker import segmaker
+from prjxray.segmaker import Segmaker
 
-segmk = segmaker("design.bits")
+segmk = Segmaker("design.bits")
 
 tiledata = dict()
 pipdata = dict()

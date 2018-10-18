@@ -7,10 +7,9 @@ WA7USED = 0
 
 import sys, re, os
 
-sys.path.append("../../../utils/")
-from segmaker import segmaker
+from prjxray.segmaker import Segmaker
 
-segmk = segmaker("design.bits")
+segmk = Segmaker("design.bits")
 
 print("Loading tags")
 '''
