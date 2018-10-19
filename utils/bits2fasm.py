@@ -9,15 +9,15 @@ from prjxray import db
 from prjxray import fasm_disassembler
 from prjxray import bitstream
 
-def run(db_root, bits_file):
+def run(db_root, bits_file, verbose, canonical):
     disassembler = fasm_disassembler.FasmDisassembler(db.Database(db_root))
 
     with open(bits_file) as f:
         bitdata = bitstream.load_bitdata(f)
 
-    for fasm_line in disassembler.find_features_in_bitstream(bitdata):
-        for line in fasm.fasm_line_to_string(fasm_line):
-            print(line)
+    print(fasm.fasm_tuple_to_string(
+        disassembler.find_features_in_bitstream(bitdata, verbose=verbose),
+        canonical=canonical))
 
 def main():
     import argparse
@@ -39,9 +39,11 @@ def main():
     parser.add_argument('bits_file', help='')
     parser.add_argument('verbose', help='Print lines for unknown tiles and bits',
             action='store_true')
+    parser.add_argument('--canonical', help='Output canonical bitstream.',
+            action='store_true')
     args = parser.parse_args()
 
-    run(args.db_root, args.bits_file)
+    run(args.db_root, args.bits_file, args.verbose, args.canonical)
 
 if __name__ == '__main__':
     main()
