@@ -1,7 +1,6 @@
 from collections import namedtuple
 import json
 from prjxray import lib
-
 """ Database files available for a tile """
 TileDbs = namedtuple('TileDbs', 'segbits ppips mask tile_type')
 

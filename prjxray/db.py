@@ -137,6 +137,6 @@ class Database(object):
     def get_tile_segbits(self, tile_type):
         if tile_type not in self.tile_segbits:
             self.tile_segbits[tile_type] = tile_segbits.TileSegbits(
-                    self.tile_types[tile_type.upper()])
+                self.tile_types[tile_type.upper()])
 
         return self.tile_segbits[tile_type]

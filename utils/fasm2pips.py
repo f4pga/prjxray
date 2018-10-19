@@ -5,13 +5,11 @@ import os.path
 import fasm
 from prjxray import db
 
+
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        'Convert FASM to pip list'
-    )
+    parser = argparse.ArgumentParser(description='Convert FASM to pip list')
 
     database_dir = os.getenv("XRAY_DATABASE_DIR")
     database = os.getenv("XRAY_DATABASE")
@@ -22,11 +20,8 @@ def main():
         db_root_kwargs['required'] = False
         db_root_kwargs['default'] = os.path.join(database_dir, database)
 
-    parser.add_argument(
-        '--db_root', help="Database root.", **db_root_kwargs)
-    parser.add_argument(
-        'fn_in',
-        help='Input FPGA assembly (.fasm) file')
+    parser.add_argument('--db_root', help="Database root.", **db_root_kwargs)
+    parser.add_argument('fn_in', help='Input FPGA assembly (.fasm) file')
 
     args = parser.parse_args()
     database = db.Database(args.db_root)
@@ -47,7 +42,10 @@ def main():
                 if pip.net_from == parts[2] and pip.net_to == parts[1]:
                     yield '{}/{}.{}'.format(tile, gridinfo.tile_type, pip.name)
 
-    print('highlight_objects [concat {}]'.format(' '.join('[get_pips {}]'.format(pip) for pip in inner())))
+    print(
+        'highlight_objects [concat {}]'.format(
+            ' '.join('[get_pips {}]'.format(pip) for pip in inner())))
+
 
 if __name__ == '__main__':
     main()

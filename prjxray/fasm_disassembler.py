@@ -2,6 +2,7 @@ import re
 import fasm
 from prjxray import bitstream
 
+
 def mk_fasm(tile_name, feature):
     """ Convert matches tile and feature to FasmLine tuple. """
     # Seperate addressing of multi-bit features:
@@ -16,18 +17,20 @@ def mk_fasm(tile_name, feature):
     feature = '{}.{}'.format(tile_name, tag_post)
 
     return fasm.FasmLine(
-            set_feature=fasm.SetFasmFeature(
-                feature=feature,
-                start=address,
-                end=None,
-                value=1,
-                value_format=None,
-                ),
-            annotations=None,
-            comment=None)
+        set_feature=fasm.SetFasmFeature(
+            feature=feature,
+            start=address,
+            end=None,
+            value=1,
+            value_format=None,
+        ),
+        annotations=None,
+        comment=None)
+
 
 class FasmDisassembler(object):
     """ Given a Project X-ray data, outputs FasmLine tuples for bits set. """
+
     def __init__(self, db):
         self.db = db
         self.grid = self.db.grid()
@@ -47,26 +50,25 @@ class FasmDisassembler(object):
                 return
 
             comment = " WARNING: failed to load DB for tile type {}".format(
-                    gridinfo.tile_type)
+                gridinfo.tile_type)
             yield fasm.FasmLine(
-                    set_feature=None,
-                    annotations=None,
-                    comment=comment,
-                    )
+                set_feature=None,
+                annotations=None,
+                comment=comment,
+            )
             yield fasm.FasmLine(
-                    set_feature=None,
-                    annotations=[
-                        fasm.Annotation('missing_segbits', gridinfo.tile_type),
-                        fasm.Annotation('exception', str(e)),
-                        ],
-                    comment=None,
-                    )
+                set_feature=None,
+                annotations=[
+                    fasm.Annotation('missing_segbits', gridinfo.tile_type),
+                    fasm.Annotation('exception', str(e)),
+                ],
+                comment=None,
+            )
 
             self.decode_warnings.add(gridinfo.tile_type)
             return
 
-        for ones_matched, feature in tile_segbits.match_bitdata(
-                bits, bitdata):
+        for ones_matched, feature in tile_segbits.match_bitdata(bits, bitdata):
             for frame, bit in ones_matched:
                 bitdata[frame][1].remove(bit)
 
@@ -102,9 +104,7 @@ class FasmDisassembler(object):
                 tiles_checked.add(bits_info.tile)
 
                 for fasm_line in self.find_features_in_tile(
-                        bits_info.tile,
-                        bits_info.bits,
-                        bitdata,
+                        bits_info.tile, bits_info.bits, bitdata,
                         verbose=verbose):
                     yield fasm_line
 
@@ -112,19 +112,22 @@ class FasmDisassembler(object):
                 # Some bits were not decoded, add warning and annotations to
                 # FASM.
                 yield fasm.FasmLine(
-                        set_feature=None,
-                        annotations=None,
-                        comment=" In frame 0x{:08x} {} bits were not converted.".format(
-                            frame, len(bitdata[frame]),
-                            ))
+                    set_feature=None,
+                    annotations=None,
+                    comment=" In frame 0x{:08x} {} bits were not converted.".
+                    format(
+                        frame,
+                        len(bitdata[frame]),
+                    ))
 
                 for bit in bitdata[frame][1]:
                     wordidx = bit // bitstream.WORD_SIZE_BITS
                     bitidx = bit % bitstream.WORD_SIZE_BITS
-                    annotation = fasm.Annotation('unknown_bit',
-                                '{:08x}_{}_{}'.format(frame, wordidx, bitidx))
+                    annotation = fasm.Annotation(
+                        'unknown_bit', '{:08x}_{}_{}'.format(
+                            frame, wordidx, bitidx))
                     yield fasm.FasmLine(
-                            set_feature=None,
-                            annotations=[annotation],
-                            comment=None,
-                            )
+                        set_feature=None,
+                        annotations=[annotation],
+                        comment=None,
+                    )

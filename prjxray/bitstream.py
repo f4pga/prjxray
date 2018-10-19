@@ -1,6 +1,7 @@
 # Break frames into WORD_SIZE bit words.
 WORD_SIZE_BITS = 32
 
+
 def load_bitdata(f):
     """ Read bit file and return bitdata map.
 
@@ -22,6 +23,6 @@ def load_bitdata(f):
             bitdata[frame] = set(), set()
 
         bitdata[frame][0].add(wordidx)
-        bitdata[frame][1].add(wordidx*WORD_SIZE_BITS + bitidx)
+        bitdata[frame][1].add(wordidx * WORD_SIZE_BITS + bitidx)
 
     return bitdata

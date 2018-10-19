@@ -2,10 +2,12 @@ from collections import namedtuple
 from prjxray import bitstream
 import enum
 
+
 class PsuedoPipType(enum.Enum):
     ALWAYS = 'always'
     DEFAULT = 'default'
     HINT = 'hint'
+
 
 def read_ppips(f):
     ppips = {}
@@ -21,7 +23,9 @@ def read_ppips(f):
 
     return ppips
 
+
 Bit = namedtuple('Bit', 'word_column word_bit isset')
+
 
 def parsebit(val):
     '''Return "!012_23" => (12, 23, False)'''
@@ -34,10 +38,11 @@ def parsebit(val):
     seg_word_column, word_bit_n = val.split('_')
 
     return Bit(
-            word_column=int(seg_word_column),
-            word_bit=int(word_bit_n),
-            isset=isset,
-            )
+        word_column=int(seg_word_column),
+        word_bit=int(word_bit_n),
+        isset=isset,
+    )
+
 
 def read_segbits(f):
     segbits = {}
@@ -57,6 +62,7 @@ def read_segbits(f):
 
     return segbits
 
+
 class TileSegbits(object):
     def __init__(self, tile_db):
         self.segbits = {}
@@ -65,7 +71,7 @@ class TileSegbits(object):
 
         if tile_db.ppips is not None:
             with open(tile_db.ppips) as f:
-                    self.ppips = read_ppips(f)
+                self.ppips = read_ppips(f)
 
         if tile_db.segbits is not None:
             with open(tile_db.segbits) as f:
@@ -83,8 +89,8 @@ class TileSegbits(object):
                 if base_feature not in self.feature_addresses:
                     self.feature_addresses[base_feature] = {}
 
-                self.feature_addresses[base_feature][int(feature[sidx+1:eidx])] = feature
-
+                self.feature_addresses[base_feature][int(
+                    feature[sidx + 1:eidx])] = feature
 
     def match_bitdata(self, bits, bitdata):
         """ Return matching features for tile bits data (grid.Bits) and bitdata.
@@ -96,8 +102,8 @@ class TileSegbits(object):
         for feature, segbit in self.segbits.items():
             match = True
             for query_bit in segbit:
-                frame =  bits.base_address + query_bit.word_column
-                bitidx = bits.offset*bitstream.WORD_SIZE_BITS + query_bit.word_bit
+                frame = bits.base_address + query_bit.word_column
+                bitidx = bits.offset * bitstream.WORD_SIZE_BITS + query_bit.word_bit
 
                 if frame not in bitdata:
                     match = not query_bit.isset
@@ -118,8 +124,8 @@ class TileSegbits(object):
             def inner():
                 for query_bit in segbit:
                     if query_bit.isset:
-                        frame =  bits.base_address + query_bit.word_column
-                        bitidx = bits.offset*bitstream.WORD_SIZE_BITS + query_bit.word_bit
+                        frame = bits.base_address + query_bit.word_column
+                        bitidx = bits.offset * bitstream.WORD_SIZE_BITS + query_bit.word_bit
                         yield (frame, bitidx)
 
             yield (tuple(inner()), feature)

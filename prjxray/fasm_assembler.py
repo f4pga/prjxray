@@ -2,19 +2,24 @@ import fasm
 from prjxray import bitstream
 from prjxray import grid
 
+
 class FasmLookupError(Exception):
     pass
+
 
 class FasmInconsistentBits(Exception):
     pass
 
+
 # How many 32-bit words for frame in a 7-series bitstream?
 FRAME_WORD_COUNT = 101
+
 
 def init_frame_at_address(frames, addr):
     '''Set given frame to 0 if not initialized '''
     if not addr in frames:
         frames[addr] = [0 for _i in range(FRAME_WORD_COUNT)]
+
 
 class FasmAssembler(object):
     def __init__(self, db):
@@ -44,7 +49,8 @@ class FasmAssembler(object):
 
         for bits_info in self.grid.iter_all_frames():
             for coli in range(bits_info.bits.frames):
-                init_frame_at_address(frames, bits_info.bits.base_address + coli)
+                init_frame_at_address(
+                    frames, bits_info.bits.base_address + coli)
 
         return frames
 
@@ -56,8 +62,11 @@ class FasmAssembler(object):
         if key in self.frames:
             if self.frames[key] != 1:
                 raise FasmInconsistentBits(
-                        'FASM line "{}" wanted to set bit {} but was cleared by FASM line "{}"'.format(
-                            line, key, self.frames_line[key],
+                    'FASM line "{}" wanted to set bit {} but was cleared by FASM line "{}"'
+                    .format(
+                        line,
+                        key,
+                        self.frames_line[key],
                     ))
             return
 
@@ -72,8 +81,11 @@ class FasmAssembler(object):
         if key in self.frames:
             if self.frames[key] != 0:
                 raise FasmInconsistentBits(
-                        'FASM line "{}" wanted to clear bit {} but was set by FASM line "{}"'.format(
-                            line, key, self.frames_line[key],
+                    'FASM line "{}" wanted to clear bit {} but was set by FASM line "{}"'
+                    .format(
+                        line,
+                        key,
+                        self.frames_line[key],
                     ))
             return
 

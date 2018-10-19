@@ -7,10 +7,8 @@ print('//Requested CLBs: %s' % str(CLBN))
 
 
 def gen_slices():
-    for _tile_name, site_name, _site_type in util.get_roi().gen_sites([
-        'SLICEL',
-        'SLICEM'
-        ]):
+    for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
+        ['SLICEL', 'SLICEM']):
         yield site_name
 
 
