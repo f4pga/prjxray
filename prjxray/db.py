@@ -2,6 +2,7 @@ import os.path
 import json
 from prjxray import grid
 from prjxray import tile
+from prjxray import tile_segbits
 from prjxray import site_type
 from prjxray import connections
 
@@ -37,7 +38,9 @@ class Database(object):
         self.tile_types = None
 
         self.tile_types = {}
+        self.tile_segbits = {}
         self.site_types = {}
+
         for f in os.listdir(self.db_root):
             if f.endswith('.json') and f.startswith('tile_type_'):
                 tile_type = f[len('tile_type_'):-len('.json')].lower()
@@ -46,6 +49,11 @@ class Database(object):
                     self.db_root, 'segbits_{}.db'.format(tile_type))
                 if not os.path.isfile(segbits):
                     segbits = None
+
+                ppips = os.path.join(
+                    self.db_root, 'ppips_{}.db'.format(tile_type))
+                if not os.path.isfile(ppips):
+                    ppips = None
 
                 mask = os.path.join(
                     self.db_root, 'mask_{}.db'.format(tile_type))
@@ -60,6 +68,7 @@ class Database(object):
 
                 self.tile_types[tile_type.upper()] = tile.TileDbs(
                     segbits=segbits,
+                    ppips=ppips,
                     mask=mask,
                     tile_type=tile_type_file,
                 )
@@ -124,3 +133,10 @@ class Database(object):
             site_type_data = json.load(f)
 
         return site_type.SiteType(site_type_data)
+
+    def get_tile_segbits(self, tile_type):
+        if tile_type not in self.tile_segbits:
+            self.tile_segbits[tile_type] = tile_segbits.TileSegbits(
+                    self.tile_types[tile_type.upper()])
+
+        return self.tile_segbits[tile_type]

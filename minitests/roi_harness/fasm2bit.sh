@@ -27,7 +27,7 @@ echo "Design .fasm: $fasm_in"
 echo "Harness .bit: $bit_in"
 echo "Out .bit: $bit_out"
 
-${XRAY_DIR}/tools/fasm2frame.py $fasm_in roi_partial.frm
+${XRAY_DIR}/utils/fasm2frames.py --sparse $fasm_in roi_partial.frm
 
 ${XRAY_TOOLS_DIR}/xc7patch \
 	--part_name ${XRAY_PART} \
