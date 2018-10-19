@@ -15,9 +15,6 @@ tilegrid.json provides tile addresses
 
 import os, json, re
 
-XRAY_DATABASE = os.getenv("XRAY_DATABASE")
-XRAY_DIR = os.getenv("XRAY_DIR")
-
 BLOCK_TYPES = set(('CLB_IO_CLK', 'BLOCK_RAM', 'CFG_CLB'))
 
 
@@ -41,7 +38,8 @@ def json_hex2i(s):
 
 
 class Segmaker:
-    def __init__(self, bitsfile, verbose=None):
+    def __init__(self, db_root, bitsfile, verbose=None):
+        self.db_root = db_root
         self.verbose = verbose if verbose is not None else os.getenv(
             'VERBOSE', 'N') == 'Y'
         self.load_grid()
@@ -60,9 +58,7 @@ class Segmaker:
 
     def load_grid(self):
         '''Load self.grid holding tile addresses'''
-        print("Loading %s grid." % XRAY_DATABASE)
-        with open("%s/database/%s/tilegrid.json" % (XRAY_DIR, XRAY_DATABASE),
-                  "r") as f:
+        with open(os.path.join(db_root, "tilegrid.json"), "r") as f:
             self.grid = json.load(f)
         assert "segments" not in self.grid, "Old format tilegrid.json"
 

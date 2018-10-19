@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-import sys, re
-
 from prjxray.segmaker import Segmaker
+from prjxray import util
 
-segmk = Segmaker("design.bits")
+segmk = Segmaker(util.get_db_root(), "design.bits")
 
 print("Loading tags from design.txt.")
 with open("design.txt", "r") as f:

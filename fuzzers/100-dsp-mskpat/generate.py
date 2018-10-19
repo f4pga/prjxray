@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import sys, os, re
+import sys
 
 from prjxray.segmaker import Segmaker
+from prjxray import util
 
-segmk = Segmaker("design_%s.bits" % sys.argv[1])
+segmk = Segmaker(util.get_db_root(), "design_%s.bits" % sys.argv[1])
 
 pipdata = dict()
 ignpip = set()

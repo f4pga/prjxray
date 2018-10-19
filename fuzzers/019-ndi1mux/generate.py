@@ -5,11 +5,10 @@
 # Can we find instance where they are not aliased?
 WA7USED = 0
 
-import sys, re, os
-
 from prjxray.segmaker import Segmaker
+from prjxray import util
 
-segmk = Segmaker("design.bits")
+segmk = Segmaker(util.get_db_root(), "design.bits")
 
 print("Loading tags")
 '''

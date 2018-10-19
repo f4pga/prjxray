@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import sys, os, re
+import os, re
 
 from prjxray.segmaker import Segmaker
+from prjxray import util
 
-segmk = Segmaker("design.bits")
+segmk = Segmaker(util.get_db_root(), "design.bits")
 
 tiledata = dict()
 pipdata = dict()

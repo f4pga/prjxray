@@ -3,13 +3,14 @@
 import sys, re
 
 from prjxray.segmaker import Segmaker
+from prjxray import util
 
 pipdata = dict()
 ignpip = set()
 
 
 def handle_design(prefix, second_pass):
-    segmk = Segmaker(prefix + ".bits")
+    segmk = Segmaker(util.get_db_root(), prefix + ".bits")
 
     tiledata = dict()
     nlines = 0

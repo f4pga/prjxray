@@ -5,11 +5,7 @@ import re
 import sys
 import json
 import collections
-
-
-class FASMSyntaxError(Exception):
-    pass
-
+import fasm
 
 def parsebit(val):
     '''Return "!012_23" => (12, 23, False)'''
@@ -21,7 +17,6 @@ def parsebit(val):
     # 28_05 => 28, 05
     seg_word_column, word_bit_n = val.split('_')
     return int(seg_word_column), int(word_bit_n), isset
-
 
 # TODO: migrate to library
 def process_db(tile_type, process):
