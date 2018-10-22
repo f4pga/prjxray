@@ -11,14 +11,10 @@ class FasmInconsistentBits(Exception):
     pass
 
 
-# How many 32-bit words for frame in a 7-series bitstream?
-FRAME_WORD_COUNT = 101
-
-
 def init_frame_at_address(frames, addr):
     '''Set given frame to 0 if not initialized '''
     if not addr in frames:
-        frames[addr] = [0 for _i in range(FRAME_WORD_COUNT)]
+        frames[addr] = [0 for _i in range(bitstream.FRAME_WORD_COUNT)]
 
 
 class FasmAssembler(object):
