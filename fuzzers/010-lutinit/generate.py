@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, re
+import sys
 
 from prjxray.segmaker import Segmaker
 

@@ -1,7 +1,5 @@
 import random
 random.seed(0)
-import os
-import re
 from prjxray import util
 
 from prims import *
@@ -14,8 +12,10 @@ f.write("i,prim,loc,bel,init\n")
 
 
 def gen_slices():
-    for _tile_name, site_name, _site_type in util.gen_sites(['SLICEL',
-                                                             'SLICEM']):
+    for _tile_name, site_name, _site_type in util.get_roi().gen_sites([
+            'SLICEL',
+            'SLICEM',
+    ]):
         yield site_name
 
 

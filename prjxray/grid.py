@@ -1,7 +1,20 @@
 from collections import namedtuple
+import enum
+from prjxray import segment_map
+
+
+class BlockType(enum.Enum):
+    # Frames describing CLB features, interconnect, clocks and IOs.
+    CLB_IO_CLK = 'CLB_IO_CLK'
+
+    # Frames describing block RAM initialization.
+    BLOCK_RAM = 'BLOCK_RAM'
+
 
 GridLoc = namedtuple('GridLoc', 'grid_x grid_y')
-GridInfo = namedtuple('GridInfo', 'segment sites tile_type in_roi')
+GridInfo = namedtuple('GridInfo', 'segment bits sites tile_type in_roi')
+Bits = namedtuple('Bits', 'base_address frames offset words')
+BitsInfo = namedtuple('BitsInfo', 'segment_type tile bits')
 
 
 class Grid(object):
@@ -15,6 +28,14 @@ class Grid(object):
         self.tilegrid = tilegrid
         self.loc = {}
         self.tileinfo = {}
+        # Map of segment name to tiles in that segment
+        self.segments = {}
+
+        # Map of (base_address, segment type) -> segment name
+        self.base_addresses = {}
+
+        # Map of base_address -> (segment type, segment name)
+        self.base_addresses = {}
 
         for tile in self.tilegrid:
             tileinfo = self.tilegrid[tile]
@@ -27,8 +48,28 @@ class Grid(object):
             else:
                 in_roi = True
 
+            bits = {}
+
+            if 'segment' in tileinfo:
+                if tileinfo['segment'] not in self.segments:
+                    self.segments[tileinfo['segment']] = []
+
+                self.segments[tileinfo['segment']].append(tile)
+
+            if 'bits' in tileinfo:
+                for k in tileinfo['bits']:
+                    segment_type = BlockType(k)
+                    base_address = int(tileinfo['bits'][k]['baseaddr'], 0)
+                    bits[segment_type] = Bits(
+                        base_address=base_address,
+                        frames=tileinfo['bits'][k]['frames'],
+                        offset=tileinfo['bits'][k]['offset'],
+                        words=tileinfo['bits'][k]['words'],
+                    )
+
             self.tileinfo[tile] = GridInfo(
                 segment=tileinfo['segment'] if 'segment' in tileinfo else None,
+                bits=bits,
                 sites=tileinfo['sites'],
                 tile_type=tileinfo['type'],
                 in_roi=in_roi,
@@ -64,3 +105,15 @@ class Grid(object):
 
     def gridinfo_at_tilename(self, tilename):
         return self.tileinfo[tilename]
+
+    def iter_all_frames(self):
+        for tile, tileinfo in self.tileinfo.items():
+            for segment_type, bits in tileinfo.bits.items():
+                yield BitsInfo(
+                    segment_type=segment_type,
+                    tile=tile,
+                    bits=bits,
+                )
+
+    def get_segment_map(self):
+        return segment_map.SegmentMap(self)

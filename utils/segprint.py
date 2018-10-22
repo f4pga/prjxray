@@ -236,6 +236,9 @@ def mksegment(tile_name, block_name):
 def tile_segnames(grid):
     ret = []
     for tile_name, tile in grid['tiles'].items():
+        if 'bits' not in tile:
+            continue
+
         for block_name in tile['bits'].keys():
             ret.append(mksegment(tile_name, block_name))
     return ret

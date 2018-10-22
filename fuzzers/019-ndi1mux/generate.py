@@ -5,8 +5,6 @@
 # Can we find instance where they are not aliased?
 WA7USED = 0
 
-import sys, re, os
-
 from prjxray.segmaker import Segmaker
 
 segmk = Segmaker("design.bits")

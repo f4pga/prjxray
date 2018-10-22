@@ -1,7 +1,5 @@
 import random
 random.seed(0)
-import os
-import re
 from prjxray import util
 
 CLBN = 50
@@ -9,7 +7,8 @@ print('//Requested CLBs: %s' % str(CLBN))
 
 
 def gen_slicems():
-    for _tile_name, site_name, _site_type in util.gen_sites(['SLICEM']):
+    for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
+        ['SLICEM']):
         yield site_name
 
 

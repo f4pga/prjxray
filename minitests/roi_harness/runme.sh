@@ -57,8 +57,8 @@ test -z "$(fgrep CRITICAL vivado.log)"
 
 ${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit
 ${XRAY_SEGPRINT} -zd design.bits >design.segp
-${XRAY_DIR}/tools/segprint2fasm.py design.segp design.fasm
-${XRAY_DIR}/tools/fasm2frame.py design.fasm design.frm
+${XRAY_DIR}/utils/bits2fasm.py --verbose design.bits > design.fasm
+${XRAY_DIR}/utils/fasm2frames.py design.fasm design.frm
 # Hack to get around weird clock error related to clk net not found
 # Remove following lines:
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
