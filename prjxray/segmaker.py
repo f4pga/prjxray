@@ -62,7 +62,7 @@ class Segmaker:
 
     def load_grid(self):
         '''Load self.grid holding tile addresses'''
-        with open(os.path.join(db_root, "tilegrid.json"), "r") as f:
+        with open(os.path.join(self.db_root, "tilegrid.json"), "r") as f:
             self.grid = json.load(f)
         assert "segments" not in self.grid, "Old format tilegrid.json"
 
