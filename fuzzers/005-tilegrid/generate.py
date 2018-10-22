@@ -122,7 +122,7 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
             tile_baseaddr = tile_baseaddrs.setdefault(tile["name"], {})
             if bt in tile_baseaddr:
                 # actually lets just fail these, better to remove at tcl level to speed up processing
-                assert 0, 'duplicate base address'
+                #assert 0, ('duplicate base address', site_name, bt, tile_baseaddr[bt])
                 assert tile_baseaddr[bt] == [framebaseaddr, 0]
             else:
                 tile_baseaddr[bt] = [framebaseaddr, 0]
@@ -197,6 +197,41 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 tiles=[tile_name],
                 segtype=tile_type.lower())
 
+        def process_iob2():
+            tiles = [tile_name]
+            if tile_type.startswith('LIOB'):
+                # Two INT_L's
+                tiles.append(tiles_by_grid[(grid_x + 4, grid_y)])
+                tiles.append(tiles_by_grid[(grid_x + 4, grid_y-1)])
+                # One IO interface tile
+                tiles.append(tiles_by_grid[(grid_x + 1, grid_y)])
+            else:
+                # Two INT_R's
+                tiles.append(tiles_by_grid[(grid_x - 4, grid_y)])
+                tiles.append(tiles_by_grid[(grid_x - 4, grid_y-1)])
+                # One IO interface tile
+                tiles.append(tiles_by_grid[(grid_x - 1, grid_y)])
+
+            add_segment(
+                name="SEG_" + tile_name,
+                tiles=tiles,
+                segtype=tile_type.lower(),
+                baseaddr=tile_baseaddrs.get(tile_name, None))
+
+        def process_iob():
+            if tile_type.startswith('LIOB'):
+                int_tile_name = tiles_by_grid[(grid_x + 4, grid_y)]
+                io_interface_tile_name = tiles_by_grid[(grid_x + 1, grid_y)]
+            else:
+                int_tile_name = tiles_by_grid[(grid_x - 4, grid_y)]
+                io_interface_tile_name = tiles_by_grid[(grid_x - 1, grid_y)]
+
+            add_segment(
+                name="SEG_" + tile_name,
+                tiles=[tile_name, io_interface_tile_name, int_tile_name],
+                segtype=tile_type.lower(),
+                baseaddr=tile_baseaddrs.get(tile_name, None))
+
         def process_bram_dsp():
             for k in range(5):
                 if tile_type in ["BRAM_L", "DSP_L"]:
@@ -239,6 +274,10 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
             "HCLK": process_hclk,
             "BRAM": process_bram_dsp,
             "DSP": process_bram_dsp,
+            "RIOB33": process_iob2,
+            "LIOB33": process_iob2,
+            "RIOB33_SING": process_iob,
+            "LIOB33_SIGN": process_iob,
         }.get(nolr(tile_type), process_default)()
 
     return segments
@@ -246,12 +285,10 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
 
 def get_inttile(database, segment):
     '''Return interconnect tile for given segment'''
-    inttiles = [
+    return (
         tile for tile in segment["tiles"]
         if database[tile]["type"] in ["INT_L", "INT_R"]
-    ]
-    assert len(inttiles) == 1
-    return inttiles[0]
+    )
 
 
 def get_bramtile(database, segment):
@@ -285,48 +322,51 @@ def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
                 verbose and print('  Skip non CLB')
                 continue
 
-            inttile = get_inttile(database, segment)
-            grid_x = database[inttile]["grid_x"]
-            grid_y = database[inttile]["grid_y"]
+            print(segment_name, block_type, file=sys.stderr)
 
-            if database[inttile]["type"] == "INT_L":
-                grid_x += 1
-                framebase = framebase + 0x80
-            elif database[inttile]["type"] == "INT_R":
-                grid_x -= 1
-                framebase = framebase - 0x80
-            else:
-                assert 0
+            for inttile in get_inttile(database, segment):
+                grid_x = database[inttile]["grid_x"]
+                grid_y = database[inttile]["grid_y"]
 
-            # ROI at edge?
-            if (grid_x, grid_y) not in tiles_by_grid:
-                verbose and print('  Skip edge')
-                continue
+                if database[inttile]["type"] == "INT_L":
+                    grid_x += 1
+                    framebase = framebase + 0x80
+                elif database[inttile]["type"] == "INT_R":
+                    grid_x -= 1
+                    framebase = framebase - 0x80
+                else:
+                    assert 0
 
-            tile = tiles_by_grid[(grid_x, grid_y)]
+                # ROI at edge?
+                if (grid_x, grid_y) not in tiles_by_grid:
+                    verbose and print('  Skip edge')
+                    continue
 
-            if database[inttile]["type"] == "INT_L":
-                assert database[tile]["type"] == "INT_R"
-            elif database[inttile]["type"] == "INT_R":
-                assert database[tile]["type"] == "INT_L"
-            else:
-                assert 0
+                tile = tiles_by_grid[(grid_x, grid_y)]
 
-            assert "segment" in database[tile]
+                if database[inttile]["type"] == "INT_L":
+                    assert database[tile]["type"] == "INT_R"
+                elif database[inttile]["type"] == "INT_R":
+                    assert database[tile]["type"] == "INT_L"
+                else:
+                    assert 0
 
-            seg = database[tile]["segment"]
+                if "segment" not in database[tile]:
+                    continue
 
-            seg_baseaddrs = segments[seg].setdefault("baseaddr", {})
-            # At least one duplicate when we re-compute the entry for the base address
-            # should give the same address
-            if block_type in seg_baseaddrs:
-                assert seg_baseaddrs[block_type] == [
-                    framebase, wordbase
-                ], (seg_baseaddrs[block_type], [framebase, wordbase])
-                verbose and print('  Existing OK')
-            else:
-                seg_baseaddrs[block_type] = [framebase, wordbase]
-                verbose and print('  Add new')
+                seg = database[tile]["segment"]
+
+                seg_baseaddrs = segments[seg].setdefault("baseaddr", {})
+                # At least one duplicate when we re-compute the entry for the base address
+                # should give the same address
+                if block_type in seg_baseaddrs:
+                    assert seg_baseaddrs[block_type] == [
+                        framebase, wordbase
+                    ], (seg_baseaddrs[block_type], [framebase, wordbase])
+                    verbose and print('  Existing OK')
+                else:
+                    seg_baseaddrs[block_type] = [framebase, wordbase]
+                    verbose and print('  Add new')
 
 
 def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
@@ -357,27 +397,28 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                 Use it to locate in the grid, and find other segments related by tile offset
                 '''
 
-                inttile = get_inttile(database, src_segment)
-                verbose and print(
-                    '  up_INT CLK_IO_CLK: %s => inttile %s' %
-                    (src_segment_name, inttile))
-                grid_x = database[inttile]["grid_x"]
-                grid_y = database[inttile]["grid_y"]
+                for inttile in get_inttile(database, src_segment):
+                    verbose and print(
+                        '  up_INT CLK_IO_CLK: %s => inttile %s' %
+                        (src_segment_name, inttile), file=sys.stderr)
+                    grid_x = database[inttile]["grid_x"]
+                    grid_y = database[inttile]["grid_y"]
 
-                for i in range(50):
-                    grid_y -= 1
-                    dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
+                    for i in range(50):
+                        grid_y -= 1
+                        dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
+                        assert 'segment' in dst_tile, tiles_by_grid[(grid_x, grid_y)]
 
-                    if wordbase == 50:
-                        wordbase += 1
-                    else:
-                        wordbase += 2
+                        if wordbase == 50:
+                            wordbase += 1
+                        else:
+                            wordbase += 2
 
-                    #verbose and print('  dst_tile', dst_tile)
-                    dst_segment_name = dst_tile["segment"]
-                    #verbose and print('up_INT: %s => %s' % (src_segment_name, dst_segment_name))
-                    segments[dst_segment_name].setdefault(
-                        "baseaddr", {})[block_type] = [framebase, wordbase]
+                        #verbose and print('  dst_tile', dst_tile)
+                        dst_segment_name = dst_tile["segment"]
+                        #verbose and print('up_INT: %s => %s' % (src_segment_name, dst_segment_name))
+                        segments[dst_segment_name].setdefault(
+                            "baseaddr", {})[block_type] = [framebase, wordbase]
 
             def process_BLOCK_RAM(wordbase):
                 '''
@@ -491,6 +532,7 @@ def db_add_bits(database, segments):
                     ("DSP", "CLB_IO_CLK"): (28, 2, 10),
                     ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
                     ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
+                    ("IOB", "CLB_IO_CLK"): (36, 2, None),
                 }.get((nolr(tile_type), block_type), None)
                 if entry is None:
                     # Other types are rare, not expected to have these

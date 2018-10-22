@@ -1,17 +1,41 @@
 proc make_project {} {
-    create_project -force -part $::env(XRAY_PART) design design
+    create_project -force -part xc7a50tfgg484-1 design design
 
     read_verilog ../top.v
-    synth_design -top top
+    synth_design -top top -verilog_define N_IOB=11
 
-    set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
-    set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports di]
-    set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_02) IOSTANDARD LVCMOS33" [get_ports do]
-    set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_03) IOSTANDARD LVCMOS33" [get_ports stb]
+    foreach pad [get_package_pins -filter "IS_GENERAL_PURPOSE == 1"] {
+      set site [get_sites -of_objects $pad]
+      if {[llength $site] == 0} {
+        continue
+      }
+      if [string match IOB33* [get_property SITE_TYPE $site]] {
+        dict append io_pad_sites $site $pad
+      }
+    }
+
+    set iopad ""
+    dict for {key value} $io_pad_sites {
+      lappend iopad [lindex $value 0]
+    }
+
+    synth_design -top top -verilog_define N_IOB=[llength $iopad]
+
+    set_property -dict "PACKAGE_PIN [lindex $iopad 0] IOSTANDARD LVCMOS33" [get_ports clk]
+    set_property -dict "PACKAGE_PIN [lindex $iopad 1] IOSTANDARD LVCMOS33" [get_ports do]
+    set_property -dict "PACKAGE_PIN [lindex $iopad 2] IOSTANDARD LVCMOS33" [get_ports stb]
+
+    set fixed_pins 3
+    set iports [get_ports di*]
+    for {set i 0} {$i < [llength $iports]} {incr i} {
+      set pad [lindex $iopad [expr $i+$fixed_pins]]
+      set port [lindex $iports $i]
+      set_property -dict "PACKAGE_PIN $pad IOSTANDARD LVCMOS33" $port
+    }
 
     create_pblock roi
     add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-    resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
+    resize_pblock [get_pblocks roi] -add "SLICE_X8Y100:SLICE_X27Y149 RAMB18_X0Y20:RAMB18_X0Y59 RAMB36_X0Y10:RAMB36_X0Y29 DSP48_X0Y59:DSP48_X0Y20"
 
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]
@@ -127,6 +151,20 @@ proc write_brams { selected_brams } {
     }
 }
 
+proc write_io {} {
+    foreach port [concat [get_ports clk] [get_ports do] [get_ports stb] [get_ports di]] {
+      puts ""
+      set site [get_sites -of_objects $port]
+      set tile [get_tiles -of_objects $site]
+      set pin [get_property PACKAGE_PIN $port]
+      puts "IOB33 $port $site $tile $pin"
+      set orig_init [get_property PULLTYPE $port]
+      set_property PULLTYPE PULLUP $port
+      write_bitstream -force design_$site.bit
+      set_property PULLTYPE "$orig_init" $port
+    }
+}
+
 proc run {} {
     make_project
     set selected_luts [loc_luts]
@@ -140,9 +178,9 @@ proc run {} {
     write_bitstream -force design.bit
 
     write_tiles_txt
+    write_io
     write_clbs $selected_luts
     write_brams $selected_brams
 }
 
 run
-

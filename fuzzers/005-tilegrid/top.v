@@ -1,10 +1,13 @@
 //Need at least one LUT per frame base address we want
 `define N_LUT 100
 `define N_BRAM 8
+`define N_IOB 250
 
-module top(input clk, stb, di, output do);
-	localparam integer DIN_N = 8;
-	localparam integer DOUT_N = `N_LUT + `N_BRAM;
+module top(input clk, stb, [DIN_N-1:0] di, output do);
+	// 3 IOB's are used for clk, stb, and do.
+	// Rest are wired to di.
+	parameter integer DIN_N = `N_IOB - 3;
+	parameter integer DOUT_N = `N_LUT + `N_BRAM;
 
 	reg [DIN_N-1:0] din;
 	wire [DOUT_N-1:0] dout;
@@ -25,7 +28,7 @@ module top(input clk, stb, di, output do);
 
 	roi roi (
 		.clk(clk),
-		.din(din),
+		.din(din[7:0]),
 		.dout(dout)
 	);
 endmodule
