@@ -65,4 +65,4 @@ def bitfilter(frame_idx, bit_idx):
 
 
 segmk.compile(bitfilter=bitfilter)
-segmk.write()
+segmk.write(allow_empty=True)

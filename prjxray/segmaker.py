@@ -260,12 +260,13 @@ class Segmaker:
             print("Grid DB had %u tile types" % len(tile_types_found))
             assert ntags and ntags == len(tags_used)
 
-    def write(self, suffix=None, roi=False):
+    def write(self, suffix=None, roi=False, allow_empty=False):
         assert self.segments_by_type, 'No data to write'
 
-        assert sum(
-            [len(segments) for segments in self.segments_by_type.values()
-             ]) != 0
+        if not allow_empty:
+            assert sum(
+                [len(segments) for segments in self.segments_by_type.values()
+                 ]) != 0
 
         for segtype in self.segments_by_type.keys():
             if suffix is not None:
