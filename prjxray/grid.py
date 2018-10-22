@@ -3,11 +3,11 @@ import enum
 from prjxray import segment_map
 
 
-class SegmentType(enum.Enum):
-    # Segments describing CLB features, interconnect, clocks and IOs.
+class BlockType(enum.Enum):
+    # Frames describing CLB features, interconnect, clocks and IOs.
     CLB_IO_CLK = 'CLB_IO_CLK'
 
-    # Segments describing block RAM initialization.
+    # Frames describing block RAM initialization.
     BLOCK_RAM = 'BLOCK_RAM'
 
 
@@ -58,7 +58,7 @@ class Grid(object):
 
             if 'bits' in tileinfo:
                 for k in tileinfo['bits']:
-                    segment_type = SegmentType(k)
+                    segment_type = BlockType(k)
                     base_address = int(tileinfo['bits'][k]['baseaddr'], 0)
                     bits[segment_type] = Bits(
                         base_address=base_address,

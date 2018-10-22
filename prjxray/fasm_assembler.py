@@ -92,7 +92,7 @@ class FasmAssembler(object):
         gridinfo = self.grid.gridinfo_at_tilename(tile)
 
         # TODO: How to determine if the feature targets BLOCK_RAM segment type?
-        bits = gridinfo.bits[grid.SegmentType.CLB_IO_CLK]
+        bits = gridinfo.bits[grid.BlockType.CLB_IO_CLK]
 
         seg_baseaddr = bits.base_address
         seg_word_base = bits.offset
