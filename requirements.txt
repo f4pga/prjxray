@@ -1,4 +1,5 @@
 futures
+intervaltree
 numpy
 progressbar2
 pyjson5
