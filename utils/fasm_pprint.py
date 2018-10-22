@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 '''
-Takes input FASM and outputs optionally canonical FASM.
+Pretty print FASM.
+
+Sanity checks FASM against prjxray database.
+Can output canonical FASM.
+In the future may support other formatting options.
+
 '''
 
 import os
@@ -62,7 +67,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=
-        'Read FASM file, check against database, and output optionally canonical FASM.'
+        'Pretty print a FASM file.'
     )
 
     database_dir = os.getenv("XRAY_DATABASE_DIR")
