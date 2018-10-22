@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+""" Tool for generating Vivavo commands to highlight objects from a FASM file.
+
+Currently this tool only highlights pips directly referenced in the FASM file.
+"""
 
 from __future__ import print_function
 import os.path
@@ -9,7 +13,7 @@ from prjxray import db
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Convert FASM to pip list')
+    parser = argparse.ArgumentParser(description='Outputs a Vivavo highlight_objects command from a FASM file.')
 
     database_dir = os.getenv("XRAY_DATABASE_DIR")
     database = os.getenv("XRAY_DATABASE")
