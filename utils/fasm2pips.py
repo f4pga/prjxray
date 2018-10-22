@@ -13,7 +13,9 @@ from prjxray import db
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Outputs a Vivavo highlight_objects command from a FASM file.')
+    parser = argparse.ArgumentParser(
+        description=
+        'Outputs a Vivavo highlight_objects command from a FASM file.')
 
     database_dir = os.getenv("XRAY_DATABASE_DIR")
     database = os.getenv("XRAY_DATABASE")

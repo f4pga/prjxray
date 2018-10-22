@@ -4,6 +4,7 @@ class Roi(object):
     Can be used to iterate over tiles and sites within an ROI.
 
     """
+
     def __init__(self, db, x1, x2, y1, y2):
         self.grid = db.grid()
         self.x1 = x1
@@ -50,7 +51,6 @@ class Roi(object):
                 continue
 
             gridinfo = self.grid.gridinfo_at_loc(loc)
-
 
             for site_name, site_type in gridinfo.sites.items():
                 if site_types is not None and site_type not in site_types:

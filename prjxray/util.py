@@ -32,12 +32,7 @@ def slice_xy():
 def get_roi():
     (x1, x2), (y1, y2) = roi_xy()
     db = Database(get_db_root())
-    return Roi(
-        db=db,
-        x1=x1,
-        x2=x2,
-        y1=y1,
-        y2=y2)
+    return Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2)
 
 
 # we know that all bits for CLB MUXes are in frames 30 and 31, so filter all other bits

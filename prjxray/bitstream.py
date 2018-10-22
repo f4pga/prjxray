@@ -4,6 +4,7 @@ WORD_SIZE_BITS = 32
 # How many 32-bit words for frame in a 7-series bitstream?
 FRAME_WORD_COUNT = 101
 
+
 def load_bitdata(f):
     """ Read bit file and return bitdata map.
 
