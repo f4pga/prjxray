@@ -65,10 +65,7 @@ def run(db_root, fasm_file, canonical):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description=
-        'Pretty print a FASM file.'
-    )
+    parser = argparse.ArgumentParser(description='Pretty print a FASM file.')
 
     database_dir = os.getenv("XRAY_DATABASE_DIR")
     database = os.getenv("XRAY_DATABASE")
