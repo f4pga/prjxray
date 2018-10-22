@@ -6,9 +6,8 @@
 WA7USED = 0
 
 from prjxray.segmaker import Segmaker
-from prjxray import util
 
-segmk = Segmaker(util.get_db_root(), "design.bits")
+segmk = Segmaker("design.bits")
 
 print("Loading tags")
 '''

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 from prjxray.segmaker import Segmaker
-from prjxray import util
 
-segmk = Segmaker(util.get_db_root(), "design.bits")
+segmk = Segmaker("design.bits")
 
 # Can fit 4 per CLB
 # BELable

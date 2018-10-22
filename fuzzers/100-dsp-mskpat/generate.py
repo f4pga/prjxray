@@ -3,9 +3,8 @@
 import sys
 
 from prjxray.segmaker import Segmaker
-from prjxray import util
 
-segmk = Segmaker(util.get_db_root(), "design_%s.bits" % sys.argv[1])
+segmk = Segmaker("design_%s.bits" % sys.argv[1])
 
 pipdata = dict()
 ignpip = set()

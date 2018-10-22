@@ -11,9 +11,8 @@ LDPE Primitive: Transparent Data Latch with Asynchronous Preset and Gate Enable
 from prims import *
 
 from prjxray.segmaker import Segmaker
-from prjxray import util
 
-segmk = Segmaker(util.get_db_root(), "design.bits")
+segmk = Segmaker("design.bits")
 
 
 def ones(l):

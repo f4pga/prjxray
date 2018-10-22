@@ -3,9 +3,8 @@
 import sys
 
 from prjxray.segmaker import Segmaker
-from prjxray import util
 
-segmk = Segmaker(util.get_db_root(), "design_%s.bits" % sys.argv[1])
+segmk = Segmaker("design_%s.bits" % sys.argv[1])
 
 print("Loading tags from design_%s.txt." % sys.argv[1])
 with open("design_%s.txt" % sys.argv[1], "r") as f:

@@ -3,7 +3,6 @@
 import sys
 
 from prjxray.segmaker import Segmaker
-from prjxray import util
 
 tags = dict()
 en_tags = dict()
@@ -24,7 +23,7 @@ for arg in sys.argv[1:]:
 
 for arg in sys.argv[1:]:
     print("Processing %s." % arg)
-    segmk = Segmaker(util.get_db_root(), arg + ".bits")
+    segmk = Segmaker(arg + ".bits")
 
     tiledata = dict()
     pipdata = dict()

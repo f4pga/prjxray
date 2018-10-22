@@ -14,6 +14,7 @@ tilegrid.json provides tile addresses
 '''
 
 import os, json, re
+from prjxray import util
 
 BLOCK_TYPES = set(('CLB_IO_CLK', 'BLOCK_RAM', 'CFG_CLB'))
 
@@ -38,8 +39,11 @@ def json_hex2i(s):
 
 
 class Segmaker:
-    def __init__(self, db_root, bitsfile, verbose=None):
+    def __init__(self, bitsfile, verbose=None, db_root=None):
         self.db_root = db_root
+        if self.db_root is None:
+            self.db_root = util.get_db_root()
+
         self.verbose = verbose if verbose is not None else os.getenv(
             'VERBOSE', 'N') == 'Y'
         self.load_grid()

@@ -3,7 +3,7 @@
 from prjxray.segmaker import Segmaker
 from prjxray import util
 
-segmk = Segmaker(util.get_db_root(), "design.bits")
+segmk = Segmaker("design.bits")
 cache = dict()
 
 print("Loading tags")

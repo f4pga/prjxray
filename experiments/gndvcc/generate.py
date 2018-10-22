@@ -3,9 +3,8 @@
 import re
 
 from prjxray.segmaker import Segmaker
-from prjxray import util
 
-segmk = Segmaker(util.get_db_root(), "design.bits")
+segmk = Segmaker("design.bits")
 
 tiledata = dict()
 pipdata = dict()
