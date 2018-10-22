@@ -40,7 +40,7 @@ def main():
     parser.add_argument('--db_root', help="Database root.", **db_root_kwargs)
     parser.add_argument('bits_file', help='')
     parser.add_argument(
-        'verbose',
+        '--verbose',
         help='Print lines for unknown tiles and bits',
         action='store_true')
     parser.add_argument(

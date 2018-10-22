@@ -108,7 +108,7 @@ class FasmDisassembler(object):
                         verbose=verbose):
                     yield fasm_line
 
-            if len(bitdata[frame]) > 0 and verbose:
+            if len(bitdata[frame][1]) > 0 and verbose:
                 # Some bits were not decoded, add warning and annotations to
                 # FASM.
                 yield fasm.FasmLine(
@@ -117,7 +117,7 @@ class FasmDisassembler(object):
                     comment=" In frame 0x{:08x} {} bits were not converted.".
                     format(
                         frame,
-                        len(bitdata[frame]),
+                        len(bitdata[frame][1]),
                     ))
 
                 for bit in bitdata[frame][1]:
