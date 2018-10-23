@@ -13,3 +13,9 @@ test ! -e "$1"
 mkdir "$1"
 cd "$1"
 
+export SEED="$(echo $1 | md5sum | cut -c1-8)"
+
+function seed_vh () {
+    echo '`define SEED 32'"'h${SEED}" > setseed.vh
+}
+
