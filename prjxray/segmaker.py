@@ -231,7 +231,7 @@ class Segmaker:
                     return site_prefix
 
                 sitekey = {
-                    'slice': name_slice,
+                    'SLICE': name_slice,
                 }.get(site_prefix, name_default)()
 
                 for name, value in self.site_tags[site].items():
