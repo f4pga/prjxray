@@ -15,8 +15,9 @@ SRLC32E_N
 Note: LUT6 was added to try to simplify reduction, although it might not be needed
 '''
 
+import os
 import random
-random.seed(0)
+random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
 import sys
@@ -36,7 +37,7 @@ def gen_bram36():
         yield site_name
 
 
-DUTN = 2
+DUTN = 10
 DIN_N = DUTN * 8
 DOUT_N = DUTN * 8
 
