@@ -60,6 +60,14 @@ class Segmaker:
         # output after compiling
         self.segments_by_type = None
 
+        # hacky...improve if we encounter this more
+        self.def_bt = 'CLB_IO_CLK'
+
+    def set_def_bt(self, block_type):
+        '''Set default block type when more than one block present'''
+        assert block_type in BLOCK_TYPES
+        self.def_bt = block_type
+
     def load_grid(self):
         '''Load self.grid holding tile addresses'''
         with open(os.path.join(self.db_root, "tilegrid.json"), "r") as f:
@@ -234,10 +242,6 @@ class Segmaker:
                     tag = tag.replace(".SLICEL.", ".")
                     segments[segname]["tags"][tag] = value
 
-            # ignore dummy tiles (ex: VBRK)
-            if "bits" not in tiledata:
-                continue
-
             tile_type = tiledata["type"]
             tile_types_found.add(tile_type)
             segments = self.segments_by_type.setdefault(tile_type, dict())
@@ -248,22 +252,31 @@ class Segmaker:
             '''
             tile_type_norm = re.sub("(LL|LM)?_[LR]$", "", tile_type)
 
-            for block_type, bitj in tiledata['bits'].items():
-                # NOTE: multiple tiles may have the same base addr + offset
-                segname = "%s_%03d" % (
-                    # truncate 0x to leave hex string
-                    bitj["baseaddr"][2:],
-                    bitj["offset"])
+            # ignore dummy tiles (ex: VBRK)
+            if len(tiledata['bits']) == 0:
+                continue
+            elif len(tiledata['bits']) == 1:
+                bitj = list(tiledata['bits'].values())[0]
+            else:
+                assert self.def_bt in tiledata[
+                    'bits'], 'Default block not present: %s' % self.def_bt
+                bitj = tiledata['bits'][self.def_bt]
 
-                # process tile name tags
-                if tilename in self.tile_tags:
-                    add_tilename_tags()
+            # NOTE: multiple tiles may have the same base addr + offset
+            segname = "%s_%03d" % (
+                # truncate 0x to leave hex string
+                bitj["baseaddr"][2:],
+                bitj["offset"])
 
-                # process site name tags
-                for site in tiledata["sites"]:
-                    if site not in self.site_tags:
-                        continue
-                    add_site_tags()
+            # process tile name tags
+            if tilename in self.tile_tags:
+                add_tilename_tags()
+
+            # process site name tags
+            for site in tiledata["sites"]:
+                if site not in self.site_tags:
+                    continue
+                add_site_tags()
 
         if self.verbose:
             ntags = recurse_sum(self.site_tags) + recurse_sum(self.tile_tags)
@@ -290,6 +303,7 @@ class Segmaker:
             with open(filename, "w") as f:
                 segments = self.segments_by_type[segtype]
                 for segname, segdata in sorted(segments.items()):
+                    # seg 00020300_010
                     print("seg %s" % segname, file=f)
                     for bitname in sorted(segdata["bits"]):
                         print("bit %s" % bitname, file=f)
