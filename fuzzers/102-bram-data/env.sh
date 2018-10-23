@@ -1,7 +1,0 @@
-#!/bin/bash
-export XRAY_ROI=SLICE_X0Y100:SLICE_X27Y149
-#export XRAY_ROI_FRAMES=0x00820000:0x00820080
-export XRAY_ROI_FRAMES=0x00000000:0xFFFFFFFF
-export XRAY_ROI_GRID_X1="9"
-source $XRAY_DIR/utils/environment.sh
-
