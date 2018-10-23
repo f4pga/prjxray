@@ -361,8 +361,8 @@ proc node2wire {node} {
 }
 
 proc write_grid_roi {fp} {
-    foreach {slices} [split "$::env(XRAY_ROI)" " "] {
-        foreach site_name [split "$slices" :] {
+    foreach {sites} [split "$::env(XRAY_ROI)" " "] {
+        foreach site_name [split "$sites" :] {
             set site [get_sites $site_name]
             set tile [get_tiles -of_objects $site]
             lappend grid_xs [get_property GRID_POINT_X $tile]
