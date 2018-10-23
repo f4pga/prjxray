@@ -1,19 +1,4 @@
-'''
-Need coverage for the following:
-RAM32X1S_N
-RAM32X1D
-RAM32M
-RAM64X1S_N
-RAM64X1D_N
-RAM64M
-RAM128X1S_N
-RAM128X1D
-RAM256X1S
-SRL16E_N
-SRLC32E_N
-
-Note: LUT6 was added to try to simplify reduction, although it might not be needed
-'''
+#!/usr/bin/env python
 
 import os
 import random
@@ -21,13 +6,6 @@ random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
 import sys
-
-
-def gen_bram18():
-    # yield "RAMB18_X%dY%d" % (x, y)
-    for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
-        ['RAMB18E1']):
-        yield site_name
 
 
 def gen_bram36():
@@ -54,11 +32,8 @@ def randbits(n):
     return ''.join([random.choice(('0', '1')) for _x in range(n)])
 
 
-loci = 0
-
-
 def make(module, gen_locs, pdatan, datan):
-    global loci
+    loci = 0
 
     for loci, loc in enumerate(gen_locs()):
         if loci >= DUTN:
@@ -87,7 +62,6 @@ def make(module, gen_locs, pdatan, datan):
     assert loci == DUTN
 
 
-#make('my_RAMB18E1', gen_bram18, 0x08, 0x40)
 make('my_RAMB36E1', gen_bram36, 0x10, 0x80)
 
 f.close()
@@ -98,74 +72,8 @@ print(
 
 ''')
 
-# RAMB18E1
 print(
     '''
-module my_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "";
-    ''')
-for i in range(8):
-    print(
-        "    parameter INITP_%02X = 256'h0000000000000000000000000000000000000000000000000000000000000000;"
-        % i)
-print('')
-for i in range(0x40):
-    print(
-        "    parameter INIT_%02X = 256'h0000000000000000000000000000000000000000000000000000000000000000;"
-        % i)
-print('')
-print('''\
-    (* LOC=LOC *)
-    RAMB18E1 #(''')
-for i in range(8):
-    print('            .INITP_%02X(INITP_%02X),' % (i, i))
-print('')
-for i in range(0x40):
-    print('            .INIT_%02X(INIT_%02X),' % (i, i))
-print('')
-print(
-    '''
-            .IS_CLKARDCLK_INVERTED(1'b0),
-            .IS_CLKBWRCLK_INVERTED(1'b0),
-            .IS_ENARDEN_INVERTED(1'b0),
-            .IS_ENBWREN_INVERTED(1'b0),
-            .IS_RSTRAMARSTRAM_INVERTED(1'b0),
-            .IS_RSTRAMB_INVERTED(1'b0),
-            .IS_RSTREGARSTREG_INVERTED(1'b0),
-            .IS_RSTREGB_INVERTED(1'b0),
-            .RAM_MODE("TDP"),
-            .WRITE_MODE_A("WRITE_FIRST"),
-            .WRITE_MODE_B("WRITE_FIRST"),
-            .SIM_DEVICE("VIRTEX6")
-        ) ram (
-            .CLKARDCLK(din[0]),
-            .CLKBWRCLK(din[1]),
-            .ENARDEN(din[2]),
-            .ENBWREN(din[3]),
-            .REGCEAREGCE(din[4]),
-            .REGCEB(din[5]),
-            .RSTRAMARSTRAM(din[6]),
-            .RSTRAMB(din[7]),
-            .RSTREGARSTREG(din[0]),
-            .RSTREGB(din[1]),
-            .ADDRARDADDR(din[2]),
-            .ADDRBWRADDR(din[3]),
-            .DIADI(din[4]),
-            .DIBDI(din[5]),
-            .DIPADIP(din[6]),
-            .DIPBDIP(din[7]),
-            .WEA(din[0]),
-            .WEBWE(din[1]),
-            .DOADO(dout[0]),
-            .DOBDO(dout[1]),
-            .DOPADOP(dout[2]),
-            .DOPBDOP(dout[3]));
-endmodule
-''')
-
-print(
-    '''
-
 module my_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
     ''')

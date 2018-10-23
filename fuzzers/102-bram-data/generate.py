@@ -2,7 +2,6 @@
 
 import sys, re, os
 
-sys.path.append("../../../utils/")
 from prjxray.segmaker import Segmaker
 
 c2i = {'0': 0, '1': 1}
