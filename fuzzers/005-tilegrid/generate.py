@@ -461,12 +461,15 @@ def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
     # Index of first word used within each frame
     block["offset"] = offset
     # Number of words consumed in each frame
-    block["words"] = words
+    block["height"] = height
 
     # related to words...
     # deprecated field? Don't worry about for now
-    if height is not None:
-        block["height"] = height
+    # DSP has some differences between height and words
+    block["words"] = words
+    if height is None:
+        height = words
+    block["height"] = height
 
 
 def db_add_bits(database, segments):
