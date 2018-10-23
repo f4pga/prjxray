@@ -1,13 +1,6 @@
-/*
-ROM128X1: 128-Deep by 1-Wide ROM
-ROM256X1: 256-Deep by 1-Wide ROM
-ROM32X1: 32-Deep by 1-Wide ROM
-ROM64X1: 64-Deep by 1-Wide ROM
-*/
-
 module top(input clk, stb, di, output do);
-	localparam integer DIN_N = 256;
-	localparam integer DOUT_N = 256;
+	localparam integer DIN_N = 8;
+	localparam integer DOUT_N = 8;
 
 	reg [DIN_N-1:0] din;
 	wire [DOUT_N-1:0] dout;
@@ -26,169 +19,14 @@ module top(input clk, stb, di, output do);
 
 	assign do = dout_shr[DOUT_N-1];
 
-	roi roi (
-		.clk(clk),
-		.din(din),
-		.dout(dout)
-	);
-endmodule
 
-/*
-One BRAM per tile
-*/
-module roi(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y42"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y44"), .INIT0(1'b1), .INIT({256{1'b0}}))
-            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));    
-endmodule
 
-/*
-Place everything into first tile
-This is invalid since 18/36 share resources
-*/
-module roi_invalid(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT({256{1'b1}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y41"), .INIT({256{1'b1}}))
-            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT({256{1'b1}}))
-            r2(.clk(clk), .din(din[  16 +: 8]), .dout(dout[  16 +: 8]));
-endmodule
 
-/*
-Site RAMB18_X0Y42
-Pushed it outside the pblock
-lets extend pblock
 
-for i in xrange(0x08): print '.INITP_%02X(INIT),' % i
-for i in xrange(0x40): print '.INIT_%02X(INIT),' % i
-*/
-module ram_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "";
-    parameter INIT0 = 256'h0000000000000000000000000000000000000000000000000000000000000000;
     parameter INIT = 256'h0000000000000000000000000000000000000000000000000000000000000000;
 
-    (* LOC=LOC *)
-    RAMB18E1 #(
-            .INITP_00(INIT),
-            .INITP_01(INIT),
-            .INITP_02(INIT),
-            .INITP_03(INIT),
-            .INITP_04(INIT),
-            .INITP_05(INIT),
-            .INITP_06(INIT),
-            .INITP_07(INIT),
-
-            .INIT_00(INIT0),
-            .INIT_01(INIT),
-            .INIT_02(INIT),
-            .INIT_03(INIT),
-            .INIT_04(INIT),
-            .INIT_05(INIT),
-            .INIT_06(INIT),
-            .INIT_07(INIT),
-            .INIT_08(INIT),
-            .INIT_09(INIT),
-            .INIT_0A(INIT),
-            .INIT_0B(INIT),
-            .INIT_0C(INIT),
-            .INIT_0D(INIT),
-            .INIT_0E(INIT),
-            .INIT_0F(INIT),
-            .INIT_10(INIT),
-            .INIT_11(INIT),
-            .INIT_12(INIT),
-            .INIT_13(INIT),
-            .INIT_14(INIT),
-            .INIT_15(INIT),
-            .INIT_16(INIT),
-            .INIT_17(INIT),
-            .INIT_18(INIT),
-            .INIT_19(INIT),
-            .INIT_1A(INIT),
-            .INIT_1B(INIT),
-            .INIT_1C(INIT),
-            .INIT_1D(INIT),
-            .INIT_1E(INIT),
-            .INIT_1F(INIT),
-            .INIT_20(INIT),
-            .INIT_21(INIT),
-            .INIT_22(INIT),
-            .INIT_23(INIT),
-            .INIT_24(INIT),
-            .INIT_25(INIT),
-            .INIT_26(INIT),
-            .INIT_27(INIT),
-            .INIT_28(INIT),
-            .INIT_29(INIT),
-            .INIT_2A(INIT),
-            .INIT_2B(INIT),
-            .INIT_2C(INIT),
-            .INIT_2D(INIT),
-            .INIT_2E(INIT),
-            .INIT_2F(INIT),
-            .INIT_30(INIT),
-            .INIT_31(INIT),
-            .INIT_32(INIT),
-            .INIT_33(INIT),
-            .INIT_34(INIT),
-            .INIT_35(INIT),
-            .INIT_36(INIT),
-            .INIT_37(INIT),
-            .INIT_38(INIT),
-            .INIT_39(INIT),
-            .INIT_3A(INIT),
-            .INIT_3B(INIT),
-            .INIT_3C(INIT),
-            .INIT_3D(INIT),
-            .INIT_3E(INIT),
-            .INIT_3F(INIT),
-
-            .IS_CLKARDCLK_INVERTED(1'b0),
-            .IS_CLKBWRCLK_INVERTED(1'b0),
-            .IS_ENARDEN_INVERTED(1'b0),
-            .IS_ENBWREN_INVERTED(1'b0),
-            .IS_RSTRAMARSTRAM_INVERTED(1'b0),
-            .IS_RSTRAMB_INVERTED(1'b0),
-            .IS_RSTREGARSTREG_INVERTED(1'b0),
-            .IS_RSTREGB_INVERTED(1'b0),
-            .RAM_MODE("TDP"),
-            .WRITE_MODE_A("WRITE_FIRST"),
-            .WRITE_MODE_B("WRITE_FIRST"),
-            .SIM_DEVICE("VIRTEX6")
-        ) ram (
-            .CLKARDCLK(din[0]),
-            .CLKBWRCLK(din[1]),
-            .ENARDEN(din[2]),
-            .ENBWREN(din[3]),
-            .REGCEAREGCE(din[4]),
-            .REGCEB(din[5]),
-            .RSTRAMARSTRAM(din[6]),
-            .RSTRAMB(din[7]),
-            .RSTREGARSTREG(din[0]),
-            .RSTREGB(din[1]),
-            .ADDRARDADDR(din[2]),
-            .ADDRBWRADDR(din[3]),
-            .DIADI(din[4]),
-            .DIBDI(din[5]),
-            .DIPADIP(din[6]),
-            .DIPBDIP(din[7]),
-            .WEA(din[0]),
-            .WEBWE(din[1]),
-            .DOADO(dout[0]),
-            .DOBDO(dout[1]),
-            .DOPADOP(dout[2]),
-            .DOPBDOP(dout[3]));
-
-endmodule
-
-module ram_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
-    parameter LOC = "";
-    parameter INIT = 256'h0000000000000000000000000000000000000000000000000000000000000000;
-
+	//(* LOC=LOC, BEL=BEL, KEEP, DONT_TOUCH *)
+	(* KEEP, DONT_TOUCH *)
     RAMB36E1 #(
             .INITP_00(INIT),
             .INITP_01(INIT),
@@ -341,14 +179,13 @@ module ram_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
             .IS_CLKBWRCLK_INVERTED(1'b0),
             .IS_ENARDEN_INVERTED(1'b0),
             .IS_ENBWREN_INVERTED(1'b0),
-            .IS_RSTRAMARSTRAM_INVERTED(1'b0),
+            .IS_RSTRAMARSTRAM_INVERTED(1'b1),
             .IS_RSTRAMB_INVERTED(1'b0),
             .IS_RSTREGARSTREG_INVERTED(1'b0),
             .IS_RSTREGB_INVERTED(1'b0),
             .RAM_MODE("TDP"),
             .WRITE_MODE_A("WRITE_FIRST"),
-            .WRITE_MODE_B("WRITE_FIRST"),
-            .SIM_DEVICE("VIRTEX6")
+            .WRITE_MODE_B("WRITE_FIRST")
         ) ram (
             .CLKARDCLK(din[0]),
             .CLKBWRCLK(din[1]),

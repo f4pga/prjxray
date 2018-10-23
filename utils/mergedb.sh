@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# $1: DB type
+# $2: filename to merge in
+
 set -ex
 test $# = 2
 test -e "$2"
@@ -8,6 +11,10 @@ tmp1=`mktemp -p .`
 tmp2=`mktemp -p .`
 
 db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/segbits_$1.db
+
+# Fuzzers verify L/R data is equivilent
+# However, expand back to L/R to make downstream tools not depend on this
+# in case we later find exceptions
 
 case "$1" in
 	clbll_l)
@@ -35,6 +42,11 @@ case "$1" in
 	bram_l)
 		sed < "$2" > "$tmp1" -e 's/^BRAM\./BRAM_L./' ;;
 	bram_r)
+		sed < "$2" > "$tmp1" -e 's/^BRAM\./BRAM_R./' ;;
+
+	bram_l.block_ram)
+		sed < "$2" > "$tmp1" -e 's/^BRAM\./BRAM_L./' ;;
+	bram_r.block_ram)
 		sed < "$2" > "$tmp1" -e 's/^BRAM\./BRAM_R./' ;;
 
 	int_l)
