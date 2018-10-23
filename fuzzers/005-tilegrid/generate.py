@@ -486,7 +486,7 @@ def db_add_bits(database, segments):
                     ("HCLK", "CLB_IO_CLK"): (26, 1, 1),
                     ("INT", "CLB_IO_CLK"): (28, 2, 2),
                     ("BRAM", "CLB_IO_CLK"): (28, 2, None),
-                    ("BRAM", "BLOCK_RAM"): (128, 5, None),
+                    ("BRAM", "BLOCK_RAM"): (128, 10, None),
                     ("DSP", "CLB_IO_CLK"): (28, 2, 10),
                     ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
                     ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
