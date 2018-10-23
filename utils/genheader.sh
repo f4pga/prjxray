@@ -9,11 +9,13 @@ set -ex
 
 # for some reason on sourced script set -e doesn't work
 test $# = 1 || exit 1
-test ! -e "$1"
-mkdir "$1"
-cd "$1"
+test ! -e "$SPECN"
+SPECN=$1
 
-export SEED="$(echo $1 | md5sum | cut -c1-8)"
+mkdir "$SPECN"
+cd "$SPECN"
+
+export SEED="$(echo $SPECN | md5sum | cut -c1-8)"
 
 function seed_vh () {
     echo '`define SEED 32'"'h${SEED}" > setseed.vh
