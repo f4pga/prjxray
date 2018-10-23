@@ -17,81 +17,30 @@ Note: LUT6 was added to try to simplify reduction, although it might not be need
 
 import random
 random.seed(0)
-import os
-import re
-
-
-def slice_xy():
-    '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for range)'''
-    # SLICE_X12Y100:SLICE_X27Y149
-    # Note XRAY_ROI_GRID_* is something else
-    m = re.match(r'SLICE_X(.*)Y(.*):SLICE_X(.*)Y(.*)', os.getenv('XRAY_ROI'))
-    ms = [int(m.group(i + 1)) for i in range(4)]
-    return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
-
-
-# 18 + 36 count in ROI
-DUTN = 10
-SLICEX, SLICEY = slice_xy()
-# 800
-SLICEN = (SLICEY[1] - SLICEY[0]) * (SLICEX[1] - SLICEX[0])
-print('//SLICEX: %s' % str(SLICEX))
-print('//SLICEY: %s' % str(SLICEY))
-print('//SLICEN: %s' % str(SLICEN))
-print('//Requested DUTs: %s' % str(DUTN))
+from prjxray import util
+from prjxray import verilog
+import sys
 
 
 def gen_bram18():
-    # TODO: generate this from DB
-    assert ((6, 28) == SLICEX)
-    x = 0
-    for y in range(40, 60):
-        # caller may reject position if needs more room
-        yield "RAMB18_X%dY%d" % (x, y)
+    # yield "RAMB18_X%dY%d" % (x, y)
+    for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
+        ['RAMB18E1']):
+        yield site_name
 
 
 def gen_bram36():
-    # TODO: generate this from DB
-    assert ((6, 28) == SLICEX)
-    x = 0
-    for y in range(20, 29):
-        # caller may reject position if needs more room
-        yield "RAMB36_X%dY%d" % (x, y)
+    #yield "RAMB36_X%dY%d" % (x, y)
+    for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
+        ['RAMBFIFO36E1']):
+        yield site_name
 
 
+DUTN = 2
 DIN_N = DUTN * 8
 DOUT_N = DUTN * 8
 
-print(
-    '''
-module top(input clk, stb, di, output do);
-    localparam integer DIN_N = %d;
-    localparam integer DOUT_N = %d;
-
-    reg [DIN_N-1:0] din;
-    wire [DOUT_N-1:0] dout;
-
-    reg [DIN_N-1:0] din_shr;
-    reg [DOUT_N-1:0] dout_shr;
-
-    always @(posedge clk) begin
-        din_shr <= {din_shr, di};
-        dout_shr <= {dout_shr, din_shr[DIN_N-1]};
-        if (stb) begin
-            din <= din_shr;
-            dout_shr <= dout;
-        end
-    end
-
-    assign do = dout_shr[DOUT_N-1];
-
-    roi roi (
-        .clk(clk),
-        .din(din),
-        .dout(dout)
-    );
-endmodule
-''' % (DIN_N, DOUT_N))
+verilog.top_harness(DIN_N, DOUT_N)
 
 f = open('params.csv', 'w')
 f.write('module,loc,pdata,data\n')
@@ -110,25 +59,31 @@ loci = 0
 def make(module, gen_locs, pdatan, datan):
     global loci
 
-    for loc in gen_locs():
+    for loci, loc in enumerate(gen_locs()):
+        if loci >= DUTN:
+            break
+
         pdata = randbits(pdatan * 0x100)
         data = randbits(datan * 0x100)
 
         print('    %s #(' % module)
         for i in range(pdatan):
             print(
-                "    .INITP_%02X(256'b%s)," %
+                "        .INITP_%02X(256'b%s)," %
                 (i, pdata[i * 256:(i + 1) * 256]))
         for i in range(datan):
             print(
-                "    .INIT_%02X(256'b%s)," % (i, data[i * 256:(i + 1) * 256]))
-        print('.LOC("%s"))' % (loc, ))
+                "        .INIT_%02X(256'b%s)," %
+                (i, data[i * 256:(i + 1) * 256]))
+        print('        .LOC("%s"))' % (loc, ))
         print(
             '            inst_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
             % (loci, 8 * loci, 8 * loci))
 
         f.write('%s,%s,%s,%s\n' % (module, loc, pdata, data))
+        print('')
         loci += 1
+    assert loci == DUTN
 
 
 #make('my_RAMB18E1', gen_bram18, 0x08, 0x40)
@@ -152,21 +107,21 @@ for i in range(8):
     print(
         "    parameter INITP_%02X = 256'h0000000000000000000000000000000000000000000000000000000000000000;"
         % i)
-print()
+print('')
 for i in range(0x40):
     print(
         "    parameter INIT_%02X = 256'h0000000000000000000000000000000000000000000000000000000000000000;"
         % i)
-print()
+print('')
 print('''\
     (* LOC=LOC *)
     RAMB18E1 #(''')
 for i in range(8):
     print('            .INITP_%02X(INITP_%02X),' % (i, i))
-print()
+print('')
 for i in range(0x40):
     print('            .INIT_%02X(INIT_%02X),' % (i, i))
-print()
+print('')
 print(
     '''
             .IS_CLKARDCLK_INVERTED(1'b0),
@@ -217,21 +172,21 @@ for i in range(16):
     print(
         "    parameter INITP_%02X = 256'h0000000000000000000000000000000000000000000000000000000000000000;"
         % i)
-print()
+print('')
 for i in range(0x80):
     print(
         "    parameter INIT_%02X = 256'h0000000000000000000000000000000000000000000000000000000000000000;"
         % i)
-print()
+print('')
 print('''\
     (* LOC=LOC *)
     RAMB36E1 #(''')
 for i in range(16):
     print('            .INITP_%02X(INITP_%02X),' % (i, i))
-print()
+print('')
 for i in range(0x80):
     print('            .INIT_%02X(INIT_%02X),' % (i, i))
-print()
+print('')
 print(
     '''
             .IS_CLKARDCLK_INVERTED(1'b0),
