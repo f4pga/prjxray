@@ -12,7 +12,7 @@ class BlockType(enum.Enum):
 
 
 GridLoc = namedtuple('GridLoc', 'grid_x grid_y')
-GridInfo = namedtuple('GridInfo', 'segment bits sites tile_type in_roi')
+GridInfo = namedtuple('GridInfo', 'segment bits sites tile_type')
 Bits = namedtuple('Bits', 'base_address frames offset words')
 BitsInfo = namedtuple('BitsInfo', 'segment_type tile bits')
 
@@ -43,11 +43,6 @@ class Grid(object):
             assert grid_loc not in self.loc
             self.loc[grid_loc] = tile
 
-            if 'in_roi' in tileinfo:
-                in_roi = tileinfo['in_roi']
-            else:
-                in_roi = True
-
             bits = {}
 
             if 'segment' in tileinfo:
@@ -72,7 +67,6 @@ class Grid(object):
                 bits=bits,
                 sites=tileinfo['sites'],
                 tile_type=tileinfo['type'],
-                in_roi=in_roi,
             )
 
         x, y = zip(*self.loc.keys())

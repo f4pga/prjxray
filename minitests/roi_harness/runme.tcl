@@ -360,6 +360,17 @@ proc node2wire {node} {
     return $wire
 }
 
+proc write_grid_roi {fp} {
+    puts $fp "GRID_X_MIN = $::env(XRAY_ROI_GRID_X1)"
+    puts $fp "GRID_X_MAX = $::env(XRAY_ROI_GRID_X2)"
+    puts $fp "GRID_Y_MIN = $::env(XRAY_ROI_GRID_Y1)"
+    puts $fp "GRID_Y_MAX = $::env(XRAY_ROI_GRID_Y2)"
+}
+
+set fp [open "design_info.txt" w]
+write_grid_roi $fp
+close $fp
+
 # XXX: maybe add IOB?
 set fp [open "design.txt" w]
 puts $fp "name node pin wire"
