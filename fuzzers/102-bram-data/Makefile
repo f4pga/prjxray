@@ -1,13 +1,13 @@
-N := 1
+N := 8
 SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o seg_bramx.segbits $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -o seg_bramx.segbits.BLOCK_RAM $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS))
 
 pushdb:
-	${XRAY_MERGEDB} bram_l seg_bramx.segbits
-	${XRAY_MERGEDB} bram_r seg_bramx.segbits
+	${XRAY_MERGEDB} bram_l seg_bramx.segbits.BLOCK_RAM
+	${XRAY_MERGEDB} bram_r seg_bramx.segbits.BLOCK_RAM
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
