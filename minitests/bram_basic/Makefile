@@ -7,6 +7,9 @@ clean:
 build/roi_bramd_bit01.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bramd_bit01.diff PRJL=roi_bramd_bit0 PRJR=roi_bramd_bit1
 
+build/roi_bramd2_bit01.diff:
+	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bramd2_bit01.diff PRJL=roi_bramd_bit0 PRJR=roi_bramd2_bit1
+
 # Toggle all bits in a single BRAM data section
 build/roi_bramd_bits01.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bramd_bits01.diff PRJL=roi_bramd_bits0 PRJR=roi_bramd_bits1

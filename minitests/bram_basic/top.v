@@ -55,6 +55,11 @@ module roi_bramd_bit1(input clk, input [255:0] din, output [255:0] dout);
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
+module roi_bramd2_bit1(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y10"), .INIT0(256'b10), .INIT({256{1'b0}}))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
 module roi_bram18d_bit0(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
