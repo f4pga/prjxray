@@ -148,6 +148,7 @@ class Segmaker:
                     "tags": dict(),
                     # verify new entries match this
                     "offset": bitj["offset"],
+                    "height": bitj["height"],
                     "words": bitj["words"],
                     "frames": bitj["frames"],
                 })
@@ -185,6 +186,7 @@ class Segmaker:
                 else:
                     segment = segments[segname]
                     assert segment["offset"] == bitj["offset"]
+                    assert segment["height"] == bitj["height"]
                     assert segment["words"] == bitj["words"]
                     assert segment["frames"] == bitj["frames"]
                     return segment
@@ -200,20 +202,29 @@ class Segmaker:
             def add_site_tags():
                 segment = getseg(segname)
 
-                if 'SLICE_' in site:
+                site_prefix = site.split('_')[0]
+
+                def name_slice():
                     '''
                     Simplify SLICE names like:
                     -SLICE_X12Y102 => SLICE_X0
                     -SLICE_X13Y102 => SLICE_X1
                     '''
                     if re.match(r"SLICE_X[0-9]*[02468]Y", site):
-                        sitekey = "SLICE_X0"
+                        return "SLICE_X0"
                     elif re.match(r"SLICE_X[0-9]*[13579]Y", site):
-                        sitekey = "SLICE_X1"
+                        return "SLICE_X1"
                     else:
                         assert 0
-                else:
-                    assert 0, 'Unhandled site type'
+
+                def name_default():
+                    # most sites are unique within their tile
+                    # TODO: maybe verify against DB?
+                    return site_prefix
+
+                sitekey = {
+                    'slice': name_slice,
+                }.get(site_prefix, name_default)()
 
                 for name, value in self.site_tags[site].items():
                     tags_used.add((site, name))
