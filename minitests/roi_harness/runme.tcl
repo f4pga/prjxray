@@ -361,41 +361,10 @@ proc node2wire {node} {
 }
 
 proc write_grid_roi {fp} {
-    foreach {sites} [split "$::env(XRAY_ROI)" " "] {
-        foreach site_name [split "$sites" :] {
-            set site [get_sites $site_name]
-            set tile [get_tiles -of_objects $site]
-            lappend grid_xs [get_property GRID_POINT_X $tile]
-            lappend grid_ys [get_property GRID_POINT_Y $tile]
-        }
-    }
-
-    set grid_x_min [lindex $grid_xs 0]
-    set grid_x_max [lindex $grid_xs 0]
-    set grid_y_min [lindex $grid_ys 0]
-    set grid_y_max [lindex $grid_ys 0]
-
-    foreach {grid_x} $grid_xs {
-        if {$grid_x > $grid_x_max} {
-            set grid_x_max $grid_x
-        }
-        if {$grid_x < $grid_x_min} {
-            set grid_x_min $grid_x
-        }
-    }
-    foreach {grid_y} $grid_ys {
-        if {$grid_y > $grid_y_max} {
-            set grid_y_max $grid_y
-        }
-        if {$grid_y < $grid_x_min} {
-            set grid_y_min $grid_y
-        }
-    }
-
-    puts $fp "GRID_X_MIN = $grid_x_min"
-    puts $fp "GRID_X_MAX = $grid_x_max"
-    puts $fp "GRID_Y_MIN = $grid_y_min"
-    puts $fp "GRID_Y_MAX = $grid_y_max"
+    puts $fp "GRID_X_MIN = $::env(XRAY_ROI_GRID_X1)"
+    puts $fp "GRID_X_MAX = $::env(XRAY_ROI_GRID_X2)"
+    puts $fp "GRID_Y_MIN = $::env(XRAY_ROI_GRID_Y1)"
+    puts $fp "GRID_Y_MAX = $::env(XRAY_ROI_GRID_Y2)"
 }
 
 set fp [open "design_info.txt" w]
