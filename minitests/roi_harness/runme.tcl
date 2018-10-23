@@ -360,6 +360,48 @@ proc node2wire {node} {
     return $wire
 }
 
+proc write_grid_roi {fp} {
+    foreach {slices} [split "$::env(XRAY_ROI)" " "] {
+        foreach site_name [split "$slices" :] {
+            set site [get_sites $site_name]
+            set tile [get_tiles -of_objects $site]
+            lappend grid_xs [get_property GRID_POINT_X $tile]
+            lappend grid_ys [get_property GRID_POINT_Y $tile]
+        }
+    }
+
+    set grid_x_min [lindex $grid_xs 0]
+    set grid_x_max [lindex $grid_xs 0]
+    set grid_y_min [lindex $grid_ys 0]
+    set grid_y_max [lindex $grid_ys 0]
+
+    foreach {grid_x} $grid_xs {
+        if {$grid_x > $grid_x_max} {
+            set grid_x_max $grid_x
+        }
+        if {$grid_x < $grid_x_min} {
+            set grid_x_min $grid_x
+        }
+    }
+    foreach {grid_y} $grid_ys {
+        if {$grid_y > $grid_y_max} {
+            set grid_y_max $grid_y
+        }
+        if {$grid_y < $grid_x_min} {
+            set grid_y_min $grid_y
+        }
+    }
+
+    puts $fp "GRID_X_MIN = $grid_x_min"
+    puts $fp "GRID_X_MAX = $grid_x_max"
+    puts $fp "GRID_Y_MIN = $grid_y_min"
+    puts $fp "GRID_Y_MAX = $grid_y_max"
+}
+
+set fp [open "design_info.txt" w]
+write_grid_roi $fp
+close $fp
+
 # XXX: maybe add IOB?
 set fp [open "design.txt" w]
 puts $fp "name node pin wire"

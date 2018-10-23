@@ -24,7 +24,7 @@ EOF
 stat ${XRAY_DIR}/database/artix7/${XRAY_PART}.yaml >/dev/null
 
 # 6x by 18y CLBs (108)
-if [ $SMALL = Y ] ; then
+if [ "$SMALL" = Y ] ; then
     echo "Design: small"
     export PITCH=1
     export DIN_N=8
@@ -37,6 +37,7 @@ else
     export DIN_N=8
     export DOUT_N=8
     export XRAY_ROI=SLICE_X12Y100:SLICE_X27Y149
+    #export XRAY_ROI=SLICE_X12Y100:SLICE_X5Y149
 fi
 
 mkdir -p $BUILD_DIR
@@ -59,6 +60,8 @@ ${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit
 ${XRAY_SEGPRINT} -zd design.bits >design.segp
 ${XRAY_DIR}/utils/bits2fasm.py --verbose design.bits > design.fasm
 ${XRAY_DIR}/utils/fasm2frames.py design.fasm design.frm
+python3 ../create_design_json.py --design_info_txt design_info.txt --design_txt design.txt > design.json
+
 # Hack to get around weird clock error related to clk net not found
 # Remove following lines:
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
