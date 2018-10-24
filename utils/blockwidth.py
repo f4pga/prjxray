@@ -88,7 +88,7 @@ def gen_major_writes(fnin):
 
 def run(fnin, verbose=False):
     for addr, nframes in gen_major_writes(fnin):
-        print('0x%08X: 0x%08X' % (addr, nframes))
+        print('0x%08X: 0x%02X' % (addr, nframes))
 
 
 def main():
