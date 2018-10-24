@@ -228,6 +228,15 @@ class Segmaker:
                     else:
                         assert 0
 
+                def name_bram18():
+                    # RAMB18_X0Y41
+                    if re.match(r"RAMB18_X.*Y[0-9]*[02468]", site):
+                        return "RAMB18_Y0"
+                    elif re.match(r"RAMB18_X.*Y[0-9]*[13579]", site):
+                        return "RAMB18_Y1"
+                    else:
+                        assert 0
+
                 def name_default():
                     # most sites are unique within their tile
                     # TODO: maybe verify against DB?
@@ -235,6 +244,7 @@ class Segmaker:
 
                 sitekey = {
                     'SLICE': name_slice,
+                    'RAMB18': name_bram18,
                 }.get(site_prefix, name_default)()
 
                 for name, value in self.site_tags[site].items():

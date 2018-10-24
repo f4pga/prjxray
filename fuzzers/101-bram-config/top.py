@@ -8,14 +8,20 @@ import json
 
 
 def gen_bram18():
-    # yield "RAMB18_X%dY%d" % (x, y)
-    for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
-        ['RAMB18E1']):
+    '''
+    sample:
+    "sites": {
+        "RAMB18_X0Y50": "FIFO18E1",
+        "RAMB18_X0Y51": "RAMB18E1",
+        "RAMB36_X0Y25": "RAMBFIFO36E1"
+    },
+    '''
+    for _tile_name, site_name, _site_type in sorted(util.get_roi().gen_sites(
+        ['RAMB18E1', 'FIFO18E1'])):
         yield site_name
 
 
 def gen_bram36():
-    #yield "RAMB36_X%dY%d" % (x, y)
     for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
         ['RAMBFIFO36E1']):
         yield site_name
@@ -30,8 +36,12 @@ def gen_brams():
     #return
 
     #for _tile_name, site_name, _site_type in util.get_roi().gen_tiles():
-    for site in gen_bram36():
-        yield ('RAMBFIFO36E1', site)
+
+    #for site in gen_bram36():
+    #    yield ('RAMBFIFO36E1', site)
+
+    for site in gen_bram18():
+        yield ('RAMB18E1', site)
 
 
 brams = list(gen_brams())
@@ -58,7 +68,26 @@ def vrandbit():
 for loci, (site_type, site) in enumerate(brams):
 
     def place_bram18():
-        assert 0, 'FIXME'
+        ports = {
+            'clk': 'clk',
+            'din': 'din[  %d +: 8]' % (8 * loci, ),
+            'dout': 'dout[  %d +: 8]' % (8 * loci, ),
+        }
+        params = {
+            'LOC': verilog.quote(site),
+            'IS_CLKARDCLK_INVERTED': vrandbit(),
+            'IS_CLKBWRCLK_INVERTED': vrandbit(),
+            'IS_ENARDEN_INVERTED': vrandbit(),
+            'IS_ENBWREN_INVERTED': vrandbit(),
+            'IS_RSTRAMARSTRAM_INVERTED': vrandbit(),
+            'IS_RSTRAMB_INVERTED': vrandbit(),
+            'IS_RSTREGARSTREG_INVERTED': vrandbit(),
+            'IS_RSTREGB_INVERTED': vrandbit(),
+            'RAM_MODE': '"TDP"',
+            'WRITE_MODE_A': '"WRITE_FIRST"',
+            'WRITE_MODE_B': '"WRITE_FIRST"',
+        }
+        return ('my_RAMB18E1', ports, params)
 
     def place_bram36():
         ports = {
@@ -80,24 +109,6 @@ for loci, (site_type, site) in enumerate(brams):
             'WRITE_MODE_A': '"WRITE_FIRST"',
             'WRITE_MODE_B': '"WRITE_FIRST"',
         }
-        if 0:
-            # FIXME
-            params = {
-                'LOC': verilog.quote(site),
-                'IS_CLKARDCLK_INVERTED': "1'b0",
-                'IS_CLKBWRCLK_INVERTED': "1'b0",
-                #'IS_ENARDEN_INVERTED': vrandbit(),
-                'IS_ENARDEN_INVERTED':
-                ("1'b" + str(int(os.getenv("SEEDN")) - 1)),
-                'IS_ENBWREN_INVERTED': "1'b0",
-                'IS_RSTRAMARSTRAM_INVERTED': "1'b0",
-                'IS_RSTRAMB_INVERTED': "1'b0",
-                'IS_RSTREGARSTREG_INVERTED': "1'b0",
-                'IS_RSTREGB_INVERTED': "1'b0",
-                'RAM_MODE': '"TDP"',
-                'WRITE_MODE_A': '"WRITE_FIRST"',
-                'WRITE_MODE_B': '"WRITE_FIRST"',
-            }
         return ('my_RAMB36E1', ports, params)
 
     modname, ports, params = {
@@ -202,8 +213,7 @@ print(
             .IS_RSTREGB_INVERTED(IS_RSTREGB_INVERTED),
             .RAM_MODE(RAM_MODE),
             .WRITE_MODE_A(WRITE_MODE_A),
-            .WRITE_MODE_B(WRITE_MODE_B),
-            .SIM_DEVICE("VIRTEX6")
+            .WRITE_MODE_B(WRITE_MODE_B)
         ) ram (
             .CLKARDCLK(din[0]),
             .CLKBWRCLK(din[1]),
@@ -270,8 +280,7 @@ print(
             .IS_RSTREGB_INVERTED(IS_RSTREGB_INVERTED),
             .RAM_MODE(RAM_MODE),
             .WRITE_MODE_A(WRITE_MODE_A),
-            .WRITE_MODE_B(WRITE_MODE_B),
-            .SIM_DEVICE("VIRTEX6")
+            .WRITE_MODE_B(WRITE_MODE_B)
         ) ram (
             .CLKARDCLK(din[0]),
             .CLKBWRCLK(din[1]),
