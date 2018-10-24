@@ -26,6 +26,8 @@ for l in f:
         'IS_RSTREGARSTREG_INVERTED',
         'IS_RSTREGB_INVERTED',
     ]
+    # FIXME
+    #ks = ['IS_ENARDEN_INVERTED']
 
     for k in ks:
         segmk.add_site_tag(site, k, verilog.parsei(ps[k]))

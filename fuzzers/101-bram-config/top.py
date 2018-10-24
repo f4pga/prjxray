@@ -25,6 +25,10 @@ def gen_brams():
     '''
     Correctly assign a site to either bram36 or 2x bram18
     '''
+    # FIXME
+    #yield ('RAMBFIFO36E1', "RAMB36_X0Y20")
+    #return
+
     #for _tile_name, site_name, _site_type in util.get_roi().gen_tiles():
     for site in gen_bram36():
         yield ('RAMBFIFO36E1', site)
@@ -76,6 +80,24 @@ for loci, (site_type, site) in enumerate(brams):
             'WRITE_MODE_A': '"WRITE_FIRST"',
             'WRITE_MODE_B': '"WRITE_FIRST"',
         }
+        if 0:
+            # FIXME
+            params = {
+                'LOC': verilog.quote(site),
+                'IS_CLKARDCLK_INVERTED': "1'b0",
+                'IS_CLKBWRCLK_INVERTED': "1'b0",
+                #'IS_ENARDEN_INVERTED': vrandbit(),
+                'IS_ENARDEN_INVERTED':
+                ("1'b" + str(int(os.getenv("SEEDN")) - 1)),
+                'IS_ENBWREN_INVERTED': "1'b0",
+                'IS_RSTRAMARSTRAM_INVERTED': "1'b0",
+                'IS_RSTRAMB_INVERTED': "1'b0",
+                'IS_RSTREGARSTREG_INVERTED': "1'b0",
+                'IS_RSTREGB_INVERTED': "1'b0",
+                'RAM_MODE': '"TDP"',
+                'WRITE_MODE_A': '"WRITE_FIRST"',
+                'WRITE_MODE_B': '"WRITE_FIRST"',
+            }
         return ('my_RAMB36E1', ports, params)
 
     modname, ports, params = {
@@ -146,6 +168,18 @@ print(
     '''
 module my_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
+    parameter IS_CLKARDCLK_INVERTED = 1'b0;
+    parameter IS_CLKBWRCLK_INVERTED = 1'b0;
+    parameter IS_ENARDEN_INVERTED = 1'b0;
+    parameter IS_ENBWREN_INVERTED = 1'b0;
+    parameter IS_RSTRAMARSTRAM_INVERTED = 1'b0;
+    parameter IS_RSTRAMB_INVERTED = 1'b0;
+    parameter IS_RSTREGARSTREG_INVERTED = 1'b0;
+    parameter IS_RSTREGB_INVERTED = 1'b0;
+    parameter RAM_MODE = "TDP";
+    parameter WRITE_MODE_A = "WRITE_FIRST";
+    parameter WRITE_MODE_B = "WRITE_FIRST";
+
     ''')
 print('''\
     (* LOC=LOC *)
@@ -158,17 +192,17 @@ for i in range(0x40):
 print('')
 print(
     '''
-            .IS_CLKARDCLK_INVERTED(1'b0),
-            .IS_CLKBWRCLK_INVERTED(1'b0),
-            .IS_ENARDEN_INVERTED(1'b0),
-            .IS_ENBWREN_INVERTED(1'b0),
-            .IS_RSTRAMARSTRAM_INVERTED(1'b0),
-            .IS_RSTRAMB_INVERTED(1'b0),
-            .IS_RSTREGARSTREG_INVERTED(1'b0),
-            .IS_RSTREGB_INVERTED(1'b0),
-            .RAM_MODE("TDP"),
-            .WRITE_MODE_A("WRITE_FIRST"),
-            .WRITE_MODE_B("WRITE_FIRST"),
+            .IS_CLKARDCLK_INVERTED(IS_CLKARDCLK_INVERTED),
+            .IS_CLKBWRCLK_INVERTED(IS_CLKBWRCLK_INVERTED),
+            .IS_ENARDEN_INVERTED(IS_ENARDEN_INVERTED),
+            .IS_ENBWREN_INVERTED(IS_ENBWREN_INVERTED),
+            .IS_RSTRAMARSTRAM_INVERTED(IS_RSTRAMARSTRAM_INVERTED),
+            .IS_RSTRAMB_INVERTED(IS_RSTRAMB_INVERTED),
+            .IS_RSTREGARSTREG_INVERTED(IS_RSTREGARSTREG_INVERTED),
+            .IS_RSTREGB_INVERTED(IS_RSTREGB_INVERTED),
+            .RAM_MODE(RAM_MODE),
+            .WRITE_MODE_A(WRITE_MODE_A),
+            .WRITE_MODE_B(WRITE_MODE_B),
             .SIM_DEVICE("VIRTEX6")
         ) ram (
             .CLKARDCLK(din[0]),
@@ -201,7 +235,6 @@ print(
 
 module my_RAMB36E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
-
     parameter IS_CLKARDCLK_INVERTED = 1'b0;
     parameter IS_CLKBWRCLK_INVERTED = 1'b0;
     parameter IS_ENARDEN_INVERTED = 1'b0;
@@ -227,17 +260,17 @@ for i in range(0x80):
 print('')
 print(
     '''
-            .IS_CLKARDCLK_INVERTED(1'b0),
-            .IS_CLKBWRCLK_INVERTED(1'b0),
-            .IS_ENARDEN_INVERTED(1'b0),
-            .IS_ENBWREN_INVERTED(1'b0),
-            .IS_RSTRAMARSTRAM_INVERTED(1'b0),
-            .IS_RSTRAMB_INVERTED(1'b0),
-            .IS_RSTREGARSTREG_INVERTED(1'b0),
-            .IS_RSTREGB_INVERTED(1'b0),
-            .RAM_MODE("TDP"),
-            .WRITE_MODE_A("WRITE_FIRST"),
-            .WRITE_MODE_B("WRITE_FIRST"),
+            .IS_CLKARDCLK_INVERTED(IS_CLKARDCLK_INVERTED),
+            .IS_CLKBWRCLK_INVERTED(IS_CLKBWRCLK_INVERTED),
+            .IS_ENARDEN_INVERTED(IS_ENARDEN_INVERTED),
+            .IS_ENBWREN_INVERTED(IS_ENBWREN_INVERTED),
+            .IS_RSTRAMARSTRAM_INVERTED(IS_RSTRAMARSTRAM_INVERTED),
+            .IS_RSTRAMB_INVERTED(IS_RSTRAMB_INVERTED),
+            .IS_RSTREGARSTREG_INVERTED(IS_RSTREGARSTREG_INVERTED),
+            .IS_RSTREGB_INVERTED(IS_RSTREGB_INVERTED),
+            .RAM_MODE(RAM_MODE),
+            .WRITE_MODE_A(WRITE_MODE_A),
+            .WRITE_MODE_B(WRITE_MODE_B),
             .SIM_DEVICE("VIRTEX6")
         ) ram (
             .CLKARDCLK(din[0]),
