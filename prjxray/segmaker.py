@@ -122,6 +122,8 @@ class Segmaker:
         self.addtag('SLICE_X13Y101', 'CLB.SLICE_X0.AFF.DMUX.CY', 1)
         Indicates that the SLICE_X13Y101 site has an element called 'CLB.SLICE_X0.AFF.DMUX.CY'
         '''
+        if '"' in site:
+            raise ValueError("Invalid site: %s" % site)
         self.site_tags.setdefault(site, dict())[name] = value
 
     def add_tile_tag(self, tile, name, value):
@@ -130,6 +132,7 @@ class Segmaker:
     def compile(self, bitfilter=None):
         print("Compiling segment data.")
         tags_used = set()
+        sites_used = set()
         tile_types_found = set()
 
         self.segments_by_type = dict()
@@ -241,6 +244,7 @@ class Segmaker:
                     tag = tag.replace(".SLICEM.", ".")
                     tag = tag.replace(".SLICEL.", ".")
                     segments[segname]["tags"][tag] = value
+                sites_used.add(site)
 
             tile_type = tiledata["type"]
             tile_types_found.add(tile_type)
@@ -279,8 +283,15 @@ class Segmaker:
                 add_site_tags()
 
         if self.verbose:
-            ntags = recurse_sum(self.site_tags) + recurse_sum(self.tile_tags)
+            n_site_tags = recurse_sum(self.site_tags)
+            n_tile_tags = recurse_sum(self.tile_tags)
+            ntags = n_site_tags + n_tile_tags
             print("Used %u / %u tags" % (len(tags_used), ntags))
+            print("Tag sites: %u" % (n_site_tags,))
+            if n_site_tags:
+                print('  Ex: %s' % list(self.site_tags.keys())[0])
+            print("Tag tiles: %u" % (n_tile_tags,))
+            print("Used %u sites" % len(sites_used))
             print("Grid DB had %u tile types" % len(tile_types_found))
             assert ntags and ntags == len(tags_used)
 
