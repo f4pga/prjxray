@@ -71,12 +71,8 @@ proc loc_brams {} {
 }
 
 proc write_tiles_txt {} {
-    # Get all tiles in ROI, ie not just the selected LUTs
-    set grid_min_x $::env(XRAY_ROI_GRID_X1)
-    set grid_max_x $::env(XRAY_ROI_GRID_X2)
-    set grid_min_y $::env(XRAY_ROI_GRID_Y1)
-    set grid_max_y $::env(XRAY_ROI_GRID_Y2)
-    set tiles [get_tiles -filter "GRID_POINT_X >= $grid_min_x && GRID_POINT_X <= $grid_max_x && GRID_POINT_Y >= $grid_min_y && GRID_POINT_Y <= $grid_max_y"]
+    # Get all tiles, ie not just the selected LUTs
+    set tiles [get_tiles]
 
     # Write tiles.txt with site metadata
     set fp [open "tiles.txt" w]

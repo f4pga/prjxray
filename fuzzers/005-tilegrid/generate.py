@@ -473,6 +473,9 @@ def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
 def db_add_bits(database, segments):
     '''Transfer segment data into tiles'''
     for segment_name in segments.keys():
+        if 'baseaddr' not in segments[segment_name]:
+            continue
+
         for block_type, (baseaddr,
                          offset) in segments[segment_name]["baseaddr"].items():
             for tile_name in segments[segment_name]["tiles"]:

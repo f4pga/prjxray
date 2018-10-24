@@ -3,6 +3,7 @@
 from __future__ import print_function
 import argparse
 import prjxray.lib
+import prjxray.util
 import pyjson5 as json5
 import multiprocessing
 import progressbar
@@ -568,16 +569,29 @@ def main():
 
     node_tree_file = os.path.join(args.output_dir, 'node_tree.json')
 
-    tilegrid_file = os.path.join(args.output_dir, 'tilegrid.json')
     tileconn_file = os.path.join(args.output_dir, 'tileconn.json')
     wire_map_file = os.path.join(args.output_dir, 'wiremap.pickle')
 
+    print('{} Reading tilegrid'.format(datetime.datetime.now()))
+    with open(os.path.join(prjxray.util.get_db_root(), 'tilegrid.json')) as f:
+        grid = json.load(f)
+
     if not args.verify_only:
         print('{} Creating tile map'.format(datetime.datetime.now()))
-        grid, wire_map = generate_tilegrid(pool, tiles)
+        grid2, wire_map = generate_tilegrid(pool, tiles)
 
-        with open(tilegrid_file, 'w') as f:
-            json.dump(grid, f, indent=2)
+        # Make sure tilegrid from 005-tilegrid matches tilegrid from
+        # generate_tilegrid.
+        db_grid_keys = set(grid.keys())
+        generated_grid_keys = set(grid2.keys())
+        assert db_grid_keys == generated_grid_keys, (
+            db_grid_keys ^ generated_grid_keys)
+
+        for tile in db_grid_keys:
+            for k in grid2[tile]:
+                assert k in grid[tile], k
+                assert grid[tile][k] == grid2[tile][k], (
+                    tile, k, grid[tile][k], grid2[tile][k])
 
         with open(wire_map_file, 'wb') as f:
             pickle.dump(wire_map, f)
@@ -594,10 +608,6 @@ def main():
         with open(tileconn_file, 'w') as f:
             json.dump(tileconn, f, indent=2)
     else:
-        print('{} Reading tilegrid'.format(datetime.datetime.now()))
-        with open(tilegrid_file) as f:
-            grid = json.load(f)
-
         with open(wire_map_file, 'rb') as f:
             wire_map = pickle.load(f)
 
