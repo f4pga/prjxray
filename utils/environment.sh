@@ -24,5 +24,6 @@ export XRAY_SEGMATCH="${XRAY_TOOLS_DIR}/segmatch"
 export XRAY_SEGPRINT="python3 ${XRAY_UTILS_DIR}/segprint.py"
 export XRAY_BITS2FASM="python3 ${XRAY_UTILS_DIR}/bits2fasm.py"
 export XRAY_FASM2FRAMES="python3 ${XRAY_UTILS_DIR}/fasm2frames.py"
-
+export XRAY_BITTOOL="${XRAY_TOOLS_DIR}/bittool"
+export XRAY_BLOCKWIDTH="python3 ${XRAY_UTILS_DIR}/blockwidth.py"
 
