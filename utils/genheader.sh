@@ -16,6 +16,7 @@ mkdir "$SPECN"
 cd "$SPECN"
 
 export SEED="$(echo $SPECN | md5sum | cut -c1-8)"
+export SEEDN="$(basename $(pwd) |sed s/specimen_0*//)"
 
 function seed_vh () {
     echo '`define SEED 32'"'h${SEED}" > setseed.vh
