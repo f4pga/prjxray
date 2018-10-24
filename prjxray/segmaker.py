@@ -230,9 +230,9 @@ class Segmaker:
 
                 def name_bram18():
                     # RAMB18_X0Y41
-                    if re.match(r"RAMB18_X.*Y[0-9]*[02468]", site):
+                    if re.match(r"^RAMB18_X.*Y[0-9]*[02468]$", site):
                         return "RAMB18_Y0"
-                    elif re.match(r"RAMB18_X.*Y[0-9]*[13579]", site):
+                    elif re.match(r"^RAMB18_X.*Y[0-9]*[13579]$", site):
                         return "RAMB18_Y1"
                     else:
                         assert 0
@@ -246,6 +246,9 @@ class Segmaker:
                     'SLICE': name_slice,
                     'RAMB18': name_bram18,
                 }.get(site_prefix, name_default)()
+                self.verbose and print(
+                    'site %s w/ %s prefix => tag %s' %
+                    (site, site_prefix, sitekey))
 
                 for name, value in self.site_tags[site].items():
                     tags_used.add((site, name))
@@ -297,10 +300,10 @@ class Segmaker:
             n_tile_tags = recurse_sum(self.tile_tags)
             ntags = n_site_tags + n_tile_tags
             print("Used %u / %u tags" % (len(tags_used), ntags))
-            print("Tag sites: %u" % (n_site_tags,))
+            print("Tag sites: %u" % (n_site_tags, ))
             if n_site_tags:
                 print('  Ex: %s' % list(self.site_tags.keys())[0])
-            print("Tag tiles: %u" % (n_tile_tags,))
+            print("Tag tiles: %u" % (n_tile_tags, ))
             print("Used %u sites" % len(sites_used))
             print("Grid DB had %u tile types" % len(tile_types_found))
             assert ntags and ntags == len(tags_used)
