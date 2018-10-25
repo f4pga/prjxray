@@ -1,8 +1,12 @@
 BUILD_DIR=build
+export BUILD_DIR
+
+XRAY_PINCFG ?= BASYS3-SWBUT
+export XRAY_PINCFG
 
 # official demo configuration
 all:
-	BUILD_DIR=$(BUILD_DIR) XRAY_PINCFG=BASYS3-SWBUT ./runme.sh
+	./runme.sh
 
 clean:
 	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit design.txt .Xil
