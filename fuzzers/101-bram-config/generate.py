@@ -5,19 +5,8 @@ import json
 from prjxray.segmaker import Segmaker
 from prjxray import verilog
 
-segmk = Segmaker("design.bits", verbose=True)
-#segmk.set_def_bt('BLOCK_RAM')
 
-print("Loading tags")
-f = open('params.jl', 'r')
-f.readline()
-for l in f:
-    j = json.loads(l)
-    ps = j['params']
-    assert j['module'] == 'my_RAMB18E1'
-    site = verilog.unquote(ps['LOC'])
-    #print('site', site)
-
+def isenv_tags(segmk, ps, site):
     # all of these bits are inverted
     ks = [
         ('IS_CLKARDCLK_INVERTED', 'ZINV_CLKARDCLK'),
@@ -31,6 +20,9 @@ for l in f:
     ]
     for param, tagname in ks:
         segmk.add_site_tag(site, tagname, 1 ^ verilog.parsei(ps[param]))
+
+
+def bus_tags(segmk, ps, site):
     '''
     parameter DOA_REG = 1'b0;
     parameter DOB_REG = 1'b0;
@@ -45,5 +37,62 @@ for l in f:
         for i in range(18):
             segmk.add_site_tag(site, '%s[%u]' % (param, i), 1 ^ bitstr[i])
 
-segmk.compile()
-segmk.write()
+
+def rw_width_tags(segmk, ps, site):
+    '''
+    Y0.READ_WIDTH_A
+    width   001_03  001_04  001_05
+    1       0       0       0
+    2       1       0       0
+    4       0       1       0
+    9       1       1       0
+    18      0       0       1
+    '''
+    '''
+    for param, vals in {
+            "READ_WIDTH_A": [1, 2, 4, 9, 18],
+            "READ_WIDTH_B": [1, 2, 4, 9, 18],
+            "WRITE_WIDTH_A": [1, 2, 4, 9, 18],
+            "WRITE_WIDTH_B": [1, 2, 4, 9, 18],
+            }.items():
+        set_val = int(ps[param])
+        for val in vals:
+            has = set_val == val
+            segmk.add_site_tag(site, '%s_B0' % (param), has)
+    '''
+    for param in ["READ_WIDTH_A", "READ_WIDTH_B", "WRITE_WIDTH_A",
+                  "WRITE_WIDTH_B"]:
+        set_val = int(ps[param])
+        segmk.add_site_tag(site, '%s_B0' % (param), set_val in (2, 9))
+        segmk.add_site_tag(site, '%s_B1' % (param), set_val in (4, 9))
+        segmk.add_site_tag(site, '%s_B2' % (param), set_val in (18, ))
+
+
+def run():
+
+    segmk = Segmaker("design.bits", verbose=True)
+    #segmk.set_def_bt('BLOCK_RAM')
+
+    print("Loading tags")
+    f = open('params.jl', 'r')
+    f.readline()
+    for l in f:
+        j = json.loads(l)
+        ps = j['params']
+        assert j['module'] == 'my_RAMB18E1'
+        site = verilog.unquote(ps['LOC'])
+        #print('site', site)
+
+        # isenv_tags(segmk, ps, site)
+        # bus_tags(segmk, ps, site)
+        rw_width_tags(segmk, ps, site)
+
+    def bitfilter(frame, bit):
+        # rw_width_tags() aliasing interconnect on large widths
+        return frame not in (20, 21)
+
+    segmk.compile(bitfilter=bitfilter)
+    segmk.write()
+
+
+run()

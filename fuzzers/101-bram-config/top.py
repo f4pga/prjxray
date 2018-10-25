@@ -99,6 +99,12 @@ for loci, (site_type, site) in enumerate(brams):
             "SRVAL_B": vrandbits(18),
             "INIT_A": vrandbits(18),
             "INIT_B": vrandbits(18),
+            # Datasheet says 72 is legal, but think its a copy paste error from BRAM36
+            # also 0 and 36 aren't real sizes
+            "READ_WIDTH_A": random.choice([1, 2, 4, 9, 18]),
+            "READ_WIDTH_B": random.choice([1, 2, 4, 9, 18]),
+            "WRITE_WIDTH_A": random.choice([1, 2, 4, 9, 18]),
+            "WRITE_WIDTH_B": random.choice([1, 2, 4, 9, 18]),
         }
         return ('my_RAMB18E1', ports, params)
 
@@ -211,6 +217,10 @@ module my_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter INIT_A = 18'b0;
     parameter INIT_B = 18'b0;
 
+    parameter READ_WIDTH_A = 0;
+    parameter READ_WIDTH_B = 0;
+    parameter WRITE_WIDTH_A = 0;
+    parameter WRITE_WIDTH_B = 0;
     ''')
 print('''\
     (* LOC=LOC *)
@@ -240,7 +250,12 @@ print(
             .SRVAL_A(SRVAL_A),
             .SRVAL_B(SRVAL_B),
             .INIT_A(INIT_A),
-            .INIT_B(INIT_B)
+            .INIT_B(INIT_B),
+
+            .READ_WIDTH_A(READ_WIDTH_A),
+            .READ_WIDTH_B(READ_WIDTH_B),
+            .WRITE_WIDTH_A(WRITE_WIDTH_A),
+            .WRITE_WIDTH_B(WRITE_WIDTH_B)
         ) ram (
             .CLKARDCLK(din[0]),
             .CLKBWRCLK(din[1]),
