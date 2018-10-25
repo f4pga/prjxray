@@ -11,7 +11,6 @@ pushdb:
 	rm ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/tile_type_*_site_type_*.json
 	cp output/site_type_*.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
 	cp output/tileconn.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
-	cp output/tilegrid.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
