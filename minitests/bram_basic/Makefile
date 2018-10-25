@@ -26,7 +26,15 @@ build/roi_bramds_bit01.diff:
 build/roi_brami_bit01.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_brami_bit01.diff PRJL=roi_brami_bit0 PRJR=roi_brami_bit1
 
+# Toggle one bit in each BRAM18 config section
+# together they match the 2 BRAM36 bits above
+build/roi_bram18iy0_bit01.diff:
+	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bram18iy0_bit01.diff PRJL=roi_bram18i_bit0 PRJR=roi_bram18iy0_bit1
+build/roi_bram18iy1_bit01.diff:
+	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bram18iy1_bit01.diff PRJL=roi_bram18i_bit0 PRJR=roi_bram18iy1_bit1
+
 # Toggle one bit in each BRAM config section
 build/roi_bramis_bit01.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bramis_bit01.diff PRJL=roi_bramis_bit0 PRJR=roi_bramis_bit1
+
 
