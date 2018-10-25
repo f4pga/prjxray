@@ -65,6 +65,13 @@ def vrandbit():
         return "1'b0"
 
 
+def vrandbits(n):
+    ret = "%u'b" % n
+    for _i in range(n):
+        ret += str(random.randint(0, 1))
+    return ret
+
+
 for loci, (site_type, site) in enumerate(brams):
 
     def place_bram18():
@@ -86,6 +93,12 @@ for loci, (site_type, site) in enumerate(brams):
             'RAM_MODE': '"TDP"',
             'WRITE_MODE_A': '"WRITE_FIRST"',
             'WRITE_MODE_B': '"WRITE_FIRST"',
+            "DOA_REG": vrandbit(),
+            "DOB_REG": vrandbit(),
+            "SRVAL_A": vrandbits(18),
+            "SRVAL_B": vrandbits(18),
+            "INIT_A": vrandbits(18),
+            "INIT_B": vrandbits(18),
         }
         return ('my_RAMB18E1', ports, params)
 
@@ -191,6 +204,13 @@ module my_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter WRITE_MODE_A = "WRITE_FIRST";
     parameter WRITE_MODE_B = "WRITE_FIRST";
 
+    parameter DOA_REG = 1'b0;
+    parameter DOB_REG = 1'b0;
+    parameter SRVAL_A = 18'b0;
+    parameter SRVAL_B = 18'b0;
+    parameter INIT_A = 18'b0;
+    parameter INIT_B = 18'b0;
+
     ''')
 print('''\
     (* LOC=LOC *)
@@ -213,7 +233,14 @@ print(
             .IS_RSTREGB_INVERTED(IS_RSTREGB_INVERTED),
             .RAM_MODE(RAM_MODE),
             .WRITE_MODE_A(WRITE_MODE_A),
-            .WRITE_MODE_B(WRITE_MODE_B)
+            .WRITE_MODE_B(WRITE_MODE_B),
+
+            .DOA_REG(DOA_REG),
+            .DOB_REG(DOB_REG),
+            .SRVAL_A(SRVAL_A),
+            .SRVAL_B(SRVAL_B),
+            .INIT_A(INIT_A),
+            .INIT_B(INIT_B)
         ) ram (
             .CLKARDCLK(din[0]),
             .CLKBWRCLK(din[1]),

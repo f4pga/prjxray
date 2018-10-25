@@ -124,6 +124,8 @@ class Segmaker:
         '''
         if '"' in site:
             raise ValueError("Invalid site: %s" % site)
+        self.verbose and print(
+            'segmaker: site %s tag %s = %s' % (site, name, value))
         self.site_tags.setdefault(site, dict())[name] = value
 
     def add_tile_tag(self, tile, name, value):

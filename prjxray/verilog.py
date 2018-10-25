@@ -67,3 +67,12 @@ def parsei(s):
         return 1
     else:
         assert 0, 'FIXME'
+
+
+def parse_bitstr(s):
+    n, postfix = s.split("'")
+    n = int(n)
+    assert postfix[0] == 'b'
+    bitstr = postfix[1:]
+    assert len(bitstr) == n
+    return [int(x) for x in bitstr]
