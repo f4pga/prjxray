@@ -12,6 +12,7 @@ test $# = 1 || exit 1
 test ! -e "$SPECN"
 SPECN=$1
 
+rm -rf "$SPECN"
 mkdir "$SPECN"
 cd "$SPECN"
 

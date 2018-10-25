@@ -122,6 +122,8 @@ class Segmaker:
         self.addtag('SLICE_X13Y101', 'CLB.SLICE_X0.AFF.DMUX.CY', 1)
         Indicates that the SLICE_X13Y101 site has an element called 'CLB.SLICE_X0.AFF.DMUX.CY'
         '''
+        if '"' in site:
+            raise ValueError("Invalid site: %s" % site)
         self.site_tags.setdefault(site, dict())[name] = value
 
     def add_tile_tag(self, tile, name, value):
@@ -130,6 +132,7 @@ class Segmaker:
     def compile(self, bitfilter=None):
         print("Compiling segment data.")
         tags_used = set()
+        sites_used = set()
         tile_types_found = set()
 
         self.segments_by_type = dict()
@@ -225,6 +228,15 @@ class Segmaker:
                     else:
                         assert 0
 
+                def name_bram18():
+                    # RAMB18_X0Y41
+                    if re.match(r"^RAMB18_X.*Y[0-9]*[02468]$", site):
+                        return "RAMB18_Y0"
+                    elif re.match(r"^RAMB18_X.*Y[0-9]*[13579]$", site):
+                        return "RAMB18_Y1"
+                    else:
+                        assert 0
+
                 def name_default():
                     # most sites are unique within their tile
                     # TODO: maybe verify against DB?
@@ -232,7 +244,11 @@ class Segmaker:
 
                 sitekey = {
                     'SLICE': name_slice,
+                    'RAMB18': name_bram18,
                 }.get(site_prefix, name_default)()
+                self.verbose and print(
+                    'site %s w/ %s prefix => tag %s' %
+                    (site, site_prefix, sitekey))
 
                 for name, value in self.site_tags[site].items():
                     tags_used.add((site, name))
@@ -241,6 +257,7 @@ class Segmaker:
                     tag = tag.replace(".SLICEM.", ".")
                     tag = tag.replace(".SLICEL.", ".")
                     segments[segname]["tags"][tag] = value
+                sites_used.add(site)
 
             tile_type = tiledata["type"]
             tile_types_found.add(tile_type)
@@ -279,8 +296,15 @@ class Segmaker:
                 add_site_tags()
 
         if self.verbose:
-            ntags = recurse_sum(self.site_tags) + recurse_sum(self.tile_tags)
+            n_site_tags = recurse_sum(self.site_tags)
+            n_tile_tags = recurse_sum(self.tile_tags)
+            ntags = n_site_tags + n_tile_tags
             print("Used %u / %u tags" % (len(tags_used), ntags))
+            print("Tag sites: %u" % (n_site_tags, ))
+            if n_site_tags:
+                print('  Ex: %s' % list(self.site_tags.keys())[0])
+            print("Tag tiles: %u" % (n_tile_tags, ))
+            print("Used %u sites" % len(sites_used))
             print("Grid DB had %u tile types" % len(tile_types_found))
             assert ntags and ntags == len(tags_used)
 

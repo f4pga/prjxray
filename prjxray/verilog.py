@@ -48,4 +48,22 @@ def instance(mod, name, ports, params={}, sort=True):
     for i, (portk, portv) in enumerate(tosort(ports.items())):
         comma = '' if i == len(ports) - 1 else ','
         print('            .%s(%s)%s' % (portk, portv, comma))
-    print('        ));')
+    print('        );')
+
+
+def quote(s):
+    return '"' + s + '"'
+
+
+def unquote(s):
+    assert s[0] == '"' and s[-1] == '"'
+    return s[1:-1]
+
+
+def parsei(s):
+    if s == "1'b0":
+        return 0
+    elif s == "1'b1":
+        return 1
+    else:
+        assert 0, 'FIXME'
