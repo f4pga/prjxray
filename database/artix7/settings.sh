@@ -1,6 +1,5 @@
 export XRAY_DATABASE="artix7"
 export XRAY_PART="xc7a50tfgg484-1"
-export XRAY_ROI="SLICE_X12Y100:SLICE_X27Y149"
 export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
 
 # Leave some CLBs to the left to allow easy ROI entering
