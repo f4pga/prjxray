@@ -1,5 +1,5 @@
 proc make_project {} {
-    create_project -force -part xc7a50tfgg484-1 design design
+    create_project -force -part $::env(XRAY_PART) design design
 
     read_verilog ../top.v
     synth_design -top top -verilog_define N_IOB=11
@@ -35,7 +35,7 @@ proc make_project {} {
 
     create_pblock roi
     add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-    resize_pblock [get_pblocks roi] -add "SLICE_X8Y100:SLICE_X27Y149 RAMB18_X0Y20:RAMB18_X0Y59 RAMB36_X0Y10:RAMB36_X0Y29 DSP48_X0Y59:DSP48_X0Y20"
+    resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
 
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]

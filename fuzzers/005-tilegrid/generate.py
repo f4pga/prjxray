@@ -130,7 +130,8 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
 
             if bt in tile_baseaddr:
                 # actually lets just fail these, better to remove at tcl level to speed up processing
-                assert 0, ('duplicate base address', site_name, bt, tile_baseaddr[bt])
+                assert 0, 'duplicate base address'
+                assert tile_baseaddr[bt] == [framebaseaddr, 0]
             else:
                 tile_baseaddr[bt] = [framebaseaddr, 0]
 
