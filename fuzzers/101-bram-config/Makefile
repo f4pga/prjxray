@@ -1,5 +1,5 @@
 # read/write width is relatively slow to resolve
-N := 2
+N := 4
 SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 

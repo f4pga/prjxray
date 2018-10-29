@@ -34,8 +34,14 @@ def bus_tags(segmk, ps, site):
     for param, tagname in [('SRVAL_A', 'ZSRVAL_A'), ('SRVAL_B', 'ZSRVAL_B'),
                            ('INIT_A', 'ZINIT_A'), ('INIT_B', 'ZINIT_B')]:
         bitstr = verilog.parse_bitstr(ps[param])
+        ab = param[-1]
+        # Are all bits present?
+        hasparity = ps['READ_WIDTH_' + ab] == 18
         for i in range(18):
-            segmk.add_site_tag(site, '%s[%u]' % (param, i), 1 ^ bitstr[i])
+            # Magic bit positions from experimentation
+            # we could just only solve when parity, but this check documents the fine points a bit better
+            if hasparity or i not in (1, 9):
+                segmk.add_site_tag(site, '%s[%u]' % (param, i), 1 ^ bitstr[i])
 
 
 def rw_width_tags(segmk, ps, site):
@@ -83,8 +89,8 @@ def run():
         site = verilog.unquote(ps['LOC'])
         #print('site', site)
 
-        # isenv_tags(segmk, ps, site)
-        # bus_tags(segmk, ps, site)
+        isenv_tags(segmk, ps, site)
+        bus_tags(segmk, ps, site)
         rw_width_tags(segmk, ps, site)
 
     def bitfilter(frame, bit):
