@@ -31,7 +31,6 @@ set XRAY_ROI_Y1 [lindex [split "$::env(XRAY_ROI)" Y] 2]
 set X_BASE $XRAY_ROI_X0
 set Y_BASE $XRAY_ROI_Y0
 
-# set Y_DIN_BASE 100
 set Y_CLK_BASE $Y_BASE
 # Clock lut in middle
 set Y_DIN_BASE [expr "$Y_CLK_BASE + $PITCH"]
@@ -282,22 +281,30 @@ if {$fixed_xdc eq ""} {
 
     # Place ROI inputs
     puts "Placing ROI inputs"
-    set y $Y_DIN_BASE
+    set y_left $Y_DIN_BASE
+    set y_right $Y_DIN_BASE
     for {set i 0} {$i < $DIN_N} {incr i} {
-        loc_lut_in $i $x $y
-        set y [expr {$y + $PITCH}]
+        if {[net_bank_left "din[$i]"]} {
+            loc_lut_in $i $XRAY_ROI_X0 $y_left
+            set y_left [expr {$y_left + $PITCH}]
+        } else {
+            loc_lut_in $i $XRAY_ROI_X1 $y_right
+            set y_right [expr {$y_right + $PITCH}]
+        }
     }
 
     # Place ROI outputs
-    set y $Y_DOUT_BASE
+    set y_left $Y_DOUT_BASE
+    set y_right $Y_DOUT_BASE
     puts "Placing ROI outputs"
     for {set i 0} {$i < $DOUT_N} {incr i} {
         if {[net_bank_left "dout[$i]"]} {
-            loc_lut_out $i $XRAY_ROI_X0 $y
+            loc_lut_out $i $XRAY_ROI_X0 $y_left
+            set y_left [expr {$y_left + $PITCH}]
         } else {
-            loc_lut_out $i $XRAY_ROI_X1 $y
+            loc_lut_out $i $XRAY_ROI_X1 $y_right
+            set y_right [expr {$y_right + $PITCH}]
         }
-        set y [expr {$y + $PITCH}]
     }
 }
 
@@ -391,51 +398,57 @@ if {$fixed_xdc eq ""} {
 
     puts "Routing ROI inputs"
     # Arbitrary offset as observed
-    set y [expr {$Y_DIN_BASE - 1}]
+    set y_left $Y_DIN_BASE
+    set y_right $Y_DIN_BASE
     for {set i 0} {$i < $DIN_N} {incr i} {
         # needed to force routes away to avoid looping into ROI
-        #set x_EE2BEG3 [expr {$x - 2}]
-        set x_EE2BEG3 7
-        set x_NE2BEG3 9
-        set node "INT_R_X${x_NE2BEG3}Y${y}/NE2BEG3"
-        route_via2 "din_IBUF[$i]" "INT_R_X${x_EE2BEG3}Y${y}/EE2BEG3 $node"
+        if {[net_bank_left "din[$i]"]} {
+            set node "INT_L_X0Y${y_left}/EE2BEG2"
+            route_via2 "din_IBUF[$i]" "$node"
+            set y_left [expr {$y_left + $PITCH}]
+        } else {
+            set node "INT_R_X25Y${y_right}/WW2BEG1"
+            route_via2 "din_IBUF[$i]" "$node INT_R_X23Y${y_right}/WL1BEG0"
+            set y_right [expr {$y_right + $PITCH}]
+        }
         set net "din[$i]"
         set pin "$net2pin($net)"
         set wire [node2wire $node]
         puts $fp "$net $node $pin $wire"
-        set y [expr {$y + $PITCH}]
     }
 
     puts "Routing ROI outputs"
     # Arbitrary offset as observed
-    set y [expr {$Y_DOUT_BASE + 0}]
+    set y_left [expr {$Y_DOUT_BASE + 0}]
+    set y_right [expr {$Y_DOUT_BASE + 0}]
     for {set i 0} {$i < $DOUT_N} {incr i} {
         if {[net_bank_left "dout[$i]"]} {
             # XXX: find a better solution if we need harness long term
             # works on 50t but not 35t
             if {$part eq "xc7a50tfgg484-1"} {
-                set node "INT_L_X10Y${y}/WW2BEG0"
+                set node "INT_L_X1Y${y_left}/WW2BEG0"
                 route_via2 "roi/dout[$i]" "$node"
             # works on 35t but not 50t
             } elseif {$part eq "xc7a35tcsg324-1"} {
-                set node "INT_L_X10Y${y}/SW6BEG0"
+                set node "INT_L_X2Y${y_left}/SW6BEG0"
                 route_via2 "roi/dout[$i]" "$node"
             } elseif {$part eq "xc7a35tcpg236-1"} {
-                set node "INT_L_X10Y${y}/SW6BEG0"
+                set node "INT_L_X2Y${y_left}/SW6BEG0"
                 route_via2 "roi/dout[$i]" "$node"
             } else {
                 error "Routing: unsupported part $part"
             }
+            set y_left [expr {$y_left + $PITCH}]
         # XXX: only care about right ports on Arty
         } else {
-            set node "INT_R_X17Y${y}/SE6BEG0"
+            set node "INT_R_X23Y${y_right}/SE6BEG0"
             route_via2 "roi/dout[$i]" "$node"
+            set y_right [expr {$y_right + $PITCH}]
         }
         set net "dout[$i]"
         set pin "$net2pin($net)"
         set wire [node2wire $node]
         puts $fp "$net $node $pin $wire"
-        set y [expr {$y + $PITCH}]
     }
 }
 close $fp

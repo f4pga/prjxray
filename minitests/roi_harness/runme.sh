@@ -30,15 +30,13 @@ if [ "$SMALL" = Y ] ; then
     export DIN_N=8
     export DOUT_N=8
     export XRAY_ROI=SLICE_X12Y100:SLICE_X17Y117
-# 16x by 50y CLBs (800)
+# All of CMT X0Y2
 else
     echo "Design: large"
     export PITCH=3
-    export DIN_N=8
-    export DOUT_N=8
-    export XRAY_ROI=SLICE_X5Y100:SLICE_X33Y149
-    #export XRAY_ROI=SLICE_X12Y100:SLICE_X27Y149
-    #export XRAY_ROI=SLICE_X12Y100:SLICE_X5Y149
+    export DIN_N=16
+    export DOUT_N=16
+    export XRAY_ROI=SLICE_X0Y100:SLICE_X35Y149
 fi
 
 mkdir -p $BUILD_DIR
