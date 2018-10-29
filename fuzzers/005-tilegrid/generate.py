@@ -312,7 +312,8 @@ def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
             else:
                 assert 0
 
-            assert "segment" in database[tile]
+            if 'segment' not in database[tile]:
+                continue
 
             seg = database[tile]["segment"]
 
