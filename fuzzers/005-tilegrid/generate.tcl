@@ -94,6 +94,27 @@ proc loc_brams {} {
     return $selected_brams
 }
 
+proc loc_iobs {} {
+    set ports [concat [get_ports clk] [get_ports do] [get_ports stb] [get_ports di]]
+    set selected_iobs {}
+
+    foreach port $ports {
+        set site [get_sites -of_objects $port]
+        set tile [get_tiles -of_objects $site]
+        set grid_x [get_property GRID_POINT_X $tile]
+        set grid_y [get_property GRID_POINT_Y $tile]
+
+        # 50 per column => 50, 100, 150, etc
+        # ex: SLICE_X2Y50/A6LUT
+        # Only take one of the CLBs within a slice
+        if [regexp "Y(?:.*[05])?0" $site] {
+            lappend selected_iobs $port
+        }
+    }
+
+    return $selected_iobs
+}
+
 proc write_tiles_txt {} {
     # Get all tiles, ie not just the selected LUTs
     set tiles [get_tiles]
@@ -151,8 +172,8 @@ proc write_brams { selected_brams } {
     }
 }
 
-proc write_io {} {
-    foreach port [concat [get_ports clk] [get_ports do] [get_ports stb] [get_ports di]] {
+proc write_io { selected_iobs } {
+    foreach port $selected_iobs {
       puts ""
       set site [get_sites -of_objects $port]
       set tile [get_tiles -of_objects $site]
@@ -170,7 +191,9 @@ proc run {} {
     set selected_luts [loc_luts]
     puts "Selected LUTs: [llength $selected_luts]"
     set selected_brams [loc_brams]
-    puts "Selected LUTs: [llength $selected_brams]"
+    puts "Selected BRAMs: [llength $selected_brams]"
+    set selected_iobs [loc_iobs]
+    puts "Selected IOBs: [llength $selected_iobs]"
 
     place_design
     route_design
@@ -178,7 +201,7 @@ proc run {} {
     write_bitstream -force design.bit
 
     write_tiles_txt
-    write_io
+    write_io $selected_iobs
     write_clbs $selected_luts
     write_brams $selected_brams
 }

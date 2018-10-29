@@ -9,7 +9,8 @@ Decoding was then shifted to instead describe how each title is encoded
 A post processing step verifies that two tiles don't reference the same bitstream area
 '''
 
-import os, sys, json, re
+from __future__ import print_function
+import sys, json
 
 # matches lib/include/prjxray/xilinx/xc7series/block_type.h
 block_type_i2s = {
@@ -80,9 +81,14 @@ def load_baseaddrs(deltas_fns):
     site_baseaddr = dict()
     for arg in deltas_fns:
         with open(arg) as f:
+            # design_<site>.delta
+            assert arg.startswith('design_')
+            assert arg.endswith('.delta')
+            site = arg[len('design_'):-len('.delta')]
             line = f.read().strip()
-            site = arg[7:-6]
-            frame = int(line[5:5 + 8], 16)
+            # +bit_00400026_100_02
+            _, frame_str, _, _ = line.split('_')
+            frame = int(frame_str, 16)
             # was "0x%08x"
             site_baseaddr[site] = frame & ~0x7f
 
@@ -110,25 +116,27 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
     # Look up a base address by tile name
     tile_baseaddrs = dict()
 
-    verbose and print('')
-    verbose and print('%u tiles' % len(tiles))
+    verbose and print('', file=sys.stderr)
+    verbose and print('%u tiles' % len(tiles), file=sys.stderr)
     added = 0
     for tile in tiles:
         for site_name in tile["sites"].keys():
             if site_name not in site_baseaddr:
                 continue
+
             framebaseaddr = site_baseaddr[site_name]
             bt = addr2btype(framebaseaddr)
             tile_baseaddr = tile_baseaddrs.setdefault(tile["name"], {})
+
             if bt in tile_baseaddr:
                 # actually lets just fail these, better to remove at tcl level to speed up processing
-                #assert 0, ('duplicate base address', site_name, bt, tile_baseaddr[bt])
-                assert tile_baseaddr[bt] == [framebaseaddr, 0]
+                assert 0, ('duplicate base address', site_name, bt, tile_baseaddr[bt])
             else:
                 tile_baseaddr[bt] = [framebaseaddr, 0]
+
             verbose and print(
                 "baseaddr: %s.%s @ %s.0x%08x" %
-                (tile["name"], site_name, bt, framebaseaddr))
+                (tile["name"], site_name, bt, framebaseaddr), file=sys.stderr)
             added += 1
 
     assert added
@@ -322,8 +330,6 @@ def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
                 verbose and print('  Skip non CLB')
                 continue
 
-            print(segment_name, block_type, file=sys.stderr)
-
             for inttile in get_inttile(database, segment):
                 grid_x = database[inttile]["grid_x"]
                 grid_y = database[inttile]["grid_y"]
@@ -406,8 +412,16 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
 
                     for i in range(50):
                         grid_y -= 1
-                        dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
-                        assert 'segment' in dst_tile, tiles_by_grid[(grid_x, grid_y)]
+                        loc = (grid_x, grid_y)
+
+                        if loc not in tiles_by_grid:
+                            continue
+
+                        dst_tile = database[tiles_by_grid[loc]]
+
+                        if 'segment' not in dst_tile:
+                            continue
+                        #assert 'segment' in dst_tile, ((grid_x, grid_y), dst_tile, tiles_by_grid[(grid_x, grid_y)])
 
                         if wordbase == 50:
                             wordbase += 1
@@ -532,7 +546,20 @@ def db_add_bits(database, segments):
                     ("DSP", "CLB_IO_CLK"): (28, 2, 10),
                     ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
                     ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
-                    ("IOB", "CLB_IO_CLK"): (36, 2, None),
+                    # TODO: These are all guesses copied from CLBLL.
+                    ("RIOI3", "CLB_IO_CLK"): (36, 2, 2),
+                    ("LIOI3", "CLB_IO_CLK"): (36, 2, 2),
+                    ("RIOI3_SING", "CLB_IO_CLK"): (36, 2, 2),
+                    ("LIOI3_SING", "CLB_IO_CLK"): (36, 2, 2),
+                    ("RIOI3_TBYTESRC", "CLB_IO_CLK"): (36, 2, 2),
+                    ("LIOI3_TBYTESRC", "CLB_IO_CLK"): (36, 2, 2),
+                    ("RIOI3_TBYTETERM", "CLB_IO_CLK"): (36, 2, 2),
+                    ("LIOI3_TBYTETERM", "CLB_IO_CLK"): (36, 2, 2),
+                    ("LIOB33", "CLB_IO_CLK"): (36, 2, 2),
+                    ("RIOB33", "CLB_IO_CLK"): (36, 2, 2),
+                    ("LIOB33", "CLB_IO_CLK"): (36, 2, 2),
+                    ("RIOB33_SING", "CLB_IO_CLK"): (36, 2, 2),
+                    ("LIOB33_SING", "CLB_IO_CLK"): (36, 2, 2),
                 }.get((nolr(tile_type), block_type), None)
                 if entry is None:
                     # Other types are rare, not expected to have these
