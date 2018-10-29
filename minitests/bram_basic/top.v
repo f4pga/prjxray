@@ -266,6 +266,21 @@ module roi_hck(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 /******************************************************************************
+Misc ROI
+******************************************************************************/
+
+module roi_bram18_width_a(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .READ_WIDTH_A(1))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+//"READ_WIDTH_A": [0, 1, 2, 4, 9, 18, 36],
+module roi_bram18_width_b(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .READ_WIDTH_A(0))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+/******************************************************************************
 Library
 ******************************************************************************/
 
@@ -280,10 +295,33 @@ for i in xrange(0x40): print '.INIT_%02X(INIT),' % i
 */
 module ram_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC = "";
+
     parameter INIT0 = 256'h0000000000000000000000000000000000000000000000000000000000000000;
     parameter INIT = 256'h0000000000000000000000000000000000000000000000000000000000000000;
-    parameter RAM_MODE = "TDP";
+
+    parameter IS_CLKARDCLK_INVERTED = 1'b0;
+    parameter IS_CLKBWRCLK_INVERTED = 1'b0;
     parameter IS_ENARDEN_INVERTED = 1'b0;
+    parameter IS_ENBWREN_INVERTED = 1'b0;
+    parameter IS_RSTRAMARSTRAM_INVERTED = 1'b0;
+    parameter IS_RSTRAMB_INVERTED = 1'b0;
+    parameter IS_RSTREGARSTREG_INVERTED = 1'b0;
+    parameter IS_RSTREGB_INVERTED = 1'b0;
+    parameter RAM_MODE = "TDP";
+    parameter WRITE_MODE_A = "WRITE_FIRST";
+    parameter WRITE_MODE_B = "WRITE_FIRST";
+
+    parameter DOA_REG = 1'b0;
+    parameter DOB_REG = 1'b0;
+    parameter SRVAL_A = 18'b0;
+    parameter SRVAL_B = 18'b0;
+    parameter INIT_A = 18'b0;
+    parameter INIT_B = 18'b0;
+
+    parameter READ_WIDTH_A = 0;
+    parameter READ_WIDTH_B = 0;
+    parameter WRITE_WIDTH_A = 0;
+    parameter WRITE_WIDTH_B = 0;
 
     (* LOC=LOC *)
     RAMB18E1 #(
@@ -361,18 +399,29 @@ module ram_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
             .INIT_3E(INIT),
             .INIT_3F(INIT),
 
-            .IS_CLKARDCLK_INVERTED(1'b0),
-            .IS_CLKBWRCLK_INVERTED(1'b0),
+            .IS_CLKARDCLK_INVERTED(IS_CLKARDCLK_INVERTED),
+            .IS_CLKBWRCLK_INVERTED(IS_CLKBWRCLK_INVERTED),
             .IS_ENARDEN_INVERTED(IS_ENARDEN_INVERTED),
-            .IS_ENBWREN_INVERTED(1'b0),
-            .IS_RSTRAMARSTRAM_INVERTED(1'b0),
-            .IS_RSTRAMB_INVERTED(1'b0),
-            .IS_RSTREGARSTREG_INVERTED(1'b0),
-            .IS_RSTREGB_INVERTED(1'b0),
+            .IS_ENBWREN_INVERTED(IS_ENBWREN_INVERTED),
+            .IS_RSTRAMARSTRAM_INVERTED(IS_RSTRAMARSTRAM_INVERTED),
+            .IS_RSTRAMB_INVERTED(IS_RSTRAMB_INVERTED),
+            .IS_RSTREGARSTREG_INVERTED(IS_RSTREGARSTREG_INVERTED),
+            .IS_RSTREGB_INVERTED(IS_RSTREGB_INVERTED),
             .RAM_MODE(RAM_MODE),
-            .WRITE_MODE_A("WRITE_FIRST"),
-            .WRITE_MODE_B("WRITE_FIRST"),
-            .SIM_DEVICE("VIRTEX6")
+            .WRITE_MODE_A(WRITE_MODE_A),
+            .WRITE_MODE_B(WRITE_MODE_B),
+
+            .DOA_REG(DOA_REG),
+            .DOB_REG(DOB_REG),
+            .SRVAL_A(SRVAL_A),
+            .SRVAL_B(SRVAL_B),
+            .INIT_A(INIT_A),
+            .INIT_B(INIT_B),
+
+            .READ_WIDTH_A(READ_WIDTH_A),
+            .READ_WIDTH_B(READ_WIDTH_B),
+            .WRITE_WIDTH_A(WRITE_WIDTH_A),
+            .WRITE_WIDTH_B(WRITE_WIDTH_B)
         ) ram (
             .CLKARDCLK(din[0]),
             .CLKBWRCLK(din[1]),

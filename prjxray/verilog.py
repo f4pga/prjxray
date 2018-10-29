@@ -1,4 +1,5 @@
 import sys
+import random
 
 
 def top_harness(DIN_N, DOUT_N, f=sys.stdout):
@@ -76,3 +77,17 @@ def parse_bitstr(s):
     bitstr = postfix[1:]
     assert len(bitstr) == n
     return [int(x) for x in bitstr]
+
+
+def vrandbit():
+    if random.randint(0, 1):
+        return "1'b1"
+    else:
+        return "1'b0"
+
+
+def vrandbits(n):
+    ret = "%u'b" % n
+    for _i in range(n):
+        ret += str(random.randint(0, 1))
+    return ret

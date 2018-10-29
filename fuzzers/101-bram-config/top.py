@@ -3,6 +3,7 @@ import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
+from prjxray.verilog import vrandbit, vrandbits
 import sys
 import json
 
@@ -57,21 +58,6 @@ print(
     'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
     (DIN_N - 1, DOUT_N - 1))
 
-
-def vrandbit():
-    if random.randint(0, 1):
-        return "1'b1"
-    else:
-        return "1'b0"
-
-
-def vrandbits(n):
-    ret = "%u'b" % n
-    for _i in range(n):
-        ret += str(random.randint(0, 1))
-    return ret
-
-
 for loci, (site_type, site) in enumerate(brams):
 
     def place_bram18():
@@ -80,6 +66,11 @@ for loci, (site_type, site) in enumerate(brams):
             'din': 'din[  %d +: 8]' % (8 * loci, ),
             'dout': 'dout[  %d +: 8]' % (8 * loci, ),
         }
+
+        # Datasheet says 72 is legal in some cases, but think its a copy paste error from BRAM36
+        # also 0 and 36 aren't real sizes
+        # Bias choice to 18 as its needed to solve certain bits quickly
+        widths = [1, 2, 4, 9, 18, 18, 18, 18]
         params = {
             'LOC': verilog.quote(site),
             'IS_CLKARDCLK_INVERTED': vrandbit(),
@@ -99,7 +90,12 @@ for loci, (site_type, site) in enumerate(brams):
             "SRVAL_B": vrandbits(18),
             "INIT_A": vrandbits(18),
             "INIT_B": vrandbits(18),
+            "READ_WIDTH_A": random.choice(widths),
+            "READ_WIDTH_B": random.choice(widths),
+            "WRITE_WIDTH_A": random.choice(widths),
+            "WRITE_WIDTH_B": random.choice(widths),
         }
+
         return ('my_RAMB18E1', ports, params)
 
     def place_bram36():
@@ -211,6 +207,10 @@ module my_RAMB18E1 (input clk, input [7:0] din, output [7:0] dout);
     parameter INIT_A = 18'b0;
     parameter INIT_B = 18'b0;
 
+    parameter READ_WIDTH_A = 0;
+    parameter READ_WIDTH_B = 0;
+    parameter WRITE_WIDTH_A = 0;
+    parameter WRITE_WIDTH_B = 0;
     ''')
 print('''\
     (* LOC=LOC *)
@@ -240,7 +240,12 @@ print(
             .SRVAL_A(SRVAL_A),
             .SRVAL_B(SRVAL_B),
             .INIT_A(INIT_A),
-            .INIT_B(INIT_B)
+            .INIT_B(INIT_B),
+
+            .READ_WIDTH_A(READ_WIDTH_A),
+            .READ_WIDTH_B(READ_WIDTH_B),
+            .WRITE_WIDTH_A(WRITE_WIDTH_A),
+            .WRITE_WIDTH_B(WRITE_WIDTH_B)
         ) ram (
             .CLKARDCLK(din[0]),
             .CLKBWRCLK(din[1]),
