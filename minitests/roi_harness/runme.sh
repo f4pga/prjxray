@@ -33,7 +33,7 @@ if [ "$SMALL" = Y ] ; then
 # All of CMT X0Y2
 else
     echo "Design: large"
-    export PITCH=3
+    export PITCH=2
     export DIN_N=16
     export DOUT_N=16
     export XRAY_ROI=SLICE_X0Y100:SLICE_X35Y149
