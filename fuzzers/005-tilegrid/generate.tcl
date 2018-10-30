@@ -11,7 +11,10 @@ proc make_project {} {
 
     create_pblock roi
     add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-    resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
+    foreach roi "$::env(XRAY_ROI)" {
+        puts $roi
+        resize_pblock [get_pblocks roi] -add "$roi"
+    }
 
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]
@@ -35,7 +38,8 @@ proc loc_luts {} {
         # 50 per column => 50, 100, 150, etc
         # ex: SLICE_X2Y50/A6LUT
         # Only take one of the CLBs within a slice
-        if [regexp "X.*[02468]Y.*[05]0/" $lut] {
+        if {[regexp "X.*[02468]Y(?:.*[05])?0/" $lut] || $lut == "SLICE_X44Y125/A6LUT" || $lut == "SLICE_X46Y125/A6LUT"} {
+            puts $lut
             set cell [get_cells roi/luts[$lut_index].lut]
             set_property LOC [get_sites -of_objects $lut] $cell
             set lut_index [expr $lut_index + 1]
@@ -60,7 +64,7 @@ proc loc_brams {} {
 
         # 10 per column => 10, 20, ,etc
         # ex: RAMB36_X0Y10/RAMBFIFO36E1
-        if [regexp "Y.*0/" $bram] {
+        if {[regexp "Y.*0/" $bram] || $bram == "RAMB36_X1Y25/RAMBFIFO36E1"} {
             set cell [get_cells roi/brams[$bram_index].bram]
             set_property LOC [get_sites -of_objects $bram] $cell
             set bram_index [expr $bram_index + 1]
@@ -130,9 +134,14 @@ proc write_brams { selected_brams } {
 proc run {} {
     make_project
     set selected_luts [loc_luts]
+    puts ""
+    puts ""
+    puts ""
+    puts ""
+    puts ""
     puts "Selected LUTs: [llength $selected_luts]"
     set selected_brams [loc_brams]
-    puts "Selected LUTs: [llength $selected_brams]"
+    puts "Selected BRAMs: [llength $selected_brams]"
 
     place_design
     route_design

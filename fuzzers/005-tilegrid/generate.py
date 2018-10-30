@@ -291,7 +291,10 @@ def create_segment_for_int_lr(
     else:
         assert False
 
-    if database[adjacent_tile]['type'].startswith('INT_INTERFACE_'):
+    if (
+       database[adjacent_tile]['type'].startswith('INT_INTERFACE_') or
+       database[adjacent_tile]['type'].startswith('PCIE_INT_INTERFACE_') or
+       database[adjacent_tile]['type'].startswith('GTP_INT_INTERFACE')):
         # This INT_[LR] tile has no adjacent connectivity,
         # create a segment.
         add_segment(
@@ -303,7 +306,7 @@ def create_segment_for_int_lr(
             verbose=verbose,
         )
     else:
-        assert False
+        assert False, database[adjacent_tile]['type']
 
 
 def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
@@ -467,6 +470,9 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                     if i == 4:
                         grid_y -= 1
                         wordbase += 1
+
+                    if (grid_x, grid_y) not in tiles_by_grid:
+                        continue
 
                     dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
                     assert nolr(dst_tile['type']) == 'BRAM', dst_tile
