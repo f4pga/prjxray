@@ -25,5 +25,7 @@ route_design
 write_checkpoint -force design.dcp
 
 # set_property BITSTREAM.GENERAL.DEBUGBITSTREAM Yes [current_design]
+# BRAM SDP WEA check, to make test slightly easier to write
+set_property IS_ENABLED 0 [get_drc_checks {REQP-1931}]
 write_bitstream -force design.bit
 

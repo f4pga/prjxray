@@ -266,7 +266,7 @@ module roi_hck(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 /******************************************************************************
-Misc ROI
+READ_WIDTH
 ******************************************************************************/
 
 module roi_bram18_width_a(input clk, input [255:0] din, output [255:0] dout);
@@ -281,6 +281,9 @@ module roi_bram18_width_b(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 
+/******************************************************************************
+WRITE_MODE
+******************************************************************************/
 
 module roi_bram18_write_mode_a(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .WRITE_MODE_A("WRITE_FIRST"))
@@ -290,6 +293,29 @@ endmodule
 // WRITE_FIRST (default), READ_FIRST, and NO_CHANGE
 module roi_bram18_write_mode_b(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .WRITE_MODE_A("NO_CHANGE"))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+/******************************************************************************
+RAM_MODE
+******************************************************************************/
+
+module roi_bram18_ram_mode_tdp(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .RAM_MODE("TDP"))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+/*
+ERROR: [DRC REQP-1931] RAMB18E1_WEA_NO_CONNECT_OR_TIED_GND:
+roi/r0/ram programming per UG473 requires that for SDP mode the WEA bus must be unconnected
+or tied to GND.
+
+Are these routing bits are real bits we need to look at?
+> bit_0002031b_002_00
+> bit_0002031b_002_04
+*/
+module roi_bram18_ram_mode_sdp(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .RAM_MODE("SDP"))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 

@@ -44,4 +44,6 @@ build/roi_bram18_width.diff:
 build/roi_bram18_write_mode.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bram18_write_mode.diff PRJL=roi_bram18_write_mode_a PRJR=roi_bram18_write_mode_b
 
+build/roi_bram18_ram_mode.diff:
+	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bram18_ram_mode.diff PRJL=roi_bram18_ram_mode_tdp PRJR=roi_bram18_ram_mode_sdp
 
