@@ -408,7 +408,7 @@ if {$fixed_xdc eq ""} {
             set y_left [expr {$y_left + $PITCH}]
         } else {
             set node "INT_R_X25Y${y_right}/WW2BEG1"
-            route_via2 "din_IBUF[$i]" "$node INT_R_X23Y${y_right}/WL1BEG0"
+            route_via2 "din_IBUF[$i]" "$node"
             set y_right [expr {$y_right + $PITCH}]
         }
         set net "din[$i]"
@@ -441,7 +441,7 @@ if {$fixed_xdc eq ""} {
             set y_left [expr {$y_left + $PITCH}]
         # XXX: only care about right ports on Arty
         } else {
-            set node "INT_R_X23Y${y_right}/SE6BEG0"
+            set node "INT_R_X23Y${y_right}/LH12"
             route_via2 "roi/dout[$i]" "$node"
             set y_right [expr {$y_right + $PITCH}]
         }
