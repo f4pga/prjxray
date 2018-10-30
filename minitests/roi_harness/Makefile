@@ -18,8 +18,7 @@ copy: $(HARNESS_FILES)
 	cp $(HARNESS_FILES) $(HARNESS_DIR)
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ seg_clblx.segbits vivado*.log vivado_*.str vivado*.jou design *.bits *.dcp *.bit design.txt .Xil
-	rm -rf $(BUILD_DIR) *~
+	rm -rf $(BUILD_DIR) $(HARNESS_DIR)
 
 .PHONY: all clean copy
 
