@@ -145,6 +145,23 @@ def make_tiles_by_grid(tiles):
     return tiles_by_grid
 
 
+def add_segment(
+        database, segments, name, tiles, segtype, verbose, baseaddr=None):
+    assert name not in segments
+    segment = segments.setdefault(name, {})
+    segment["tiles"] = tiles
+    segment["type"] = segtype
+    if baseaddr:
+        verbose and print('make_segment: %s baseaddr %s' % (
+            name,
+            baseaddr,
+        ))
+        segment["baseaddr"] = baseaddr
+
+    for tile_name in tiles:
+        database[tile_name]["segment"] = name
+
+
 def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
     '''
     Create segments data structure
@@ -163,22 +180,6 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
         grid_x = tile_data["grid_x"]
         grid_y = tile_data["grid_y"]
 
-        def add_segment(name, tiles, segtype, baseaddr=None):
-            assert name not in segments
-            segment = segments.setdefault(name, {})
-            segment["tiles"] = tiles
-            segment["type"] = segtype
-            if baseaddr:
-                verbose and print(
-                    'make_segment: %s baseaddr %s' % (
-                        name,
-                        baseaddr,
-                    ))
-                segment["baseaddr"] = baseaddr
-
-            for tile_name in tiles:
-                database[tile_name]["segment"] = name
-
         def process_clb():
             if tile_type in ["CLBLL_L", "CLBLM_L"]:
                 int_tile_name = tiles_by_grid[(grid_x + 1, grid_y)]
@@ -186,16 +187,24 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 int_tile_name = tiles_by_grid[(grid_x - 1, grid_y)]
 
             add_segment(
+                database=database,
+                segments=segments,
                 name="SEG_" + tile_name,
                 tiles=[tile_name, int_tile_name],
                 segtype=tile_type.lower(),
-                baseaddr=tile_baseaddrs.get(tile_name, None))
+                baseaddr=tile_baseaddrs.get(tile_name, None),
+                verbose=verbose,
+            )
 
         def process_hclk():
             add_segment(
+                database=database,
+                segments=segments,
                 name="SEG_" + tile_name,
                 tiles=[tile_name],
-                segtype=tile_type.lower())
+                segtype=tile_type.lower(),
+                verbose=verbose,
+            )
 
         def process_bram_dsp():
             for k in range(5):
@@ -222,12 +231,16 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                     baseaddr = None
 
                 add_segment(
+                    database=database,
+                    segments=segments,
                     # BRAM_L_X6Y70 => SEG_BRAM4_L_X6Y70
                     name="SEG_" + tile_name.replace("_", "%d_" % k, 1),
                     tiles=tiles,
                     # BRAM_L => bram4_l
                     segtype=tile_type.lower().replace("_", "%d_" % k, 1),
-                    baseaddr=baseaddr)
+                    baseaddr=baseaddr,
+                    verbose=verbose,
+                )
 
         def process_default():
             #verbose and nolr(tile_type) not in ('VBRK', 'INT', 'NULL') and print('make_segment: drop %s' % (tile_type,))
@@ -261,6 +274,36 @@ def get_bramtile(database, segment):
     ]
     assert len(inttiles) == 1
     return inttiles[0]
+
+
+def create_segment_for_int_lr(
+        database, segments, tile, tiles_by_grid, verbose):
+    """ Creates INT_[LR] segment for interconnect's without direct connectivity. """
+    # Some INT_[LR] tiles have no adjacent connectivity, create a segment.
+    grid_x = database[tile]["grid_x"]
+    grid_y = database[tile]["grid_y"]
+    if database[tile]["type"] == "INT_L":
+        grid_x -= 1
+        adjacent_tile = tiles_by_grid[(grid_x, grid_y)]
+    elif database[tile]["type"] == "INT_R":
+        grid_x += 1
+        adjacent_tile = tiles_by_grid[(grid_x, grid_y)]
+    else:
+        assert False
+
+    if database[adjacent_tile]['type'].startswith('INT_INTERFACE_'):
+        # This INT_[LR] tile has no adjacent connectivity,
+        # create a segment.
+        add_segment(
+            database=database,
+            segments=segments,
+            name='SEG_' + tile,
+            tiles=[tile],
+            segtype=database[tile]["type"],
+            verbose=verbose,
+        )
+    else:
+        assert False
 
 
 def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
@@ -313,7 +356,8 @@ def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
                 assert 0
 
             if 'segment' not in database[tile]:
-                continue
+                create_segment_for_int_lr(
+                    database, segments, tile, tiles_by_grid, verbose)
 
             seg = database[tile]["segment"]
 
@@ -373,6 +417,12 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                         wordbase += 1
                     else:
                         wordbase += 2
+
+                    if 'segment' not in dst_tile:
+                        create_segment_for_int_lr(
+                            database, segments, tiles_by_grid[(grid_x,
+                                                               grid_y)],
+                            tiles_by_grid, verbose)
 
                     #verbose and print('  dst_tile', dst_tile)
                     dst_segment_name = dst_tile["segment"]

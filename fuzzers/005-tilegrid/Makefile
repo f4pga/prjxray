@@ -3,7 +3,7 @@ database: build/tilegrid.json
 pushdb:
 	cp build/tilegrid.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/tilegrid.json
 
-build/tilegrid.json: build/deltas
+build/tilegrid.json: build/deltas generate.py
 	cd build && python3 ../generate.py design_*.delta > tilegrid.json
 
 build/deltas:
