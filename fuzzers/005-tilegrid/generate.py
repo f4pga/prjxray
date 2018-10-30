@@ -289,7 +289,7 @@ def create_segment_for_int_lr(
         grid_x += 1
         adjacent_tile = tiles_by_grid[(grid_x, grid_y)]
     else:
-        assert False
+        assert False, database[tile]["type"]
 
     if (
        database[adjacent_tile]['type'].startswith('INT_INTERFACE_') or
@@ -359,6 +359,8 @@ def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
                 assert 0
 
             if 'segment' not in database[tile]:
+                if database[tile]['type'] in ['T_TERM_INT']:
+                    continue
                 create_segment_for_int_lr(
                     database, segments, tile, tiles_by_grid, verbose)
 
@@ -414,6 +416,9 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
 
                 for i in range(50):
                     grid_y -= 1
+                    if grid_y < 0:
+                        break
+
                     dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
 
                     if wordbase == 50:
@@ -422,6 +427,8 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                         wordbase += 2
 
                     if 'segment' not in dst_tile:
+                        if dst_tile['type'] in ['T_TERM_INT']:
+                            continue
                         create_segment_for_int_lr(
                             database, segments, tiles_by_grid[(grid_x,
                                                                grid_y)],
