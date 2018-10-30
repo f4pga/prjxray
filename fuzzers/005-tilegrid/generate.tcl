@@ -30,21 +30,39 @@ proc loc_luts {} {
     set lut_index 0
 
     # LOC one LUT (a "selected_lut") into each CLB segment configuration column (ie 50 per CMT column)
+    set lut_columns ""
     foreach lut $luts {
-        set tile [get_tile -of_objects $lut]
-        set grid_x [get_property GRID_POINT_X $tile]
-        set grid_y [get_property GRID_POINT_Y $tile]
+        regexp "SLICE_X([0-9]+)Y([0-9]+)/" $lut match slice_x slice_y
+
+        # Only even SLICEs should be used as column bases.
+        if { $slice_x % 2 != 0 } {
+            continue
+        }
 
         # 50 per column => 50, 100, 150, etc
         # ex: SLICE_X2Y50/A6LUT
         # Only take one of the CLBs within a slice
-        if {[regexp "X.*[02468]Y(?:.*[05])?0/" $lut] || $lut == "SLICE_X44Y125/A6LUT" || $lut == "SLICE_X46Y125/A6LUT"} {
-            puts $lut
-            set cell [get_cells roi/luts[$lut_index].lut]
-            set_property LOC [get_sites -of_objects $lut] $cell
-            set lut_index [expr $lut_index + 1]
-            lappend selected_luts $lut
+        set y_column [expr ($slice_y / 50) * 50]
+        dict append lut_columns "X${slice_x}Y${y_column}" "$lut "
+    }
+
+    # Pick the smallest Y in each column.
+    dict for {column luts_in_column} $lut_columns {
+        set min_slice_y 9999999
+
+        foreach lut $luts_in_column {
+            regexp "SLICE_X([0-9]+)Y([0-9]+)/" $lut slice_x slice_y
+
+            if { $slice_y < $min_slice_y } {
+                set selected_lut $lut
+            }
         }
+
+        puts $selected_lut
+        set cell [get_cells roi/luts[$lut_index].lut]
+        set_property LOC [get_sites -of_objects [get_bels $selected_lut]] $cell
+        set lut_index [expr $lut_index + 1]
+        lappend selected_luts [get_bels $selected_lut]
     }
     return $selected_luts
 }
@@ -57,20 +75,38 @@ proc loc_brams {} {
     set bram_index 0
 
     # LOC one BRAM (a "selected_lut") into each BRAM segment configuration column (ie 10 per CMT column)
+    set bram_columns ""
     foreach bram $brams {
-        set tile [get_tile -of_objects $bram]
-        set grid_x [get_property GRID_POINT_X $tile]
-        set grid_y [get_property GRID_POINT_Y $tile]
+        regexp "RAMB36_X([0-9]+)Y([0-9]+)/" $bram match slice_x slice_y
 
         # 10 per column => 10, 20, ,etc
         # ex: RAMB36_X0Y10/RAMBFIFO36E1
-        if {[regexp "Y.*0/" $bram] || $bram == "RAMB36_X1Y25/RAMBFIFO36E1"} {
-            set cell [get_cells roi/brams[$bram_index].bram]
-            set_property LOC [get_sites -of_objects $bram] $cell
-            set bram_index [expr $bram_index + 1]
-            lappend selected_brams $bram
-        }
+        set y_column [expr ($slice_y / 10) * 10]
+        dict append lut_columns "X${slice_x}Y${y_column}" "$bram "
     }
+
+    # Pick the smallest Y in each column.
+    dict for {column brams_in_column} $lut_columns {
+        set min_slice_y 9999999
+
+        foreach bram $brams_in_column {
+            regexp "RAMB36_X([0-9]+)Y([0-9]+)/" $bram match slice_x slice_y
+
+            if { $slice_y < $min_slice_y } {
+                set selected_bram $bram
+            }
+        }
+
+        puts ""
+        puts $selected_bram
+
+        set cell [get_cells roi/brams[$bram_index].bram]
+        set_property LOC [get_sites -of_objects [get_bels $selected_bram]] $cell
+        puts $selected_bram
+        set bram_index [expr $bram_index + 1]
+        lappend selected_brams [get_bels $selected_bram]
+    }
+
     return $selected_brams
 }
 
@@ -134,11 +170,6 @@ proc write_brams { selected_brams } {
 proc run {} {
     make_project
     set selected_luts [loc_luts]
-    puts ""
-    puts ""
-    puts ""
-    puts ""
-    puts ""
     puts "Selected LUTs: [llength $selected_luts]"
     set selected_brams [loc_brams]
     puts "Selected BRAMs: [llength $selected_brams]"
