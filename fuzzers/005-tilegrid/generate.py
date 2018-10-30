@@ -291,10 +291,10 @@ def create_segment_for_int_lr(
     else:
         assert False, database[tile]["type"]
 
-    if (
-       database[adjacent_tile]['type'].startswith('INT_INTERFACE_') or
-       database[adjacent_tile]['type'].startswith('PCIE_INT_INTERFACE_') or
-       database[adjacent_tile]['type'].startswith('GTP_INT_INTERFACE')):
+    if (database[adjacent_tile]['type'].startswith('INT_INTERFACE_') or
+            database[adjacent_tile]['type'].startswith('PCIE_INT_INTERFACE_')
+            or
+            database[adjacent_tile]['type'].startswith('GTP_INT_INTERFACE')):
         # This INT_[LR] tile has no adjacent connectivity,
         # create a segment.
         add_segment(

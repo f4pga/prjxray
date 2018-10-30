@@ -16,6 +16,7 @@ def set_port_wires(ports, name, pin, wires_outside_roi):
 
     assert False, name
 
+
 def main():
     parser = argparse.ArgumentParser(
         description=
@@ -43,12 +44,12 @@ def main():
     grid = db.grid()
 
     roi = Roi(
-            db=db,
-            x1=j['info']['GRID_X_MIN'],
-            y1=j['info']['GRID_Y_MIN'],
-            x2=j['info']['GRID_X_MAX'],
-            y2=j['info']['GRID_Y_MAX'],
-            )
+        db=db,
+        x1=j['info']['GRID_X_MIN'],
+        y1=j['info']['GRID_Y_MIN'],
+        x2=j['info']['GRID_X_MAX'],
+        y2=j['info']['GRID_Y_MAX'],
+    )
 
     with open(args.pad_wires) as f:
         for l in f:
