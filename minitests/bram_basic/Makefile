@@ -40,3 +40,8 @@ build/roi_bramis_bit01.diff:
 build/roi_bram18_width.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bram18_width.diff PRJL=roi_bram18_width_a PRJR=roi_bram18_width_b
 
+
+build/roi_bram18_write_mode.diff:
+	$(MAKE) -f diff.mk OUT_DIFF=build/roi_bram18_write_mode.diff PRJL=roi_bram18_write_mode_a PRJR=roi_bram18_write_mode_b
+
+

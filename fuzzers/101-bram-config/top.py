@@ -67,6 +67,8 @@ for loci, (site_type, site) in enumerate(brams):
             'dout': 'dout[  %d +: 8]' % (8 * loci, ),
         }
 
+        write_modes = ["WRITE_FIRST", "READ_FIRST", "NO_CHANGE"]
+
         # Datasheet says 72 is legal in some cases, but think its a copy paste error from BRAM36
         # also 0 and 36 aren't real sizes
         # Bias choice to 18 as its needed to solve certain bits quickly
@@ -82,8 +84,8 @@ for loci, (site_type, site) in enumerate(brams):
             'IS_RSTREGARSTREG_INVERTED': vrandbit(),
             'IS_RSTREGB_INVERTED': vrandbit(),
             'RAM_MODE': '"TDP"',
-            'WRITE_MODE_A': '"WRITE_FIRST"',
-            'WRITE_MODE_B': '"WRITE_FIRST"',
+            'WRITE_MODE_A': verilog.quote(random.choice(write_modes)),
+            'WRITE_MODE_B': verilog.quote(random.choice(write_modes)),
             "DOA_REG": vrandbit(),
             "DOB_REG": vrandbit(),
             "SRVAL_A": vrandbits(18),

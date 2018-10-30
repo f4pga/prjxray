@@ -74,6 +74,16 @@ def rw_width_tags(segmk, ps, site):
         segmk.add_site_tag(site, '%s_B2' % (param), set_val in (18, ))
 
 
+def write_mode_tags(segmk, ps, site):
+    for param in ["WRITE_MODE_A", "WRITE_MODE_B"]:
+        set_val = verilog.unquote(ps[param])
+        # WRITE_FIRST: no bits set
+        segmk.add_site_tag(
+            site, '%s_READ_FIRST' % (param), set_val == "READ_FIRST")
+        segmk.add_site_tag(
+            site, '%s_NO_CHANGE' % (param), set_val == "NO_CHANGE")
+
+
 def run():
 
     segmk = Segmaker("design.bits", verbose=True)
@@ -92,6 +102,7 @@ def run():
         isenv_tags(segmk, ps, site)
         bus_tags(segmk, ps, site)
         rw_width_tags(segmk, ps, site)
+        write_mode_tags(segmk, ps, site)
 
     def bitfilter(frame, bit):
         # rw_width_tags() aliasing interconnect on large widths
