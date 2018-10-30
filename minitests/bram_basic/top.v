@@ -280,6 +280,19 @@ module roi_bram18_width_b(input clk, input [255:0] din, output [255:0] dout);
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
+
+
+module roi_bram18_write_mode_a(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .WRITE_MODE_A("WRITE_FIRST"))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
+// WRITE_FIRST (default), READ_FIRST, and NO_CHANGE
+module roi_bram18_write_mode_b(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .WRITE_MODE_A("NO_CHANGE"))
+            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
+endmodule
+
 /******************************************************************************
 Library
 ******************************************************************************/
