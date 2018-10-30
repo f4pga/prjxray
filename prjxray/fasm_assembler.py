@@ -22,6 +22,9 @@ class FasmAssembler(object):
         self.db = db
         self.grid = db.grid()
 
+        self.seen_tile = set()
+        self.frames_in_use = set()
+
         self.frames = {}
         self.frames_line = {}
 
@@ -29,7 +32,12 @@ class FasmAssembler(object):
         if not sparse:
             frames = self.frames_init()
         else:
+            # Even in sparse mode, zero all frames for any tile that is
+            # setting a bit.  This handles the case where the tile has
+            # multiple frames, but the FASM only specifies some of the frames.
             frames = {}
+            for frame in self.frames_in_use:
+                init_frame_at_address(frames, frame)
 
         for (frame_addr, word_addr, bit_index), is_set in self.frames.items():
             init_frame_at_address(frames, frame_addr)
@@ -111,6 +119,13 @@ class FasmAssembler(object):
                 self.frame_clear(frame_addr, word_addr, bit_index, line)
 
         segbits = self.db.get_tile_segbits(gridinfo.tile_type)
+
+        # Mark all frames used by this tile as in use.
+        if tile not in self.seen_tile:
+            for frame in segbits.frames(bits):
+                self.frames_in_use.add(frame)
+
+        self.seen_tile.add(tile)
 
         db_k = '%s.%s' % (gridinfo.tile_type, feature)
 
