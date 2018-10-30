@@ -5,6 +5,7 @@ This output is intended for debugging and not directly related to FASM
 '''
 
 import sys, os, json, re
+from prjxray import bitstream
 
 
 class NoDB(Exception):
@@ -178,26 +179,6 @@ def handle_segment(
         print("tag %s" % tag)
 
 
-def load_bitdata(bits_file):
-    bitdata = dict()
-
-    with open(bits_file, "r") as f:
-        for line in f:
-            line = line.split("_")
-            frame = int(line[1], 16)
-            wordidx = int(line[2], 10)
-            bitidx = int(line[3], 10)
-
-            if frame not in bitdata:
-                bitdata[frame] = dict()
-
-            if wordidx not in bitdata[frame]:
-                bitdata[frame][wordidx] = set()
-
-            bitdata[frame][wordidx].add(bitidx)
-    return bitdata
-
-
 def mk_grid():
     '''Load tilegrid, flattening all blocks into one dictionary'''
 
@@ -254,7 +235,7 @@ def run(
         verbose=False):
     grid = mk_grid()
 
-    bitdata = load_bitdata(bits_file)
+    bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
 
     if flag_unknown_bits:
         print_unknown_bits(grid, bitdata)

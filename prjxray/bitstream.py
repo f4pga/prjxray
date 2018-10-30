@@ -29,3 +29,27 @@ def load_bitdata(f):
         bitdata[frame][1].add(wordidx * WORD_SIZE_BITS + bitidx)
 
     return bitdata
+
+
+# used by segprint
+# TODO: merge these
+def load_bitdata2(f):
+    # these are not compatible
+    # return bitstream.load_bitdata(open(bits_file, "r"))
+
+    bitdata = dict()
+
+    for line in f:
+        line = line.split("_")
+        frame = int(line[1], 16)
+        wordidx = int(line[2], 10)
+        bitidx = int(line[3], 10)
+
+        if frame not in bitdata:
+            bitdata[frame] = dict()
+
+        if wordidx not in bitdata[frame]:
+            bitdata[frame][wordidx] = set()
+
+        bitdata[frame][wordidx].add(bitidx)
+    return bitdata
