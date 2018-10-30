@@ -46,7 +46,7 @@ def main():
 
             for pip in tile_type.pips:
                 if pip.net_from == parts[2] and pip.net_to == parts[1]:
-                    yield '{}/{}.{}'.format(tile, gridinfo.tile_type, pip.name)
+                    yield '{}/{}'.format(tile, pip.name)
 
     print(
         'highlight_objects [concat {}]'.format(

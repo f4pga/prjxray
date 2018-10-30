@@ -140,3 +140,9 @@ class TileSegbits(object):
         else:
             for bit in self.segbits[self.feature_addresses[feature][address]]:
                 yield bit
+
+    def frames(self, bits):
+        """ Iterate over frames this tile uses for a given bit location. """
+        for query_bits in self.segbits.values():
+            for bit in query_bits:
+                yield bits.base_address + bit.word_column

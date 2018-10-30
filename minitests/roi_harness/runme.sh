@@ -30,14 +30,13 @@ if [ "$SMALL" = Y ] ; then
     export DIN_N=8
     export DOUT_N=8
     export XRAY_ROI=SLICE_X12Y100:SLICE_X17Y117
-# 16x by 50y CLBs (800)
+# All of CMT X0Y2
 else
     echo "Design: large"
-    export PITCH=3
-    export DIN_N=8
-    export DOUT_N=8
-    export XRAY_ROI=SLICE_X12Y100:SLICE_X27Y149
-    #export XRAY_ROI=SLICE_X12Y100:SLICE_X5Y149
+    export PITCH=2
+    export DIN_N=16
+    export DOUT_N=16
+    export XRAY_ROI=SLICE_X0Y100:SLICE_X35Y149
 fi
 
 mkdir -p $BUILD_DIR
@@ -60,7 +59,7 @@ ${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit
 ${XRAY_SEGPRINT} -zd design.bits >design.segp
 ${XRAY_DIR}/utils/bits2fasm.py --verbose design.bits > design.fasm
 ${XRAY_DIR}/utils/fasm2frames.py design.fasm design.frm
-python3 ../create_design_json.py --design_info_txt design_info.txt --design_txt design.txt > design.json
+python3 ../create_design_json.py --design_info_txt design_info.txt --design_txt design.txt --pad_wires design_pad_wires.txt > design.json
 
 # Hack to get around weird clock error related to clk net not found
 # Remove following lines:
