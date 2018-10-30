@@ -380,6 +380,7 @@ close $fp
 
 # XXX: maybe add IOB?
 set fp [open "design.txt" w]
+set fp_wires [open "design_pad_wires.txt" w]
 puts $fp "name node pin wire"
 # Manual routing
 if {$fixed_xdc eq ""} {
@@ -415,6 +416,9 @@ if {$fixed_xdc eq ""} {
         set pin "$net2pin($net)"
         set wire [node2wire $node]
         puts $fp "$net $node $pin $wire"
+
+        set wires [get_wires -of_objects [get_nets "din_IBUF[$i]"]]
+        puts $fp_wires "$net $pin $wires"
     }
 
     puts "Routing ROI outputs"
@@ -449,9 +453,13 @@ if {$fixed_xdc eq ""} {
         set pin "$net2pin($net)"
         set wire [node2wire $node]
         puts $fp "$net $node $pin $wire"
+
+        set wires [get_wires -of_objects [get_nets "roi/dout[$i]"]]
+        puts $fp_wires "$net $pin $wires"
     }
 }
 close $fp
+close $fp_wires
 
 puts "routing design"
 route_design
