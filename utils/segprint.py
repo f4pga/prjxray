@@ -75,7 +75,7 @@ def mk_segbits(seginfo, bitdata):
     return segbits
 
 
-def print_unknown_bits(grid, bitdata):
+def print_unknown_bits(segments, bitdata):
     '''
     Print bits not covered by known tiles
     '''
@@ -84,7 +84,7 @@ def print_unknown_bits(grid, bitdata):
     # seggrames[address] = set()
     # where set contains word numbers
     segframes = dict()
-    for segname, segdata in grid["segments"].items():
+    for segname, segdata in segments.items():
         framebase = int(segdata["baseaddr"][0], 16)
         for i in range(segdata["frames"]):
             words = segframes.setdefault(framebase + i, set())
@@ -143,7 +143,7 @@ def seg_decode(flag_decode_emit, seginfo, segbits, verbose=False):
 
 def handle_segment(
         segname,
-        grid,
+        segments,
         bitdata,
         flag_decode_emit,
         flag_decode_omit,
@@ -153,9 +153,9 @@ def handle_segment(
     assert segname
 
     # only print bitstream tiles
-    if segname not in grid["segments"]:
+    if segname not in segments:
         return
-    seginfo = grid["segments"][segname]
+    seginfo = segments[segname]
 
     segbits = mk_segbits(seginfo, bitdata)
 
@@ -179,23 +179,16 @@ def handle_segment(
         print("tag %s" % tag)
 
 
-def mk_grid():
-    '''Load tilegrid, flattening all blocks into one dictionary'''
+def mk_segments(tiles):
+    segments = {}
 
-    with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
-                                       os.getenv("XRAY_DATABASE")), "r") as f:
-        new_grid = json.load(f)
-
-    # TODO: Migrate to new tilegrid format via library.
-    grid = {'tiles': new_grid, 'segments': {}}
-
-    for tile_name, tile in grid['tiles'].items():
+    for tile_name, tile in tiles.items():
         bits = tile.get('bits', None)
         if not bits:
             continue
         for block_name, block in bits.items():
             segname = mksegment(tile_name, block_name)
-            grid['segments'][segname] = {
+            segments[segname] = {
                 'baseaddr': [
                     block['baseaddr'],
                     block['offset'],
@@ -206,7 +199,17 @@ def mk_grid():
                 'tile_name': tile_name,
                 'block_name': block_name,
             }
-    return grid
+    return segments
+
+
+def mk_grid():
+    with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
+                                       os.getenv("XRAY_DATABASE")), "r") as f:
+        tiles = json.load(f)
+
+    '''Load tilegrid, flattening all blocks into one dictionary'''
+    # TODO: Migrate to new tilegrid format via library.
+    return tiles, mk_segments(tiles)
 
 
 def mksegment(tile_name, block_name):
@@ -214,9 +217,9 @@ def mksegment(tile_name, block_name):
     return '%s:%s' % (tile_name, block_name)
 
 
-def tile_segnames(grid):
+def tile_segnames(tiles):
     ret = []
-    for tile_name, tile in grid['tiles'].items():
+    for tile_name, tile in tiles.items():
         if 'bits' not in tile:
             continue
 
@@ -233,12 +236,12 @@ def run(
         flag_decode_emit=False,
         flag_decode_omit=False,
         verbose=False):
-    grid = mk_grid()
+    tiles, segments = mk_grid()
 
     bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
 
     if flag_unknown_bits:
-        print_unknown_bits(grid, bitdata)
+        print_unknown_bits(segments, bitdata)
 
     # Default: print all
     if segnames:
@@ -247,7 +250,7 @@ def run(
             if ':' not in segname:
                 segnames[i] = mksegment(segname, 'CLB_IO_CLK')
     else:
-        segnames = sorted(tile_segnames(grid))
+        segnames = sorted(tile_segnames(tiles))
     print('Segments: %u' % len(segnames))
 
     # XXX: previously this was sorted by address, not name
@@ -255,7 +258,7 @@ def run(
     for segname in segnames:
         handle_segment(
             segname,
-            grid,
+            segments,
             bitdata,
             flag_decode_emit,
             flag_decode_omit,
