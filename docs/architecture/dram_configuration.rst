@@ -14,7 +14,8 @@ Some modes can be enabled at the single LUT level.  The following modes are:
 
 Some modes are SLICEM wide:
 
-- 128x1
+- 128x1 Single port (128x1S)
+- 128x1 Dual port (128x1D)
 - 256x1
 
 Ports
