@@ -32,26 +32,28 @@ module top(input clk, stb, di, output do);
 endmodule
 
 /******************************************************************************
+*******************************************************************************
 DATA ROI
+*******************************************************************************
 ******************************************************************************/
 
 /******************************************************************************
-Toggle a single data bit to locate a single instance
+Toggle a single data bit to locate a single instance (BRAM36)
 ******************************************************************************/
-module roi_bramd_bit0(input clk, input [255:0] din, output [255:0] dout);
+
+module roi_bram36d_bit0(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
-module roi_bramd_bit1(input clk, input [255:0] din, output [255:0] dout);
+module roi_bram36d_bit1(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0(1'b1), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
 
-module roi_bramd2_bit1(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0(256'b10), .INIT({256{1'b0}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-endmodule
+/******************************************************************************
+Toggle a single data bit to locate a single instance (BRAM18)
+******************************************************************************/
 
 module roi_bram18d_bit0(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}))
@@ -78,7 +80,7 @@ module roi_bramd_bits1(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 /******************************************************************************
-Toggle all the data bits in the ROI to show pitch between entries
+Toggle one bit per BRAM in the ROI to show pitch between entries
 ******************************************************************************/
 
 module roi_bramds_bit0(input clk, input [255:0] din, output [255:0] dout);
@@ -128,30 +130,29 @@ module roi_bramds_bit1(input clk, input [255:0] din, output [255:0] dout);
 endmodule
 
 /******************************************************************************
-CONFIG ROI
+Set all data bits
 ******************************************************************************/
 
-module roi_bram18i_bit0(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
+module roi_bram36_0s(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0({256{1'b0}}), .INIT({256{1'b0}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y41"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
-            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
 endmodule
 
-module roi_bram18iy0_bit1(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
+module roi_bram36_1s(input clk, input [255:0] din, output [255:0] dout);
+    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0({256{1'b1}}), .INIT({256{1'b1}}))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y41"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
-            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
 endmodule
 
-module roi_bram18iy1_bit1(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y41"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
-            r1(.clk(clk), .din(din[  8 +: 8]), .dout(dout[  8 +: 8]));
-endmodule
 
+/******************************************************************************
+*******************************************************************************
+CONFIG ROI
+*******************************************************************************
+******************************************************************************/
+
+/******************************************************************************
+Toggle a single data bit to locate a single instance
+******************************************************************************/
 
 module roi_brami_bit0(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
@@ -162,6 +163,10 @@ module roi_brami_bit1(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
             r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
 endmodule
+
+/******************************************************************************
+Toggle one bit per BRAM in the ROI to show pitch between entries
+******************************************************************************/
 
 module roi_bramis_bit0(input clk, input [255:0] din, output [255:0] dout);
     ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b0))
@@ -212,30 +217,6 @@ endmodule
 /******************************************************************************
 Misc ROI
 ******************************************************************************/
-
-//ram_RAMB36E1 too much churn to be useful to compare vs above
-//instead lets change something more subtle
-// ERROR: [DRC REQP-1931] RAMB18E1_WEA_NO_CONNECT_OR_TIED_GND: roi/r0/ram programming
-// per UG473 requires that for SDP mode the WEA bus must be unconnected or tied to GND.
-module roi_bramd_sdp(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .RAM_MODE("SDP"))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-endmodule
-
-module roi_bramd_inv(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB18E1 #(.LOC("RAMB18_X0Y40"), .INIT0(1'b0), .INIT({256{1'b0}}), .IS_ENARDEN_INVERTED(1'b1))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-endmodule
-
-module roi_bram36_0s(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0({256{1'b0}}), .INIT({256{1'b0}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-endmodule
-
-module roi_bram36_1s(input clk, input [255:0] din, output [255:0] dout);
-    ram_RAMB36E1 #(.LOC("RAMB36_X0Y20"), .INIT0({256{1'b1}}), .INIT({256{1'b1}}))
-            r0(.clk(clk), .din(din[  0 +: 8]), .dout(dout[  0 +: 8]));
-endmodule
 
 /*
 Place everything into first tile
@@ -320,7 +301,9 @@ module roi_bram18_ram_mode_sdp(input clk, input [255:0] din, output [255:0] dout
 endmodule
 
 /******************************************************************************
+*******************************************************************************
 Library
+*******************************************************************************
 ******************************************************************************/
 
 
