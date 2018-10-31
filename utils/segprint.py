@@ -6,6 +6,7 @@ This output is intended for debugging and not directly related to FASM
 
 import sys, os, json, re
 from prjxray import bitstream
+from prjxray import db as prjxraydb
 
 
 class NoDB(Exception):
@@ -18,26 +19,20 @@ segbitsdb = dict()
 
 # int and sites are loaded together so that bit coverage can be checked together
 # however, as currently written, each segment is essentially printed twice
-def process_db(tile_type, process):
-    fns = [
-        # sites
-        "%s/%s/segbits_%s.db" % (
-            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-            tile_type.lower()),
-        # interconnect
-        "%s/%s/segbits_int_%s.db" % (
-            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
-            tile_type[-1].lower()),
-    ]
+def process_db(db, tile_type, process, verbose):
+    print(db.get_tile_types())
+    ttdb = db.get_tile_type(tile_type)
 
+    fns = [ttdb.tile_dbs.segbits, ttdb.tile_dbs.ppips]
+    verbose and print("process_db(%s): %s" % (tile_type, fns))
     for fn in fns:
-        if os.path.exists(fn):
+        if fn:
             with open(fn, "r") as f:
                 for line in f:
                     process(line)
 
 
-def get_database(tile_type):
+def get_database(db, tile_type, verbose=False):
     tags = list()
 
     if tile_type in segbitsdb:
@@ -46,7 +41,7 @@ def get_database(tile_type):
     def process(l):
         tags.append(l.split())
 
-    process_db(tile_type, process)
+    process_db(db, tile_type, process, verbose=verbose)
 
     if len(tags) == 0:
         raise NoDB(tile_type)
@@ -120,7 +115,7 @@ def tag_matched(entry, segbits):
 decode_warnings = set()
 
 
-def seg_decode(flag_decode_emit, seginfo, segbits, verbose=False):
+def seg_decode(flag_decode_emit, db, seginfo, segbits, verbose=False):
     segtags = set()
 
     # already failed?
@@ -128,7 +123,7 @@ def seg_decode(flag_decode_emit, seginfo, segbits, verbose=False):
         return segtags
 
     try:
-        for entry in get_database(seginfo["type"]):
+        for entry in get_database(db, seginfo["type"], verbose=verbose):
             if not tagmatch(entry, segbits):
                 continue
             tag_matched(entry, segbits)
@@ -142,6 +137,7 @@ def seg_decode(flag_decode_emit, seginfo, segbits, verbose=False):
 
 
 def handle_segment(
+        db,
         segname,
         segments,
         bitdata,
@@ -161,7 +157,7 @@ def handle_segment(
 
     if flag_decode_emit or flag_decode_omit:
         segtags = seg_decode(
-            flag_decode_emit, seginfo, segbits, verbose=verbose)
+            flag_decode_emit, db, seginfo, segbits, verbose=verbose)
     else:
         segtags = set()
 
@@ -206,7 +202,6 @@ def mk_grid():
     with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         tiles = json.load(f)
-
     '''Load tilegrid, flattening all blocks into one dictionary'''
     # TODO: Migrate to new tilegrid format via library.
     return tiles, mk_segments(tiles)
@@ -237,6 +232,7 @@ def run(
         flag_decode_omit=False,
         verbose=False):
     tiles, segments = mk_grid()
+    db = prjxraydb.Database()
 
     bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
 
@@ -257,6 +253,7 @@ def run(
     # revisit?
     for segname in segnames:
         handle_segment(
+            db,
             segname,
             segments,
             bitdata,
