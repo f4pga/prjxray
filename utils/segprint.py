@@ -198,9 +198,8 @@ def mk_segments(tiles):
     return segments
 
 
-def mk_grid():
-    with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
-                                       os.getenv("XRAY_DATABASE")), "r") as f:
+def mk_grid(db_root):
+    with open(os.path.join(db_root, "tilegrid.json"), "r") as f:
         tiles = json.load(f)
     '''Load tilegrid, flattening all blocks into one dictionary'''
     # TODO: Migrate to new tilegrid format via library.
@@ -224,6 +223,7 @@ def tile_segnames(tiles):
 
 
 def run(
+        db_root,
         bits_file,
         segnames,
         omit_empty_segs=False,
@@ -231,8 +231,8 @@ def run(
         flag_decode_emit=False,
         flag_decode_omit=False,
         verbose=False):
-    tiles, segments = mk_grid()
-    db = prjxraydb.Database()
+    tiles, segments = mk_grid(db_root)
+    db = prjxraydb.Database(db_root)
 
     bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
 
@@ -271,6 +271,16 @@ def main():
     parser = argparse.ArgumentParser(
         description='XXX: does not print all data?')
 
+    database_dir = os.getenv("XRAY_DATABASE_DIR")
+    database = os.getenv("XRAY_DATABASE")
+    db_root_kwargs = {}
+    if database_dir is None or database is None:
+        db_root_kwargs['required'] = True
+    else:
+        db_root_kwargs['required'] = False
+        db_root_kwargs['default'] = os.path.join(database_dir, database)
+
+    parser.add_argument('--db_root', help="Database root.", **db_root_kwargs)
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument(
         '-z',
@@ -293,8 +303,8 @@ def main():
     args = parser.parse_args()
 
     run(
-        args.bits_file, args.segnames, args.z, args.b, args.d, args.D,
-        args.verbose)
+        args.db_root, args.bits_file, args.segnames, args.z, args.b, args.d,
+        args.D, args.verbose)
 
 
 if __name__ == '__main__':
