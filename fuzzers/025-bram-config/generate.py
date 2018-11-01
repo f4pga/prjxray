@@ -86,7 +86,7 @@ def write_mode_tags(segmk, ps, site):
 
 def run():
 
-    segmk = Segmaker("design.bits", verbose=True)
+    segmk = Segmaker("design.bits")
     #segmk.set_def_bt('BLOCK_RAM')
 
     print("Loading tags")
