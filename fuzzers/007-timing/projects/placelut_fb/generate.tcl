@@ -19,7 +19,6 @@ proc build_design {} {
     puts "pblocking"
     create_pblock roi
     set roipb [get_pblocks roi]
-    set_property EXCLUDE_PLACEMENT 1 $roipb
     add_cells_to_pblock $roipb [get_cells roi]
     resize_pblock $roipb -add "$::env(XRAY_ROI)"
 

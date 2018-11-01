@@ -9,7 +9,6 @@ set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_02) IOSTANDARD LVCMOS33" [get_po
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_03) IOSTANDARD LVCMOS33" [get_ports do]
 
 create_pblock roi
-set_property EXCLUDE_PLACEMENT 1 [get_pblocks roi]
 add_cells_to_pblock [get_pblocks roi] [get_cells roi]
 resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
 
