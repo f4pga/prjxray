@@ -6,7 +6,7 @@ from prjxray.segmaker import Segmaker
 
 c2i = {'0': 0, '1': 1}
 
-segmk = Segmaker("design.bits", verbose=True)
+segmk = Segmaker("design.bits")
 segmk.set_def_bt('BLOCK_RAM')
 
 print("Loading tags")

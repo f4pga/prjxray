@@ -4,11 +4,11 @@ SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/seg_bramx.block_ram.segbits $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -o build/seg_bramx.segbits $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS))
 
 pushdb:
-	${XRAY_MERGEDB} bram_l.block_ram build/seg_bramx.block_ram.segbits
-	${XRAY_MERGEDB} bram_r.block_ram build/seg_bramx.block_ram.segbits
+	${XRAY_MERGEDB} bram_l build/seg_bramx.segbits
+	${XRAY_MERGEDB} bram_r build/seg_bramx.segbits
 
 build:
 	mkdir build
