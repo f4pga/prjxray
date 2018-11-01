@@ -25,15 +25,14 @@ def get_available_databases(prjxray_root):
 
 
 class Database(object):
-    def __init__(self, db_root=None):
+    def __init__(self, db_root):
         """ Create project x-ray Database at given db_root.
 
     db_root: Path to directory containing settings.sh, *.db, tilegrid.json and
              tileconn.json
 
     """
-        self.db_root = db_root or os.path.join(
-            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"))
+        self.db_root = db_root
         self.tilegrid = None
         self.tileconn = None
         self.tile_types = None
