@@ -9,13 +9,12 @@ import sys
 
 
 def gen_bram36():
-    #yield "RAMB36_X%dY%d" % (x, y)
     for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
         ['RAMBFIFO36E1']):
         yield site_name
 
 
-DUTN = 10
+DUTN = len(list(gen_bram36()))
 DIN_N = DUTN * 8
 DOUT_N = DUTN * 8
 

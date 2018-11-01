@@ -32,15 +32,7 @@ def gen_brams():
     '''
     Correctly assign a site to either bram36 or 2x bram18
     '''
-    # FIXME
-    #yield ('RAMBFIFO36E1', "RAMB36_X0Y20")
-    #return
-
-    #for _tile_name, site_name, _site_type in util.get_roi().gen_tiles():
-
-    #for site in gen_bram36():
-    #    yield ('RAMBFIFO36E1', site)
-
+    # XXX: mix 18 and 36?
     for site in gen_bram18():
         yield ('RAMB18E1', site)
 
@@ -100,6 +92,7 @@ for loci, (site_type, site) in enumerate(brams):
 
         return ('my_RAMB18E1', ports, params)
 
+    '''
     def place_bram36():
         ports = {
             'clk': 'clk',
@@ -121,10 +114,11 @@ for loci, (site_type, site) in enumerate(brams):
             'WRITE_MODE_B': '"WRITE_FIRST"',
         }
         return ('my_RAMB36E1', ports, params)
+    '''
 
     modname, ports, params = {
         'RAMB18E1': place_bram18,
-        'RAMBFIFO36E1': place_bram36,
+        #'RAMBFIFO36E1': place_bram36,
     }[site_type]()
 
     verilog.instance(modname, 'inst_%u' % loci, ports, params=params)
