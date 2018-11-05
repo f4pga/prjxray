@@ -34,8 +34,8 @@ if [ "$SMALL" = Y ] ; then
 else
     echo "Design: large"
     export PITCH=2
-    export DIN_N=16
-    export DOUT_N=16
+    export DIN_N=17
+    export DOUT_N=17
     export XRAY_ROI=SLICE_X0Y100:SLICE_X35Y149
 fi
 
