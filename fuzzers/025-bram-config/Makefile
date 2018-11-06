@@ -17,6 +17,12 @@ $(SPECIMENS_OK): build
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
+run:
+	$(MAKE) clean
+	$(MAKE) database
+	$(MAKE) pushdb
+	touch run.ok
+
 clean:
 	rm -rf build
 
