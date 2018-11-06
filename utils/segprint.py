@@ -57,7 +57,7 @@ def get_database(db, tile_type, verbose=False):
             # second part forms a tuple refereced in sets
             return (isset, (int(frame, 10), int(word, 10)))
 
-        if parts[1] == 'always':
+        if parts[1] == 'always' or parts[1] == 'hint':
             tagbits = []
         else:
             tagbits = [parsetag(x) for x in parts[1:]]
