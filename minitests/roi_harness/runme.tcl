@@ -160,8 +160,13 @@ if {$part eq "xc7a50tfgg484-1"} {
         # https://raw.githubusercontent.com/Digilent/digilent-xdc/master/Basys-3-Master.xdc
 
         # Slide switches
-        set sws "V17 V16 W16 W17 W15 V15 W14 W13 V2 T3 T2 R3 W2 U1 T1 R2"
-        set leds "U16 E19 U19 V19 W18 U15 U14 V14 V13 V3 W3 U3 P3 N3 P1 L1"
+        set ins "V17 V16 W16 W17 W15 V15 W14 W13 V2 T3 T2 R3 W2 U1 T1 R2"
+        set outs "U16 E19 U19 V19 W18 U15 U14 V14 V13 V3 W3 U3 P3 N3 P1 L1"
+
+        # UART
+        lappend ins B18
+        lappend outs A18
+
 
         # 100 MHz CLK onboard
         set pin "W5"
@@ -169,13 +174,13 @@ if {$part eq "xc7a50tfgg484-1"} {
 
         # DIN
         for {set i 0} {$i < $DIN_N} {incr i} {
-            set pin [lindex $sws $i]
+            set pin [lindex $ins $i]
             set net2pin(din[$i]) $pin
         }
 
         # DOUT
         for {set i 0} {$i < $DOUT_N} {incr i} {
-            set pin [lindex $leds $i]
+            set pin [lindex $outs $i]
             set net2pin(dout[$i]) $pin
        }
     } else {
