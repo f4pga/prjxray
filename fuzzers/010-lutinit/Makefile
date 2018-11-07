@@ -1,3 +1,5 @@
+# NOt using clb.mk: 0-2 segmatch
+# Could probably change segmatch to re though
 
 N := 1
 SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
