@@ -14,28 +14,6 @@ clb_int_zero_db = [
     "00_13 01_17 00_15 00_17|00_18 00_19 01_13 00_14",
     "00_34 00_38 01_33 01_37|00_35 00_39 01_38 01_40",
     "00_33 00_41 01_32 01_34|00_37 00_42 01_36 01_41",
-
-    # CLBL?_?.SLICE?_X?.?FF.DMUX
-    # ex: segbits_clbll_l.db:8:CLBLL_L.SLICEL_X0.AFF.DMUX.AX !30_00 !30_02 !30_03 30_01
-    "30_00 30_01 30_02 30_03",
-    "30_24 30_25 30_26 30_27",
-    "30_35 30_36 30_37 30_38",
-    "30_59 30_60 30_61 30_62",
-    "30_04 31_00 31_01 31_02",
-    "31_24 31_25 31_26 31_27",
-    "31_35 31_36 31_37 31_38",
-    "30_58 31_60 31_61 31_62",
-
-    # CLBL?_?.SLICE?_X?.?MUX
-    # ex: segbits_clbll_l.db:89:CLBLL_L.SLICEL_X0.AMUX.A5Q !30_06 !30_08 !30_11 30_07
-    "30_06 30_07 30_08 30_11",
-    "30_20 30_21 30_22 30_23",
-    "30_40 30_43 30_44 30_45",
-    "30_51 30_52 30_56 30_57",
-    "30_05 31_07 31_09 31_10",
-    "30_28 30_29 31_20 31_21",
-    "30_41 30_42 31_40 31_43",
-    "30_53 31_53 31_56 31_57",
 ]
 
 
@@ -106,7 +84,7 @@ def zero_groups(bits, zero_db):
                     bits.add("!" + bit)
 
 
-def add_zero_bits(db_root, tile_type, zero_db):
+def add_zero_bits(db_root, tile_type, zero_db, verbose=False):
     '''
     Add multibit entries
     This requires adding some zero bits (ex: !31_09)
@@ -116,6 +94,7 @@ def add_zero_bits(db_root, tile_type, zero_db):
     new_lines = set()
     changes = 0
 
+    verbose and print("zb %s: %s" % (dbfile, os.path.exists(dbfile)))
     if not os.path.exists(dbfile):
         return None
 
@@ -133,6 +112,13 @@ def add_zero_bits(db_root, tile_type, zero_db):
             This appears to be a large range of one hot interconnect bits
             They are immediately before the first CLB real bits
             """
+            # FIXME: handle these better
+            # https://github.com/SymbiFlow/prjxray/issues/232
+            orig_bits = line.replace(tag + " ", "")
+            if orig_bits in ("<const0>", "<0 candidates>"):
+                print("WARNING: dropping %s" % line)
+                changes += 1
+                continue
             zero_range(bits, 22, 25)
             zero_groups(bits, zero_db)
 
@@ -185,6 +171,20 @@ def update_mask(db_root, mask_db, src_dbs, offset=0):
                 print("bit %s" % bit, file=f)
 
 
+def load_zero_db(fn):
+    # Remove comments and convert to list of lines
+    ret = []
+    for l in open(fn, "r"):
+        pos = l.find("#")
+        if pos >= 0:
+            l = l[0:pos]
+        l = l.strip()
+        if not l:
+            continue
+        ret.append(l)
+    return ret
+
+
 def run(
         db_root,
         clb_int=False,
@@ -193,20 +193,22 @@ def run(
         verbose=False):
     if clb_int:
         zero_db = clb_int_zero_db
+        # clblx is used by the CLB fuzzers before being expanded to DB
         zero_tile_types = [
-            "int_l", "int_r", "clbll_l", "clbll_r", "clblm_l", "clblm_r"
+            "int_l", "int_r", "clbll_l", "clbll_r", "clblm_l", "clblm_r",
+            "clblx"
         ]
     else:
         assert zero_db_fn
         assert zero_tile_types
-        zero_db = open(zero_db_fn, "r").read().split("\n")
+        zero_db = load_zero_db(zero_db_fn)
     print("CLB INT mode: %s" % clb_int)
     print("Segbit groups: %s" % len(zero_db))
 
     seg_files = 0
     seg_lines = 0
     for tile_type in zero_tile_types:
-        changes = add_zero_bits(db_root, tile_type, zero_db)
+        changes = add_zero_bits(db_root, tile_type, zero_db, verbose=verbose)
         if changes is not None:
             seg_files += 1
             seg_lines += changes
@@ -251,12 +253,12 @@ def main():
     parser.add_argument(
         '--clb-int', action='store_true', help='Fixup CLB interconnect')
     parser.add_argument('--zero-db', help='Apply custom patches')
-    parser.add_argument('--zero-tile_types', help='')
+    parser.add_argument('--zero-tile-types', help='')
     args = parser.parse_args()
 
     # XXX: can auto detect this?
     zero_tile_types = args.zero_tile_types.split(
-    ) if args.zero_tile_types else None
+        ",") if args.zero_tile_types else None
 
     run(
         args.db_root, args.clb_int, args.zero_db, zero_tile_types,

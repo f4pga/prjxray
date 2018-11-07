@@ -8,7 +8,7 @@ database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o seg_dsp_r.segbits $(addsuffix /segdata_dsp_r_*.txt,$(SPECIMENS))
 
 pushdb:
-	${XRAY_DBFIXUP} --db-dir . --clb-int
+	${XRAY_DBFIXUP} --db_root . --clb-int
 	${XRAY_MERGEDB} dsp_l seg_dsp_l.segbits
 	${XRAY_MERGEDB} dsp_r seg_dsp_r.segbits
 

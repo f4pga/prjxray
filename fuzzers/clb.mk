@@ -3,14 +3,14 @@ SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/seg_clblx.segbits $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -o build/segbits_clblx.db $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
 
 pushdb:
-	${XRAY_DBFIXUP} --db-dir build --clb-int
-	${XRAY_MERGEDB} clbll_l build/seg_clblx.segbits
-	${XRAY_MERGEDB} clbll_r build/seg_clblx.segbits
-	${XRAY_MERGEDB} clblm_l build/seg_clblx.segbits
-	${XRAY_MERGEDB} clblm_r build/seg_clblx.segbits
+	$(DBFIXUP)
+	${XRAY_MERGEDB} clbll_l build/segbits_clblx.db
+	${XRAY_MERGEDB} clbll_r build/segbits_clblx.db
+	${XRAY_MERGEDB} clblm_l build/segbits_clblx.db
+	${XRAY_MERGEDB} clblm_r build/segbits_clblx.db
 
 build:
 	mkdir build

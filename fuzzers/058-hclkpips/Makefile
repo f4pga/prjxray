@@ -12,7 +12,7 @@ database: $(SPECIMENS_OK)
 	grep CK_INOUT seg_hclk_r.segbits | sed 's, .*, always,' > ppips_hclk_r.txt
 
 pushdb:
-	${XRAY_DBFIXUP} --db-dir . --clb-int
+	${XRAY_DBFIXUP} --db_root . --clb-int
 	${XRAY_MERGEDB} hclk_l seg_hclk_l.segbits
 	${XRAY_MERGEDB} hclk_r seg_hclk_r.segbits
 	${XRAY_MERGEDB} mask_hclk_l mask_hclk_l.segbits
