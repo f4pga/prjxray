@@ -8,9 +8,9 @@ database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -m 5 -M 15 -o seg_int_r.segbits $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
 
 pushdb:
+	${XRAY_DBFIXUP} --db-dir . --clb-int
 	${XRAY_MERGEDB} int_l seg_int_l.segbits
 	${XRAY_MERGEDB} int_r seg_int_r.segbits
-	${XRAY_DBFIXUP} --clb-int
 
 $(SPECIMENS_OK): todo.txt
 	bash generate.sh $(subst /OK,,$@)

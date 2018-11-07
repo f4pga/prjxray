@@ -1,5 +1,2 @@
-/specimen_*/
-/*.segbits
-!/o6.segbits
-/vivado.log
-/vivado.jou
+build
+
