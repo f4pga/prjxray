@@ -12,7 +12,7 @@ proc make_project {} {
     create_pblock roi
     add_cells_to_pblock [get_pblocks roi] [get_cells roi]
     foreach roi "$::env(XRAY_ROI)" {
-        puts $roi
+        puts "ROI: $roi"
         resize_pblock [get_pblocks roi] -add "$roi"
     }
 
@@ -58,56 +58,70 @@ proc loc_luts {} {
             }
         }
 
-        puts $selected_lut
         set cell [get_cells roi/luts[$lut_index].lut]
-        set_property LOC [get_sites -of_objects [get_bels $selected_lut]] $cell
+        set lut_site [get_sites -of_objects [get_bels $selected_lut]]
+        puts "LOCing $selected_lut to $lut_site"
+        set_property LOC $lut_site $cell
         set lut_index [expr $lut_index + 1]
         lappend selected_luts [get_bels $selected_lut]
     }
     return $selected_luts
 }
 
+# Return a list of sites containing BRAMs
+# sites are better than bels because site type may change and invalidate the bel
 proc loc_brams {} {
-    # XXX: for some reason this doesn't work if there is a cell already there
-    # but LUTs don't have this issue
-    set brams [get_bels -of_objects [get_sites -of_objects [get_pblocks roi]] -filter {TYPE =~ RAMBFIFO36E1*}]
-    set selected_brams {}
+    # BRAM have multiple mutually exclusive sites
+    # They can be cycled by setting the site type
+    # Ex:
+    # - RAMB36_X0Y10/RAMBFIFO36E1
+    # - RAMB36_X0Y10/RAMB36E1
+    # Default is RAMBFIFO36E1?
+    # Work primarily on sites, not bels,
+    # to avoid issues when switching site type during PnR
+    set bram_sites [get_sites -of_objects [get_pblocks roi] -filter {SITE_TYPE =~ RAMBFIFO36E1*}]
+    set bram_bels [get_bels -of_objects $bram_sites]
+
+    set selected_bram_sites {}
     set bram_index 0
 
     # LOC one BRAM (a "selected_lut") into each BRAM segment configuration column (ie 10 per CMT column)
     set bram_columns ""
-    foreach bram $brams {
+    foreach bram $bram_bels {
         regexp "RAMB36_X([0-9]+)Y([0-9]+)/" $bram match slice_x slice_y
 
         # 10 per column => 10, 20, ,etc
         # ex: RAMB36_X0Y10/RAMBFIFO36E1
         set y_column [expr ($slice_y / 10) * 10]
-        dict append lut_columns "X${slice_x}Y${y_column}" "$bram "
+        dict append bram_columns "X${slice_x}Y${y_column}" "$bram "
     }
 
     # Pick the smallest Y in each column.
-    dict for {column brams_in_column} $lut_columns {
+    dict for {column brams_in_column} $bram_columns {
         set min_slice_y 9999999
 
         foreach bram $brams_in_column {
             regexp "RAMB36_X([0-9]+)Y([0-9]+)/" $bram match slice_x slice_y
 
             if { $slice_y < $min_slice_y } {
-                set selected_bram $bram
+                set selected_bram_bel $bram
             }
         }
 
-        puts ""
-        puts $selected_bram
+        set selected_bram_bel [get_bels $selected_bram_bel]
 
+        set bram_site [get_sites -of_objects $selected_bram_bel]
+        puts "LOCing BEL: $selected_bram_bel to $bram_site"
         set cell [get_cells roi/brams[$bram_index].bram]
-        set_property LOC [get_sites -of_objects [get_bels $selected_bram]] $cell
-        puts $selected_bram
+        set_property LOC $bram_site $cell
+        if {"$bram_site" == ""} {error "Bad site $bram_site from bel $selected_bram_bel"}
+
         set bram_index [expr $bram_index + 1]
-        lappend selected_brams [get_bels $selected_bram]
+        # Output site, not bel, to avoid reference issues after PnR
+        lappend selected_bram_sites $bram_site
     }
 
-    return $selected_brams
+    return $selected_bram_sites
 }
 
 proc write_tiles_txt {} {
@@ -136,6 +150,8 @@ proc write_tiles_txt {} {
 }
 
 proc write_clbs { selected_luts } {
+    puts "write_brams: [llength $selected_luts] LUTs"
+    puts ""
     # Toggle one bit in each selected LUT to generate base addresses
     for {set i 0} {$i < [llength $selected_luts]} {incr i} {
         puts ""
@@ -146,14 +162,17 @@ proc write_clbs { selected_luts } {
         set new_init [regsub "h8" $orig_init "h0"]
         puts "INIT $orig_init => $new_init"
         set_property INIT $new_init $cell
-        write_bitstream -force design_[get_sites -of_objects [lindex $selected_luts $i]].bit
+        set site [get_sites -of_objects [lindex $selected_luts $i]]
+        write_bitstream -force design_$site.bit
         set_property INIT $orig_init $cell
     }
 }
 
-proc write_brams { selected_brams } {
+proc write_brams { selected_brams_sites } {
+    puts "write_brams: [llength $selected_brams_sites] BRAMs"
+    puts ""
     # Toggle one bit in each selected BRAM to generate base addresses
-    for {set i 0} {$i < [llength $selected_brams]} {incr i} {
+    for {set i 0} {$i < [llength $selected_brams_sites]} {incr i} {
         puts ""
         set cell [get_cells roi/brams[$i].bram]
         puts "BRAM $cell"
@@ -162,7 +181,9 @@ proc write_brams { selected_brams } {
         set new_init [regsub "h8" $orig_init "h0"]
         puts "INIT_00 $orig_init => $new_init"
         set_property INIT_00 $new_init $cell
-        write_bitstream -force design_[get_sites -of_objects [lindex $selected_brams $i]].bit
+        set site [lindex $selected_brams_sites $i]
+        if {"$site" == ""} {error "Bad site $site"}
+        write_bitstream -force design_$site.bit
         set_property INIT_00 $orig_init $cell
     }
 }
@@ -171,8 +192,8 @@ proc run {} {
     make_project
     set selected_luts [loc_luts]
     puts "Selected LUTs: [llength $selected_luts]"
-    set selected_brams [loc_brams]
-    puts "Selected BRAMs: [llength $selected_brams]"
+    set selected_brams_sites [loc_brams]
+    puts "Selected BRAMs: [llength $selected_brams_sites]"
 
     place_design
     route_design
@@ -181,7 +202,7 @@ proc run {} {
 
     write_tiles_txt
     write_clbs $selected_luts
-    write_brams $selected_brams
+    write_brams $selected_brams_sites
 }
 
 run
