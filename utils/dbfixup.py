@@ -1,6 +1,7 @@
 #/usr/bin/env python3
 
 import sys, os, re
+from prjxray import util
 
 zero_db = [
     "00_21 00_22 00_26 01_28|00_25 01_20 01_21 01_24",
@@ -32,10 +33,8 @@ zero_db = [
 ]
 
 
-def add_zero_bits(tile_type):
-    assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
-    dbfile = "%s/%s/segbits_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), tile_type)
+def add_zero_bits(db_root, tile_type):
+    dbfile = "%s/segbits_%s.db" % (db_root, tile_type)
     new_lines = set()
     llast = None
 
@@ -87,10 +86,9 @@ def add_zero_bits(tile_type):
             print(line, file=f)
 
 
-def update_mask(mask_db, *src_dbs, offset=0):
+def update_mask(db_root, mask_db, src_dbs, offset=0):
     bits = set()
-    mask_db_file = "%s/%s/mask_%s.db" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), mask_db)
+    mask_db_file = "%s/mask_%s.db" % (db_root, mask_db)
 
     if os.path.exists(mask_db_file):
         with open(mask_db_file, "r") as f:
@@ -101,8 +99,7 @@ def update_mask(mask_db, *src_dbs, offset=0):
                 bits.add(line[1])
 
     for src_db in src_dbs:
-        seg_db_file = "%s/%s/segbits_%s.db" % (
-            os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"), src_db)
+        seg_db_file = "%s/segbits_%s.db" % (db_root, src_db)
 
         if not os.path.exists(seg_db_file):
             continue
@@ -125,27 +122,48 @@ def update_mask(mask_db, *src_dbs, offset=0):
                 print("bit %s" % bit, file=f)
 
 
-add_zero_bits("int_l")
-add_zero_bits("int_r")
-add_zero_bits("clbll_l")
-add_zero_bits("clbll_r")
-add_zero_bits("clblm_l")
-add_zero_bits("clblm_r")
+def run(db_root, verbose=False):
+    for tile_type in ["int_l", "int_r", "clbll_l", "clbll_r", "clblm_l",
+                      "clblm_r"]:
+        add_zero_bits(db_root, tile_type)
 
-update_mask("clbll_l", "clbll_l", "int_l")
-update_mask("clbll_r", "clbll_r", "int_r")
-update_mask("clblm_l", "clblm_l", "int_l")
-update_mask("clblm_r", "clblm_r", "int_r")
-update_mask("hclk_l", "hclk_l")
-update_mask("hclk_r", "hclk_r")
+    for mask_db, src_dbs in [
+        ("clbll_l", ("clbll_l", "int_l")),
+        ("clbll_r", ("clbll_r", "int_r")),
+        ("clblm_l", ("clblm_l", "int_l")),
+        ("clblm_r", ("clblm_r", "int_r")),
+        ("hclk_l", ("hclk_l", )),
+        ("hclk_r", ("hclk_r", )),
+        ("bram_l", ("bram_l", )),
+        ("bram_r", ("bram_r", )),
+        ("dsp_l", ("dsp_l", )),
+        ("dsp_r", ("dsp_r", )),
+    ]:
+        update_mask(db_root, mask_db, src_dbs)
 
-update_mask("bram_l", "bram_l")
-update_mask("bram_r", "bram_r")
-update_mask("dsp_l", "dsp_l")
-update_mask("dsp_r", "dsp_r")
+    for mask_db, src_dbs in [
+        ("bram_l", ("int_l", )),
+        ("bram_r", ("int_r", )),
+        ("dsp_l", ("int_l", )),
+        ("dsp_r", ("int_r", )),
+    ]:
+        for k in range(5):
+            update_mask(db_root, mask_db, src_dbs, offset=64 * k)
 
-for k in range(5):
-    update_mask("bram_l", "int_l", offset=64 * k)
-    update_mask("bram_r", "int_r", offset=64 * k)
-    update_mask("dsp_l", "int_l", offset=64 * k)
-    update_mask("dsp_r", "int_r", offset=64 * k)
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Create multi-bit entries')
+
+    util.db_root_arg(parser)
+    parser.add_argument('--verbose', action='store_true', help='')
+    args = parser.parse_args()
+
+    run(args.db_root, args.verbose)
+
+
+if __name__ == '__main__':
+    main()
+
+main()

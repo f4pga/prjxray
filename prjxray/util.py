@@ -38,3 +38,15 @@ def get_roi():
 # we know that all bits for CLB MUXes are in frames 30 and 31, so filter all other bits
 def bitfilter_clb_mux(frame_idx, bit_idx):
     return frame_idx in [30, 31]
+
+
+def db_root_arg(parser):
+    database_dir = os.getenv("XRAY_DATABASE_DIR")
+    database = os.getenv("XRAY_DATABASE")
+    db_root_kwargs = {}
+    if database_dir is None or database is None:
+        db_root_kwargs['required'] = True
+    else:
+        db_root_kwargs['required'] = False
+        db_root_kwargs['default'] = os.path.join(database_dir, database)
+    parser.add_argument('--db_root', help="Database root.", **db_root_kwargs)
