@@ -18,7 +18,7 @@ pushdb:
 	${XRAY_MERGEDB} mask_hclk_r mask_hclk_r.segbits
 	cp ppips_hclk_l.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_l.db
 	cp ppips_hclk_r.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_r.db
-	${XRAY_DBFIXUP}
+	${XRAY_DBFIXUP} --clb-int
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)

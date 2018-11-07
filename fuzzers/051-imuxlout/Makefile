@@ -10,7 +10,7 @@ database: $(SPECIMENS_OK)
 pushdb:
 	${XRAY_MERGEDB} int_l seg_int_l.segbits
 	${XRAY_MERGEDB} int_r seg_int_r.segbits
-	${XRAY_DBFIXUP}
+	${XRAY_DBFIXUP} --clb-int
 
 $(SPECIMENS_OK): todo.txt
 	bash generate.sh $(subst /OK,,$@)
