@@ -69,9 +69,19 @@ def rw_width_tags(segmk, ps, site):
     for param in ["READ_WIDTH_A", "READ_WIDTH_B", "WRITE_WIDTH_A",
                   "WRITE_WIDTH_B"]:
         set_val = int(ps[param])
-        segmk.add_site_tag(site, '%s_B0' % (param), set_val in (2, 9))
-        segmk.add_site_tag(site, '%s_B1' % (param), set_val in (4, 9))
-        segmk.add_site_tag(site, '%s_B2' % (param), set_val in (18, ))
+        # Multiple bits (not one hot)
+        # segmk.add_site_tag(site, '%s_B0' % (param), set_val in (2, 9))
+        # segmk.add_site_tag(site, '%s_B1' % (param), set_val in (4, 9))
+        # segmk.add_site_tag(site, '%s_B2' % (param), set_val in (18, ))
+
+        # 1 is special in that its all 0's
+        # diff only against that
+        segmk.add_site_tag(site, '%s_%u' % (param, 1), set_val != 1)
+        for widthn in [2, 4, 9, 18]:
+            if set_val == 1:
+                segmk.add_site_tag(site, '%s_%u' % (param, widthn), False)
+            elif set_val == widthn:
+                segmk.add_site_tag(site, '%s_%u' % (param, widthn), True)
 
 
 def write_mode_tags(segmk, ps, site):
