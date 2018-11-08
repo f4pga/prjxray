@@ -52,7 +52,12 @@ def zero_range(bits, wordmin, wordmax):
             bits.add("!" + bit)
 
 
-def zero_groups(bits, zero_db):
+def bits_str(bits):
+    """Convert a set into canonical form"""
+    return ' '.join(sorted(list(bits)))
+
+
+def zero_groups(bits, zero_db, strict=True, verbose=False):
     """
     See if a line occurs within a bit group
     If it does, add 0 bits
@@ -64,6 +69,8 @@ def zero_groups(bits, zero_db):
     Ex: 01_02 04_05 | 07_08 10_11
     If any bits from the first group occur,
     default bits in the second group to zero
+
+    strict: assert that the size of the given group is the size of the given mask
     """
     for zdb in zero_db:
         if "|" in zdb:
@@ -79,12 +86,19 @@ def zero_groups(bits, zero_db):
             if bit in bits:
                 match = True
         if match:
+            bits_orig = set(bits)
             for bit in b:
                 if bit not in bits:
                     bits.add("!" + bit)
+            verbose and print(
+                "Grouped: %s => %s" % (bits_str(bits_orig), bits_str(bits)))
+            if a == b and strict:
+                assert len(bits) == len(
+                    a), "Mask size %u != DB entry size %u: %s" % (
+                        len(a), len(bits), bits_str(bits))
 
 
-def add_zero_bits(db_root, tile_type, zero_db, verbose=False):
+def add_zero_bits(db_root, tile_type, zero_db, clb_int=False, verbose=False):
     '''
     Add multibit entries
     This requires adding some zero bits (ex: !31_09)
@@ -119,8 +133,9 @@ def add_zero_bits(db_root, tile_type, zero_db, verbose=False):
                 print("WARNING: dropping %s" % line)
                 changes += 1
                 continue
-            zero_range(bits, 22, 25)
-            zero_groups(bits, zero_db)
+            if clb_int:
+                zero_range(bits, 22, 25)
+            zero_groups(bits, zero_db, strict=not clb_int, verbose=verbose)
 
             new_line = " ".join([tag] + sorted(bits))
             if new_line != line:
@@ -208,7 +223,8 @@ def run(
     seg_files = 0
     seg_lines = 0
     for tile_type in zero_tile_types:
-        changes = add_zero_bits(db_root, tile_type, zero_db, verbose=verbose)
+        changes = add_zero_bits(
+            db_root, tile_type, zero_db, clb_int=clb_int, verbose=verbose)
         if changes is not None:
             seg_files += 1
             seg_lines += changes
