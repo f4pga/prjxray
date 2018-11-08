@@ -1,10 +1,19 @@
 N ?= 1
 DBFIXUP ?=
 
-include fuzzer.mk
+include ../fuzzer.mk
 
-database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_clblx.db $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
+database: build/segbits_clbx.db
+
+build/segbits_clbx.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o build/segbits_clbx.rdb $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
+
+build/segbits_clbx.db: build/segbits_clbx.rdb
+ifeq ($(CLB_DBFIXUP),Y)
+	${XRAY_DBFIXUP} --db_root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
+else
+	cp $^ $@
+endif
 
 pushdb:
 	$(DBFIXUP)

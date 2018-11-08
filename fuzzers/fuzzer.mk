@@ -4,10 +4,8 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 all: database
 
-build:
-	mkdir build
-
-$(SPECIMENS_OK): build
+$(SPECIMENS_OK):
+	mkdir -p build
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
 	touch $@
 

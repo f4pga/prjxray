@@ -35,6 +35,27 @@ def get_roi():
     return Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2)
 
 
+def gen_sites_xy(site_types):
+    for _tile_name, site_name, _site_type in get_roi().gen_sites(site_types):
+        m = re.match(r'.*_X([0-9]*)Y([0-9]*)', site_name)
+        x, y = int(m.group(1)), int(m.group(2))
+        yield (site_name, (x, y))
+
+
+def site_xy_minmax(site_types):
+    '''Return (X1, X2), (Y1, Y2) from XY_ROI, exclusive end (for xrange)'''
+    xmin = 9999
+    xmax = -1
+    ymin = 9999
+    ymax = -1
+    for _site_name, (x, y) in gen_sites_xy(site_types):
+        xmin = min(xmin, x)
+        xmax = max(xmax, x)
+        ymin = min(ymin, y)
+        ymax = max(ymax, y)
+    return (xmin, xmax + 1), (ymin, ymax + 1)
+
+
 # we know that all bits for CLB MUXes are in frames 30 and 31, so filter all other bits
 def bitfilter_clb_mux(frame_idx, bit_idx):
     return frame_idx in [30, 31]
