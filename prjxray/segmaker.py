@@ -62,6 +62,15 @@ class Segmaker:
 
         # hacky...improve if we encounter this more
         self.def_bt = 'CLB_IO_CLK'
+        self.index_sites()
+
+    def index_sites(self):
+        self.verbose and print("Indexing sites")
+        self.sites = {}
+        for tilename, tiledata in self.grid.items():
+            for site in tiledata["sites"]:
+                self.sites[site] = tilename
+        self.verbose and print("Sites indexed")
 
     def set_def_bt(self, block_type):
         '''Set default block type when more than one block present'''
@@ -126,9 +135,12 @@ class Segmaker:
             raise ValueError("Invalid site: %s" % site)
         self.verbose and print(
             'segmaker: site %s tag %s = %s' % (site, name, value))
+        assert site in self.sites, "Unknown site %s" % (site, )
         self.site_tags.setdefault(site, dict())[name] = value
 
     def add_tile_tag(self, tile, name, value):
+        # TODO: test this out
+        # assert tile in self.grid
         self.tile_tags.setdefault(tile, dict())[name] = value
 
     def compile(self, bitfilter=None):
@@ -205,6 +217,7 @@ class Segmaker:
                     return segment
 
             def add_tilename_tags():
+                self.verbose and print("Tile %s: check tags" % tilename)
                 segment = getseg(segname)
 
                 for name, value in self.tile_tags[tilename].items():
@@ -253,6 +266,8 @@ class Segmaker:
                     (site, site_prefix, sitekey))
 
                 for name, value in self.site_tags[site].items():
+                    self.verbose and print("Site %s: check tags" % site)
+
                     tags_used.add((site, name))
                     tag = "%s.%s.%s" % (tile_type_norm, sitekey, name)
                     # XXX: does this come from name?
@@ -316,7 +331,7 @@ class Segmaker:
         if not allow_empty:
             assert sum(
                 [len(segments) for segments in self.segments_by_type.values()
-                 ]) != 0
+                 ]) != 0, "Didn't  generate any segments"
 
         for segtype in self.segments_by_type.keys():
             if suffix is not None:
