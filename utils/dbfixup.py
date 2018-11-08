@@ -21,9 +21,14 @@ def parse_line(line):
     parts = line.split()
     # Ex: CLBLL_L.SLICEL_X0.AMUX.A5Q
     tag = parts[0]
+    orig_bits = line.replace(tag + " ", "")
+    # <0 candidates> etc
+    if "<" in orig_bits:
+        return tag, set(), orig_bits
+
     # Ex: !30_06 !30_08 !30_11 30_07
     bits = set(parts[1:])
-    return tag, bits
+    return tag, bits, None
 
 
 def zero_range(bits, wordmin, wordmax):
@@ -57,7 +62,7 @@ def bits_str(bits):
     return ' '.join(sorted(list(bits)))
 
 
-def zero_groups(bits, zero_db, strict=True, verbose=False):
+def zero_groups(tag, bits, zero_db, strict=True, verbose=False):
     """
     See if a line occurs within a bit group
     If it does, add 0 bits
@@ -66,13 +71,21 @@ def zero_groups(bits, zero_db, strict=True, verbose=False):
     Means find a line that has either of these bits
     If either of them occurs, default bits in that set to zero
 
-    Ex: 01_02 04_05 | 07_08 10_11
+    Ex: 01_02 04_05|07_08 10_11
     If any bits from the first group occur,
     default bits in the second group to zero
+
+    Ex: 01_02 04_05,ALL_ZERO
+    ALL_ZERO is an enum that is part of the group but is all 0
+    It must have 0 candidates
 
     strict: assert that the size of the given group is the size of the given mask
     """
     for zdb in zero_db:
+        allzero_tag = None
+        if "," in zdb:
+            zdb, allzero_tag = zdb.split(",")
+
         if "|" in zdb:
             a, b = zdb.split("|")
             a = a.split()
@@ -81,39 +94,39 @@ def zero_groups(bits, zero_db, strict=True, verbose=False):
             a = zdb.split()
             b = a
 
-        match = False
+        bitmatch = False
         for bit in a:
             if bit in bits:
-                match = True
-        if match:
-            bits_orig = set(bits)
-            for bit in b:
-                if bit not in bits:
-                    bits.add("!" + bit)
-            verbose and print(
-                "Grouped: %s => %s" % (bits_str(bits_orig), bits_str(bits)))
-            if a == b and strict:
-                assert len(bits) == len(
-                    a), "Mask size %u != DB entry size %u: %s" % (
-                        len(a), len(bits), bits_str(bits))
+                bitmatch = True
+
+        if not (bitmatch or allzero_tag == tag):
+            continue
+
+        bits_orig = set(bits)
+        for bit in b:
+            if bit not in bits:
+                bits.add("!" + bit)
+        verbose and print(
+            "Grouped %s: %s => %s" %
+            (tag, bits_str(bits_orig), bits_str(bits)))
+        if a == b and strict:
+            assert len(bits) == len(
+                a), "Mask size %u != DB entry size %u: %s" % (
+                    len(a), len(bits), bits_str(bits))
 
 
-def add_zero_bits(db_root, tile_type, zero_db, clb_int=False, verbose=False):
+def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
     '''
     Add multibit entries
     This requires adding some zero bits (ex: !31_09)
     If an entry has any of the
     '''
-    dbfile = "%s/segbits_%s.db" % (db_root, tile_type)
+
     new_lines = set()
     changes = 0
 
-    verbose and print("zb %s: %s" % (dbfile, os.path.exists(dbfile)))
-    if not os.path.exists(dbfile):
-        return None
-
     llast = None
-    with open(dbfile, "r") as f:
+    with open(fn_in, "r") as f:
         for line in f:
             # Hack: skip duplicate lines
             # This happens while merging a new multibit entry
@@ -121,21 +134,19 @@ def add_zero_bits(db_root, tile_type, zero_db, clb_int=False, verbose=False):
             if line == llast:
                 continue
 
-            tag, bits = parse_line(line)
+            tag, bits, mode = parse_line(line)
+            assert mode not in (
+                "<const0>", "<const1>"), "Entries must be resolved"
+            if mode:
+                assert mode == "<0 candidates>"
             """
             This appears to be a large range of one hot interconnect bits
             They are immediately before the first CLB real bits
             """
-            # FIXME: handle these better
-            # https://github.com/SymbiFlow/prjxray/issues/232
-            orig_bits = line.replace(tag + " ", "")
-            if orig_bits in ("<const0>", "<0 candidates>"):
-                print("WARNING: dropping %s" % line)
-                changes += 1
-                continue
             if clb_int:
                 zero_range(bits, 22, 25)
-            zero_groups(bits, zero_db, strict=not clb_int, verbose=verbose)
+            zero_groups(
+                tag, bits, zero_db, strict=not clb_int, verbose=verbose)
 
             new_line = " ".join([tag] + sorted(bits))
             if new_line != line:
@@ -143,7 +154,7 @@ def add_zero_bits(db_root, tile_type, zero_db, clb_int=False, verbose=False):
             new_lines.add(new_line)
             llast = line
 
-    with open(dbfile, "w") as f:
+    with open(fn_out, "w") as f:
         for line in sorted(new_lines):
             print(line, file=f)
 
@@ -200,31 +211,16 @@ def load_zero_db(fn):
     return ret
 
 
-def run(
-        db_root,
-        clb_int=False,
-        zero_db_fn=None,
-        zero_tile_types=None,
-        verbose=False):
-    if clb_int:
-        zero_db = clb_int_zero_db
-        # clblx is used by the CLB fuzzers before being expanded to DB
-        zero_tile_types = [
-            "int_l", "int_r", "clbll_l", "clbll_r", "clblm_l", "clblm_r",
-            "clblx"
-        ]
-    else:
-        assert zero_db_fn
-        assert zero_tile_types
-        zero_db = load_zero_db(zero_db_fn)
-    print("CLB INT mode: %s" % clb_int)
-    print("Segbit groups: %s" % len(zero_db))
-
+def update_seg_fns(fn_inouts, zero_db, clb_int, lazy=False, verbose=False):
     seg_files = 0
     seg_lines = 0
-    for tile_type in zero_tile_types:
+    for fn_in, fn_out in fn_inouts:
+        verbose and print("zb %s: %s" % (fn_in, os.path.exists(fn_in)))
+        if lazy and not os.path.exists(fn_in):
+            continue
+
         changes = add_zero_bits(
-            db_root, tile_type, zero_db, clb_int=clb_int, verbose=verbose)
+            fn_in, fn_out, zero_db, clb_int=clb_int, verbose=verbose)
         if changes is not None:
             seg_files += 1
             seg_lines += changes
@@ -232,31 +228,80 @@ def run(
         "Segbit: checked %u files w/ %u changed lines" %
         (seg_files, seg_lines))
 
+
+def update_masks(db_root):
+    for mask_db, src_dbs in [
+        ("clbll_l", ("clbll_l", "int_l")),
+        ("clbll_r", ("clbll_r", "int_r")),
+        ("clblm_l", ("clblm_l", "int_l")),
+        ("clblm_r", ("clblm_r", "int_r")),
+        ("hclk_l", ("hclk_l", )),
+        ("hclk_r", ("hclk_r", )),
+        ("bram_l", ("bram_l", )),
+        ("bram_r", ("bram_r", )),
+        ("dsp_l", ("dsp_l", )),
+        ("dsp_r", ("dsp_r", )),
+    ]:
+        update_mask(db_root, mask_db, src_dbs)
+
+    for mask_db, src_dbs in [
+        ("bram_l", ("int_l", )),
+        ("bram_r", ("int_r", )),
+        ("dsp_l", ("int_l", )),
+        ("dsp_r", ("int_r", )),
+    ]:
+        for k in range(5):
+            update_mask(db_root, mask_db, src_dbs, offset=64 * k)
+
+    print("Mask: checked files")
+
+
+def update_segs(
+        db_root, clb_int, seg_fn_in, seg_fn_out, zero_db_fn, verbose=False):
     if clb_int:
-        for mask_db, src_dbs in [
-            ("clbll_l", ("clbll_l", "int_l")),
-            ("clbll_r", ("clbll_r", "int_r")),
-            ("clblm_l", ("clblm_l", "int_l")),
-            ("clblm_r", ("clblm_r", "int_r")),
-            ("hclk_l", ("hclk_l", )),
-            ("hclk_r", ("hclk_r", )),
-            ("bram_l", ("bram_l", )),
-            ("bram_r", ("bram_r", )),
-            ("dsp_l", ("dsp_l", )),
-            ("dsp_r", ("dsp_r", )),
-        ]:
-            update_mask(db_root, mask_db, src_dbs)
+        zero_db = clb_int_zero_db
+        lazy = True
 
-        for mask_db, src_dbs in [
-            ("bram_l", ("int_l", )),
-            ("bram_r", ("int_r", )),
-            ("dsp_l", ("int_l", )),
-            ("dsp_r", ("int_r", )),
-        ]:
-            for k in range(5):
-                update_mask(db_root, mask_db, src_dbs, offset=64 * k)
+        def gen_fns():
+            for tile_type in ["int_l", "int_r", "clbll_l", "clbll_r",
+                              "clblm_l", "clblm_r"]:
+                fn = "%s/segbits_%s.db" % (db_root, tile_type)
+                yield (fn, fn)
 
-        print("Mask: checked files")
+        fn_inouts = list(gen_fns())
+    else:
+        assert seg_fn_in
+        assert zero_db_fn
+        lazy = False
+
+        if not seg_fn_out:
+            seg_fn_out = seg_fn_in
+
+        fn_inouts = [(seg_fn_in, seg_fn_out)]
+        zero_db = load_zero_db(zero_db_fn)
+    print("CLB INT mode: %s" % clb_int)
+    print("Segbit groups: %s" % len(zero_db))
+    update_seg_fns(fn_inouts, zero_db, clb_int, lazy=lazy, verbose=verbose)
+
+
+def run(
+        db_root,
+        clb_int=False,
+        zero_db_fn=None,
+        seg_fn_in=None,
+        seg_fn_out=None,
+        verbose=False):
+
+    # Probably should split this into two programs
+    update_segs(
+        db_root,
+        clb_int=clb_int,
+        seg_fn_in=seg_fn_in,
+        seg_fn_out=seg_fn_out,
+        zero_db_fn=zero_db_fn,
+        verbose=verbose)
+    if clb_int:
+        update_masks()
 
 
 def main():
@@ -269,16 +314,13 @@ def main():
     parser.add_argument(
         '--clb-int', action='store_true', help='Fixup CLB interconnect')
     parser.add_argument('--zero-db', help='Apply custom patches')
-    parser.add_argument('--zero-tile-types', help='')
+    parser.add_argument('--seg-fn-in', help='')
+    parser.add_argument('--seg-fn-out', help='')
     args = parser.parse_args()
 
-    # XXX: can auto detect this?
-    zero_tile_types = args.zero_tile_types.split(
-        ",") if args.zero_tile_types else None
-
     run(
-        args.db_root, args.clb_int, args.zero_db, zero_tile_types,
-        args.verbose)
+        args.db_root, args.clb_int, args.zero_db, args.seg_fn_in,
+        args.seg_fn_out, args.verbose)
 
 
 if __name__ == '__main__':
