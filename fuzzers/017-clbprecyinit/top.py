@@ -3,21 +3,13 @@ random.seed(0)
 import os
 import re
 from prjxray import verilog
-
-
-def slice_xy():
-    '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for xrange)'''
-    # SLICE_X12Y100:SLICE_X27Y149
-    # Note XRAY_ROI_GRID_* is something else
-    m = re.match(
-        r'SLICE_X([0-9]*)Y([0-9]*):SLICE_X([0-9]*)Y([0-9]*)',
-        os.getenv('XRAY_ROI'))
-    ms = [int(m.group(i + 1)) for i in range(4)]
-    return ((ms[0], ms[2] + 1), (ms[1], ms[3] + 1))
-
+from prjxray import util
 
 CLBN = 400
-SLICEX, SLICEY = slice_xy()
+SLICEX, SLICEY = util.site_xy_minmax([
+    'SLICEL',
+    'SLICEM',
+])
 # 800
 SLICEN = (SLICEY[1] - SLICEY[0]) * (SLICEX[1] - SLICEX[0])
 print('//SLICEX: %s' % str(SLICEX))
