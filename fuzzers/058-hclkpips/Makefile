@@ -12,13 +12,13 @@ database: $(SPECIMENS_OK)
 	grep CK_INOUT seg_hclk_r.segbits | sed 's, .*, always,' > ppips_hclk_r.txt
 
 pushdb:
+	${XRAY_DBFIXUP} --db_root . --clb-int
 	${XRAY_MERGEDB} hclk_l seg_hclk_l.segbits
 	${XRAY_MERGEDB} hclk_r seg_hclk_r.segbits
 	${XRAY_MERGEDB} mask_hclk_l mask_hclk_l.segbits
 	${XRAY_MERGEDB} mask_hclk_r mask_hclk_r.segbits
 	cp ppips_hclk_l.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_l.db
 	cp ppips_hclk_r.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_r.db
-	${XRAY_DBFIXUP}
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)

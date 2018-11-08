@@ -1,10 +1,11 @@
 #!/bin/bash
+# Generic generate.sh for scripts that use top.py to generate top.v
+# and then use generate.py for segment generation
 
 set -ex
 
 FUZDIR=$PWD
 source ${XRAY_GENHEADER}
-
 
 python3 $FUZDIR/top.py >top.v
 vivado -mode batch -source $FUZDIR/generate.tcl

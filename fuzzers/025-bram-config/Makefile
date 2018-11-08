@@ -14,7 +14,7 @@ build:
 	mkdir build
 
 $(SPECIMENS_OK): build
-	bash generate.sh $(subst /OK,,$@)
+	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
 	touch $@
 
 run:

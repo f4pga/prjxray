@@ -12,13 +12,13 @@ database: $(SPECIMENS_OK)
 	${XRAY_MASKMERGE} mask_clblm_r.segbits $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
 
 pushdb:
+	${XRAY_DBFIXUP} --db_root . --clb-int
 	${XRAY_MERGEDB} int_l seg_int_l.segbits
 	${XRAY_MERGEDB} int_r seg_int_r.segbits
 	${XRAY_MERGEDB} mask_clbll_l mask_clbll_l.segbits
 	${XRAY_MERGEDB} mask_clbll_r mask_clbll_r.segbits
 	${XRAY_MERGEDB} mask_clblm_l mask_clblm_l.segbits
 	${XRAY_MERGEDB} mask_clblm_r mask_clblm_r.segbits
-	${XRAY_DBFIXUP}
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)

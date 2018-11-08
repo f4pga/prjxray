@@ -9,6 +9,7 @@ Ex: BRAM_L_X6Y100:CLB_IO_CLK
 import sys, os, json, re
 from prjxray import bitstream
 from prjxray import db as prjxraydb
+from prjxray import util
 
 
 class NoDB(Exception):
@@ -449,21 +450,10 @@ def run(
 def main():
     import argparse
 
-    # XXX: tool still works, but not well
-    # need to eliminate segments entirely
     parser = argparse.ArgumentParser(
-        description='XXX: does not print all data?')
+        description="Decode bits within a tile's address space")
 
-    database_dir = os.getenv("XRAY_DATABASE_DIR")
-    database = os.getenv("XRAY_DATABASE")
-    db_root_kwargs = {}
-    if database_dir is None or database is None:
-        db_root_kwargs['required'] = True
-    else:
-        db_root_kwargs['required'] = False
-        db_root_kwargs['default'] = os.path.join(database_dir, database)
-
-    parser.add_argument('--db_root', help="Database root.", **db_root_kwargs)
+    util.db_root_arg(parser)
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument(
         '-z',

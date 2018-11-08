@@ -1,11 +1,2 @@
-/.Xil
-/design/
-/design.bit
-/design.bits
-/design.dcp
-/usage_statistics_webtalk.*
-/vivado*
-/specimen_*
-/__pycache__/
-/*.segbits
-/run.ok
+build
+

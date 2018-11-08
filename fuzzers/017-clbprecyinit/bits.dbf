@@ -1,0 +1,4 @@
+# Reserved for PRECYINIT.0
+# Running on empty DB still removes <const0>
+# https://github.com/SymbiFlow/prjxray/issues/232
+
