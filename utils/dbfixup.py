@@ -132,6 +132,7 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
             """
             if clb_int:
                 zero_range(bits, 22, 25)
+            bits = set(bits)
             zero_groups(
                 tag, bits, zero_db, strict=not clb_int, verbose=verbose)
 
