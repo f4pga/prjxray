@@ -76,7 +76,7 @@ def main():
         db_root_kwargs['required'] = False
         db_root_kwargs['default'] = os.path.join(database_dir, database)
 
-    parser.add_argument('--db_root', help="Database root.", **db_root_kwargs)
+    parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
     parser.add_argument('fasm_file', help='Input FASM file')
     parser.add_argument(
         '--canonical', help='Output canonical bitstream.', action='store_true')

@@ -56,7 +56,7 @@ def quick_test(db_root):
 def main():
     parser = argparse.ArgumentParser(
         description="Runs a sanity check on a prjxray database.")
-    parser.add_argument('--db_root', required=True)
+    parser.add_argument('--db-root', required=True)
 
     args = parser.parse_args()
 

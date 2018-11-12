@@ -60,7 +60,7 @@ def read_json5(fname):
 def main():
     parser = argparse.ArgumentParser(
         description="Tests database against raw node list.")
-    parser.add_argument('--db_root', required=True)
+    parser.add_argument('--db-root', required=True)
     parser.add_argument('--raw_node_root', required=True)
     parser.add_argument('--error_nodes', default="error_nodes.json")
     parser.add_argument('--ignored_wires')

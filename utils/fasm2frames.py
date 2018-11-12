@@ -71,7 +71,7 @@ def main():
         db_root_kwargs['required'] = False
         db_root_kwargs['default'] = os.path.join(database_dir, database)
 
-    parser.add_argument('--db_root', help="Database root.", **db_root_kwargs)
+    parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
     parser.add_argument(
         '--sparse', action='store_true', help="Don't zero fill all frames")
     parser.add_argument(
