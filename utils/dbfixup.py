@@ -136,7 +136,8 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
 
             tag, bits, mode = parse_line(line)
             assert mode not in (
-                "<const0>", "<const1>"), "Entries must be resolved"
+                "<const0>",
+                "<const1>"), "Entries must be resolved. line: %s" % (line, )
             if mode:
                 assert mode == "<0 candidates>"
             """

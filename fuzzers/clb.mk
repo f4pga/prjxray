@@ -17,10 +17,10 @@ endif
 
 pushdb:
 	$(DBFIXUP)
-	${XRAY_MERGEDB} clbll_l build/segbits_clblx.db
-	${XRAY_MERGEDB} clbll_r build/segbits_clblx.db
-	${XRAY_MERGEDB} clblm_l build/segbits_clblx.db
-	${XRAY_MERGEDB} clblm_r build/segbits_clblx.db
+	${XRAY_MERGEDB} clbll_l build/segbits_clbx.db
+	${XRAY_MERGEDB} clbll_r build/segbits_clbx.db
+	${XRAY_MERGEDB} clblm_l build/segbits_clbx.db
+	${XRAY_MERGEDB} clblm_r build/segbits_clbx.db
 
 .PHONY: database pushdb
 
