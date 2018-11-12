@@ -56,10 +56,13 @@ for l in f:
     # remove this MUX from the cache, preventing generation of 0-tags for this MUX
     cache[loc].remove(which)
 
+    # O6 hack per https://github.com/SymbiFlow/prjxray/issues/243
+    segmk.add_site_tag(loc, "%sOUTMUX.%s" % (which, "O6"), src == "O5")
+
 # create 0-tags for all sources on the remaining (unused) MUXes
 for loc, muxes in cache.items():
     for which in muxes:
-        for src in "F7 F8 CY O5 XOR O6 5Q".split():
+        for src in "F7 F8 CY O5 XOR 5Q".split():
             if src == "F7" and which not in "AC": continue
             if src == "F8" and which not in "B": continue
             if src == "5Q": src = which + "5Q"
