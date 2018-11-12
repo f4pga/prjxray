@@ -12,7 +12,7 @@ database: $(SPECIMENS_OK)
 	${XRAY_MASKMERGE} mask_clblm_r.segbits $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
 
 pushdb:
-	${XRAY_DBFIXUP} --db_root . --clb-int
+	${XRAY_DBFIXUP} --db-root . --clb-int
 	${XRAY_MERGEDB} int_l seg_int_l.segbits
 	${XRAY_MERGEDB} int_r seg_int_r.segbits
 	${XRAY_MERGEDB} mask_clbll_l mask_clbll_l.segbits

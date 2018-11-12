@@ -10,7 +10,7 @@ build/segbits_clbx.rdb: $(SPECIMENS_OK)
 
 build/segbits_clbx.db: build/segbits_clbx.rdb
 ifeq ($(CLB_DBFIXUP),Y)
-	${XRAY_DBFIXUP} --db_root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
 else
 	cp $^ $@
 endif
