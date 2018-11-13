@@ -289,7 +289,7 @@ def run(
         zero_db_fn=zero_db_fn,
         verbose=verbose)
     if clb_int:
-        update_masks()
+        update_masks(db_root)
 
 
 def main():
