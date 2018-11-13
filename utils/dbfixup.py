@@ -17,20 +17,6 @@ clb_int_zero_db = [
 ]
 
 
-def parse_line(line):
-    parts = line.split()
-    # Ex: CLBLL_L.SLICEL_X0.AMUX.A5Q
-    tag = parts[0]
-    orig_bits = line.replace(tag + " ", "")
-    # <0 candidates> etc
-    if "<" in orig_bits:
-        return tag, set(), orig_bits
-
-    # Ex: !30_06 !30_08 !30_11 30_07
-    bits = set(parts[1:])
-    return tag, bits, None
-
-
 def zero_range(bits, wordmin, wordmax):
     """
     If any bits occur wordmin <= word <= wordmax,
@@ -134,7 +120,7 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
             if line == llast:
                 continue
 
-            tag, bits, mode = parse_line(line)
+            tag, bits, mode = util.parse_db_line(line)
             assert mode not in (
                 "<const0>",
                 "<const1>"), "Entries must be resolved. line: %s" % (line, )
@@ -146,6 +132,7 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
             """
             if clb_int:
                 zero_range(bits, 22, 25)
+            bits = set(bits)
             zero_groups(
                 tag, bits, zero_db, strict=not clb_int, verbose=verbose)
 

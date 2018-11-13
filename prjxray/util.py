@@ -71,3 +71,23 @@ def db_root_arg(parser):
         db_root_kwargs['required'] = False
         db_root_kwargs['default'] = os.path.join(database_dir, database)
     parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
+
+
+def parse_db_line(line):
+    parts = line.split()
+    # Ex: CLBLL_L.SLICEL_X0.AMUX.A5Q
+    assert len(parts), "Empty line"
+    tag = parts[0]
+    assert re.match(r'[A-Z0-9_.]+',
+                    tag), "Invalid tag name: %s, line: %s" % (tag, line)
+    orig_bits = line.replace(tag + " ", "")
+    # <0 candidates> etc
+    if "<" in orig_bits:
+        return tag, set(), orig_bits
+
+    # Ex: !30_06 !30_08 !30_11 30_07
+    bits = frozenset(parts[1:])
+    for bit in bits:
+        assert re.match(
+            r'[!]*[0-9][0-9]_[0-9][0-9]', bit), "Invalid bit: %s" % bit
+    return tag, bits, None
