@@ -51,6 +51,7 @@ Creating HTML documentation:
 
 (Re-)creating the database:
 
+    sudo pip3 install -r requirements.txt
     cd fuzzers
     make -j$(nproc)
 
