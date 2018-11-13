@@ -88,6 +88,7 @@ def parse_db_line(line):
     # Ex: !30_06 !30_08 !30_11 30_07
     bits = frozenset(parts[1:])
     for bit in bits:
-        assert re.match(
-            r'[!]*[0-9][0-9]_[0-9][0-9]', bit), "Invalid bit: %s" % bit
+        # 19_39
+        # 100_319
+        assert re.match(r'[!]*[0-9]+_[0-9]+', bit), "Invalid bit: %s" % bit
     return tag, bits, None
