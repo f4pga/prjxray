@@ -11,7 +11,7 @@ proc make_project {} {
 
     create_pblock roi
     add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-    foreach roi "$::env(XRAY_ROI)" {
+    foreach roi "$::env(XRAY_ROI_TILEGRID)" {
         puts "ROI: $roi"
         resize_pblock [get_pblocks roi] -add "$roi"
     }
