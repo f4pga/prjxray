@@ -78,6 +78,8 @@ def parse_db_line(line):
     # Ex: CLBLL_L.SLICEL_X0.AMUX.A5Q
     assert len(parts), "Empty line"
     tag = parts[0]
+    if tag == 'bit':
+        raise ValueError("Wanted bits db but got mask db")
     assert re.match(r'[A-Z0-9_.]+',
                     tag), "Invalid tag name: %s, line: %s" % (tag, line)
     orig_bits = line.replace(tag + " ", "")
