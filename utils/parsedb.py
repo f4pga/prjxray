@@ -16,7 +16,8 @@ def run(fnin, fnout=None, strict=False, verbose=False):
             continue
         tag, bits, mode = util.parse_db_line(line)
         if strict:
-            assert not mode, "strict: got ill defined line: %s" % (line, )
+            if mode != "always":
+                assert not mode, "strict: got ill defined line: %s" % (line, )
             if tag in tags:
                 print("Original line: %s" % tags[tag])
                 print("New line: %s" % line)
@@ -24,7 +25,8 @@ def run(fnin, fnout=None, strict=False, verbose=False):
             assert bits not in bitss, "strict: got duplicate bits %s (ex: %s)" % (
                 bits, line)
         tags[tag] = line
-        bitss.add(bits)
+        if bits != None:
+            bitss.add(bits)
 
     if fnout:
         with open(fnout, "w") as fout:

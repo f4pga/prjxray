@@ -74,6 +74,7 @@ def db_root_arg(parser):
 
 
 def parse_db_line(line):
+    '''Return tag name, bit values (if any), mode (if any)'''
     parts = line.split()
     # Ex: CLBLL_L.SLICEL_X0.AMUX.A5Q
     assert len(parts), "Empty line"
@@ -84,11 +85,12 @@ def parse_db_line(line):
                     tag), "Invalid tag name: %s, line: %s" % (tag, line)
     orig_bits = line.replace(tag + " ", "")
     # <0 candidates> etc
-    if "<" in orig_bits:
-        return tag, set(), orig_bits
+    # Ex: INT_L.BYP_BOUNCE5.BYP_ALT5 always
+    if "<" in orig_bits or "always" == orig_bits:
+        return tag, None, orig_bits
 
-    # Ex: !30_06 !30_08 !30_11 30_07
     bits = frozenset(parts[1:])
+    # Ex: CLBLL_L.SLICEL_X0.AOUTMUX.A5Q !30_06 !30_08 !30_11 30_07
     for bit in bits:
         # 19_39
         # 100_319
