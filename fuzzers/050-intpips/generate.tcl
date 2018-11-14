@@ -1,7 +1,7 @@
 create_project -force -part $::env(XRAY_PART) design design
 
-read_verilog ../top.v
-read_verilog ../picorv32.v
+read_verilog ../../top.v
+read_verilog ../../picorv32.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
@@ -20,7 +20,7 @@ set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 set_param tcl.collectionResultDisplayLimit 0
 
-source ../../../utils/utils.tcl
+source "$::env(XRAY_DIR)/utils/utils.tcl"
 randplace_pblock 100 roi
 
 place_design
