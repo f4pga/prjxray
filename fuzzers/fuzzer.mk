@@ -16,7 +16,7 @@ run:
 	touch run.ok
 
 clean:
-	rm -rf build
+	rm -rf build run.ok
 
 .PHONY: all run clean
 
