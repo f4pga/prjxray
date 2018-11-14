@@ -1,4 +1,7 @@
 # Intended for CIT quick checks
+# Full run ("Makefile"): 10 hours
+# quick.mk (FUZZONLY=N): 30 min
+# quick.mk (FUZZONLY=Y): 6 min
 
 FUZZONLY=N
 
