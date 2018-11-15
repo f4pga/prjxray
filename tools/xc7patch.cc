@@ -36,8 +36,9 @@ DEFINE_string(output_file, "", "Write patched bitsteam to file");
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
-int patch_frames(const std::string &frm_file_str,
-		std::map<xc7series::FrameAddress, std::vector<uint32_t>> *frames) {
+int patch_frames(
+    const std::string& frm_file_str,
+    std::map<xc7series::FrameAddress, std::vector<uint32_t>>* frames) {
 	// Apply the deltas.
 	std::ifstream frm_file(frm_file_str);
 	if (!frm_file) {
@@ -58,10 +59,10 @@ int patch_frames(const std::string &frm_file_str,
 		    std::stoul(frame_delta.first, nullptr, 16);
 
 		auto iter = frames->find(frame_address);
-		if(iter == frames->end()) {
+		if (iter == frames->end()) {
 			std::cerr
-				<< "frame address 0x" << std::hex <<frame_address
-				<< " because it was not found frames." << std::endl;
+			    << "frame address 0x" << std::hex << frame_address
+			    << " because it was not found frames." << std::endl;
 			return 1;
 		}
 
@@ -141,9 +142,9 @@ int main(int argc, char* argv[]) {
 		          std::back_inserter(cur_frame));
 	}
 
-	if(!FLAGS_frm_file.empty()) {
+	if (!FLAGS_frm_file.empty()) {
 		int ret = patch_frames(FLAGS_frm_file, &frames);
-		if(ret != 0) {
+		if (ret != 0) {
 			return ret;
 		}
 	}
