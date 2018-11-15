@@ -36,6 +36,67 @@ DEFINE_string(output_file, "", "Write patched bitsteam to file");
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
+int patch_frames(const std::string &frm_file_str,
+		std::map<xc7series::FrameAddress, std::vector<uint32_t>> *frames) {
+	// Apply the deltas.
+	std::ifstream frm_file(frm_file_str);
+	if (!frm_file) {
+		std::cerr << "Unable to open frm file: " << frm_file_str
+		          << std::endl;
+		return 1;
+	}
+
+	std::string frm_line;
+	while (std::getline(frm_file, frm_line)) {
+		if (frm_line[0] == '#')
+			continue;
+
+		std::pair<std::string, std::string> frame_delta =
+		    absl::StrSplit(frm_line, ' ');
+
+		uint32_t frame_address =
+		    std::stoul(frame_delta.first, nullptr, 16);
+
+		auto iter = frames->find(frame_address);
+		if(iter == frames->end()) {
+			std::cerr
+				<< "frame address 0x" << std::hex <<frame_address
+				<< " because it was not found frames." << std::endl;
+			return 1;
+		}
+
+		auto& frame_data = iter->second;
+		frame_data.resize(101);
+
+		std::vector<std::string> frame_data_strings =
+		    absl::StrSplit(frame_delta.second, ',');
+		if (frame_data_strings.size() != 101) {
+			std::cerr << "Frame " << std::hex << frame_address
+			          << ": found " << std::dec
+			          << frame_data_strings.size()
+			          << "words instead of 101";
+			continue;
+		};
+
+		std::transform(frame_data_strings.begin(),
+		               frame_data_strings.end(), frame_data.begin(),
+		               [](const std::string& val) -> uint32_t {
+			               return std::stoul(val, nullptr, 16);
+		               });
+
+		uint32_t ecc = 0;
+		for (size_t ii = 0; ii < frame_data.size(); ++ii) {
+			ecc = xc7series::icap_ecc(ii, frame_data[ii], ecc);
+		}
+
+		// Replace the old ECC with the new.
+		frame_data[0x32] &= 0xFFFFE000;
+		frame_data[0x32] |= (ecc & 0x1FFF);
+	}
+
+	return 0;
+}
+
 int main(int argc, char* argv[]) {
 	gflags::SetUsageMessage(argv[0]);
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -80,52 +141,11 @@ int main(int argc, char* argv[]) {
 		          std::back_inserter(cur_frame));
 	}
 
-	// Apply the deltas.
-	std::ifstream frm_file(FLAGS_frm_file);
-	if (!frm_file) {
-		std::cerr << "Unable to open frm file: " << FLAGS_frm_file
-		          << std::endl;
-		return 1;
-	}
-
-	std::string frm_line;
-	while (std::getline(frm_file, frm_line)) {
-		if (frm_line[0] == '#')
-			continue;
-
-		std::pair<std::string, std::string> frame_delta =
-		    absl::StrSplit(frm_line, ' ');
-
-		uint32_t frame_address =
-		    std::stoul(frame_delta.first, nullptr, 16);
-
-		auto& frame_data = frames[frame_address];
-		frame_data.resize(101);
-
-		std::vector<std::string> frame_data_strings =
-		    absl::StrSplit(frame_delta.second, ',');
-		if (frame_data_strings.size() != 101) {
-			std::cerr << "Frame " << std::hex << frame_address
-			          << ": found " << std::dec
-			          << frame_data_strings.size()
-			          << "words instead of 101";
-			continue;
-		};
-
-		std::transform(frame_data_strings.begin(),
-		               frame_data_strings.end(), frame_data.begin(),
-		               [](const std::string& val) -> uint32_t {
-			               return std::stoul(val, nullptr, 16);
-		               });
-
-		uint32_t ecc = 0;
-		for (size_t ii = 0; ii < frame_data.size(); ++ii) {
-			ecc = xc7series::icap_ecc(ii, frame_data[ii], ecc);
+	if(!FLAGS_frm_file.empty()) {
+		int ret = patch_frames(FLAGS_frm_file, &frames);
+		if(ret != 0) {
+			return ret;
 		}
-
-		// Replace the old ECC with the new.
-		frame_data[0x32] &= 0xFFFFE000;
-		frame_data[0x32] |= (ecc & 0x1FFF);
 	}
 
 	std::vector<std::unique_ptr<xc7series::ConfigurationPacket>>
