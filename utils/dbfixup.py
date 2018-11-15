@@ -124,19 +124,24 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
             assert mode not in (
                 "<const0>",
                 "<const1>"), "Entries must be resolved. line: %s" % (line, )
-            if mode:
-                assert mode == "<0 candidates>"
-            """
-            This appears to be a large range of one hot interconnect bits
-            They are immediately before the first CLB real bits
-            """
-            if clb_int:
-                zero_range(bits, 22, 25)
-            bits = set(bits)
-            zero_groups(
-                tag, bits, zero_db, strict=not clb_int, verbose=verbose)
 
-            new_line = " ".join([tag] + sorted(bits))
+            if mode == "always":
+                new_line = line
+            elif mode == "<0 candidates>":
+                """
+                This appears to be a large range of one hot interconnect bits
+                They are immediately before the first CLB real bits
+                """
+                if clb_int:
+                    zero_range(bits, 22, 25)
+                bits = set(bits)
+                zero_groups(
+                    tag, bits, zero_db, strict=not clb_int, verbose=verbose)
+
+                new_line = " ".join([tag] + sorted(bits))
+            else:
+                assert 0, line
+
             if new_line != line:
                 changes += 1
             new_lines.add(new_line)

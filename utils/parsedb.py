@@ -5,21 +5,28 @@ from prjxray import util
 
 def run(fnin, fnout=None, strict=False, verbose=False):
     lines = open(fnin, 'r').read().split('\n')
-    tags = set()
+    tags = dict()
     bitss = set()
     for line in lines:
         line = line.strip()
         if line == '':
             continue
+        # TODO: figure out what to do with masks
+        if line.startswith("bit "):
+            continue
         tag, bits, mode = util.parse_db_line(line)
         if strict:
-            assert not mode, "strict: got ill defined line: %s" % (line, )
-            assert tag not in tags, "strict: got duplicate tag %s (ex: %s)" % (
-                tag, line)
+            if mode != "always":
+                assert not mode, "strict: got ill defined line: %s" % (line, )
+            if tag in tags:
+                print("Original line: %s" % tags[tag])
+                print("New line: %s" % line)
+                assert 0, "strict: got duplicate tag %s" % (tag, )
             assert bits not in bitss, "strict: got duplicate bits %s (ex: %s)" % (
                 bits, line)
-        tags.add(tag)
-        bitss.add(bits)
+        tags[tag] = line
+        if bits != None:
+            bitss.add(bits)
 
     if fnout:
         with open(fnout, "w") as fout:

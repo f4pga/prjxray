@@ -10,6 +10,13 @@ test -e "$2"
 tmp1=`mktemp -p .`
 tmp2=`mktemp -p .`
 
+function finish {
+    echo "Cleaning up temp files"
+    rm -f "$tmp1"
+    rm -f "$tmp2"
+}
+trap finish EXIT
+
 db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/segbits_$1.db
 
 # Fuzzers verify L/R data is equivilent
@@ -72,5 +79,4 @@ esac
 touch "$db"
 sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2" || true
 ${XRAY_PARSEDB} --strict "$tmp2" "$db"
-rm -f "$tmp1"
 
