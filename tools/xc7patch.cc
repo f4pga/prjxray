@@ -60,9 +60,10 @@ int patch_frames(
 
 		auto iter = frames->find(frame_address);
 		if (iter == frames->end()) {
-			std::cerr
-			    << "frame address 0x" << std::hex << frame_address
-			    << " because it was not found in frames." << std::endl;
+			std::cerr << "frame address 0x" << std::hex
+			          << frame_address
+			          << " because it was not found in frames."
+			          << std::endl;
 			return 1;
 		}
 
