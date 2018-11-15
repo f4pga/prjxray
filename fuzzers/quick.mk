@@ -1,4 +1,9 @@
 # Intended for CIT quick checks
+# Full run ("Makefile"): 10 hours
+# quick.mk (FUZZONLY=N): 30 min
+# quick.mk (FUZZONLY=Y): 6 min
+
+FUZZONLY=N
 
 define fuzzer
 all:: $(1)/run.ok
@@ -8,8 +13,11 @@ $(1)/run.ok: $(addsuffix /run.ok,$(2))
 	$$(MAKE) -C $(1) run
 endef
 
+ifneq ($(FUZZONLY),Y)
 $(eval $(call fuzzer,001-part-yaml,))
 $(eval $(call fuzzer,005-tilegrid,001-part-yaml))
+endif
+
 $(eval $(call fuzzer,010-lutinit,005-tilegrid))
 $(eval $(call fuzzer,011-ffconfig,005-tilegrid))
 $(eval $(call fuzzer,012-clbn5ffmux,005-tilegrid))
