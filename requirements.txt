@@ -5,4 +5,4 @@ progressbar2
 pyjson5
 scipy
 sympy
-yapf
+yapf==0.24.0
