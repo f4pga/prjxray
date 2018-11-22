@@ -6,7 +6,7 @@
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
-void frame_address_decode(std::istream * input_stream) {
+void frame_address_decode(std::istream* input_stream) {
 	for (uint32_t frame_address_raw;
 	     (*input_stream) >> std::setbase(0) >> frame_address_raw;) {
 		xc7series::FrameAddress frame_address(frame_address_raw);
