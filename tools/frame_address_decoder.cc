@@ -6,15 +6,7 @@
 
 namespace xc7series = prjxray::xilinx::xc7series;
 
-int main(int argc, char* argv[]) {
-	std::istream* input_stream = &std::cin;
-	if (argc > 1) {
-		auto file_stream = std::ifstream(argv[1]);
-		if (file_stream) {
-			input_stream = &file_stream;
-		}
-	}
-
+void frame_address_decode(std::istream* input_stream) {
 	for (uint32_t frame_address_raw;
 	     (*input_stream) >> std::setbase(0) >> frame_address_raw;) {
 		xc7series::FrameAddress frame_address(frame_address_raw);
@@ -31,6 +23,18 @@ int main(int argc, char* argv[]) {
 		          << " Type=" << frame_address.block_type()
 		          << std::endl;
 	}
+}
+
+int main(int argc, char* argv[]) {
+	if (argc > 1) {
+		std::ifstream file_stream(argv[1]);
+		if (file_stream) {
+			frame_address_decode(&file_stream);
+			return 0;
+		}
+	}
+
+	frame_address_decode(&std::cin);
 
 	return 0;
 }
