@@ -27,13 +27,20 @@ Example lines:
  * INT_L.BYP_BOUNCE5.BYP_ALT5 always
    * A pseudo pip: feaure always active => no bits required
  * CLBLL_L.OH_NO.BAD.SOLVE <const0>
+   * Internal only
    * Candidate bits exist, but they've only ever been set to 0
-   * Internal only
  * CLBLL_L.OH_NO.BAD.SOLVE <const1>
+   * Internal only
    * Candidate bits exist, but they've only ever been set to 1
+ * INT.FAN_ALT4.SS2END0 <m1 2> 18_09 25_08
    * Internal only
- * INT.BRAM_ADDRARDADDRL0.BRAM_IMUX_ADDRARDADDRL0 <m1 0> <const0>
+   * segmatch -m (min tag value occurances) was given, but occurances are below this threshold
+   * ie INT.FAN_ALT4.SS2END0 occcured twice, but this is below the acceptable level (say 5)
+ * INT.FAN_ALT4.SS2END0 <M 6 8> 18_09 25_08
    * Internal only
+   * segmatch -M (min tag occurances) was given, but total occurances are below this threshold
+   * First value (6) is present=1, second value (8) is present=0
+   * Say -M 15, but there are 6 + 8 = 14 samples, below the acceptable threshold
 
 Related tools:
  * segmatch: solves symbolic constraints on a bitstream to produce symbol bitmasks
