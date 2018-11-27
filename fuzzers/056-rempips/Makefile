@@ -16,8 +16,10 @@ $(SPECIMENS_OK): todo.txt
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
-todo.txt:
+pips_int_l.txt: piplist.tcl
 	vivado -mode batch -source piplist.tcl
+
+todo.txt: pips_int_l.txt
 	python3 maketodo.py | sort -R | head -n10 > todo.txt.tmp
 	mv todo.txt.tmp todo.txt
 
