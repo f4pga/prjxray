@@ -18,10 +18,23 @@ $(SPECIMENS_OK): todo.txt
 
 todo.txt:
 	vivado -mode batch -source piplist.tcl
-	python3 maketodo.py | sort -R | head -n10 > todo.txt
+	python3 maketodo.py | sort -R | head -n10 > todo.txt.tmp
+	mv todo.txt.tmp todo.txt
 
+# Conider moving to script
 run:
-	+set -ex; while make clean; make todo.txt; test -s todo.txt; do if make database; then make pushdb; fi; done; true
+	\
+	    +set -ex; \
+        while \
+            make clean; \
+            make todo.txt || exit 1; \
+            test -s todo.txt; \
+        do \
+            if make database; then \
+                make pushdb; \
+            fi; \
+        done; \
+        true
 	touch run.ok
 
 clean:
