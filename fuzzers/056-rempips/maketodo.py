@@ -12,19 +12,22 @@ def maketodo(pipfile, dbfile, strict=True):
             line = line.split()
             todos.add(line[0])
     print('%s: %u entries' % (pipfile, len(todos)), file=sys.stderr)
-    with open(dbfile, "r") as f:
-        for line in f:
-            line = line.split()
-            pip = line[0]
-            try:
-                todos.remove(pip)
-            except KeyError:
-                # DB (incorrectly) had multiple entries
-                # Workaround for testing on old DB revision
-                if strict:
-                    raise
-                print(
-                    'WARNING: failed to remove pip %s' % pip, file=sys.stderr)
+    # Support generate without existing DB
+    if os.path.exists(dbfile) or strict:
+        with open(dbfile, "r") as f:
+            for line in f:
+                line = line.split()
+                pip = line[0]
+                try:
+                    todos.remove(pip)
+                except KeyError:
+                    # DB (incorrectly) had multiple entries
+                    # Workaround for testing on old DB revision
+                    if strict:
+                        raise
+                    print(
+                        'WARNING: failed to remove pip %s' % pip,
+                        file=sys.stderr)
     print('Remove %s: %u entries' % (dbfile, len(todos)), file=sys.stderr)
     drops = 0
     lines = 0
