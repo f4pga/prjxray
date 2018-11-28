@@ -4,13 +4,13 @@ SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/seg_int_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/seg_int_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
 
 pushdb:
 	${XRAY_DBFIXUP} --db-root . --clb-int
-	${XRAY_MERGEDB} int_l build/seg_int_l.db
-	${XRAY_MERGEDB} int_r build/seg_int_r.db
+	${XRAY_MERGEDB} int_l build/segbits_int_l.db
+	${XRAY_MERGEDB} int_r build/segbits_int_r.db
 
 $(SPECIMENS_OK): build/todo.txt
 	mkdir -p build
@@ -24,7 +24,7 @@ build/pips_int_l.txt: piplist.tcl
 # Used 1) to see if we are done 2) pips to try in generate.tcl
 build/todo.txt: build/pips_int_l.txt
 	#python3 maketodo.py --no-strict | sort -R | head -n10 > build/todo.txt.tmp
-	python3 maketodo.py --no-strict >build/todo_all.txt
+	python3 maketodo.py >build/todo_all.txt
 	cat build/todo_all.txt | sort -R | head -n10 > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
 
