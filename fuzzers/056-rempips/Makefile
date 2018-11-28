@@ -24,19 +24,25 @@ build/pips_int_l.txt: piplist.tcl
 # Used 1) to see if we are done 2) pips to try in generate.tcl
 build/todo.txt: build/pips_int_l.txt
 	#python3 maketodo.py --no-strict | sort -R | head -n10 > build/todo.txt.tmp
-	python3 maketodo.py --no-strict | sort -R | head -n10 > build/todo.txt.tmp
+	python3 maketodo.py --no-strict >build/todo_all.txt
+	cat build/todo_all.txt | sort -R | head -n10 > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
 
 
 # XXX: conider moving to script
 run:
 	\
-	    +set -ex; \
+        set -ex; \
+        make clean; \
+        mkdir -p todo; \
         while \
-            make clean; \
+            make cleanprj; \
             make build/todo.txt || exit 1; \
             test -s build/todo.txt; \
         do \
+            i=$$((i+1)); \
+            cp build/todo.txt todo/$${i}.txt; \
+            cp build/todo_all.txt todo/$${i}_all.txt; \
             if make database; then \
                 make pushdb; \
             fi; \
@@ -45,7 +51,11 @@ run:
 	touch run.ok
 
 clean:
-	rm -rf build run.ok
+	rm -rf build run.ok todo
 
-.PHONY: database pushdb run clean
+# Remove iteration specific files, but keep piplist.tcl output
+cleanprj:
+	rm -rf build/specimen_* build/todo.txt build/*.db
+
+.PHONY: database pushdb run clean cleanprj
 
