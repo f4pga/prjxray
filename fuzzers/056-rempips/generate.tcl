@@ -1,6 +1,6 @@
 create_project -force -part $::env(XRAY_PART) design design
 
-read_verilog ../top.v
+read_verilog ../../top.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports i]
@@ -19,7 +19,7 @@ route_design
 
 # write_checkpoint -force design.dcp
 
-source ../../../utils/utils.tcl
+source "$::env(XRAY_DIR)/utils/utils.tcl"
 
 set fp [open "../todo.txt" r]
 set todo_lines {}
@@ -77,6 +77,10 @@ proc write_txtdata {filename} {
 }
 
 route_design
+
+# Ex: ERROR: [DRC RTSTAT-5] Partial antennas: 1 net(s) have a partial antenna. The problem bus(es) and/or net(s) are mynet_2.
+# set_property IS_ENABLED 0 [get_drc_checks {RTSTAT-5}]
+    
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
 write_txtdata design.txt

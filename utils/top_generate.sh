@@ -7,7 +7,11 @@ set -ex
 FUZDIR=$PWD
 source ${XRAY_GENHEADER}
 
-python3 $FUZDIR/top.py >top.v
+# Some projects have hard coded top.v, others are generated
+if [ -f $FUZDIR/top.py ] ; then
+    python3 $FUZDIR/top.py >top.v
+fi
+
 vivado -mode batch -source $FUZDIR/generate.tcl
 test -z "$(fgrep CRITICAL vivado.log)"
 
