@@ -12,8 +12,11 @@ clean:
 build/env:
 	test "$(XRAY_PART)" = "xc7a50tfgg484-1"
 
-build/roi_roi_io.diff:
+build/roi_io.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_io.diff PRJL=roi_io_a PRJR=roi_io_b
+
+build/roi_prop.diff:
+	$(MAKE) -f diff.mk OUT_DIFF=build/roi_prop.diff PRJL=roi_prop_a PRJR=roi_prop_b
 
 build/PULLTYPE/run.ok:
 	PROJECT=PULLTYPE bash runme_tcl.sh
