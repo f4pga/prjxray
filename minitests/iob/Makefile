@@ -1,4 +1,9 @@
-all:  build/env build/roi_roi_io.diff
+all:  build/env build/roi_roi_io.diff \
+    build/PULLTYPE/run.ok \
+    build/SLEW/run.ok \
+    build/DRIVE/run.ok \
+    build/IOSTANDARD/run.ok \
+    
 
 clean:
 	rm -rf build
@@ -10,4 +15,18 @@ build/env:
 build/roi_roi_io.diff:
 	$(MAKE) -f diff.mk OUT_DIFF=build/roi_io.diff PRJL=roi_io_a PRJR=roi_io_b
 
+build/PULLTYPE/run.ok:
+	PROJECT=PULLTYPE bash runme_tcl.sh
+	diff build/PULLTYPE/design_{PULLDOWN,KEEPER}.bits || true
+	diff build/PULLTYPE/design_{PULLDOWN,PULLUP}.bits || true
+	diff build/PULLTYPE/design_{PULLDOWN,NONE}.bits || true
+
+build/SLEW/run.ok:
+	PROJECT=SLEW bash runme_tcl.sh
+
+build/DRIVE/run.ok:
+	PROJECT=DRIVE bash runme_tcl.sh
+
+build/IOSTANDARD/run.ok:
+	PROJECT=IOSTANDARD bash runme_tcl.sh
 
