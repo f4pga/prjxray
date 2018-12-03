@@ -13,7 +13,7 @@ build/tiles/tiles.txt:
 
 # TODO: only generate tiles
 build/tilegrid_basic.json: build/tiles/tiles.txt build/clb/deltas build/bram/deltas generate.py
-	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt */design_*.delta --out ${BUILD_DIR}/tilegrid_basic.json
+	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt --out ${BUILD_DIR}/tilegrid_basic.json
 
 build/clb/deltas:
 	bash generate.sh build/clb clb
@@ -23,7 +23,7 @@ build/bram/deltas:
 
 # TODO: only generate addresses
 build/tilegrid.json: build/tilegrid_basic.json
-	cd build && python3 ${FUZDIR}/generate_full.py --json-in tilegrid_basic.json --json-out ${BUILD_DIR}/tilegrid.json design_*.delta
+	cd build && python3 ${FUZDIR}/generate_full.py --json-in tilegrid_basic.json --json-out ${BUILD_DIR}/tilegrid.json --tiles $(FUZDIR)/build/tiles/tiles.txt */design_*.delta
 
 run:
 	$(MAKE) clean
