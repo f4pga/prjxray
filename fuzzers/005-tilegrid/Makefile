@@ -21,6 +21,9 @@ build/clb/deltas:
 build/bram/deltas:
 	bash generate.sh build/bram bram
 
+build/iob/deltas:
+	bash generate.sh build/iob iob
+
 # TODO: only generate addresses
 build/tilegrid.json: build/tilegrid_basic.json
 	cd build && python3 ${FUZDIR}/generate_full.py --json-in tilegrid_basic.json --json-out ${BUILD_DIR}/tilegrid.json --tiles $(FUZDIR)/build/tiles/tiles.txt */design_*.delta

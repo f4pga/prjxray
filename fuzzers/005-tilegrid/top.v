@@ -1,10 +1,19 @@
 //Need at least one LUT per frame base address we want
+`ifndef N_LUT
 `define N_LUT 100
-`define N_BRAM 8
+`endif
 
-module top(input clk, stb, di, output do);
-	localparam integer DIN_N = 8;
-	localparam integer DOUT_N = `N_LUT + `N_BRAM;
+`ifndef N_BRAM
+`define N_BRAM 8
+`endif
+
+`ifndef N_DI
+`define N_DI 1
+`endif
+
+module top(input clk, stb, [DIN_N-1:0] di, output do);
+	parameter integer DIN_N = `N_DI;
+	parameter integer DOUT_N = `N_LUT + `N_BRAM;
 
 	reg [DIN_N-1:0] din;
 	wire [DOUT_N-1:0] dout;
