@@ -17,6 +17,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 
 place_design
 route_design
+write_checkpoint -force design.dcp
 
 # set port [create_port -direction OUT myport]
 # set_property -dict "PACKAGE_PIN D19 IOSTANDARD LVCMOS33" $port

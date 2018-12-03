@@ -81,7 +81,9 @@ def load_baseaddrs(deltas_fns):
     for arg in deltas_fns:
         with open(arg) as f:
             line = f.read().strip()
-            site = arg[7:-6]
+            # clb/design_SLICE_X10Y100.delta
+            # site = arg[7:-6]
+            site = re.match(r".*/design_(.*).delta", arg).group(1)
             frame = int(line[5:5 + 8], 16)
             # was "0x%08x"
             site_baseaddr[site] = frame & ~0x7f
@@ -112,6 +114,7 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
 
     verbose and print('')
     verbose and print('%u tiles' % len(tiles))
+    verbose and print("%u baseaddrs" % len(site_baseaddr))
     added = 0
     for tile in tiles:
         for site_name in tile["sites"].keys():
@@ -131,7 +134,8 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
                 (tile["name"], site_name, bt, framebaseaddr))
             added += 1
 
-    assert added
+    assert added, "Failed to add any base addresses"
+    assert added == len(site_baseaddr)
     return tile_baseaddrs
 
 
