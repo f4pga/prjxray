@@ -175,16 +175,18 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
 
         def process_iob():
             tiles = [tile_name]
+            # FIXME mcmaster: removing INT for now
+            # Geometry doesn't line up with CLB, unclear if they are included
             if tile_type.startswith('LIOB'):
                 # Two INT_L's
-                tiles.append(tiles_by_grid[(grid_x + 4, grid_y)])
-                tiles.append(tiles_by_grid[(grid_x + 4, grid_y - 1)])
+                # tiles.append(tiles_by_grid[(grid_x + 4, grid_y)])
+                # tiles.append(tiles_by_grid[(grid_x + 4, grid_y - 1)])
                 # One IO interface tile
                 tiles.append(tiles_by_grid[(grid_x + 1, grid_y)])
             else:
                 # Two INT_R's
-                tiles.append(tiles_by_grid[(grid_x - 4, grid_y)])
-                tiles.append(tiles_by_grid[(grid_x - 4, grid_y - 1)])
+                # tiles.append(tiles_by_grid[(grid_x - 4, grid_y)])
+                # tiles.append(tiles_by_grid[(grid_x - 4, grid_y - 1)])
                 # One IO interface tile
                 tiles.append(tiles_by_grid[(grid_x - 1, grid_y)])
 
@@ -195,16 +197,19 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 baseaddr=tile_baseaddrs.get(tile_name, None))
 
         def process_iob_sing():
+            # FIXME mcmaster: removing INT for now
+            # Geometry doesn't line up with CLB, unclear if they are included
+            tiles = [tile_name]
             if tile_type.startswith('LIOB'):
-                int_tile_name = tiles_by_grid[(grid_x + 4, grid_y)]
-                io_interface_tile_name = tiles_by_grid[(grid_x + 1, grid_y)]
+                tiles.append(tiles_by_grid[(grid_x + 1, grid_y)])
+                # tiles.append(tiles_by_grid[(grid_x + 4, grid_y)])
             else:
-                int_tile_name = tiles_by_grid[(grid_x - 4, grid_y)]
-                io_interface_tile_name = tiles_by_grid[(grid_x - 1, grid_y)]
+                tiles.append(tiles_by_grid[(grid_x - 1, grid_y)])
+                # tiles.append(tiles_by_grid[(grid_x - 4, grid_y)])
 
             add_segment(
                 name="SEG_" + tile_name,
-                tiles=[tile_name, io_interface_tile_name, int_tile_name],
+                tiles=tiles,
                 segtype=tile_type.lower(),
                 baseaddr=tile_baseaddrs.get(tile_name, None))
 
