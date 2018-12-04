@@ -173,7 +173,7 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 tiles=[tile_name],
                 segtype=tile_type.lower())
 
-        def process_iob2():
+        def process_iob():
             tiles = [tile_name]
             if tile_type.startswith('LIOB'):
                 # Two INT_L's
@@ -194,7 +194,7 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 segtype=tile_type.lower(),
                 baseaddr=tile_baseaddrs.get(tile_name, None))
 
-        def process_iob():
+        def process_iob_sing():
             if tile_type.startswith('LIOB'):
                 int_tile_name = tiles_by_grid[(grid_x + 4, grid_y)]
                 io_interface_tile_name = tiles_by_grid[(grid_x + 1, grid_y)]
@@ -241,7 +241,9 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                     baseaddr=baseaddr)
 
         def process_default():
-            #verbose and nolr(tile_type) not in ('VBRK', 'INT', 'NULL') and print('make_segment: drop %s' % (tile_type,))
+            verbose and nolr(tile_type) not in (
+                'VBRK', 'INT', 'NULL') and print(
+                    'make_segment: drop %s' % (tile_type, ))
             pass
 
         {
@@ -250,10 +252,10 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
             "HCLK": process_hclk,
             "BRAM": process_bram_dsp,
             "DSP": process_bram_dsp,
-            "RIOB33": process_iob2,
-            "LIOB33": process_iob2,
-            "RIOB33_SING": process_iob,
-            "LIOB33_SIGN": process_iob,
+            "RIOB33": process_iob,
+            "LIOB33": process_iob,
+            "RIOB33_SING": process_iob_sing,
+            "LIOB33_SING": process_iob_sing,
         }.get(nolr(tile_type), process_default)()
 
     return segments
@@ -470,10 +472,17 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                         grid_y -= 1
                         wordbase += 1
 
-                    dst_tile = database[tiles_by_grid[(grid_x, grid_y)]]
+                    # FIXME: PCIE block cuts out some BRAM
+                    # this messes up algorithm  as is and may cause this to fail
+                    dst_tile_name = tiles_by_grid[(grid_x, grid_y)]
+
+                    dst_tile = database[dst_tile_name]
                     assert nolr(dst_tile['type']) == 'BRAM', dst_tile
 
                     dst_segment_name = dst_tile["segment"]
+                    verbose and print(
+                        '  up_INT BLOCK_RAM: %s => %s' %
+                        (dst_segment_name, dst_tile_name))
                     assert 'BRAM0' in dst_segment_name
                     segments[dst_segment_name].setdefault(
                         "baseaddr", {})[block_type] = [framebase, wordbase]
