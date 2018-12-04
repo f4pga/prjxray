@@ -19,11 +19,16 @@ proc loc_iob_old {} {
 
 proc loc_iob {} {
     # Get all possible sites
-    set duts [make_iob_sites]
+    # set duts [make_iob_sites]
+    # set dut_sites [get_sites -of_objects [get_pblocks roi] -filter {SITE_TYPE =~ RAMBFIFO36E1*}]
+    #set duts [get_sites -filter {SITE_TYPE =~ IOB33*}]
+    set duts [get_bels -filter {TYPE =~ PAD}]
+
     # Sort them into CMT columns
     set dut_columns [group_dut_cols $duts 75]
     # Assign one from each
-    return [loc_dut_col_bels $dut_columns {di[} {]} ]
+    write_checkpoint -force tmp.dcp
+    return [loc_dut_col_bels $dut_columns {di_bufs[} {].ibuf} ]
 }
 
 proc write_iob { selected_iobs } {

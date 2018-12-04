@@ -48,16 +48,18 @@ proc loc_dut_col_bels { dut_columns cellpre cellpost } {
     set dut_index 0
 
     dict for {column duts_in_column} $dut_columns {
-        set selected_dut_bel_str [min_ysite $duts_in_column]
-        set selected_dut_bel [get_bels $selected_dut_bel_str]
-        set selected_dut_site [get_sites -of_objects $selected_dut_bel]
+        set sel_bel_str [min_ysite $duts_in_column]
+        set sel_bel [get_bels $sel_bel_str]
+        if {"$sel_bel" == ""} {error "Bad bel $sel_bel from bel str $sel_bel_str"}
+        set sel_site [get_sites -of_objects $sel_bel]
+        if {"$sel_site" == ""} {error "Bad site $sel_site from bel $sel_bel"}
 
         set cell [get_cells $cellpre$dut_index$cellpost]
-        puts "LOCing cell $cell to site $selected_dut_site (from bel $selected_dut_bel)"
-        set_property LOC $selected_dut_site $cell
+        puts "LOCing cell $cell to site $sel_site (from bel $sel_bel)"
+        set_property LOC $sel_site $cell
 
         set dut_index [expr $dut_index + 1]
-        lappend ret_bels $selected_dut_bel
+        lappend ret_bels $sel_bel
     }
 
     return $ret_bels
