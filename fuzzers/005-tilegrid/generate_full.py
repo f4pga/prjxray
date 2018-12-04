@@ -557,20 +557,30 @@ def db_add_bits(database, segments):
                     ("DSP", "CLB_IO_CLK"): (28, 2, 10),
                     ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
                     ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
-                    # TODO: These are all guesses copied from CLBLL.
-                    ("RIOI3", "CLB_IO_CLK"): (36, 2, 2),
-                    ("LIOI3", "CLB_IO_CLK"): (36, 2, 2),
-                    ("RIOI3_SING", "CLB_IO_CLK"): (36, 2, 2),
-                    ("LIOI3_SING", "CLB_IO_CLK"): (36, 2, 2),
-                    ("RIOI3_TBYTESRC", "CLB_IO_CLK"): (36, 2, 2),
-                    ("LIOI3_TBYTESRC", "CLB_IO_CLK"): (36, 2, 2),
-                    ("RIOI3_TBYTETERM", "CLB_IO_CLK"): (36, 2, 2),
-                    ("LIOI3_TBYTETERM", "CLB_IO_CLK"): (36, 2, 2),
-                    ("LIOB33", "CLB_IO_CLK"): (36, 2, 2),
-                    ("RIOB33", "CLB_IO_CLK"): (36, 2, 2),
-                    ("LIOB33", "CLB_IO_CLK"): (36, 2, 2),
-                    ("RIOB33_SING", "CLB_IO_CLK"): (36, 2, 2),
-                    ("LIOB33_SING", "CLB_IO_CLK"): (36, 2, 2),
+
+                    # IOB
+                    # design_IOB_X0Y100.delta:+bit_00020027_000_29
+                    # design_IOB_X0Y104.delta:+bit_00020027_008_29
+                    # design_IOB_X0Y112.delta:+bit_00020027_024_29
+                    # design_IOB_X0Y120.delta:+bit_00020027_040_29
+                    # design_IOB_X0Y128.delta:+bit_00020027_057_29
+                    # design_IOB_X0Y136.delta:+bit_00020027_073_29
+                    # design_IOB_X0Y144.delta:+bit_00020027_089_29
+                    # $XRAY_BLOCKWIDTH design_IOB_X0Y100.bit |grep 00020000
+                    # 0x00020000: 0x2A (42)
+                    ("RIOI3", "CLB_IO_CLK"): (42, 2, 2),
+                    ("LIOI3", "CLB_IO_CLK"): (42, 2, 2),
+                    ("RIOI3_SING", "CLB_IO_CLK"): (42, 2, 2),
+                    ("LIOI3_SING", "CLB_IO_CLK"): (42, 2, 2),
+                    ("RIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 2),
+                    ("LIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 2),
+                    ("RIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 2),
+                    ("LIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 2),
+                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 2),
+                    ("RIOB33", "CLB_IO_CLK"): (42, 2, 2),
+                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 2),
+                    ("RIOB33_SING", "CLB_IO_CLK"): (42, 2, 2),
+                    ("LIOB33_SING", "CLB_IO_CLK"): (42, 2, 2),
                 }.get((nolr(tile_type), block_type), None)
                 if entry is None:
                     # Other types are rare, not expected to have these
