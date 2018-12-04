@@ -4,7 +4,7 @@
 
 set -ex
 
-FUZDIR=$PWD
+export FUZDIR=$PWD
 source ${XRAY_GENHEADER}
 
 # Some projects have hard coded top.v, others are generated

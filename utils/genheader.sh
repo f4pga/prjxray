@@ -8,12 +8,13 @@ fi
 set -ex
 
 # for some reason on sourced script set -e doesn't work
-test $# = 1 || exit 1
+# Scripts may have additional arguments, but first is reserved for build directory
+test $# -ge 1 || exit 1
 test ! -e "$SPECN"
 SPECN=$1
 
 rm -rf "$SPECN"
-mkdir "$SPECN"
+mkdir -p "$SPECN"
 cd "$SPECN"
 
 export SEED="$(echo $SPECN | md5sum | cut -c1-8)"
