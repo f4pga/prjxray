@@ -6,6 +6,7 @@ export FUZDIR=$PWD
 source ${XRAY_GENHEADER}
 
 vivado -mode batch -source $FUZDIR/generate_$PRJ.tcl
+test -z "$(fgrep CRITICAL vivado.log)"
 
 if [ $PRJ != "tiles" ] ; then
     for x in design*.bit; do
