@@ -14,46 +14,9 @@ proc loc_brams {} {
     set bram_sites [get_sites -of_objects [get_pblocks roi] -filter {SITE_TYPE =~ RAMBFIFO36E1*}]
     set bram_bels [get_bels -of_objects $bram_sites]
 
-    set selected_bram_sites {}
-    set bram_index 0
-
-    # LOC one BRAM (a "selected_lut") into each BRAM segment configuration column (ie 10 per CMT column)
-    set bram_columns ""
-    foreach bram $bram_bels {
-        regexp "RAMB36_X([0-9]+)Y([0-9]+)/" $bram match slice_x slice_y
-
-        # 10 per column => 10, 20, ,etc
-        # ex: RAMB36_X0Y10/RAMBFIFO36E1
-        set y_column [expr ($slice_y / 10) * 10]
-        dict append bram_columns "X${slice_x}Y${y_column}" "$bram "
-    }
-
-    # Pick the smallest Y in each column.
-    dict for {column brams_in_column} $bram_columns {
-        set min_slice_y 9999999
-
-        foreach bram $brams_in_column {
-            regexp "RAMB36_X([0-9]+)Y([0-9]+)/" $bram match slice_x slice_y
-
-            if { $slice_y < $min_slice_y } {
-                set selected_bram_bel $bram
-            }
-        }
-
-        set selected_bram_bel [get_bels $selected_bram_bel]
-
-        set bram_site [get_sites -of_objects $selected_bram_bel]
-        puts "LOCing BEL: $selected_bram_bel to $bram_site"
-        set cell [get_cells roi/brams[$bram_index].bram]
-        set_property LOC $bram_site $cell
-        if {"$bram_site" == ""} {error "Bad site $bram_site from bel $selected_bram_bel"}
-
-        set bram_index [expr $bram_index + 1]
-        # Output site, not bel, to avoid reference issues after PnR
-        lappend selected_bram_sites $bram_site
-    }
-
-    return $selected_bram_sites
+    set bram_columns [group_dut_cols $bram_bels 10]
+    # Output site, not bel, to avoid reference issues after PnR
+    return [loc_dut_col_sites $bram_columns {roi/brams[} {].bram}]
 }
 
 proc write_brams { selected_brams_sites } {

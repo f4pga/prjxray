@@ -1,13 +1,9 @@
 source "$::env(FUZDIR)/util.tcl"
 
-proc loc_luts {} {
-    set luts [get_bels -of_objects [get_sites -of_objects [get_pblocks roi]] -filter {TYPE =~ LUT*} */A6LUT]
-    set selected_luts {}
-    set lut_index 0
-
+proc group_lut_cols { lut_bels } {
     # LOC one LUT (a "selected_lut") into each CLB segment configuration column (ie 50 per CMT column)
     set lut_columns ""
-    foreach lut $luts {
+    foreach lut $lut_bels {
         regexp "SLICE_X([0-9]+)Y([0-9]+)/" $lut match slice_x slice_y
 
         # Only even SLICEs should be used as column bases.
@@ -15,34 +11,19 @@ proc loc_luts {} {
             continue
         }
 
-        # 50 per column => 50, 100, 150, etc
+        # 50 per column => 0, 50, 100, 150, etc
         # ex: SLICE_X2Y50/A6LUT
         # Only take one of the CLBs within a slice
         set y_column [expr ($slice_y / 50) * 50]
         dict append lut_columns "X${slice_x}Y${y_column}" "$lut "
     }
+    return $lut_columns
+}
 
-    # Pick the smallest Y in each column.
-    dict for {column luts_in_column} $lut_columns {
-        set min_slice_y 9999999
-
-        foreach lut $luts_in_column {
-            regexp "SLICE_X([0-9]+)Y([0-9]+)/" $lut slice_x slice_y
-
-            if { $slice_y < $min_slice_y } {
-                set selected_lut $lut
-            }
-        }
-
-        set cell [get_cells roi/luts[$lut_index].lut]
-        set lut_site [get_sites -of_objects [get_bels $selected_lut]]
-        puts "LOCing $selected_lut to $lut_site"
-        set_property LOC $lut_site $cell
-        set lut_index [expr $lut_index + 1]
-        lappend selected_luts [get_bels $selected_lut]
-    }
-
-    return $selected_luts
+proc loc_luts {} {
+    set lut_bels [get_bels -of_objects [get_sites -of_objects [get_pblocks roi]] -filter {TYPE =~ LUT*} */A6LUT]
+    set lut_columns [group_lut_cols $lut_bels]
+    return [loc_dut_col_bels $lut_columns {roi/luts[} {].lut}]
 }
 
 proc write_clbs { selected_luts } {

@@ -1,7 +1,7 @@
 source "$::env(FUZDIR)/util.tcl"
 
 # FIXME: change to grab one IOB from each column
-proc loc_iob {} {
+proc loc_iob_old {} {
     set ports [concat [get_ports clk] [get_ports do] [get_ports stb] [get_ports di]]
     set selected_iobs {}
     foreach port $ports {
@@ -15,6 +15,15 @@ proc loc_iob {} {
         }
     }
     return $selected_iobs
+}
+
+proc loc_iob {} {
+    # Get all possible sites
+    set duts [make_iob_sites]
+    # Sort them into CMT columns
+    set dut_columns [group_dut_cols $duts 75]
+    # Assign one from each
+    return [loc_dut_col_bels $dut_columns {di[} {]} ]
 }
 
 proc write_iob { selected_iobs } {

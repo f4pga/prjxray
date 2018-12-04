@@ -1,4 +1,75 @@
-proc make_ios {} {
+proc min_ysite { duts_in_column } {
+    # Given a list of sites, return the one with the lowest Y coordinate
+
+    set min_dut_y 9999999
+
+    foreach dut $duts_in_column {
+        # Ex: SLICE_X2Y50/A6LUT
+        # Ex: IOB_X1Y50
+        regexp ".*_X([0-9]+)Y([0-9]+)" $dut match dut_x dut_y
+
+        if { $dut_y < $min_dut_y } {
+            set selected_dut $dut
+            set min_dut_y $dut_y
+        }
+    }
+    return $selected_dut
+}
+
+proc group_dut_cols { duts ypitch } {
+    # Group a list of sites into pitch sized buckets
+    # Ex: IOBs occur 75 to a CMT column
+    # Set pitch to 75 to get 0-74 in one bucket, 75-149 in a second, etc
+    # X0Y0 {IOB_X0Y49 IOB_X0Y48 IOB_X0Y47 ... }
+    # Anything with a different x is automatically in a different bucket
+
+    # LOC one LUT (a "selected_lut") into each CLB segment configuration column (ie 50 per CMT column)
+    set dut_columns ""
+    foreach dut $duts {
+        # Ex: SLICE_X2Y50/A6LUT
+        # Ex: IOB_X1Y50
+        regexp ".*_X([0-9]+)Y([0-9]+)" $dut match dut_x dut_y
+
+        # 75 per column => 0, 75, 150, etc
+        set y_column [expr ($dut_y / $ypitch) * $ypitch]
+        dict append dut_columns "X${dut_x}Y${y_column}" "$dut "
+    }
+    return $dut_columns
+}
+
+proc loc_dut_col_bels { dut_columns cellpre cellpost } {
+    # set cellpre di
+
+    # Pick the smallest Y in each column and LOC a cell to it
+    # cells must be named like $cellpre[$dut_index]
+    # Return the selected sites
+
+    set ret_bels {}
+    set dut_index 0
+
+    dict for {column duts_in_column} $dut_columns {
+        set selected_dut_bel_str [min_ysite $duts_in_column]
+        set selected_dut_bel [get_bels $selected_dut_bel_str]
+        set selected_dut_site [get_sites -of_objects $selected_dut_bel]
+
+        set cell [get_cells $cellpre$dut_index$cellpost]
+        puts "LOCing cell $cell to site $selected_dut_site (from bel $selected_dut_bel)"
+        set_property LOC $selected_dut_site $cell
+
+        set dut_index [expr $dut_index + 1]
+        lappend ret_bels $selected_dut_bel
+    }
+
+    return $ret_bels
+}
+
+proc loc_dut_col_sites { dut_columns cellpre cellpost } {
+    set bels [loc_dut_col_bels $dut_columns $cellpre $cellpost]
+    set sites [get_sites -of_objects $bels]
+    return $sites
+}
+
+proc make_io_pad_sites {} {
     # get all possible IOB pins
     foreach pad [get_package_pins -filter "IS_GENERAL_PURPOSE == 1"] {
         set site [get_sites -of_objects $pad]
@@ -9,12 +80,28 @@ proc make_ios {} {
             dict append io_pad_sites $site $pad
         }
     }
+    return $io_pad_sites
+}
+
+proc make_iob_pads {} {
+    set io_pad_sites [make_io_pad_sites]
 
     set iopad ""
     dict for {key value} $io_pad_sites {
+        # Some sites have more than one pad?
         lappend iopad [lindex $value 0]
     }
     return $iopad
+}
+
+proc make_iob_sites {} {
+    set io_pad_sites [make_io_pad_sites]
+
+    set sites ""
+    dict for {key value} $io_pad_sites {
+        lappend sites $key
+    }
+    return $sites
 }
 
 proc assign_iobs_old {} {
@@ -29,7 +116,7 @@ proc assign_iobs {} {
     # The iob fuzzer sets these to more specific values
 
     # All possible IOs
-    set iopad [make_ios]
+    set iopad [make_iob_pads]
     # Basic pins
     set_property -dict "PACKAGE_PIN [lindex $iopad 0] IOSTANDARD LVCMOS33" [get_ports clk]
     set_property -dict "PACKAGE_PIN [lindex $iopad 1] IOSTANDARD LVCMOS33" [get_ports do]
