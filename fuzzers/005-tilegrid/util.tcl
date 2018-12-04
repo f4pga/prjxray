@@ -120,6 +120,8 @@ proc assign_iobs {} {
     # All possible IOs
     set iopad [make_iob_pads]
     # Basic pins
+    # XXX: not all pads are valid, but seems to be working for now
+    # Maybe better to set to XRAY_PIN_* and take out of the list?
     set_property -dict "PACKAGE_PIN [lindex $iopad 0] IOSTANDARD LVCMOS33" [get_ports clk]
     set_property -dict "PACKAGE_PIN [lindex $iopad 1] IOSTANDARD LVCMOS33" [get_ports do]
     set_property -dict "PACKAGE_PIN [lindex $iopad 2] IOSTANDARD LVCMOS33" [get_ports stb]
