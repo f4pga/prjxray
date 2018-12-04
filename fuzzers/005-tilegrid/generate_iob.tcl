@@ -3,7 +3,8 @@ source "$::env(FUZDIR)/util.tcl"
 proc loc_iob {} {
     # Some pads are output only (ex: OPAD_X0Y0/PAD) => filt IOB_*
     # XXX: GTX bank missing, deal with that later
-    set duts [get_bels -filter {TYPE =~ PAD && NAME =~ IOB_*}]
+    set roi_sites [get_sites -of_objects [get_pblocks roi]]
+    set duts [get_bels -of_objects $roi_sites -filter {TYPE =~ PAD && NAME =~ IOB_*}]
 
     # Sort them into CMT columns
     set dut_columns [group_dut_cols $duts 50]

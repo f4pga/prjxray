@@ -137,6 +137,11 @@ proc assign_iobs {} {
 }
 
 proc make_project {} {
+    # Generate .bit only over ROI
+    make_project_roi XRAY_ROI
+}
+
+proc make_project_roi { roi_var } {
     # 6 CMTs in our reference part
     # What is the largest?
     set n_di 16
@@ -150,7 +155,7 @@ proc make_project {} {
 
     create_pblock roi
     add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-    foreach roi "$::env(XRAY_ROI_TILEGRID)" {
+    foreach roi "$::env($roi_var)" {
         puts "ROI: $roi"
         resize_pblock [get_pblocks roi] -add "$roi"
     }

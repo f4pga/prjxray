@@ -26,7 +26,8 @@ proc write_tiles_txt {} {
 }
 
 proc run {} {
-    make_project
+    # Generate grid of entire part
+    make_project_roi XRAY_ROI_TILEGRID
 
     place_design
     route_design
