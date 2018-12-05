@@ -226,8 +226,6 @@ class Segmaker:
                     segment["tags"][tag] = value
 
             def add_site_tags():
-                segment = getseg(segname)
-
                 site_prefix = site.split('_')[0]
 
                 def name_slice():
@@ -273,7 +271,8 @@ class Segmaker:
                     # XXX: does this come from name?
                     tag = tag.replace(".SLICEM.", ".")
                     tag = tag.replace(".SLICEL.", ".")
-                    segments[segname]["tags"][tag] = value
+                    segment = getseg(segname)
+                    segment["tags"][tag] = value
                 sites_used.add(site)
 
             tile_type = tiledata["type"]
@@ -288,6 +287,9 @@ class Segmaker:
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:
+                if self.verbose:
+                    for site in tiledata["sites"]:
+                        assert site not in self.site_tags, "Site %s does not have bitstream info" % site
                 continue
             elif len(tiledata['bits']) == 1:
                 bitj = list(tiledata['bits'].values())[0]
@@ -312,10 +314,11 @@ class Segmaker:
                     continue
                 add_site_tags()
 
+        n_site_tags = recurse_sum(self.site_tags)
+        n_tile_tags = recurse_sum(self.tile_tags)
+        ntags = n_site_tags + n_tile_tags
         if self.verbose:
-            n_site_tags = recurse_sum(self.site_tags)
-            n_tile_tags = recurse_sum(self.tile_tags)
-            ntags = n_site_tags + n_tile_tags
+            assert ntags, "No tags"
             print("Used %u / %u tags" % (len(tags_used), ntags))
             print("Tag sites: %u" % (n_site_tags, ))
             if n_site_tags:
@@ -323,7 +326,7 @@ class Segmaker:
             print("Tag tiles: %u" % (n_tile_tags, ))
             print("Used %u sites" % len(sites_used))
             print("Grid DB had %u tile types" % len(tile_types_found))
-            assert ntags and ntags == len(tags_used)
+        assert ntags == len(tags_used), "Unused tags"
 
     def write(self, suffix=None, roi=False, allow_empty=False):
         assert self.segments_by_type, 'No data to write'
