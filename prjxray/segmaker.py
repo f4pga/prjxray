@@ -271,7 +271,8 @@ class Segmaker:
                     # XXX: does this come from name?
                     tag = tag.replace(".SLICEM.", ".")
                     tag = tag.replace(".SLICEL.", ".")
-                    segments[segname]["tags"][tag] = value
+                    segment = getseg(segname)
+                    segment["tags"][tag] = value
                 sites_used.add(site)
 
             tile_type = tiledata["type"]
