@@ -11,7 +11,6 @@ pushdb:
 build/tiles/tiles.txt:
 	bash generate.sh build/tiles tiles
 
-# TODO: only generate tiles
 build/tilegrid_basic.json: generate.py build/tiles/tiles.txt
 	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt --out ${BUILD_DIR}/tilegrid_basic.json
 
@@ -24,9 +23,10 @@ build/bram/deltas:
 build/iob/deltas:
 	bash generate.sh build/iob iob
 
-# TODO: only generate addresses
 build/tilegrid.json: generate_full.py build/tilegrid_basic.json build/clb/deltas build/bram/deltas build/iob/deltas
-	cd build && python3 ${FUZDIR}/generate_full.py --json-in tilegrid_basic.json --json-out ${BUILD_DIR}/tilegrid.json --tiles $(FUZDIR)/build/tiles/tiles.txt */design_*.delta
+	cd build && python3 ${FUZDIR}/generate_full.py \
+        --json-in tilegrid_basic.json --json-out ${BUILD_DIR}/tilegrid.json \
+        --tiles $(FUZDIR)/build/tiles/tiles.txt */design_*.delta
 
 run:
 	$(MAKE) clean
