@@ -273,6 +273,13 @@ def get_inttile(database, segment):
         if database[tile]["type"] in ["INT_L", "INT_R"])
 
 
+def get_iobtile(database, segment):
+    '''Return IOB tile for given segment'''
+    return (
+        tile for tile in segment["tiles"]
+        if database[tile]["type"] in ["LIOB33_SING", "LIOB33"])
+
+
 def get_bramtile(database, segment):
     inttiles = [
         tile for tile in segment["tiles"]
@@ -410,7 +417,8 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                 Use it to locate in the grid, and find other segments related by tile offset
                 '''
 
-                for inttile in get_inttile(database, src_segment):
+                for inttile in list(get_inttile(database, src_segment)) + list(
+                        get_iobtile(database, src_segment)):
                     verbose and print(
                         '  up_INT CLK_IO_CLK: %s => inttile %s' %
                         (src_segment_name, inttile),

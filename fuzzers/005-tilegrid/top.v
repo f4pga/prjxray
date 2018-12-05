@@ -18,7 +18,7 @@ module top(input clk, stb, [DIN_N-1:0] di, output do);
 	wire [DIN_N-1:0] di_buf;
 	genvar i;
 	generate
-		for (i = 0; i < `N_LUT; i = i+1) begin:di_bufs
+		for (i = 0; i < `N_DI; i = i+1) begin:di_bufs
 		    IBUF ibuf(.I(di[i]), .O(di_buf[i]));
 		end
 	endgenerate
