@@ -1,5 +1,5 @@
 ifeq ($(QUICK),Y)
-N := 1
+N := 10
 else
 N := 200
 endif
