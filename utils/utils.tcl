@@ -1,19 +1,36 @@
-
 proc route_via {net nodes} {
+    # Route a simple source to dest net via one or more intermediate nodes
+    # the nodes do not have have to be directly reachable from each other
+    # net: net name string
+    # nodes: list of node or wires strings?
+    # Returns 1 on success (previously would silently failed with antenna nets)
+
 	set net [get_nets $net]
+	# fixed_route: list of nodes in the full route
+	# Begins at implicit node
 	set fixed_route [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
+	# Implicit end node. Route it at the end
 	lappend nodes [get_nodes -of_objects [get_site_pins -filter {DIRECTION == IN} -of_objects $net]]
 
 	puts ""
 	puts "Routing net $net:"
 
 	foreach to_node $nodes {
+	    # convert wire string to node object
 		set to_node [get_nodes -of_objects [get_wires $to_node]]
+		# Start at the last point
 		set from_node [lindex $fixed_route end]
+		# Make vivado do the hard work
 		set route [find_routing_path -quiet -from $from_node -to $to_node]
+		# TODO: check for this
 		if {$route == ""} {
-			puts "  $from_node -> $to_node: no route found - assuming direct PIP"
-			lappend fixed_route $to_node
+			# This can also happen if you try to route to a node already in the route
+			if { [ lsearch $route $to_node ] >= 0 } {
+			    puts "WARNING: route_via loop. $to_node is already in the path, ignoring"
+			} else {
+				puts "  $from_node -> $to_node: no route found - assuming direct PIP"
+				lappend fixed_route $to_node
+			}
 		} {
 			puts "  $from_node -> $to_node: $route"
 			set fixed_route [concat $fixed_route [lrange $route 1 end]]
@@ -21,8 +38,17 @@ proc route_via {net nodes} {
 		set_property -quiet FIXED_ROUTE $fixed_route $net
 	}
 
+    # Earlier check should catch this now
+    set status [get_property ROUTE_STATUS $net]
+    if { $status != "ROUTED" } {
+        error "failed to route net $net, status $status, route: $fixed_route"
+        # maybe warn and fail?
+        # return 0
+    }
+
 	set_property -quiet FIXED_ROUTE $fixed_route $net
 	puts ""
+    return 1
 }
 
 proc tile_wire_pairs {tile1 tile2} {

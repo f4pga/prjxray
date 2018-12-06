@@ -30,7 +30,7 @@ run:
 
 clean:
 	rm -rf .Xil/ .cache/ filtered_seg_int_[lr].db run.ok
-	rm -rf todo.txt vivado* piplist/ piplist.dcp pattern_[lr].txt pips_int_[lr].txt
+	rm -rf todo.txt vivado* pattern_[lr].txt pips_int_[lr].txt
 	rm -rf specimen_[0-9][0-9][0-9]/ segbits_int_[lr].db mask_clbl[lm]_[lr].segbits
 
 .PHONY: database pushdb run clean
