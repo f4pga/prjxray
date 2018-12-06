@@ -16,7 +16,6 @@ foreach {val} $vals {
         puts "WARNING failed to write: $issue"
         continue
     }
-    # Only write checkpoints for acceptable bitstreams    
+    # Only write checkpoints for acceptable bitstreams
     write_checkpoint -force design_$val.dcp
 }
-

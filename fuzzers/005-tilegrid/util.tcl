@@ -76,7 +76,7 @@ proc make_io_pad_sites {} {
     foreach pad [get_package_pins -filter "IS_GENERAL_PURPOSE == 1"] {
         set site [get_sites -of_objects $pad]
         if {[llength $site] == 0} {
-           continue
+            continue
         }
         if [string match IOB33* [get_property SITE_TYPE $site]] {
             dict append io_pad_sites $site $pad
@@ -130,9 +130,9 @@ proc assign_iobs {} {
     set fixed_pins 3
     set iports [get_ports di*]
     for {set i 0} {$i < [llength $iports]} {incr i} {
-      set pad [lindex $iopad [expr $i+$fixed_pins]]
-      set port [lindex $iports $i]
-      set_property -dict "PACKAGE_PIN $pad IOSTANDARD LVCMOS33" $port
+        set pad [lindex $iopad [expr $i+$fixed_pins]]
+        set port [lindex $iports $i]
+        set_property -dict "PACKAGE_PIN $pad IOSTANDARD LVCMOS33" $port
     }
 }
 
@@ -167,4 +167,3 @@ proc make_project_roi { roi_var } {
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 }
-

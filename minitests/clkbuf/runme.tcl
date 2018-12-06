@@ -25,29 +25,28 @@ write_bitstream -force design.bit
 source ../../utils/utils.tcl
 
 foreach it {
-	{b11 INT_L_X12Y100/GCLK_L_B11}
-	{b10 INT_L_X12Y100/GCLK_L_B10}
-	{b9  INT_L_X12Y100/GCLK_L_B9}
-	{b8  INT_L_X12Y100/GCLK_L_B8}
-	{b7  INT_L_X12Y100/GCLK_L_B7}
-	{b6  INT_L_X12Y100/GCLK_L_B6}
-	{b5  INT_R_X13Y100/GCLK_B5}
-	{b4  INT_R_X13Y100/GCLK_B4}
-	{b3  INT_R_X13Y100/GCLK_B3}
-	{b2  INT_R_X13Y100/GCLK_B2}
-	{b1  INT_R_X13Y100/GCLK_B1}
-	{b0  INT_R_X13Y100/GCLK_B0}
+    {b11 INT_L_X12Y100/GCLK_L_B11}
+    {b10 INT_L_X12Y100/GCLK_L_B10}
+    {b9  INT_L_X12Y100/GCLK_L_B9}
+    {b8  INT_L_X12Y100/GCLK_L_B8}
+    {b7  INT_L_X12Y100/GCLK_L_B7}
+    {b6  INT_L_X12Y100/GCLK_L_B6}
+    {b5  INT_R_X13Y100/GCLK_B5}
+    {b4  INT_R_X13Y100/GCLK_B4}
+    {b3  INT_R_X13Y100/GCLK_B3}
+    {b2  INT_R_X13Y100/GCLK_B2}
+    {b1  INT_R_X13Y100/GCLK_B1}
+    {b0  INT_R_X13Y100/GCLK_B0}
 } {
-	set net [get_nets c_IBUF_BUFG]
-	set_property FIXED_ROUTE {} $net
-	route_design -unroute -net $net
+    set net [get_nets c_IBUF_BUFG]
+    set_property FIXED_ROUTE {} $net
+    route_design -unroute -net $net
 
-	set id [lindex $it 0]
-	set gclk [lindex $it 1]
+    set id [lindex $it 0]
+    set gclk [lindex $it 1]
 
-	route_via $net "$gclk"
+    route_via $net "$gclk"
 
-	write_checkpoint -force design_$id.dcp
-	write_bitstream -force design_$id.bit
+    write_checkpoint -force design_$id.dcp
+    write_bitstream -force design_$id.bit
 }
-

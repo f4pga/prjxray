@@ -12,4 +12,3 @@ foreach {val} $vals {
     write_checkpoint -force design_$val.dcp
     write_bitstream -force design_$val.bit
 }
-

@@ -43,9 +43,9 @@ foreach ff $ffs {
     set used [get_property IS_USED $ff]
     set usedstr ""
     if $used {
-	    set ffc [get_cells -of_objects $ff]
-	    set cell_bel [get_property BEL $ffc]
-	    # ex: FDRE
+        set ffc [get_cells -of_objects $ff]
+        set cell_bel [get_property BEL $ffc]
+        # ex: FDRE
         set ref_name [get_property REF_NAME $ffc]
         #set cinv [get_property IS_C_INVERTED $ffc]
 
@@ -53,7 +53,6 @@ foreach ff $ffs {
         set cinv [get_property IS_INVERTED $cpin]
         set usedstr "$cell_bel $ref_name $cinv"
     }
-	puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
+    puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
 }
 close $fp
-

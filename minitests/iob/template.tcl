@@ -23,4 +23,3 @@ write_checkpoint -force design.dcp
 # set_property -dict "PACKAGE_PIN D19 IOSTANDARD LVCMOS33" $port
 # set_property PULLTYPE PULLUP $port
 # set_property PULLTYPE PULLDOWN $port
-

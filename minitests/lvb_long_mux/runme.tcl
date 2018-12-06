@@ -22,13 +22,13 @@ set_property FIXED_ROUTE {} [get_nets o_OBUF]
 route_design -unroute
 
 route_via o_OBUF {
-	INT_L_X12Y144/LVB_L12 INT_L_X12Y132/LVB_L12
+    INT_L_X12Y144/LVB_L12 INT_L_X12Y132/LVB_L12
 
-	INT_L_X12Y120/SS6BEG2
-	INT_L_X14Y120/NN6END3
+    INT_L_X12Y120/SS6BEG2
+    INT_L_X14Y120/NN6END3
 
-	INT_L_X14Y132/LVB_L12 INT_L_X14Y144/LVB_L12
-	INT_L_X16Y144/LVB_L12 INT_L_X16Y132/LVB_L12
+    INT_L_X14Y132/LVB_L12 INT_L_X14Y144/LVB_L12
+    INT_L_X16Y144/LVB_L12 INT_L_X16Y132/LVB_L12
 }
 
 # ----------------------------------------------------------
@@ -43,18 +43,18 @@ set_property FIXED_ROUTE {} [get_nets o_OBUF]
 route_design -unroute
 
 route_via o_OBUF {
-	INT_L_X12Y120/NN6END3
+    INT_L_X12Y120/NN6END3
 
-	INT_L_X12Y132/LVB_L12 INT_L_X12Y144/LVB_L12
+    INT_L_X12Y132/LVB_L12 INT_L_X12Y144/LVB_L12
 
-	INT_L_X14Y144/LVB_L12 INT_L_X14Y132/LVB_L12
+    INT_L_X14Y144/LVB_L12 INT_L_X14Y132/LVB_L12
 
-	INT_L_X14Y120/SS6BEG2
-	INT_L_X16Y120/NN6END3
+    INT_L_X14Y120/SS6BEG2
+    INT_L_X16Y120/NN6END3
 
-	INT_L_X16Y132/LVB_L12 INT_L_X16Y144/LVB_L12
+    INT_L_X16Y132/LVB_L12 INT_L_X16Y144/LVB_L12
 
-	INT_L_X16Y144/EE4BEG2
+    INT_L_X16Y144/EE4BEG2
 }
 
 # ----------------------------------------------------------
@@ -62,4 +62,3 @@ route_via o_OBUF {
 route_design
 write_checkpoint -force design_b.dcp
 write_bitstream -force design_b.bit
-

@@ -24,7 +24,7 @@ source ../../../utils/utils.tcl
 set fp [open "../todo.txt" r]
 set todo_lines {}
 for {gets $fp line} {$line != ""} {gets $fp line} {
-	lappend todo_lines [split $line .]
+    lappend todo_lines [split $line .]
 }
 close $fp
 
@@ -34,46 +34,45 @@ set int_r_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi
 set fp [open "design.txt" w]
 
 for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
-	set line [lindex $todo_lines $idx]
-	puts "== $idx: $line"
+    set line [lindex $todo_lines $idx]
+    puts "== $idx: $line"
 
-	set tile_type [lindex $line 0]
-	set dst_wire [lindex $line 1]
-	set src_wire [lindex $line 2]
+    set tile_type [lindex $line 0]
+    set dst_wire [lindex $line 1]
+    set src_wire [lindex $line 2]
 
-	if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]; set other_tile [lindex $int_r_tiles $idx]}
-	if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]; set other_tile [lindex $int_l_tiles $idx]}
+    if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]; set other_tile [lindex $int_r_tiles $idx]}
+    if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]; set other_tile [lindex $int_l_tiles $idx]}
 
-	puts "PIP Tile: $tile"
+    puts "PIP Tile: $tile"
 
-	set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
-			-of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
+    set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+            -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
 
-	puts "LUT Tile (Site): $other_tile ($driver_site)"
+    puts "LUT Tile (Site): $other_tile ($driver_site)"
 
-	set mylut [create_cell -reference LUT1 mylut_$idx]
-	set_property -dict "LOC $driver_site BEL A6LUT" $mylut
+    set mylut [create_cell -reference LUT1 mylut_$idx]
+    set_property -dict "LOC $driver_site BEL A6LUT" $mylut
 
-	set mynet [create_net mynet_$idx]
-	connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
-	route_via $mynet "$tile/$src_wire $tile/$dst_wire"
+    set mynet [create_net mynet_$idx]
+    connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
+    route_via $mynet "$tile/$src_wire $tile/$dst_wire"
 
-	if {[get_pips -filter "NAME == \"${tile}/${tile_type}.${src_wire}<<->>${dst_wire}\" || NAME == \"${tile}/${tile_type}.${dst_wire}<<->>${src_wire}\""  -of_objects [get_nets $mynet]] != ""} {
-		puts $fp "A $tile/$dst_wire $tile/$src_wire"
-	}
+    if {[get_pips -filter "NAME == \"${tile}/${tile_type}.${src_wire}<<->>${dst_wire}\" || NAME == \"${tile}/${tile_type}.${dst_wire}<<->>${src_wire}\""  -of_objects [get_nets $mynet]] != ""} {
+        puts $fp "A $tile/$dst_wire $tile/$src_wire"
+    }
 }
 
 route_design
 
 set all_pips [lsort -unique [get_pips -of_objects [get_nets -hierarchical]]]
 foreach tile [get_tiles [regsub -all {CLBL[LM]} [get_tiles -of_objects [get_sites -of_objects [get_pblocks roi]]] INT]] {
-	foreach pip [filter $all_pips "TILE == $tile"] {
-		puts $fp "B [get_wires -of_objects $pip]"
-	}
+    foreach pip [filter $all_pips "TILE == $tile"] {
+        puts $fp "B [get_wires -of_objects $pip]"
+    }
 }
 
 close $fp
 
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
-

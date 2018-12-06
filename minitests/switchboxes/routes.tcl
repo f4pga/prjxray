@@ -10,4 +10,3 @@ route_design
 
 write_checkpoint -force routes.dcp
 write_bitstream -force routes.bit
-

@@ -6,4 +6,3 @@ source "$::env(SRC_DIR)/template.tcl"
 set prop DRIVE
 set port [get_ports do]
 source "$::env(SRC_DIR)/sweep.tcl"
-

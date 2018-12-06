@@ -23,4 +23,3 @@ route_design
 
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
-

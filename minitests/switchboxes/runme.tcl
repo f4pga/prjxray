@@ -23,4 +23,3 @@ write_bitstream -force design.bit
 source ../../utils/utils.tcl
 source pips.tcl
 source routes.tcl
-

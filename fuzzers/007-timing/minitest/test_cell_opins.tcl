@@ -27,4 +27,3 @@ set TIME_taken [expr [clock clicks -milliseconds] - $TIME_start]
 puts "Took ms: $TIME_taken"
 puts "Result: $opins_zero / $nnets zero"
 puts "Result: $opins_multi / $nnets multi"
-

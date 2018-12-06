@@ -15,8 +15,8 @@ set num_site_pins 0
 set num_site_pips 0
 puts $fp "sites,[llength $sites]"
 foreach site $sites {
-  set num_site_pins [expr $num_site_pins + [llength [get_site_pins -of_objects $site]]]
-  set num_site_pips [expr $num_site_pips + [llength [get_site_pips -of_objects $site]]]
+    set num_site_pins [expr $num_site_pins + [llength [get_site_pins -of_objects $site]]]
+    set num_site_pips [expr $num_site_pips + [llength [get_site_pips -of_objects $site]]]
 }
 puts $fp "site_pins,$num_site_pins"
 puts $fp "site_pips,$num_site_pips"

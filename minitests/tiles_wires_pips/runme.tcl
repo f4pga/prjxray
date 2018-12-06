@@ -22,20 +22,19 @@ write_bitstream -force design.bit
 source ../../utils/utils.tcl
 
 proc print_tile_info {tile} {
-	puts "Dumping wires and PIPs for tile $tile."
-	set fp [open "wires_${tile}.txt" w]
-	foreach wire [lsort [get_wires -of_objects [get_tiles $tile]]] {
-		puts $fp [regsub {.*/} $wire ""]
-	}
-	close $fp
-	set fp [open "pips_${tile}.txt" w]
-	foreach wire [lsort [get_pips -of_objects [get_tiles $tile]]] {
-		puts $fp [regsub {.*/} $wire ""]
-	}
-	close $fp
+    puts "Dumping wires and PIPs for tile $tile."
+    set fp [open "wires_${tile}.txt" w]
+    foreach wire [lsort [get_wires -of_objects [get_tiles $tile]]] {
+        puts $fp [regsub {.*/} $wire ""]
+    }
+    close $fp
+    set fp [open "pips_${tile}.txt" w]
+    foreach wire [lsort [get_pips -of_objects [get_tiles $tile]]] {
+        puts $fp [regsub {.*/} $wire ""]
+    }
+    close $fp
 }
 
 foreach tile [lsort [get_tiles]] {
-	print_tile_info $tile
+    print_tile_info $tile
 }
-
