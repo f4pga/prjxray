@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "test: $PWD"
+FUZDIR=$PWD
 source ${XRAY_GENHEADER}
 
 vivado -mode batch -source ../generate.tcl

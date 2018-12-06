@@ -1,9 +1,9 @@
-source ../../../utils/utils.tcl
+source "$::env(XRAY_DIR)/utils/utils.tcl"
 
 proc base_project {} {
     create_project -force -part $::env(XRAY_PART) design design
 
-    read_verilog ../top.v
+    read_verilog $::env(FUZDIR)/top.v
     synth_design -top top
 
     set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports i]
@@ -56,10 +56,7 @@ proc loop { line idx int_l_tile int_r_tile } {
 
     set mynet [create_net mynet_$idx]
     connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
-    # In most cases a new design will successfully route
-    if { [route_via_ret $mynet "$tile/$src_wire $tile/$dst_wire"] == 0 } {
-        puts "WARNING: failed to route $mynet"
-    }
+    route_via $mynet "$tile/$src_wire $tile/$dst_wire"
 }
 
 proc load_todo_lines {} {

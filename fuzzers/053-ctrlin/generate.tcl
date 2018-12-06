@@ -1,6 +1,8 @@
+source "$::env(XRAY_DIR)/utils/utils.tcl"
+
 create_project -force -part $::env(XRAY_PART) design design
 
-read_verilog ../top.v
+read_verilog $::env(FUZDIR)/top.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports i]
@@ -19,7 +21,6 @@ route_design
 
 # write_checkpoint -force design.dcp
 
-source ../../../utils/utils.tcl
 
 set fp [open "../todo.txt" r]
 set todo_lines {}
