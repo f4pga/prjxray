@@ -17,7 +17,7 @@ clb_int_zero_db = [
 ]
 
 
-def zero_range(bits, wordmin, wordmax):
+def zero_range(tag, bits, wordmin, wordmax):
     """
     If any bits occur wordmin <= word <= wordmax,
     default bits in wordmin <= word <= wordmax to 0 
@@ -30,7 +30,10 @@ def zero_range(bits, wordmin, wordmax):
             continue
         fidx, bidx = [int(s) for s in bit.split("_")]
         if wordmin <= fidx <= wordmax:
-            assert bitidx is None or bidx == bitidx
+            if bitidx is not None and bidx != bitidx:
+                print("Old bit index: %u, new: %u" % (bitidx, bidx))
+                print("%s bits: %s" % (tag, str(bits)))
+                raise ValueError("%s: inconsistent bit index" % tag)
             bitidx = bidx
 
     if bitidx is None:
@@ -141,7 +144,7 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
                 They are immediately before the first CLB real bits
                 """
                 if clb_int:
-                    zero_range(bits, 22, 25)
+                    zero_range(tag, bits, 22, 25)
                 zero_groups(
                     tag, bits, zero_db, strict=not clb_int, verbose=verbose)
 
