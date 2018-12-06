@@ -30,17 +30,16 @@ write_bitstream -force design_fdre.bit
 close_project
 
 foreach variant {fdse fdce fdce_inv fdpe ldce ldpe} {
-	create_project -force -part $::env(XRAY_PART) design_${variant} design_${variant}
-	read_verilog top_${variant}.v
-	read_xdc fixed.xdc
+    create_project -force -part $::env(XRAY_PART) design_${variant} design_${variant}
+    read_verilog top_${variant}.v
+    read_xdc fixed.xdc
 
-	synth_design -top top
-	place_design
-	route_design
+    synth_design -top top
+    place_design
+    route_design
 
-	write_checkpoint -force design_${variant}.dcp
-	write_bitstream -force design_${variant}.bit
+    write_checkpoint -force design_${variant}.dcp
+    write_bitstream -force design_${variant}.bit
 
-	close_project
+    close_project
 }
-

@@ -163,12 +163,12 @@ proc write_info4 {} {
                     # Just output
                     incr lines_no_int
                     line_net_internal $fp $net $src_site $src_site_type $src_bel $src_bel_pin $dst_bel $dst_bel_pin $ico $fast_max $fast_min $slow_max $slow_min
-                # At least some fabric exists
-                # Does dest BEL exist but not source BEL?
+                    # At least some fabric exists
+                    # Does dest BEL exist but not source BEL?
                 } elseif {$src_bel eq ""} {
                     puts "ERROR: should have been filtered"
                     return
-                # Ideally query from and to cell pins
+                    # Ideally query from and to cell pins
                 } else {
                     # Nested list delimination precedence: ",|:"
 
@@ -219,4 +219,3 @@ proc write_info4 {} {
 # for debugging
 # source ../project.tcl
 # write_info4
-

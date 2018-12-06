@@ -104,7 +104,7 @@ if {$part eq "xc7a50tfgg484-1"} {
         set pin [lindex $bank_16 $banki]
         incr banki
         set net2pin(dout[$i]) $pin
-   }
+    }
 } elseif {$part eq "xc7a35tcsg324-1"} {
     # Arty A7 switch, button, and LED
     if {$pincfg eq "ARTY-A7-SWBUT"} {
@@ -128,9 +128,9 @@ if {$part eq "xc7a50tfgg484-1"} {
         for {set i 0} {$i < $DOUT_N} {incr i} {
             set pin [lindex $leds $i]
             set net2pin(dout[$i]) $pin
-       }
-    # Arty A7 pmod
-    # Disabled per above
+        }
+        # Arty A7 pmod
+        # Disabled per above
     } elseif {$pincfg eq "ARTY-A7-PMOD"} {
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
@@ -151,7 +151,7 @@ if {$part eq "xc7a50tfgg484-1"} {
         for {set i 0} {$i < $DOUT_N} {incr i} {
             set pin [lindex $pmod_jc $i]
             set net2pin(dout[$i]) $pin
-       }
+        }
     } else {
         error "Unsupported config $pincfg"
     }
@@ -182,7 +182,7 @@ if {$part eq "xc7a50tfgg484-1"} {
         for {set i 0} {$i < $DOUT_N} {incr i} {
             set pin [lindex $outs $i]
             set net2pin(dout[$i]) $pin
-       }
+        }
     } else {
         error "Unsupported config $pincfg"
     }
@@ -268,7 +268,7 @@ proc net_bank_left {net} {
     # left
     if {[lsearch -exact $left_banks $bank] >= 0} {
         return 1
-    # right
+        # right
     } elseif {[lsearch -exact $right_banks $bank] >= 0} {
         return 0
     } else {
@@ -438,7 +438,7 @@ if {$fixed_xdc eq ""} {
             if {$part eq "xc7a50tfgg484-1"} {
                 set node "INT_L_X1Y${y_left}/WW2BEG0"
                 route_via2 "roi/dout[$i]" "$node"
-            # works on 35t but not 50t
+                # works on 35t but not 50t
             } elseif {$part eq "xc7a35tcsg324-1"} {
                 set node "INT_L_X2Y${y_left}/SW6BEG0"
                 route_via2 "roi/dout[$i]" "$node"
@@ -449,7 +449,7 @@ if {$fixed_xdc eq ""} {
                 error "Routing: unsupported part $part"
             }
             set y_left [expr {$y_left + $PITCH}]
-        # XXX: only care about right ports on Arty
+            # XXX: only care about right ports on Arty
         } else {
             set node "INT_R_X23Y${y_right}/LH12"
             route_via2 "roi/dout[$i]" "$node"
@@ -482,4 +482,3 @@ if {$fixed_xdc eq ""} {
 write_checkpoint -force design.dcp
 #set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
 write_bitstream -force design.bit
-

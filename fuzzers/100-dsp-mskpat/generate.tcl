@@ -27,45 +27,44 @@ set gnd_cell [create_cell -reference GND gnd_cell]
 connect_net -net $gnd_net -objects [get_pins $gnd_cell/G]
 
 foreach site [get_sites -of_objects [filter [roi_tiles] -filter {TYPE == "DSP_L" || TYPE == "DSP_R"}] -filter {SITE_TYPE =~ DSP*}] {
-	set cell [create_cell -reference DSP48E1 ${site}_cell]
-	lappend cells $cell
-	set_property LOC $site $cell
-	foreach pin [get_pins -of_objects $cell -filter {DIRECTION == "IN"}] {
-		connect_net -net $gnd_net -objects $pin
-	}
+    set cell [create_cell -reference DSP48E1 ${site}_cell]
+    lappend cells $cell
+    set_property LOC $site $cell
+    foreach pin [get_pins -of_objects $cell -filter {DIRECTION == "IN"}] {
+        connect_net -net $gnd_net -objects $pin
+    }
 }
 
 route_design
 
 proc write_txtdata {filename} {
-	upvar 1 cells cells
-	puts "Writing $filename."
-	set fp [open $filename w]
-	foreach cell $cells {
-		set loc [get_property LOC $cell]
-		set mask [get_property MASK $cell]
-		set pattern [get_property PATTERN $cell]
-		set tile [get_tiles -of_objects [get_sites -filter "NAME == $loc"]]
-		puts $fp "$tile $loc $mask $pattern"
-	}
-	close $fp
+    upvar 1 cells cells
+    puts "Writing $filename."
+    set fp [open $filename w]
+    foreach cell $cells {
+        set loc [get_property LOC $cell]
+        set mask [get_property MASK $cell]
+        set pattern [get_property PATTERN $cell]
+        set tile [get_tiles -of_objects [get_sites -filter "NAME == $loc"]]
+        puts $fp "$tile $loc $mask $pattern"
+    }
+    close $fp
 }
 
 proc randhex {len} {
-	set s ""
-	for {set i 0} {$i < $len} {incr i} {
-		set s "$s[format %x [expr {int(rand()*16)}]]"
-	}
-	return $s
+    set s ""
+    for {set i 0} {$i < $len} {incr i} {
+        set s "$s[format %x [expr {int(rand()*16)}]]"
+    }
+    return $s
 }
 
 for {set i 10} {$i < 30} {incr i} {
-	foreach cell $cells {
-		set_property MASK "48'h[randhex 12]" $cell
-		set_property PATTERN "48'h[randhex 12]" $cell
-	}
-	write_checkpoint -force design_${i}.dcp
-	write_bitstream -force design_${i}.bit
-	write_txtdata design_${i}.txt
+    foreach cell $cells {
+        set_property MASK "48'h[randhex 12]" $cell
+        set_property PATTERN "48'h[randhex 12]" $cell
+    }
+    write_checkpoint -force design_${i}.dcp
+    write_bitstream -force design_${i}.bit
+    write_txtdata design_${i}.txt
 }
-

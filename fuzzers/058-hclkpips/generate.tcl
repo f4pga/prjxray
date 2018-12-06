@@ -28,16 +28,15 @@ set net [get_nets o_OBUF]
 set pips [get_pips -of_objects $tile]
 
 for {set i 0} {$i < [llength $pips]} {incr i} {
-	set pip [lindex $pips $i]
-	set_property IS_ROUTE_FIXED 0 $net
-	route_design -unroute -net $net
-	set n1 [get_nodes -uphill -of_objects $pip]
-	set n2 [get_nodes -downhill -of_objects $pip]
-	route_via $net "$n1 $n2"
-	write_checkpoint -force design_$i.dcp
-	write_bitstream -force design_$i.bit
-	set fp [open "design_$i.txt" w]
-	puts $fp "$tile $pip"
-	close $fp
+    set pip [lindex $pips $i]
+    set_property IS_ROUTE_FIXED 0 $net
+    route_design -unroute -net $net
+    set n1 [get_nodes -uphill -of_objects $pip]
+    set n2 [get_nodes -downhill -of_objects $pip]
+    route_via $net "$n1 $n2"
+    write_checkpoint -force design_$i.dcp
+    write_bitstream -force design_$i.bit
+    set fp [open "design_$i.txt" w]
+    puts $fp "$tile $pip"
+    close $fp
 }
-

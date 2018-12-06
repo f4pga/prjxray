@@ -5,4 +5,3 @@ source "$::env(SRC_DIR)/template.tcl"
 set prop SLEW
 set port [get_ports do]
 source "$::env(SRC_DIR)/sweep.tcl"
-

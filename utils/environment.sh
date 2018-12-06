@@ -28,4 +28,6 @@ export XRAY_FASM2FRAMES="python3 ${XRAY_UTILS_DIR}/fasm2frames.py"
 export XRAY_BITTOOL="${XRAY_TOOLS_DIR}/bittool"
 export XRAY_BLOCKWIDTH="python3 ${XRAY_UTILS_DIR}/blockwidth.py"
 export XRAY_PARSEDB="python3 ${XRAY_UTILS_DIR}/parsedb.py"
+export XRAY_REFORMAT_TCL="${XRAY_DIR}/third_party/reformat.tcl"
+export XRAY_TCL_REFORMAT="${XRAY_UTILS_DIR}/tcl-reformat.sh"
 

@@ -42,7 +42,7 @@ if {$part eq "xc7a50tfgg484-1"} {
         set pin [lindex $bank_16 $banki]
         incr banki
         set net2pin(dout[$i]) $pin
-   }
+    }
 } elseif {$part eq "xc7a35tcsg324-1"} {
     # Arty A7 switch, button, and LED
     if {$pincfg eq "ARTY-A7-SWBUT"} {
@@ -66,9 +66,9 @@ if {$part eq "xc7a50tfgg484-1"} {
         for {set i 0} {$i < $DOUT_N} {incr i} {
             set pin [lindex $leds $i]
             set net2pin(dout[$i]) $pin
-       }
-    # Arty A7 pmod
-    # Disabled per above
+        }
+        # Arty A7 pmod
+        # Disabled per above
     } elseif {$pincfg eq "ARTY-A7-PMOD"} {
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
@@ -89,7 +89,7 @@ if {$part eq "xc7a50tfgg484-1"} {
         for {set i 0} {$i < $DOUT_N} {incr i} {
             set pin [lindex $pmod_jc $i]
             set net2pin(dout[$i]) $pin
-       }
+        }
     } else {
         error "Unsupported config $pincfg"
     }
@@ -115,7 +115,7 @@ if {$part eq "xc7a50tfgg484-1"} {
         for {set i 0} {$i < $DOUT_N} {incr i} {
             set pin [lindex $leds $i]
             set net2pin(dout[$i]) $pin
-       }
+        }
     } else {
         error "Unsupported config $pincfg"
     }

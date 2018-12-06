@@ -40,23 +40,23 @@ proc build_project {} {
     # Also, if GRID_MIN/MAX is not defined, automatically create it based on used CLBs
     # See caveat in README on automatic creation
     foreach lut $luts {
-	    set tile [get_tile -of_objects $lut]
-	    set grid_x [get_property GRID_POINT_X $tile]
-	    set grid_y [get_property GRID_POINT_Y $tile]
+        set tile [get_tile -of_objects $lut]
+        set grid_x [get_property GRID_POINT_X $tile]
+        set grid_y [get_property GRID_POINT_Y $tile]
 
-	    if [expr $grid_min_x < 0 || $grid_x < $grid_min_x] {set grid_min_x $grid_x}
-	    if [expr $grid_max_x < 0 || $grid_x > $grid_max_x] {set grid_max_x $grid_x}
+        if [expr $grid_min_x < 0 || $grid_x < $grid_min_x] {set grid_min_x $grid_x}
+        if [expr $grid_max_x < 0 || $grid_x > $grid_max_x] {set grid_max_x $grid_x}
 
-	    if [expr $grid_min_y < 0 || $grid_y < $grid_min_y] {set grid_min_y $grid_y}
-	    if [expr $grid_max_y < 0 || $grid_y > $grid_max_y] {set grid_max_y $grid_y}
+        if [expr $grid_min_y < 0 || $grid_y < $grid_min_y] {set grid_min_y $grid_y}
+        if [expr $grid_max_y < 0 || $grid_y > $grid_max_y] {set grid_max_y $grid_y}
 
-	    # 50 per column => 50, 100, 150, etc
-	    if [regexp "Y(0|[0-9]*[05]0)/" $lut] {
-		    set cell [get_cells roi/is[$lut_index].lut]
-		    set_property LOC [get_sites -of_objects $lut] $cell
-		    set lut_index [expr $lut_index + 1]
-		    lappend selected_luts $lut
-	    }
+        # 50 per column => 50, 100, 150, etc
+        if [regexp "Y(0|[0-9]*[05]0)/" $lut] {
+            set cell [get_cells roi/is[$lut_index].lut]
+            set_property LOC [get_sites -of_objects $lut] $cell
+            set lut_index [expr $lut_index + 1]
+            lappend selected_luts $lut
+        }
     }
 
     place_design
@@ -85,35 +85,34 @@ proc write_data {} {
     # Write tiles.txt with site metadata
     set fp [open "timgrid.txt" w]
     foreach tile $tiles {
-	    set type [get_property TYPE $tile]
-	    set grid_x [get_property GRID_POINT_X $tile]
-	    set grid_y [get_property GRID_POINT_Y $tile]
+        set type [get_property TYPE $tile]
+        set grid_x [get_property GRID_POINT_X $tile]
+        set grid_y [get_property GRID_POINT_Y $tile]
 
-	    set items {}
+        set items {}
 
         set wires [get_wires -of_objects $tile]
-	    if [llength $wires] {
+        if [llength $wires] {
             foreach wire $wires {
                 set name [get_property NAME $wire]
                 set speed_index [get_property SPEED_INDEX $wire]
-			    lappend items wire $name $speed_index
-		    }
-	    }
+                lappend items wire $name $speed_index
+            }
+        }
 
         set pips [get_pips -of_objects $tile]
-	    if [llength $pips] {
+        if [llength $pips] {
             foreach pip $pips {
                 set name [get_property NAME $pip]
                 set speed_index [get_property SPEED_INDEX $pip]
-			    lappend items pip $name $speed_index
-		    }
-	    }
+                lappend items pip $name $speed_index
+            }
+        }
 
-	    puts $fp "$type $tile $grid_x $grid_y $items"
+        puts $fp "$type $tile $grid_x $grid_y $items"
     }
     close $fp
 }
 
 build_project
 write_data
-

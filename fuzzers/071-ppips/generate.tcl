@@ -21,50 +21,49 @@ write_checkpoint -force design.dcp
 # write_bitstream -force design.bit
 
 proc write_clb_ppips_db {filename tile} {
-	set fp [open $filename "w"]
-	set tile [get_tiles $tile]
-	set tile_type [get_property TILE_TYPE $tile]
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
 
-	foreach pip [get_pips -of_objects $tile] {
-		set dst_wire [get_wires -downhill -of_objects $pip]
-		if {[get_property IS_PSEUDO $pip]} {
-			set src_wire [get_wires -uphill -of_objects $pip]
-			puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] hint"
-		} elseif {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
-			set src_wire [get_wires -uphill -of_objects $pip]
-			puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
-		}
-	}
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if {[get_property IS_PSEUDO $pip]} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] hint"
+        } elseif {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
 
-	close $fp
+    close $fp
 }
 
 proc write_int_ppips_db {filename tile} {
-	set fp [open $filename "w"]
-	set tile [get_tiles $tile]
-	set tile_type [get_property TILE_TYPE $tile]
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
 
-	foreach pip [get_pips -of_objects [get_wires $tile/VCC_WIRE]] {
-		set wire [regsub {.*/} [get_wires -downhill -of_objects $pip] ""]
-		puts $fp "${tile_type}.${wire}.VCC_WIRE default"
-	}
+    foreach pip [get_pips -of_objects [get_wires $tile/VCC_WIRE]] {
+        set wire [regsub {.*/} [get_wires -downhill -of_objects $pip] ""]
+        puts $fp "${tile_type}.${wire}.VCC_WIRE default"
+    }
 
-	foreach pip [get_pips -of_objects $tile] {
-		set dst_wire [get_wires -downhill -of_objects $pip]
-		if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
-			set src_wire [get_wires -uphill -of_objects $pip]
-			puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
-		}
-	}
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
 
-	close $fp
+    close $fp
 }
 
 foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R INT_L INT_R} {
-	set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
-	if {[llength $tiles] != 0} {
-		set tile [lindex $tiles 0]
-		write_clb_ppips_db "ppips_[string tolower $tile_type].txt" $tile
-	}
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_clb_ppips_db "ppips_[string tolower $tile_type].txt" $tile
+    }
 }
-

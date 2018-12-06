@@ -18,7 +18,7 @@ proc build_design_full {} {
     synth_design -top top
 
     #set_property LOCK_PINS {I0:A1 I1:A2 I2:A3 I3:A4 I4:A5 I5:A6} \
-	#	[get_cells -quiet -filter {REF_NAME == LUT6} -hierarchical]
+            #	[get_cells -quiet -filter {REF_NAME == LUT6} -hierarchical]
 
     set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
     set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports stb]
@@ -170,4 +170,3 @@ proc nodes_unique_cc {} {
 build_design_full
 speed_models2
 nodes_unique_cc
-

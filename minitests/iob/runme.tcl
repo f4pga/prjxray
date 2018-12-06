@@ -28,4 +28,3 @@ write_checkpoint -force design.dcp
 
 # set_property BITSTREAM.GENERAL.DEBUGBITSTREAM Yes [current_design]
 write_bitstream -force design.bit
-

@@ -21,20 +21,19 @@ write_checkpoint -force bipiplist.dcp
 source ../../utils/utils.tcl
 
 proc print_tile_pips {tile_type filename} {
-	set tile [lindex [get_tiles -filter "TYPE == $tile_type"] 0]
-	puts "Dumping bidirectional PIPs for tile $tile ($tile_type) to $filename."
-	set fp [open $filename w]
-	foreach pip [lsort [get_pips -filter {!IS_DIRECTIONAL} -of_objects [get_tiles $tile]]] {
-		set src [get_wires -uphill -of_objects $pip]
-		set dst [get_wires -downhill -of_objects $pip]
-		if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1} {
-			puts $fp "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
-			puts $fp "$tile_type.[regsub {.*/} $src ""].[regsub {.*/} $dst ""]"
-		}
-	}
-	close $fp
+    set tile [lindex [get_tiles -filter "TYPE == $tile_type"] 0]
+    puts "Dumping bidirectional PIPs for tile $tile ($tile_type) to $filename."
+    set fp [open $filename w]
+    foreach pip [lsort [get_pips -filter {!IS_DIRECTIONAL} -of_objects [get_tiles $tile]]] {
+        set src [get_wires -uphill -of_objects $pip]
+        set dst [get_wires -downhill -of_objects $pip]
+        if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1} {
+            puts $fp "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
+            puts $fp "$tile_type.[regsub {.*/} $src ""].[regsub {.*/} $dst ""]"
+        }
+    }
+    close $fp
 }
 
 print_tile_pips INT_L bipips_int_l.txt
 print_tile_pips INT_R bipips_int_r.txt
-

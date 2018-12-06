@@ -23,8 +23,7 @@ source ../../utils/utils.tcl
 
 set fp [open "nodes_wires_list.txt" w]
 foreach node [lsort [get_nodes -of_objects [pblock_tiles roi]]] {
-	set wires [lsort [get_wires -of_objects $node]]
-	if {$wires != $node} {puts $fp $wires}
+    set wires [lsort [get_wires -of_objects $node]]
+    if {$wires != $node} {puts $fp $wires}
 }
 close $fp
-
