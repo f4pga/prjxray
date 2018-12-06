@@ -48,6 +48,9 @@ run:
             if make database; then \
                 make pushdb; \
             fi; \
+            if [ "$(QUICK)" = "Y" ] ; then \
+                break; \
+            fi \
         done; \
         true
 	touch run.ok
