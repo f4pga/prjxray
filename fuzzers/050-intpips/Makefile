@@ -1,5 +1,9 @@
-
+ifeq ($(QUICK),Y)
+N := 1
+else
 N := 200
+endif
+
 SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 

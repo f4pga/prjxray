@@ -1,3 +1,10 @@
+# Developer options for quicker runs
+# Run algorithm, but only a small number of iterations
+QUICK=N
+# Skip metadata steps like tile and part generation
+# Ex: FUZZONLY=N: 30 min, FUZZONLY=Y: 6 min
+FUZZONLY=N
+
 define fuzzer
 all:: $(1)/run.ok
 clean::
@@ -6,8 +13,14 @@ $(1)/run.ok: $(addsuffix /run.ok,$(2))
 	$$(MAKE) -C $(1) run
 endef
 
+ifneq ($(FUZZONLY),Y)
 $(eval $(call fuzzer,001-part-yaml,))
 $(eval $(call fuzzer,005-tilegrid,001-part-yaml))
+else
+all:: 005-tilegrid/run.ok
+	touch 005-tilegrid/run.ok
+endif
+
 $(eval $(call fuzzer,010-lutinit,005-tilegrid))
 $(eval $(call fuzzer,011-ffconfig,005-tilegrid))
 $(eval $(call fuzzer,012-clbn5ffmux,005-tilegrid))
@@ -29,7 +42,9 @@ $(eval $(call fuzzer,055-gnd,050-intpips))
 $(eval $(call fuzzer,056-rempips,051-imuxlout 052-clkin 053-ctrlin 054-gfan 055-gnd))
 $(eval $(call fuzzer,057-bipips,056-rempips))
 $(eval $(call fuzzer,058-hclkpips,056-rempips))
+ifneq ($(QUICK),Y)
 $(eval $(call fuzzer,071-ppips,057-bipips 058-hclkpips))
 $(eval $(call fuzzer,072-ordered_wires,))
 $(eval $(call fuzzer,073-get_counts,))
 $(eval $(call fuzzer,074-dump_all,072-ordered_wires))
+endif
