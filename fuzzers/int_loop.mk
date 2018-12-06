@@ -10,7 +10,7 @@ database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
 
 pushdb:
-	${XRAY_DBFIXUP} --db-root . --clb-int
+	${XRAY_DBFIXUP} --db-root build --clb-int
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
 	${XRAY_MERGEDB} int_r build/segbits_int_r.db
 
