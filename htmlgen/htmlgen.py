@@ -335,7 +335,7 @@ def tile_title(tilename, tiledata, grid_x, grid_y, grid):
         for sitename, sitetype in tiledata["sites"].items():
             title.append("%s site: %s" % (sitetype, sitename))
 
-    if "segment" in tiledata:
+    if segdata:
         if "baseaddr" in segdata:
             #title.append("Baseaddr: %s %d" % tuple(segdata["baseaddr"]))
             title.append("Baseaddr: %s" % segdata["baseaddr"])
