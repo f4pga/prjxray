@@ -18,6 +18,12 @@ function finish {
 trap finish EXIT
 
 db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/segbits_$1.db
+# Check existing DB
+if [ -f $db ] ; then
+    ${XRAY_PARSEDB} --strict "$db"
+fi
+# Check new DB
+${XRAY_PARSEDB} --strict "$2"
 
 # Fuzzers verify L/R data is equivilent
 # However, expand back to L/R to make downstream tools not depend on this
@@ -78,5 +84,6 @@ esac
 
 touch "$db"
 sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2" || true
+# Check aggregate db for consistency and make canonical
 ${XRAY_PARSEDB} --strict "$tmp2" "$db"
 
