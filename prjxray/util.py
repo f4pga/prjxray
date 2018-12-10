@@ -111,6 +111,19 @@ def parse_tagbit(x):
     return (isset, (int(frame, 10), int(word, 10)))
 
 
+def addr_bit2word(bitaddr):
+    word = bitaddr // 32
+    bit = bitaddr % 32
+    return word, bit
+
+
+def addr2str(addr, word, bit):
+    # Make like .bits file: bit_00020b14_073_05
+    # also similar to .db file: CLBLL_L.SLICEL_X0.CEUSEDMUX 01_39
+    assert 0 <= bit <= 31
+    return "%08x_%03u_%02u" % (addr, word, bit)
+
+
 def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
     '''
     For given tile yield

@@ -66,8 +66,14 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
     mall = dict()
 
     tiles_checked = 0
+
+    def subtiles(tile_names):
+        for tile_name in tile_names:
+            yield tile_name, db.tilegrid[tile_name]
+
     for tile_name, tilej in db.tilegrid.items():
-        #for tile_name, tilej in [("CLBLL_L_X12Y138", db.tilegrid["CLBLL_L_X12Y138"])]:
+        # for tile_name, tilej in subtiles(["CLBLL_L_X14Y112", "INT_L_X14Y112"]):
+
         mtile = make_tile_mask(
             db_root, tile_name, tilej, strict=strict, verbose=verbose)
         verbose and print(
@@ -81,9 +87,10 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
             print("ERROR: %s collisions" % len(collisions))
             for ck in sorted(collisions):
                 addr, bitaddr = ck
+                word, bit = util.addr_bit2word(bitaddr)
                 print(
-                    "  %08X_%04X: had %s, got %s" %
-                    (addr, bitaddr, mall[ck], mtile[ck]))
+                    "  %s: had %s, got %s" %
+                    (util.addr2str(addr, word, bit), mall[ck], mtile[ck]))
             raise ValueError("%s collisions" % len(collisions))
         mall.update(mtile)
         tiles_checked += 1
