@@ -33,6 +33,7 @@ class Database(object):
 
     """
         self.db_root = db_root
+        # tilegrid.json JSON object
         self.tilegrid = None
         self.tileconn = None
         self.tile_types = None

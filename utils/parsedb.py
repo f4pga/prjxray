@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys, re
 from prjxray import util
 
 
@@ -41,7 +42,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Parse a db, check for consistency")
+        description="Parse a db file, checking for consistency")
 
     util.db_root_arg(parser)
     parser.add_argument('--verbose', action='store_true', help='')

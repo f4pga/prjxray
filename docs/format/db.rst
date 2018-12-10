@@ -47,7 +47,8 @@ Related tools:
  * dbfixup.py: internal tool that expands multi-bit encodings (ex: one hot) into groups. For example:
    * .rdb file with one hot: BRAM.RAMB18_Y1.WRITE_WIDTH_A_18 27_267
    * .db: file expanded: BRAM.RAMB18_Y1.WRITE_WIDTH_A_18 !27_268 !27_269 27_267
- * dbcheck.py: valides that a database is fully and consistently solved
+ * parsedb.py: valides that a database is fully and consistently solved
+   * Optionally outputs to canonical form
    * Ex: complains if const0 entries exist
    * Ex: complains if symbols are duplicated (such as after a mergedb after rename)
  * mergedb.sh: adds new bit entries to an existing db

@@ -96,3 +96,70 @@ def parse_db_line(line):
         # 100_319
         assert re.match(r'[!]*[0-9]+_[0-9]+', bit), "Invalid bit: %s" % bit
     return tag, bits, None
+
+
+def parse_tagbit(x):
+    # !30_07
+    if x[0] == '!':
+        isset = False
+        numstr = x[1:]
+    else:
+        isset = True
+        numstr = x
+    frame, word = numstr.split("_")
+    # second part forms a tuple refereced in sets
+    return (isset, (int(frame, 10), int(word, 10)))
+
+
+def addr_bit2word(bitaddr):
+    word = bitaddr // 32
+    bit = bitaddr % 32
+    return word, bit
+
+
+def addr2str(addr, word, bit):
+    # Make like .bits file: bit_00020b14_073_05
+    # also similar to .db file: CLBLL_L.SLICEL_X0.CEUSEDMUX 01_39
+    assert 0 <= bit <= 31
+    return "%08x_%03u_%02u" % (addr, word, bit)
+
+
+def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
+    '''
+    For given tile yield
+    (absolute address, absolute FDRI bit offset, tag)
+
+    For each address space
+    Find applicable files
+    For each tag bit in those files, calculate absolute address and bit offsets
+
+    Sample file names:
+    segbits_clbll_l.db
+    segbits_int_l.db
+    segbits_bram_l.block_ram.db
+    '''
+    for block_type, blockj in tilej["bits"].items():
+        baseaddr = int(blockj["baseaddr"], 0)
+        bitbase = 32 * blockj["offset"]
+
+        if block_type == "CLB_IO_CLK":
+            fn = "%s/segbits_%s.db" % (db_root, tilej["type"].lower())
+        else:
+            fn = "%s/segbits_%s.db.%s" % (
+                db_root, tilej["type"].lower(), block_type.lower())
+        # tilegrid runs a lot earlier than fuzzers
+        # may not have been created yet
+        verbose and print("Check %s: %s" % (fn, os.path.exists(fn)))
+        if strict:
+            assert os.path.exists(fn)
+        elif not os.path.exists(fn):
+            continue
+
+        with open(fn, "r") as f:
+            for line in f:
+                tag, bits, mode = parse_db_line(line)
+                assert mode is None
+                for bitstr in bits:
+                    # 31_06
+                    _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
+                    yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
