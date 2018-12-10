@@ -46,22 +46,10 @@ def get_database(db, tile_type, verbose=False):
         parts = l.split()
         name = parts[0]
 
-        def parsetag(x):
-            # !30_07
-            if x[0] == '!':
-                isset = False
-                numstr = x[1:]
-            else:
-                isset = True
-                numstr = x
-            frame, word = numstr.split("_")
-            # second part forms a tuple refereced in sets
-            return (isset, (int(frame, 10), int(word, 10)))
-
         if parts[1] == 'always' or parts[1] == 'hint':
             tagbits = []
         else:
-            tagbits = [parsetag(x) for x in parts[1:]]
+            tagbits = [util.parse_tagbit(x) for x in parts[1:]]
 
         tags.append(list([name] + tagbits))
 
