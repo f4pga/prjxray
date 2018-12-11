@@ -84,7 +84,7 @@ int patch_frames(
 		               frame_data_strings.end(), frame_data.begin(),
 		               [](const std::string& val) -> uint32_t {
 			               return std::stoul(val, nullptr, 16);
-		               });
+			       });
 
 		uint32_t ecc = 0;
 		for (size_t ii = 0; ii < frame_data.size(); ++ii) {

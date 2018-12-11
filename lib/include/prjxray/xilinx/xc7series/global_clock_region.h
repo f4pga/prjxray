@@ -61,7 +61,7 @@ GlobalClockRegion::GlobalClockRegion(T first, T last) {
 	std::sort(first, last,
 	          [](const FrameAddress& lhs, const FrameAddress& rhs) {
 		          return lhs.row() < rhs.row();
-	          });
+		  });
 
 	for (auto row_first = first; row_first != last;) {
 		auto row_last = std::upper_bound(
