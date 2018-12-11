@@ -122,9 +122,10 @@ for l in f:
     # Now commit bits after marking 1's
     for beli, bel in enumerate('ABCD'):
         segmk.add_site_tag(loc, "%sLUT.RAM" % bel, ram[beli])
-        segmk.add_site_tag(loc, "%sLUT.SRL" % bel, srl[beli])
-        # FIXME
-        module == segmk.add_site_tag(loc, "%sLUT.SMALL" % bel, size[beli])
+        # FIXME: quick fix
+        if bel in "AD":
+            segmk.add_site_tag(loc, "%sLUT.SRL" % bel, srl[beli])
+            segmk.add_site_tag(loc, "%sLUT.SMALL" % bel, size[beli])
 
 
 def bitfilter(frame_idx, bit_idx):
