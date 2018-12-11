@@ -344,14 +344,14 @@ class Segmaker:
             else:
                 filename = "segdata_%s.txt" % (segtype.lower())
 
-            print("Writing %s." % filename)
-
-            with open(filename, "w") as f:
-                segments = self.segments_by_type[segtype]
-                for segname, segdata in sorted(segments.items()):
-                    # seg 00020300_010
-                    print("seg %s" % segname, file=f)
-                    for bitname in sorted(segdata["bits"]):
-                        print("bit %s" % bitname, file=f)
-                    for tagname, tagval in sorted(segdata["tags"].items()):
-                        print("tag %s %d" % (tagname, tagval), file=f)
+            segments = self.segments_by_type[segtype]
+            if segments:
+                print("Writing %s." % filename)
+                with open(filename, "w") as f:
+                    for segname, segdata in sorted(segments.items()):
+                        # seg 00020300_010
+                        print("seg %s" % segname, file=f)
+                        for bitname in sorted(segdata["bits"]):
+                            print("bit %s" % bitname, file=f)
+                        for tagname, tagval in sorted(segdata["tags"].items()):
+                            print("tag %s %d" % (tagname, tagval), file=f)
