@@ -58,6 +58,8 @@ for clbi in range(CLBN):
         bel_opts = [
             'SRL16E',
             'SRLC32E',
+            # Weight LUT6 more heavily to make WEMUX.CE solve quicker
+            'LUT6',
             'LUT6',
         ]
 

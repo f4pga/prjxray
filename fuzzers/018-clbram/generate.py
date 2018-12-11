@@ -2,6 +2,8 @@
 
 from prjxray.segmaker import Segmaker
 
+verbose = False
+
 segmk = Segmaker("design.bits")
 
 # Can fit 4 per CLB
@@ -16,13 +18,19 @@ multi_bels_bn = [
     'RAM64X1S',
 ]
 
-# Those requiring special resources
-# Just make one per module
-greedy_modules = [
-    'my_RAM128X1D',
-    'my_RAM128X1S',
-    'my_RAM256X1S',
-]
+
+def load_tcl():
+    f = open('design.csv', 'r')
+    f.readline()
+    ret = {}
+    for l in f:
+        l = l.strip()
+        tile, site, bel, cell, ref_name, prim_type = l.split(',')
+        ret[bel] = ref_name
+    return ret
+
+
+design = load_tcl()
 
 print("Loading tags")
 '''
@@ -39,8 +47,10 @@ for l in f:
 
     segmk.add_site_tag(
         loc, "WA7USED",
-        module in ('my_RAM128X1D', 'my_RAM128X1S', 'my_RAM256X1S'))
+        module in ('my_RAM128X1D', 'my_RAM128X1S_N', 'my_RAM256X1S'))
     segmk.add_site_tag(loc, "WA8USED", module == 'my_RAM256X1S')
+
+    bels_tcl = [design.get("%s/%c6LUT" % (loc, bel), None) for bel in "ABCD"]
 
     # (a, b, c, d)
     # Size set for RAM32X1S, RAM32X1D, and SRL16E
@@ -50,9 +60,14 @@ for l in f:
     # RAM set for RAM* primitives
     ram = [0, 0, 0, 0]
 
+    verbose and print('%s' % loc)
+    verbose and print('  %s %s %s %s' % tuple(bels_tcl))
+
     if module == 'my_ram_N':
         # Each one of: SRL16E, SRLC32E, LUT6
         bels = [p0, p1, p2, p3]
+        verbose and print('  %s %s %s %s' % tuple(bels))
+        assert bels == bels_tcl
 
         # Clock Enable (CE) clock gate only enabled if we have clocked elements
         # A pure LUT6 does not, but everything else should
@@ -88,14 +103,15 @@ for l in f:
             (0, 0, 1, 1),
             (1, 1, 1, 1),
         ]
+        has_bel_tcl = tuple([int(bool(x)) for x in bels_tcl])
 
         # Always use all 4 sites
         if module in ('my_RAM32M', 'my_RAM64M', 'my_RAM128X1D',
                       'my_RAM256X1S'):
-            ram = [1, 1, 1, 1]
+            ram = (1, 1, 1, 1)
         # Only can occupy CD I guess
         elif module == 'my_RAM32X1D':
-            ram = [0, 0, 1, 1]
+            ram = (0, 0, 1, 1)
         # Uses 2 sites at a time
         elif module in ('my_RAM64X1D_N', 'my_RAM128X1S_N'):
             ram = pack2[n - 1]
@@ -104,8 +120,15 @@ for l in f:
             ram = pack4[n - 1]
         else:
             assert (0)
+        verbose and print('  %s %s %s %s' % tuple(ram))
+        verbose and print('  %s %s %s %s' % tuple(has_bel_tcl))
+        # assert ram == ram_tcl
+        # Hack: reject if something unexpected got packed in
+        # TODO: place dummy LUTs to exclude placement?
+        if ram != has_bel_tcl:
+            continue
 
-        # All entries here requiare D
+        # All entries here require D
         assert (ram[3])
 
         if module == 'my_RAM32X1D':
@@ -116,15 +139,17 @@ for l in f:
             size = [1, 1, 1, 1]
         elif module == 'my_RAM32X1S_N':
             size = pack4[n - 1]
+            if size != has_bel_tcl:
+                continue
         else:
             assert (not module.startswith('my_RAM32'))
 
     # Now commit bits after marking 1's
     for beli, bel in enumerate('ABCD'):
         segmk.add_site_tag(loc, "%sLUT.RAM" % bel, ram[beli])
+        # FIXME: quick fix
         segmk.add_site_tag(loc, "%sLUT.SRL" % bel, srl[beli])
-        # FIXME
-        module == segmk.add_site_tag(loc, "%sLUT.SMALL" % bel, size[beli])
+        segmk.add_site_tag(loc, "%sLUT.SMALL" % bel, size[beli])
 
 
 def bitfilter(frame_idx, bit_idx):
