@@ -7,7 +7,7 @@ from prjxray import util
 def run(fnin, fnout=None, strict=False, verbose=False):
     lines = open(fnin, 'r').read().split('\n')
     tags = dict()
-    bitss = set()
+    bitss = dict()
     for line in lines:
         line = line.strip()
         if line == '':
@@ -23,11 +23,11 @@ def run(fnin, fnout=None, strict=False, verbose=False):
                 print("Original line: %s" % tags[tag])
                 print("New line: %s" % line)
                 assert 0, "strict: got duplicate tag %s" % (tag, )
-            assert bits not in bitss, "strict: got duplicate bits %s (ex: %s)" % (
-                bits, line)
+            assert bits not in bitss, "strict: got duplicate bits %s: %s %s" % (
+                bits, tag, bitss[bits])
         tags[tag] = line
         if bits != None:
-            bitss.add(bits)
+            bitss[bits] = tag
 
     if fnout:
         with open(fnout, "w") as fout:
