@@ -38,6 +38,10 @@ while true; do
     if python3 ${XRAY_DIR}/fuzzers/int_loop_check.py $check_args ; then
         break
     fi
+    if [ -f build/timeout ] ; then
+        echo "ERROR: timeout"
+        exit 1
+    fi
 
     i=$((i+1));
     cp build/todo.txt todo/${i}.txt;
