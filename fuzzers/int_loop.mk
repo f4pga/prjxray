@@ -1,5 +1,8 @@
 # WARNING: N cannot be reduced or -m will always fail
 N := 10
+# See int_loop_check.py
+# rempips took 35 iters once, so set 50 as a good start point
+CHECK_ARGS := --zero-entries --timeout-iters 50
 SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
@@ -33,26 +36,8 @@ build/todo.txt: build/pips_int_l.txt maketodo.py
 
 # XXX: conider moving to script
 run:
-	\
-        set -ex; \
-        make clean; \
-        mkdir -p todo; \
-        while \
-            make cleanprj; \
-            make build/todo.txt || exit 1; \
-            test -s build/todo.txt; \
-        do \
-            i=$$((i+1)); \
-            cp build/todo.txt todo/$${i}.txt; \
-            cp build/todo_all.txt todo/$${i}_all.txt; \
-            if make database; then \
-                make pushdb; \
-            fi; \
-            if [ "$(QUICK)" = "Y" ] ; then \
-                break; \
-            fi \
-        done; \
-        true
+	$(MAKE) clean
+	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" MAKEFLAGS="$(MAKEFLAGS)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
 	touch run.ok
 
 clean:
