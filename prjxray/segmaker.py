@@ -251,6 +251,18 @@ class Segmaker:
                     else:
                         assert False, "Invalid name in %s" % site
 
+                def name_y0y1():
+                    # RAMB18_X0Y41
+                    m = re.match(r"^(.*)_X.*Y[0-9]*[02468]$", site)
+                    if m:
+                        return "%s_Y0" % m.group(1)
+
+                    m = re.match(r"^(.*)_X.*Y[0-9]*[13579]$", site)
+                    if m:
+                        return "%s_Y1" % m.group(1)
+
+                    assert 0, site
+
                 def name_default():
                     # most sites are unique within their tile
                     # TODO: maybe verify against DB?
@@ -259,6 +271,7 @@ class Segmaker:
                 sitekey = {
                     'SLICE': name_slice,
                     'RAMB18': name_bram18,
+                    'IOB': name_y0y1,
                 }.get(site_prefix, name_default)()
                 self.verbose and print(
                     'site %s w/ %s prefix => tag %s' %
