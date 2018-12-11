@@ -163,3 +163,9 @@ def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
                     # 31_06
                     _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
                     yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
+
+
+def specn():
+    # ex: build/specimen_001
+    specdir = os.getenv("SPECDIR")
+    return int(re.match(".*specimen_([0-9]*)", specdir).group(1), 10)

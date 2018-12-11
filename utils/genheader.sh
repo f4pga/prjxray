@@ -10,14 +10,14 @@ set -ex
 # for some reason on sourced script set -e doesn't work
 # Scripts may have additional arguments, but first is reserved for build directory
 test $# -ge 1 || exit 1
-test ! -e "$SPECN"
-SPECN=$1
+test ! -e "$SPECDIR"
+export SPECDIR=$1
 
-rm -rf "$SPECN"
-mkdir -p "$SPECN"
-cd "$SPECN"
+rm -rf "$SPECDIR"
+mkdir -p "$SPECDIR"
+cd "$SPECDIR"
 
-export SEED="$(echo $SPECN | md5sum | cut -c1-8)"
+export SEED="$(echo $SPECDIR | md5sum | cut -c1-8)"
 export SEEDN="$(basename $(pwd) |sed s/specimen_0*//)"
 
 function seed_vh () {
