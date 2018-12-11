@@ -1,3 +1,6 @@
+# Unsetting all previous XRAY env variables
+unset ${!XRAY_@}
+
 export XRAY_DATABASE="kintex7"
 export XRAY_PART="xc7k70tfbg676-2"
 export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
