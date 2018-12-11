@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+
+usage() {
+    echo "Run makefile until termination condition"
+    echo "usage: int_loop.sh [args]"
+    echo "--check-args <args>         int_loop_check.py args"
+}
+
+check_args=
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --check-args)
+        check_args=$2
+        shift
+        shift
+        ;;
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "Unrecognized argument"
+        usage
+        exit 1
+        ;;
+    esac
+done
+
 set -ex
 MAKE=${MAKE:-make}
 MAKEFLAGS=${MAKEFLAGS:-}
@@ -8,8 +35,7 @@ mkdir -p todo;
 while true; do
     ${MAKE} ${MAKEFLAGS} cleanprj;
     ${MAKE} ${MAKEFLAGS} build/todo.txt || exit 1;
-    echo "Remaining: " $(wc -l build/todo_all.txt)
-    if [ \! -s build/todo.txt ] ; then
+    if python3 ${XRAY_DIR}/fuzzers/int_loop_check.py $check_args ; then
         break
     fi
 
