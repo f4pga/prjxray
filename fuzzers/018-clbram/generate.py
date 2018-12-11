@@ -105,7 +105,7 @@ for l in f:
         else:
             assert (0)
 
-        # All entries here requiare D
+        # All entries here require D
         assert (ram[3])
 
         if module == 'my_RAM32X1D':
@@ -123,9 +123,8 @@ for l in f:
     for beli, bel in enumerate('ABCD'):
         segmk.add_site_tag(loc, "%sLUT.RAM" % bel, ram[beli])
         # FIXME: quick fix
-        if bel in "AD":
-            segmk.add_site_tag(loc, "%sLUT.SRL" % bel, srl[beli])
-            segmk.add_site_tag(loc, "%sLUT.SMALL" % bel, size[beli])
+        segmk.add_site_tag(loc, "%sLUT.SRL" % bel, srl[beli])
+        segmk.add_site_tag(loc, "%sLUT.SMALL" % bel, size[beli])
 
 
 def bitfilter(frame_idx, bit_idx):
