@@ -33,26 +33,8 @@ build/todo.txt: build/pips_int_l.txt maketodo.py
 
 # XXX: conider moving to script
 run:
-	\
-        set -ex; \
-        make clean; \
-        mkdir -p todo; \
-        while \
-            make cleanprj; \
-            make build/todo.txt || exit 1; \
-            test -s build/todo.txt; \
-        do \
-            i=$$((i+1)); \
-            cp build/todo.txt todo/$${i}.txt; \
-            cp build/todo_all.txt todo/$${i}_all.txt; \
-            if make database; then \
-                make pushdb; \
-            fi; \
-            if [ "$(QUICK)" = "Y" ] ; then \
-                break; \
-            fi \
-        done; \
-        true
+	$(MAKE) clean
+	MAKE="$(MAKE)" MAKEFLAGS="$(MAKEFLAGS)" QUICK=$(QUICK) $(FUZDIR)/../int_loop.sh
 	touch run.ok
 
 clean:
