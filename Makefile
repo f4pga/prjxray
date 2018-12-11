@@ -1,4 +1,4 @@
-CLANG_FORMAT ?= clang-format-5.0
+CLANG_FORMAT ?= clang-format-3.9
 
 .PHONY: database format clean env
 
