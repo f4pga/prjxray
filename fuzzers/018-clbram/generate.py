@@ -16,14 +16,6 @@ multi_bels_bn = [
     'RAM64X1S',
 ]
 
-# Those requiring special resources
-# Just make one per module
-greedy_modules = [
-    'my_RAM128X1D',
-    'my_RAM128X1S',
-    'my_RAM256X1S',
-]
-
 print("Loading tags")
 '''
 module,loc,bela,belb,belc,beld
@@ -39,7 +31,7 @@ for l in f:
 
     segmk.add_site_tag(
         loc, "WA7USED",
-        module in ('my_RAM128X1D', 'my_RAM128X1S', 'my_RAM256X1S'))
+        module in ('my_RAM128X1D', 'my_RAM128X1S_N', 'my_RAM256X1S'))
     segmk.add_site_tag(loc, "WA8USED", module == 'my_RAM256X1S')
 
     # (a, b, c, d)
