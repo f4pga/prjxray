@@ -2,6 +2,7 @@
 
 import os, re
 import sys
+from prjxray import util
 
 
 def noprefix(tag):
@@ -23,8 +24,11 @@ def load_pipfile(pipfile):
     with open(pipfile, "r") as f:
         # INT_L.WW2BEG0.SR1BEG_S0
         for line in f:
-            line = line.split()
-            tag = line[0]
+            tag, _bits, mode = util.parse_db_line(line)
+            # Only count resolved entries
+            if mode:
+                continue
+
             prefix_line = getprefix(tag)
             if tile_type is None:
                 tile_type = prefix_line
