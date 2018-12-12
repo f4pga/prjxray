@@ -52,6 +52,7 @@ def run(
         min_iters=None,
         stable_iters=None,
         timeout_iters=None,
+        max_iters=None,
         zero_entries=None,
         verbose=False):
     timeout_fn = "%s/timeout" % todo_dir
@@ -81,6 +82,12 @@ def run(
     if min_iters is not None and max_iter < min_iters:
         print("Incomplete: not enough iters")
         sys.exit(1)
+
+    if max_iters is not None and max_iter >= max_iters:
+        print(
+            "Complete: reached max iters (want %u, got %u)" %
+            (max_iters, max_iter))
+        sys.exit(0)
 
     if timeout_iters is not None and max_iter > timeout_iters:
         print("ERROR: timeout (max %u, got %u)" % (timeout_iters, max_iter))
@@ -125,6 +132,10 @@ def main():
         default=None,
         help='Max number of entries before creating todo/timeout')
     parser.add_argument(
+        '--max-iters',
+        default=None,
+        help='Max number of entries before declaring success')
+    parser.add_argument(
         '--zero-entries',
         action="store_true",
         help='Must be no unsolved entries in latest')
@@ -138,6 +149,7 @@ def main():
         zint(args.min_iters),
         zint(args.stable_iters),
         zint(args.timeout_iters),
+        zint(args.max_iters),
         args.zero_entries,
         verbose=args.verbose)
 

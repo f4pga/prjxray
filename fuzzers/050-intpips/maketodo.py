@@ -35,11 +35,10 @@ def maketodo(pipfile, dbfile, verbose=False):
 
 
 def run(build_dir):
-    db_dir = "%s/%s" % (
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"))
-
-    maketodo("%s/pips_int_l.txt" % build_dir, "%s/segbits_int_l.db" % db_dir)
-    maketodo("%s/pips_int_r.txt" % build_dir, "%s/segbits_int_r.db" % db_dir)
+    maketodo(
+        "%s/pips_int_l.txt" % build_dir, "%s/segbits_int_l.db" % build_dir)
+    maketodo(
+        "%s/pips_int_r.txt" % build_dir, "%s/segbits_int_r.db" % build_dir)
 
 
 def main():

@@ -1,19 +1,28 @@
 ifeq ($(QUICK),Y)
-N := 10
+N := 1
 else
-N := 200
+# Do relatively large batch to keep parallelism high
+# LCM between 12 (CPUs on my system) and 16, a common CPU count
+N := 48
 endif
-
-SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
+# Driven by int_loop.sh
+ITER := 1
+# See int_loop_check.py
+# Original did 200 specimins open loop
+CHECK_ARGS := --max-iters 6 --stable-iters 3
+SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
+# Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
+export FUZDIR=$(shell pwd)
 
+# Specimens from current run must complete, but previous iterations may exist
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clbll_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clbll_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clblm_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clblm_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -m 15 -M 45 -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_SEGMATCH} -m 15 -M 45 -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
+	${XRAY_MASKMERGE} build/mask_clbll_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt)
+	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_MASKMERGE} build/mask_clblm_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 
 pushdb:
@@ -24,19 +33,33 @@ pushdb:
 	${XRAY_MERGEDB} mask_clblm_l build/mask_clblm_l.db
 	${XRAY_MERGEDB} mask_clblm_r build/mask_clblm_r.db
 
-$(SPECIMENS_OK):
-	mkdir -p build
+# FIXME: move to iter dir
+$(SPECIMENS_OK): build/todo.txt
+	mkdir -p build/$(ITER)
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
+build/pips_int_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
+	mkdir -p build/$(ITER)
+	cd build/$(ITER) && vivado -mode batch -source $(XRAY_DIR)/fuzzers/piplist.tcl
+
+build/todo.txt: build/pips_int_l.txt maketodo.py
+	python3 maketodo.py --build-dir build/$(ITER) >build/todo_all.txt
+	cat build/todo_all.txt | sort -R > build/todo.txt.tmp
+	mv build/todo.txt.tmp build/todo.txt
+
+# XXX: conider moving to script
 run:
 	$(MAKE) clean
-	$(MAKE) database
-	$(MAKE) pushdb
+	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" MAKEFLAGS="$(MAKEFLAGS)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
 	touch run.ok
 
 clean:
-	rm -rf build run.ok
+	rm -rf build run.ok todo
 
-.PHONY: database pushdb run clean
+# Remove iteration specific files, but keep piplist.tcl output
+cleanprj:
+	rm -rf build/$(ITER) build/todo.txt
+
+.PHONY: database pushdb run clean cleanprj
 

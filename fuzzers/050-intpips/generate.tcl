@@ -1,7 +1,7 @@
 create_project -force -part $::env(XRAY_PART) design design
 
-read_verilog ../../top.v
-read_verilog ../../picorv32.v
+read_verilog $::env(FUZDIR)/top.v
+read_verilog $::env(FUZDIR)/picorv32.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
@@ -32,8 +32,13 @@ proc write_txtdata {filename} {
     puts "Writing $filename."
     set fp [open $filename w]
     set all_pips [lsort -unique [get_pips -of_objects [get_nets -hierarchical]]]
-    foreach tile [get_tiles [regsub -all {CLBL[LM]} [get_tiles -of_objects [get_sites -of_objects [get_pblocks roi]]] INT]] {
-        puts "Dumping pips from tile $tile"
+    # FIXME: getting IOB. Don't think this works correctly
+    set tiles [get_tiles [regsub -all {CLBL[LM]} [get_tiles -of_objects [get_sites -of_objects [get_pblocks roi]]] INT]]
+    set ntiles [llength $tiles]
+    set tilei 0
+    foreach tile $tiles {
+        incr tilei
+        puts "Dumping pips from tile $tile ($tilei / $ntiles)"
         foreach pip [filter $all_pips "TILE == $tile"] {
             set src_wire [get_wires -uphill -of_objects $pip]
             set dst_wire [get_wires -downhill -of_objects $pip]
