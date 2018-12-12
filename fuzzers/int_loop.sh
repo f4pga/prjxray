@@ -42,10 +42,10 @@ MAKEFLAGS=${MAKEFLAGS:-}
 echo "make: ${MAKE} ${MAKEFLAGS}"
 echo $MAKE
 mkdir -p todo;
-i=0
+i=1
 while true; do
-    ${MAKE} ${MAKEFLAGS} cleanprj;
-    ${MAKE} ${MAKEFLAGS} build/todo.txt || exit 1;
+    ${MAKE} ${MAKEFLAGS} ITER=$i cleanprj
+    ${MAKE} ${MAKEFLAGS} ITER=$i build/todo.txt
     if python3 ${XRAY_DIR}/fuzzers/int_loop_check.py $check_args ; then
         break
     fi
@@ -54,7 +54,6 @@ while true; do
         exit 1
     fi
 
-    i=$((i+1));
     cp build/todo.txt todo/${i}.txt;
     cp build/todo_all.txt todo/${i}_all.txt;
     if ${MAKE} ${MAKEFLAGS} ITER=$i database; then
@@ -65,6 +64,8 @@ while true; do
     if [ "$QUICK" = "Y" ] ; then
         break;
     fi
+
+    i=$((i+1));
 done;
 if $end_pushdb ; then
     ${MAKE} ${MAKEFLAGS} pushdb
