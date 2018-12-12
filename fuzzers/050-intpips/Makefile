@@ -37,7 +37,6 @@ pushdb:
 	${XRAY_MERGEDB} mask_clblm_l build/mask_clblm_l.db
 	${XRAY_MERGEDB} mask_clblm_r build/mask_clblm_r.db
 
-# FIXME: move to iter dir
 $(SPECIMENS_OK): build/todo.txt
 	mkdir -p build/$(ITER)
 	bash generate.sh $(subst /OK,,$@)
