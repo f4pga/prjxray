@@ -33,6 +33,7 @@ pushdb:
 	${XRAY_MERGEDB} mask_clblm_l build/mask_clblm_l.db
 	${XRAY_MERGEDB} mask_clblm_r build/mask_clblm_r.db
 
+# FIXME: move to iter dir
 $(SPECIMENS_OK): build/todo.txt
 	mkdir -p build/$(ITER)
 	bash generate.sh $(subst /OK,,$@)
@@ -58,7 +59,7 @@ clean:
 
 # Remove iteration specific files, but keep piplist.tcl output
 cleanprj:
-	rm -rf build/$(ITER)
+	rm -rf build/$(ITER) build/todo.txt
 
 .PHONY: database pushdb run clean cleanprj
 
