@@ -60,7 +60,7 @@ proc loop { line idx int_l_tile int_r_tile } {
 }
 
 proc load_todo_lines {} {
-    set fp [open "../todo.txt" r]
+    set fp [open "../../todo.txt" r]
     set todo_lines {}
     for {gets $fp line} {$line != ""} {gets $fp line} {
         lappend todo_lines [split $line .]
