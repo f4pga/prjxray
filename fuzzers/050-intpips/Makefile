@@ -7,6 +7,7 @@ N := 48
 endif
 # Driven by int_loop.sh
 ITER := 1
+MAKETODO_FLAGS=--re ".*" --not-endswith ".VCC_WIRE"
 # See int_loop_check.py
 # Original did 200 specimins open loop
 CHECK_ARGS := --max-iters 6 --stable-iters 3
@@ -14,7 +15,6 @@ SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
 export FUZDIR=$(shell pwd)
-MAKETODO_FLAGS=--re ".*" --not-endswith ".VCC_WIRE"
 
 # Specimens from current run must complete, but previous iterations may exist
 database: $(SPECIMENS_OK)
@@ -28,6 +28,9 @@ database: $(SPECIMENS_OK)
 ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 endif
+	# Keep a copy to track iter progress
+	cp build/segbits_int_l.db build/$(ITER)/segbits_int_l.db
+	cp build/segbits_int_r.db build/$(ITER)/segbits_int_r.db
 
 pushdb:
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
