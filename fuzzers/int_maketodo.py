@@ -17,18 +17,14 @@ def getprefix(tag):
     return tag[0:n]
 
 
-def load_pipfile(pipfile):
+def load_pipfile(pipfile, verbose=False):
     '''Returns a set of tags containing real tile type prefixes (ex: INT_L)'''
     todos = set()
     tile_type = None
     with open(pipfile, "r") as f:
         # INT_L.WW2BEG0.SR1BEG_S0
         for line in f:
-            tag, _bits, mode = util.parse_db_line(line)
-            # Only count resolved entries
-            if mode:
-                continue
-
+            tag = line.strip()
             prefix_line = getprefix(tag)
             if tile_type is None:
                 tile_type = prefix_line
@@ -45,18 +41,29 @@ def maketodo(pipfile, dbfile, intre, not_endswith=None, verbose=False):
     050-intpips doesn't care about contents, but most fuzzers use the tile type prefix
     '''
 
-    todos, tile_type = load_pipfile(pipfile)
+    todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     verbose and print('%s: %u entries' % (pipfile, len(todos)))
     verbose and print("pipfile todo sample: %s" % list(todos)[0])
 
+    if 0 and verbose:
+        print("TODOs")
+        for todo in sorted(list(todos)):
+            print('  %s' % todo)
+
+    verbose and print('Pre db %s: %u entries' % (dbfile, len(todos)))
     # Allow against empty db
     if os.path.exists(dbfile):
         verbose and print("Loading %s" % dbfile)
         with open(dbfile, "r") as f:
             # INT.BYP_ALT0.BYP_BOUNCE_N3_3 !22_07 !23_07 !25_07 21_07 24_07
             for line in f:
-                line = line.split()
-                tag = tile_type + '.' + noprefix(line[0])
+                tag, _bits, mode = util.parse_db_line(line.strip())
+                # Only count resolved entries
+                if mode:
+                    continue
+                # INT.BLAH => INT_L.BLAH
+                tag = tile_type + '.' + noprefix(tag)
+
                 # bipips works on a subset
                 if tag in todos:
                     todos.remove(tag)
@@ -65,7 +72,7 @@ def maketodo(pipfile, dbfile, intre, not_endswith=None, verbose=False):
                         "WARNING: couldnt remove %s (line %s)" % (tag, line))
     else:
         verbose and print("WARNING: dbfile doesnt exist: %s" % dbfile)
-    verbose and print('Remove %s: %u entries' % (dbfile, len(todos)))
+    verbose and print('Post db %s: %u entries' % (dbfile, len(todos)))
     drops = 0
     lines = 0
     for line in todos:
