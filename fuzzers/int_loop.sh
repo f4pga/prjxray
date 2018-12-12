@@ -42,13 +42,14 @@ MAKEFLAGS=${MAKEFLAGS:-}
 echo "make: ${MAKE} ${MAKEFLAGS}"
 echo $MAKE
 mkdir -p todo;
+i=0
 while true; do
     ${MAKE} ${MAKEFLAGS} cleanprj;
     ${MAKE} ${MAKEFLAGS} build/todo.txt || exit 1;
     if python3 ${XRAY_DIR}/fuzzers/int_loop_check.py $check_args ; then
         break
     fi
-    if [ -f build/timeout ] ; then
+    if [ -f todo/timeout ] ; then
         echo "ERROR: timeout"
         exit 1
     fi
@@ -56,7 +57,7 @@ while true; do
     i=$((i+1));
     cp build/todo.txt todo/${i}.txt;
     cp build/todo_all.txt todo/${i}_all.txt;
-    if ${MAKE} ${MAKEFLAGS} N=$i database; then
+    if ${MAKE} ${MAKEFLAGS} ITER=$i database; then
         if $iter_pushdb ; then
             ${MAKE} ${MAKEFLAGS} pushdb
         fi
