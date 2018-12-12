@@ -10,7 +10,7 @@ endif
 # Iteration number (each containing N specimens)
 # Driven by int_loop.sh
 ITER ?= 1
-MAKETODO_RE ?=
+MAKETODO_FLAGS ?=
 TODO_N ?= 10
 PIP_TYPE?=pips_int
 PIPLIST_TCL?=$(XRAY_DIR)/fuzzers/piplist.tcl
@@ -31,6 +31,9 @@ database: $(SPECIMENS_OK)
 ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 endif
+	# Keep a copy to track iter progress
+	cp build/segbits_int_l.db build/$(ITER)/segbits_int_l.db
+	cp build/segbits_int_r.db build/$(ITER)/segbits_int_r.db
 
 pushdb:
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
