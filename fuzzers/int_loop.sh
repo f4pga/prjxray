@@ -54,7 +54,7 @@ while true; do
     i=$((i+1));
     cp build/todo.txt todo/${i}.txt;
     cp build/todo_all.txt todo/${i}_all.txt;
-    if ${MAKE} ${MAKEFLAGS} database; then
+    if ${MAKE} ${MAKEFLAGS} N=$i database; then
         if $pushdb ; then
             ${MAKE} ${MAKEFLAGS} pushdb;
         fi
