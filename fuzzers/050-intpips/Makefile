@@ -13,12 +13,12 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 export FUZDIR=$(shell pwd)
 
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clbll_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clbll_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clblm_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_clblm_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
+	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
+	${XRAY_MASKMERGE} build/mask_clbll_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt)
+	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_MASKMERGE} build/mask_clblm_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 
 pushdb:
