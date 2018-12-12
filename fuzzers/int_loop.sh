@@ -6,11 +6,12 @@ usage() {
     echo "--check-args <args>         int_loop_check.py args"
     # intpips ingests all segbits files at once and does a push at the end
     # other loopers do a push every pass
-    echo "--pushdb                    make pushdb after successful make database"
+    echo "--iter-pushdb               make pushdb after successful make database as opposed to end"
 }
 
 check_args=
-pushdb=false
+iter_pushdb=false
+end_pushdb=true
 while [[ $# -gt 0 ]]; do
     case "$1" in
     --check-args)
@@ -18,8 +19,9 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-    --pushdb)
-        pushdb=true
+    --iter-pushdb)
+        iter_pushdb=true
+        end_pushdb=false
         shift
         ;;
     -h|--help)
@@ -55,13 +57,16 @@ while true; do
     cp build/todo.txt todo/${i}.txt;
     cp build/todo_all.txt todo/${i}_all.txt;
     if ${MAKE} ${MAKEFLAGS} N=$i database; then
-        if $pushdb ; then
-            ${MAKE} ${MAKEFLAGS} pushdb;
+        if $iter_pushdb ; then
+            ${MAKE} ${MAKEFLAGS} pushdb
         fi
     fi;
     if [ "$QUICK" = "Y" ] ; then
         break;
     fi
 done;
+if $end_pushdb ; then
+    ${MAKE} ${MAKEFLAGS} pushdb
+fi
 exit 0
 
