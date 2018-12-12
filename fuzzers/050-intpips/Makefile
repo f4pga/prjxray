@@ -15,9 +15,10 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
 export FUZDIR=$(shell pwd)
 
+# Specimens from current run must complete, but previous iterations may exist
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
-	${XRAY_SEGMATCH} -m 5 -M 15 -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
+	${XRAY_SEGMATCH} -m 15 -M 45 -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_SEGMATCH} -m 15 -M 45 -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_MASKMERGE} build/mask_clbll_l.db $(shell find build -name segdata_int_l.txt)
 	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt)
