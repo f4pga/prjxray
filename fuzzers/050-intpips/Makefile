@@ -1,6 +1,5 @@
-# WARNING: N must be relatively high (say 10) or segmatch -m/M will fail
 ifeq ($(QUICK),Y)
-N := 10
+N := 1
 else
 # Do relatively large batch to keep parallelism high
 # LCM between 12 (CPUs on my system) and 16, a common CPU count
