@@ -11,6 +11,9 @@ endif
 # Driven by int_loop.sh
 ITER ?= 1
 MAKETODO_RE ?=
+TODO_N ?= 10
+PIP_TYPE?=pips_int
+PIPLIST_TCL?=$(XRAY_DIR)/fuzzers/piplist.tcl
 
 # See int_loop_check.py
 # rempips took 35 iters once, so set 50 as a good start point
@@ -38,14 +41,14 @@ $(SPECIMENS_OK): build/todo.txt
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
 	touch $@
 
-build/pips_int_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
+build/$(PIP_TYPE)_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
 	mkdir -p build/$(ITER)
-	cd build && vivado -mode batch -source $(XRAY_DIR)/fuzzers/piplist.tcl
+	cd build && vivado -mode batch -source $(PIPLIST_TCL)
 
 # Used 1) to see if we are done 2) pips to try in generate.tcl
-build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
-	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py $(MAKETODO_FLAGS) >build/todo_all.txt
-	cat build/todo_all.txt | sort -R | head -n10 > build/todo.txt.tmp
+build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
+	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --pip-type $(PIP_TYPE) $(MAKETODO_FLAGS) >build/todo_all.txt
+	cat build/todo_all.txt | sort -R | head -n$(TODO_N) > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
 
 # XXX: conider moving to script

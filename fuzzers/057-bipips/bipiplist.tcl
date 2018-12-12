@@ -1,6 +1,6 @@
 create_project -force -part $::env(XRAY_PART) bipiplist bipiplist
 
-read_verilog top.v
+read_verilog $::env(XRAY_DIR)/fuzzers/piplist.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports i]
@@ -18,7 +18,7 @@ route_design
 
 write_checkpoint -force bipiplist.dcp
 
-source ../../utils/utils.tcl
+source "$::env(XRAY_DIR)/utils/utils.tcl"
 
 proc print_tile_pips {tile_type filename} {
     set tile [lindex [get_tiles -filter "TYPE == $tile_type"] 0]

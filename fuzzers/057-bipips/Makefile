@@ -1,33 +1,7 @@
-
-N := 10
-SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
-SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
-
-database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 5 -M 15 -o segbits_int_l.db $(addsuffix /segdata_int_l.txt,$(SPECIMENS))
-	${XRAY_SEGMATCH} -m 5 -M 15 -o segbits_int_r.db $(addsuffix /segdata_int_r.txt,$(SPECIMENS))
-
-pushdb:
-	${XRAY_DBFIXUP} --db-root . --clb-int
-	${XRAY_MERGEDB} int_l segbits_int_l.db
-	${XRAY_MERGEDB} int_r segbits_int_r.db
-
-$(SPECIMENS_OK): todo.txt
-	bash generate.sh $(subst /OK,,$@)
-	touch $@
-
-todo.txt:
-	vivado -mode batch -source bipiplist.tcl
-	python3 maketodo.py | sort -R | head -n5 > todo.txt
-
-run:
-	+set -ex; while make clean; make todo.txt; test -s todo.txt; do make database; make pushdb; done; true
-	touch run.ok
-
-clean:
-	rm -rf .Xil/ .cache/ vivado* todo.txt run.ok
-	rm -rf bipiplist/ bipiplist.dcp bipips_int_[lr].txt
-	rm -rf specimen_[0-9][0-9][0-9]/ segbits_int_[lr].db
-
-.PHONY: database pushdb run clean
+MAKETODO_FLAGS=--re ".*"
+TODO_N=5
+export FUZDIR=$(shell pwd)
+PIPLIST_TCL=$(FUZDIR)/bipiplist.tcl
+PIP_TYPE?=bipips_int
+include ../int_loop.mk
 
