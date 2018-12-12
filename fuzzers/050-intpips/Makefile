@@ -1,7 +1,11 @@
+# WARNING: N must be relatively high (say 10) or segmatch -m/M will fail
+ifeq ($(QUICK),Y)
+N := 10
+else
 # Do relatively large batch to keep parallelism high
 # LCM between 12 (CPUs on my system) and 16, a common CPU count
-# WARNING: N must be relatively high (say 10) or segmatch -m/M will fail
 N := 48
+endif
 # Driven by int_loop.sh
 ITER := 1
 # See int_loop_check.py
