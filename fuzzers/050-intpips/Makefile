@@ -56,7 +56,7 @@ build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
 # XXX: conider moving to script
 run:
 	$(MAKE) clean
-	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" MAKEFLAGS="$(MAKEFLAGS)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
+	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
 	touch run.ok
 
 clean:
