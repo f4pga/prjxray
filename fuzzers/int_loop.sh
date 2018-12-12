@@ -4,14 +4,22 @@ usage() {
     echo "Run makefile until termination condition"
     echo "usage: int_loop.sh [args]"
     echo "--check-args <args>         int_loop_check.py args"
+    # intpips ingests all segbits files at once and does a push at the end
+    # other loopers do a push every pass
+    echo "--pushdb                    make pushdb after successful make database"
 }
 
 check_args=
+pushdb=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
     --check-args)
         check_args=$2
         shift
+        shift
+        ;;
+    --pushdb)
+        pushdb=true
         shift
         ;;
     -h|--help)
@@ -47,7 +55,9 @@ while true; do
     cp build/todo.txt todo/${i}.txt;
     cp build/todo_all.txt todo/${i}_all.txt;
     if ${MAKE} ${MAKEFLAGS} database; then
-        ${MAKE} ${MAKEFLAGS} pushdb;
+        if $pushdb ; then
+            ${MAKE} ${MAKEFLAGS} pushdb;
+        fi
     fi;
     if [ "$QUICK" = "Y" ] ; then
         break;
