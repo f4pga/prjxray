@@ -1,9 +1,11 @@
 ifeq ($(QUICK),Y)
-N := 1
+N ?= 1
+SEGMATCH_FLAGS=
 else
 # Do relatively large batch to keep parallelism high
 # LCM between 12 (CPUs on my system) and 16, a common CPU count
-N := 48
+N ?= 48
+SEGMATCH_FLAGS=-m 15 -M 45
 endif
 # Driven by int_loop.sh
 ITER := 1
@@ -18,8 +20,8 @@ export FUZDIR=$(shell pwd)
 
 # Specimens from current run must complete, but previous iterations may exist
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 15 -M 45 -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
-	${XRAY_SEGMATCH} -m 15 -M 45 -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
+	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_MASKMERGE} build/mask_clbll_l.db $(shell find build -name segdata_int_l.txt)
 	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt)
