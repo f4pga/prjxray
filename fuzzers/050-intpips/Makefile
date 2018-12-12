@@ -14,6 +14,7 @@ SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
 export FUZDIR=$(shell pwd)
+MAKETODO_FLAGS=--re ".*" --not-endswith ".VCC_WIRE"
 
 # Specimens from current run must complete, but previous iterations may exist
 database: $(SPECIMENS_OK)
@@ -23,7 +24,10 @@ database: $(SPECIMENS_OK)
 	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt)
 	${XRAY_MASKMERGE} build/mask_clblm_r.db $(shell find build -name segdata_int_r.txt)
+# May be undersolved
+ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
+endif
 
 pushdb:
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
@@ -41,10 +45,11 @@ $(SPECIMENS_OK): build/todo.txt
 
 build/pips_int_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
 	mkdir -p build/$(ITER)
-	cd build/$(ITER) && vivado -mode batch -source $(XRAY_DIR)/fuzzers/piplist.tcl
+	cd build && vivado -mode batch -source $(XRAY_DIR)/fuzzers/piplist.tcl
 
-build/todo.txt: build/pips_int_l.txt maketodo.py
-	python3 maketodo.py --build-dir build/$(ITER) >build/todo_all.txt
+build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
+# Doesn't pushdb until very end. Compare against db so far
+	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --db-dir build/$(ITER) $(MAKETODO_FLAGS) >build/todo_all.txt
 	cat build/todo_all.txt | sort -R > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
 

@@ -36,6 +36,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Quick solves are sloppy
+# Never push them in as they may be under solved
+if [ "$QUICK" = "Y" ] ; then
+    iter_pushdb=false
+    end_pushdb=false
+fi
+
 set -ex
 MAKE=${MAKE:-make}
 MAKEFLAGS=${MAKEFLAGS:-}
