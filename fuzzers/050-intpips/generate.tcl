@@ -1,7 +1,7 @@
 create_project -force -part $::env(XRAY_PART) design design
 
-read_verilog ../../top.v
-read_verilog ../../picorv32.v
+read_verilog $::env(FUZDIR)/top.v
+read_verilog $::env(FUZDIR)/picorv32.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]

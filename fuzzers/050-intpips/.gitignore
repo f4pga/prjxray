@@ -1,4 +1,3 @@
-/specimen_[0-9][0-9][0-9]/
-/seg_int_[lr].segbits
-/mask_clbl[lm]_[lr].segbits
-/run.ok
+build
+run.ok
+todo

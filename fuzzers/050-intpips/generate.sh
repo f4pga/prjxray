@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 FUZDIR=$PWD
 source ${XRAY_GENHEADER}
 
