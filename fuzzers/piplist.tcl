@@ -1,6 +1,6 @@
 create_project -force -part $::env(XRAY_PART) piplist piplist
 
-read_verilog $::env(FUZDIR)/top.v
+read_verilog $::env(XRAY_DIR)/fuzzers/piplist.v
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports i]
