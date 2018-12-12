@@ -10,7 +10,7 @@ endif
 # Iteration number (each containing N specimens)
 # Driven by int_loop.sh
 ITER ?= 1
-MAKETODO_RE ?=
+MAKETODO_FLAGS ?=
 TODO_N ?= 10
 PIP_TYPE?=pips_int
 PIPLIST_TCL?=$(XRAY_DIR)/fuzzers/piplist.tcl
