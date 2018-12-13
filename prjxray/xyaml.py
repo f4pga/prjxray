@@ -5,9 +5,13 @@ import yaml
 import json
 import unittest
 
+from prjxray import xjson
+
 
 def load(f):
     data = f.read()
+    if isinstance(data, bytes):
+        data = data.decode('utf-8')
     # Strip out of !<tags>
     data = re.sub("!<[^>]*>", "", data)
     return yaml.load(io.StringIO(data))
@@ -15,7 +19,9 @@ def load(f):
 
 def tojson(f):
     d = load(f)
-    return json.dumps(d, sort_keys=True, indent=4)
+    o = io.StringIO()
+    xjson.pprint(o, d)
+    return o.getvalue()
 
 
 class XYamlTest(unittest.TestCase):

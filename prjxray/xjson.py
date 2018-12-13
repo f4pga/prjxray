@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import re
+import io
 import json
+import re
 import sys
 
 
@@ -48,9 +49,16 @@ def sort(data):
 
 
 def pprint(f, data):
+    detach = False
+    if not isinstance(f, io.TextIOBase):
+        detach = True
+        f = io.TextIOWrapper(f)
     sort(data)
-    json.dump(d, f, sort_keys=True, indent=4)
+    json.dump(data, f, sort_keys=True, indent=4)
     f.write('\n')
+    f.flush()
+    if detach:
+        f.detach()
 
 
 if __name__ == "__main__":
