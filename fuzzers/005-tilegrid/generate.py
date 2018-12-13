@@ -2,6 +2,8 @@
 
 import os, sys, json, re
 
+from prjxray import xjson
+
 
 def load_tiles(tiles_fn):
     '''
@@ -57,12 +59,7 @@ def run(tiles_fn, json_fn, verbose=False):
     database = make_database(tiles)
 
     # Save
-    json.dump(
-        database,
-        open(json_fn, 'w'),
-        sort_keys=True,
-        indent=4,
-        separators=(',', ': '))
+    xjson.pprint(open(json_fn, 'w'), database)
 
 
 def main():
