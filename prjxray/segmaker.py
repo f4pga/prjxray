@@ -75,7 +75,7 @@ class Segmaker:
     def set_def_bt(self, block_type):
         '''Set default block type when more than one block present'''
         assert block_type in BLOCK_TYPES, (
-            "Unknown block type %r (known %r)" % (block_Type, BLOCK_TYPES))
+            "Unknown block type %r (known %r)" % (block_type, BLOCK_TYPES))
         self.def_bt = block_type
 
     def load_grid(self):
@@ -341,7 +341,7 @@ class Segmaker:
             print("Used %u sites" % len(sites_used))
             print("Grid DB had %u tile types" % len(tile_types_found))
         assert ntags == len(tags_used), "Unused tags, %s used out of %s" % (
-            len(tag_used), ntags)
+            len(len(tags_used)), ntags)
 
     def write(self, suffix=None, roi=False, allow_empty=False):
         assert self.segments_by_type, 'No data to write'
