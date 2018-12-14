@@ -43,12 +43,14 @@ TEST(ConfigurationTest, ConstructFromPacketsWithSingleFrame) {
 	    {
 	        static_cast<unsigned int>(0x1),
 	        xc7series::ConfigurationPacket::Opcode::Write,
-	        xc7series::ConfigurationRegister::CMD, absl::MakeSpan(cmd),
+	        xc7series::ConfigurationRegister::CMD,
+	        absl::MakeSpan(cmd),
 	    },
 	    {
 	        static_cast<unsigned int>(0x1),
 	        xc7series::ConfigurationPacket::Opcode::Write,
-	        xc7series::ConfigurationRegister::FDRI, absl::MakeSpan(frame),
+	        xc7series::ConfigurationRegister::FDRI,
+	        absl::MakeSpan(frame),
 	    },
 	};
 
@@ -94,12 +96,14 @@ TEST(ConfigurationTest, ConstructFromPacketsWithAutoincrement) {
 	    {
 	        static_cast<unsigned int>(0x1),
 	        xc7series::ConfigurationPacket::Opcode::Write,
-	        xc7series::ConfigurationRegister::CMD, absl::MakeSpan(cmd),
+	        xc7series::ConfigurationRegister::CMD,
+	        absl::MakeSpan(cmd),
 	    },
 	    {
 	        static_cast<unsigned int>(0x1),
 	        xc7series::ConfigurationPacket::Opcode::Write,
-	        xc7series::ConfigurationRegister::FDRI, absl::MakeSpan(frame),
+	        xc7series::ConfigurationRegister::FDRI,
+	        absl::MakeSpan(frame),
 	    },
 	};
 

@@ -58,7 +58,7 @@ Row::Row(T first, T last) {
 	std::sort(first, last,
 	          [](const FrameAddress& lhs, const FrameAddress& rhs) {
 		          return lhs.block_type() < rhs.block_type();
-		  });
+	          });
 
 	for (auto bus_first = first; bus_first != last;) {
 		auto bus_last = std::upper_bound(
