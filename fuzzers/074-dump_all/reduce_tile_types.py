@@ -20,6 +20,7 @@ import functools
 
 from prxray import xjson
 
+
 def check_and_strip_prefix(name, prefix):
     assert name.startswith(prefix), repr((name, prefix))
     return name[len(prefix):]

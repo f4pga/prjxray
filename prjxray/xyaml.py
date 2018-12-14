@@ -26,7 +26,8 @@ def tojson(f):
 
 class XYamlTest(unittest.TestCase):
     def test(self):
-        s = io.StringIO("""\
+        s = io.StringIO(
+            """\
 !<xilinx/xc7series/part>
 idcode: 0x362d093
 global_clock_regions:
@@ -40,7 +41,8 @@ global_clock_regions:
                 frame_count: 42
 """)
         djson = tojson(s)
-        self.assertMultiLineEqual(djson, """\
+        self.assertMultiLineEqual(
+            djson, """\
 {
     "global_clock_regions": {
         "top": {
@@ -61,6 +63,7 @@ global_clock_regions:
     },
     "idcode": 56807571
 }""")
+
 
 if __name__ == "__main__":
     import sys

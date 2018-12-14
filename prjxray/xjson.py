@@ -13,7 +13,7 @@ def extract_numbers(s):
     ('VBRK_WR', 1, 'END', 2)
     """
     bits = []
-    for m in re.finditer("([^0-9]*)([0-9]*)",s):
+    for m in re.finditer("([^0-9]*)([0-9]*)", s):
         if m.group(1):
             bits.append(m.group(1))
         if m.group(2):
@@ -25,10 +25,12 @@ def sort(data):
     # FIXME: We assume that a list is a tileconn.json format...
     if isinstance(data, list):
         for o in data:
-            o['wire_pairs'].sort(key=lambda o: (extract_numbers(o[0]), extract_numbers(o[1])))
+            o['wire_pairs'].sort(
+                key=lambda o: (extract_numbers(o[0]), extract_numbers(o[1])))
 
         data.sort(key=lambda o: (o['tile_types'], o['grid_deltas']))
     else:
+
         def walker(o, f):
             if isinstance(o, dict):
                 for i in o.values():
