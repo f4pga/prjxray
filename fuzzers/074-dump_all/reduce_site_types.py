@@ -12,7 +12,7 @@ import os
 import os.path
 import re
 
-from prxray import xjson
+from utils import xjson
 
 
 def main():

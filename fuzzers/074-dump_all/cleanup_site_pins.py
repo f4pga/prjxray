@@ -15,7 +15,7 @@ import re
 import sys
 import copy
 
-from prjxray import xjson
+from utils import xjson
 
 # All site names appear to follow the pattern <type>_X<abs coord>Y<abs coord>.
 # Generally speaking, only the tile relatively coordinates are required to

@@ -18,7 +18,7 @@ import multiprocessing
 import os
 import functools
 
-from prxray import xjson
+from utils import xjson
 
 
 def check_and_strip_prefix(name, prefix):

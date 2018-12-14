@@ -6,7 +6,7 @@ import prjxray.lib
 import pickle
 import collections
 
-from prjxray import xjson
+from utils import xjson
 
 
 def build_node_index(fname):

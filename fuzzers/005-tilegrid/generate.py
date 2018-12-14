@@ -2,7 +2,7 @@
 
 import os, sys, json, re
 
-from prjxray import xjson
+from utils import xjson
 
 
 def load_tiles(tiles_fn):

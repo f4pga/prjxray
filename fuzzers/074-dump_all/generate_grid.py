@@ -13,7 +13,7 @@ import datetime
 import pickle
 import sys
 
-from prjxray import xjson
+from utils import xjson
 
 
 def get_tile_grid_info(fname):
