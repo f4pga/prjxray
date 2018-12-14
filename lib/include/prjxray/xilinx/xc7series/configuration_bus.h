@@ -60,7 +60,7 @@ ConfigurationBus::ConfigurationBus(T first, T last) {
 	std::sort(first, last,
 	          [](const FrameAddress& lhs, const FrameAddress& rhs) {
 		          return lhs.column() < rhs.column();
-		  });
+	          });
 
 	for (auto col_first = first; col_first != last;) {
 		auto col_last = std::upper_bound(

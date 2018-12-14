@@ -4,7 +4,7 @@
 
 fn=$1
 
-$XRAY_REFORMAT_TCL $fn >/dev/null
+third_party/reformat.tcl $fn >/dev/null
 # Always puts a newline at the end, even if there was one before
 # remove duplicates, but keep at least one
 printf "%s\n" "$(< $fn)" >$fn.tmp

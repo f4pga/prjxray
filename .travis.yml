@@ -27,8 +27,9 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
           packages:
-            - clang-format-3.9
+            - clang-format-5.0
             - g++-6
       install:
         - export CC=gcc-6

@@ -1,7 +1,10 @@
-CLANG_FORMAT ?= clang-format-3.9
+CLANG_FORMAT ?= clang-format-5.0
+PYTHON_FORMAT ?= yapf
+TCL_FORMAT ?= utils//tcl-reformat.sh
 
 .PHONY: database format clean env
 
+IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi;
 env:
 	virtualenv --python=python3 env
 	. env/bin/activate; pip install -r requirements.txt
@@ -15,11 +18,13 @@ build:
 database: build
 	$(MAKE) -C $@
 
+FORMAT_EXCLUDE = third_party git env build
+FIND_EXCLUDE = $(foreach x,$(FORMAT_EXCLUDE),-and -not -path './$(x)/*')
 format:
-	find . -name \*.cc -and -not -path './third_party/*' -and -not -path './.git/*' -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
-	find . -name \*.h -and -not -path './third_party/*' -and -not -path './.git/*' -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
-	find . -name \*.py -and -not -path './third_party/*' -and -not -path './.git/*' -print0 | xargs -0 -P $$(nproc) yapf -p -i
-	find . -name \*.tcl -and -not -path './third_party/*' -and -not -path './.git/*' -print0 | xargs -0 -P $$(nproc) -n 1 ${XRAY_TCL_REFORMAT} 2>/dev/null
+	find . -name \*.cc $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
+	find . -name \*.h $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
+	$(IN_ENV) find . -name \*.py $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) yapf -p -i
+	find . -name \*.tcl $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) -n 1 $(TCL_FORMAT)
 
 clean:
 	$(MAKE) -C database clean
