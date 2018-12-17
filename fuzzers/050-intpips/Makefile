@@ -12,7 +12,7 @@ ITER := 1
 MAKETODO_FLAGS=--re ".*" --not-endswith ".VCC_WIRE"
 # See int_loop_check.py
 # Original did 200 specimins open loop
-CHECK_ARGS := --max-iters 6 --stable-iters 3
+CHECK_ARGS := --max-iters 12 --stable-iters 2
 SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
