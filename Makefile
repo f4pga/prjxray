@@ -18,7 +18,7 @@ build:
 database: build
 	$(MAKE) -C $@
 
-FORMAT_EXCLUDE = third_party git env build
+FORMAT_EXCLUDE = third_party .git env build
 FIND_EXCLUDE = $(foreach x,$(FORMAT_EXCLUDE),-and -not -path './$(x)/*')
 format:
 	find . -name \*.cc $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
