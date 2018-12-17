@@ -8,6 +8,8 @@
 
 #include <absl/types/optional.h>
 #include <absl/types/span.h>
+#include <absl/strings/str_cat.h>
+#include <gflags/gflags.h>
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
 #include <prjxray/xilinx/xc7series/frame_address.h>
@@ -15,9 +17,16 @@
 #include <prjxray/xilinx/xc7series/part.h>
 #include <yaml-cpp/yaml.h>
 
+DEFINE_bool(i, false, "Print Device ID code only");
+
 namespace xc7series = prjxray::xilinx::xc7series;
 
 int main(int argc, char* argv[]) {
+	gflags::SetUsageMessage(
+		absl::StrCat("Usage: ", argv[0], " [bitfile] [options]"));
+
+	gflags::ParseCommandLineFlags(&argc, &argv, true);
+
 	if (argc < 2) {
 		std::cerr << "ERROR: no input specified" << std::endl;
 		std::cerr << "Usage: " << basename(argv[0]) << " <bit_file>"
@@ -54,12 +63,12 @@ int main(int argc, char* argv[]) {
 			found_fdri_write = true;
 		} else if ((packet.address() ==
 		            xc7series::ConfigurationRegister::IDCODE) &&
-		           packet.data().size() == 1) {
+		            packet.data().size() == 1) {
 			idcode = packet.data()[0];
 		} else if (found_fdri_write &&
 		           (packet.address() ==
 		            xc7series::ConfigurationRegister::LOUT) &&
-		           packet.data().size() == 1) {
+		            packet.data().size() == 1) {
 			frame_addresses.push_back(packet.data()[0]);
 		}
 	}
@@ -67,6 +76,11 @@ int main(int argc, char* argv[]) {
 	if (!idcode) {
 		std::cerr << "No IDCODE found." << std::endl;
 		return 1;
+	}
+
+	if (FLAGS_i) {
+		std::cout << *idcode << std::endl;
+		return 0;
 	}
 
 	if (frame_addresses.empty()) {
