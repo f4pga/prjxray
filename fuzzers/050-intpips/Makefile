@@ -53,7 +53,7 @@ build/pips_int_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
 
 build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
 # Doesn't pushdb until very end. Compare against db so far
-	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --db-dir build/$(ITER) $(MAKETODO_FLAGS) >build/todo_all.txt
+	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --db-dir build $(MAKETODO_FLAGS) >build/todo_all.txt
 	cat build/todo_all.txt | sort -R > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
 
