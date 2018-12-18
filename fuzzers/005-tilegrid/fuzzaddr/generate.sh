@@ -17,5 +17,5 @@ for x in design*.bit; do
 	${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o ${x}s -z -y $x
 done
 
-python3 $FUZDIR/generate.py >segdata_tilegrid.txt
+python3 $FUZDIR/../fuzzaddr/generate.py $GENERATE_ARGS >segdata_tilegrid.txt
 

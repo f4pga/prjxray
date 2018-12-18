@@ -24,7 +24,7 @@ def gen_iobs():
         yield site_name, site_type
 
 
-def write_pins(ports):
+def write_params(ports):
     pinstr = ''
     for site, (name, dir_, cell) in sorted(ports.items(), key=lambda x: x[1]):
         # pinstr += 'set_property -dict "PACKAGE_PIN %s IOSTANDARD LVCMOS33" [get_ports %s]' % (packpin, port)
@@ -76,7 +76,7 @@ def run():
         else:
             assign_o(rand_site(), 'do[%u]' % DOUT_N)
 
-    write_pins(ports)
+    write_params(ports)
 
     print(
         '''
