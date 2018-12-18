@@ -22,7 +22,7 @@ for l in f:
     PULLDOWN
     PULLUP          X   X
     '''
-    segmk.add_site_tag(site, "PULL.NONE", val in ("NONE", "KEEPER", "PULLUP"))
+    segmk.add_site_tag(site, "PULL.NONE", val in ("", "KEEPER", "PULLUP"))
 
 segmk.compile()
 segmk.write()
