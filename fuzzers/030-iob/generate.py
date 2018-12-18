@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from prjxray.segmaker import Segmaker
+from prjxray import segmaker
 
 segmk = Segmaker("design.bits")
 
@@ -22,7 +23,11 @@ for l in f:
     PULLDOWN
     PULLUP          X   X
     '''
-    segmk.add_site_tag(site, "PULL.NONE", val in ("", "KEEPER", "PULLUP"))
+    if val == "":
+        val = "NONE"
+    segmaker.add_site_group_zero(
+        segmk, site, "PULLTYPE.", ("NONE", "KEEPER", "PULLDOWN", "PULLUP"),
+        "PULLDOWN", val)
 
 segmk.compile()
 segmk.write()

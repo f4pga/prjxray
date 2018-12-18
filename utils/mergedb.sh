@@ -72,6 +72,9 @@ case "$1" in
 	hclk_r)
 		sed < "$2" > "$tmp1" -e 's/^HCLK\./HCLK_R./' ;;
 
+	liob33)
+		cp "$2" "$tmp1" ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		cp "$2" "$tmp1" ;;
