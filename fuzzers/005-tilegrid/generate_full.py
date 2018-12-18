@@ -11,28 +11,7 @@ A post processing step verifies that two tiles don't reference the same bitstrea
 '''
 
 from generate import load_tiles
-
-# matches lib/include/prjxray/xilinx/xc7series/block_type.h
-block_type_i2s = {
-    0: 'CLB_IO_CLK',
-    1: 'BLOCK_RAM',
-    2: 'CFG_CLB',
-    # special...maybe should error until we know what it is?
-    # 3: 'RESERVED',
-}
-
-
-def addr2btype(base_addr):
-    '''
-    Convert integer address to block type
-
-    Table 5-24: Frame Address Register Description
-    Bit Index: [25:23]
-    https://www.xilinx.com/support/documentation/user_guides/ug470_7Series_Config.pdf
-    "Valid block types are CLB, I/O, CLK ( 000 ), block RAM content ( 001 ), and CFG_CLB ( 010 ). A normal bitstream does not include type 011 ."
-    '''
-    block_type_i = (base_addr >> 23) & 0x7
-    return block_type_i2s[block_type_i]
+from prjxray import util
 
 
 def nolr(tile_type):
@@ -77,7 +56,7 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
             if site_name not in site_baseaddr:
                 continue
             framebaseaddr = site_baseaddr[site_name]
-            bt = addr2btype(framebaseaddr)
+            bt = util.addr2btype(framebaseaddr)
             tile_baseaddr = tile_baseaddrs.setdefault(tile["name"], {})
             if bt in tile_baseaddr:
                 # actually lets just fail these, better to remove at tcl level to speed up processing
@@ -251,16 +230,19 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                     'make_segment: drop %s' % (tile_type, ))
             pass
 
+        """
+        FIXME: review IOB
+            "RIOB33": process_iob,
+            "LIOB33": process_iob,
+            "RIOB33_SING": process_iob_sing,
+            "LIOB33_SING": process_iob_sing,
+        """
         {
             "CLBLL": process_clb,
             "CLBLM": process_clb,
             "HCLK": process_hclk,
             "BRAM": process_bram_dsp,
             "DSP": process_bram_dsp,
-            "RIOB33": process_iob,
-            "LIOB33": process_iob,
-            "RIOB33_SING": process_iob_sing,
-            "LIOB33_SING": process_iob_sing,
         }.get(nolr(tile_type), process_default)()
 
     return segments
@@ -516,7 +498,7 @@ def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
     '''
 
     bits = tile_db['bits']
-    block_type = addr2btype(baseaddr)
+    block_type = util.addr2btype(baseaddr)
 
     assert 0 <= offset <= 100, offset
     assert 1 <= words <= 101
@@ -554,6 +536,32 @@ def db_add_bits(database, segments):
                          offset) in segments[segment_name]["baseaddr"].items():
             for tile_name in segments[segment_name]["tiles"]:
                 tile_type = database[tile_name]["type"]
+                """
+                FIXME: review IOB
+                    # IOB
+                    # design_IOB_X0Y100.delta:+bit_00020027_000_29
+                    # design_IOB_X0Y104.delta:+bit_00020027_008_29
+                    # design_IOB_X0Y112.delta:+bit_00020027_024_29
+                    # design_IOB_X0Y120.delta:+bit_00020027_040_29
+                    # design_IOB_X0Y128.delta:+bit_00020027_057_29
+                    # design_IOB_X0Y136.delta:+bit_00020027_073_29
+                    # design_IOB_X0Y144.delta:+bit_00020027_089_29
+                    # $XRAY_BLOCKWIDTH design_IOB_X0Y100.bit |grep 00020000
+                    # 0x00020000: 0x2A (42)
+                    ("RIOI3", "CLB_IO_CLK"): (42, 2, 4),
+                    ("LIOI3", "CLB_IO_CLK"): (42, 2, 4),
+                    ("RIOI3_SING", "CLB_IO_CLK"): (42, 2, 4),
+                    ("LIOI3_SING", "CLB_IO_CLK"): (42, 2, 4),
+                    ("RIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 4),
+                    ("LIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 4),
+                    ("RIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 4),
+                    ("LIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 4),
+                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 4),
+                    ("RIOB33", "CLB_IO_CLK"): (42, 2, 4),
+                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 4),
+                    ("RIOB33_SING", "CLB_IO_CLK"): (42, 2, 4),
+                    ("LIOB33_SING", "CLB_IO_CLK"): (42, 2, 4),
+                """
                 entry = {
                     # (tile_type, block_type): (frames, words, height)
                     ("CLBLL", "CLB_IO_CLK"): (36, 2, 2),
@@ -565,30 +573,6 @@ def db_add_bits(database, segments):
                     ("DSP", "CLB_IO_CLK"): (28, 2, 10),
                     ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
                     ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
-
-                    # IOB
-                    # design_IOB_X0Y100.delta:+bit_00020027_000_29
-                    # design_IOB_X0Y104.delta:+bit_00020027_008_29
-                    # design_IOB_X0Y112.delta:+bit_00020027_024_29
-                    # design_IOB_X0Y120.delta:+bit_00020027_040_29
-                    # design_IOB_X0Y128.delta:+bit_00020027_057_29
-                    # design_IOB_X0Y136.delta:+bit_00020027_073_29
-                    # design_IOB_X0Y144.delta:+bit_00020027_089_29
-                    # $XRAY_BLOCKWIDTH design_IOB_X0Y100.bit |grep 00020000
-                    # 0x00020000: 0x2A (42)
-                    ("RIOI3", "CLB_IO_CLK"): (42, 2, 2),
-                    ("LIOI3", "CLB_IO_CLK"): (42, 2, 2),
-                    ("RIOI3_SING", "CLB_IO_CLK"): (42, 2, 2),
-                    ("LIOI3_SING", "CLB_IO_CLK"): (42, 2, 2),
-                    ("RIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 2),
-                    ("LIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 2),
-                    ("RIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 2),
-                    ("LIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 2),
-                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 2),
-                    ("RIOB33", "CLB_IO_CLK"): (42, 2, 2),
-                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 2),
-                    ("RIOB33_SING", "CLB_IO_CLK"): (42, 2, 2),
-                    ("LIOB33_SING", "CLB_IO_CLK"): (42, 2, 2),
                 }.get((nolr(tile_type), block_type), None)
                 if entry is None:
                     # Other types are rare, not expected to have these

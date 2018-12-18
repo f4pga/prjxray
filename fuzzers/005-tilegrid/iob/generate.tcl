@@ -46,24 +46,31 @@ proc loc_pins {} {
 
         # Have: site
         # Want: pin for site
+
         set site [get_sites $site_str]
         set pad_bel [get_bels -of_objects $site -filter {TYPE =~ PAD && NAME =~ IOB_*}]
         # set port [get_ports -of_objects $site]
         set port [get_ports $pin_str]
         set tile [get_tiles -of_objects $site]
+
+        set pin "FIXME"
         set pin [dict get $io_pin_sites $site]
+        #set pin [get_property PACKAGE_PIN $port]
+
+        #set cell [get_cells $cell_str]
+        # puts "LOCing cell $cell to site $site (from bel $pad_bel)"
+        # set_property LOC $site $cell
 
         set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" $port
 
+
         # list_property isn't working
         # set keys [list_property_value PULLTYPE $port]
-        set keys "PULLUP PULLDOWN KEEPER"
-        # set keys "NONE KEEPER"
+        set keys "NONE KEEPER"
         set val [randsample_list 1 $keys]
         if { $val == "NONE" } {
             set val ""
         }
-
         set_property PULLTYPE $val $port
         # puts "IOB $port $site $tile $pin $val"
         puts $fp "$port,$site,$tile,$pin,$val"

@@ -20,13 +20,21 @@ build/clb/deltas:
 build/bram/deltas:
 	bash generate.sh build/bram bram
 
+# FIXME: review IOB
 build/iob/deltas:
 	bash generate.sh build/iob iob
 
-build/tilegrid.json: generate_full.py build/tilegrid_basic.json build/clb/deltas build/bram/deltas build/iob/deltas
+build/tilegrid_tdb.json: iob/build/segbits_tilegrid.tdb
+	python3 add_tdb.py --fn-in build/tilegrid_basic.json --fn-out build/tilegrid_tdb.json
+
+iob/build/segbits_tilegrid.tdb: build/tilegrid_basic.json
+	cd iob && $(MAKE)
+
+# FIXME: review IOB
+build/tilegrid.json: generate_full.py build/tilegrid_tdb.json build/clb/deltas build/bram/deltas
 	cd build && python3 ${FUZDIR}/generate_full.py \
-        --json-in tilegrid_basic.json --json-out ${BUILD_DIR}/tilegrid.json \
-        --tiles $(FUZDIR)/build/tiles/tiles.txt */design_*.delta
+        --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json \
+        --tiles $(FUZDIR)/build/tiles/tiles.txt {clb,bram}/design_*.delta
 
 run:
 	$(MAKE) clean

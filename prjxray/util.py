@@ -124,6 +124,29 @@ def addr2str(addr, word, bit):
     return "%08x_%03u_%02u" % (addr, word, bit)
 
 
+# matches lib/include/prjxray/xilinx/xc7series/block_type.h
+block_type_i2s = {
+    0: 'CLB_IO_CLK',
+    1: 'BLOCK_RAM',
+    2: 'CFG_CLB',
+    # special...maybe should error until we know what it is?
+    # 3: 'RESERVED',
+}
+
+
+def addr2btype(base_addr):
+    '''
+    Convert integer address to block type
+
+    Table 5-24: Frame Address Register Description
+    Bit Index: [25:23]
+    https://www.xilinx.com/support/documentation/user_guides/ug470_7Series_Config.pdf
+    "Valid block types are CLB, I/O, CLK ( 000 ), block RAM content ( 001 ), and CFG_CLB ( 010 ). A normal bitstream does not include type 011 ."
+    '''
+    block_type_i = (base_addr >> 23) & 0x7
+    return block_type_i2s[block_type_i]
+
+
 def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
     '''
     For given tile yield
