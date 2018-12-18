@@ -9,7 +9,7 @@ env:
 	virtualenv --python=python3 --system-site-packages env
 	. env/bin/activate; pip install -r requirements.txt
 	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
-	python -c "import yaml" || (echo "Unable to find python-yaml" && exit 1)
+	. env/bin/activate; python -c "import yaml" || (echo "Unable to find python-yaml" && exit 1)
 
 build:
 	git submodule update --init --recursive

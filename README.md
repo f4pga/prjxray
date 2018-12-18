@@ -49,9 +49,19 @@ Creating HTML documentation:
     cd htmlgen
     python3 htmlgen.py
 
+
+(Option 1) - Install the Python environment locally
+
+    apt-get install virtualenv python3-virtualenv python3-yaml
+    make env
+
+(Option 2) - Install the Python environment globally
+
+    apt-get install python3-yaml
+    sudo pip3 install -r requirements.txt
+
 (Re-)creating the database:
 
-    sudo pip3 install -r requirements.txt
     cd fuzzers
     make -j$(nproc)
 
