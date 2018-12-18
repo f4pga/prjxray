@@ -56,7 +56,9 @@ def load_db(fn):
         l = l.strip()
         # FIXME: add offset to name
         # IOB_X0Y101.DFRAME:27.DWORD:3.DBIT:3 00020027_003_03
-        tagstr, addrstr = l.split(' ')
+        parts = l.split(' ')
+        assert len(parts) == 2, "Unresolved bit: %s" % l
+        tagstr, addrstr = parts
 
         frame, wordidx, bitidx = parse_addr(addrstr)
         bitidx_up = False
@@ -79,8 +81,8 @@ def load_db(fn):
         # or detect the first delta auto and assert they are all the same
         if not bitidx_up:
             bitidx = 0
-        assert bitidx == 0
-        assert frame % 0x100 == 0, "Unaligned frame"
+        assert bitidx == 0, l
+        assert frame % 0x80 == 0, "Unaligned frame at 0x%08X" % frame
         yield (tile, frame, wordidx)
 
 
@@ -92,7 +94,11 @@ def run(fn_in, fn_out, verbose=False):
     # FIXME: generate frames from part file (or equivilent)
     # See https://github.com/SymbiFlow/prjxray/issues/327
     # FIXME: generate words from pitch
-    tdb_fns = [("iob/build/segbits_tilegrid.tdb", 42, 4)]
+    tdb_fns = [
+        ("iob/build/segbits_tilegrid.tdb", 42, 4),
+        # FIXME: height
+        ("mmcm/build/segbits_tilegrid.tdb", 30, 4),
+    ]
     for (tdb_fn, frames, words) in tdb_fns:
         for (tile, frame, wordidx) in load_db(tdb_fn):
             tilej = database[tile]
