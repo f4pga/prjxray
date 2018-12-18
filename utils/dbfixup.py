@@ -122,11 +122,6 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
             line = line.strip()
             if line == llast:
                 continue
-            # FIXME: quick workaround
-            # was in mergedb.sh
-            # if re.match(r'.*<m.*>.*', line):
-            if re.match(r'.*<.*>.*', line):
-                continue
 
             tag, bits, mode = util.parse_db_line(line)
             assert mode not in (
@@ -138,7 +133,9 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
             else:
                 if mode:
                     assert mode == "<0 candidates>", line
-                bits = set(bits)
+                    bits = set()
+                else:
+                    bits = set(bits)
                 """
                 This appears to be a large range of one hot interconnect bits
                 They are immediately before the first CLB real bits
@@ -149,6 +146,10 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
                     tag, bits, zero_db, strict=not clb_int, verbose=verbose)
 
                 new_line = " ".join([tag] + sorted(bits))
+
+            if re.match(r'.*<.*>.*', new_line):
+                print("Original line: %s" % line)
+                assert 0, "Failed to remove line mode: %s" % (new_line)
 
             if new_line != line:
                 changes += 1
