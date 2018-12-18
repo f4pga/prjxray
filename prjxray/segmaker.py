@@ -38,6 +38,38 @@ def json_hex2i(s):
     return int(s[2:], 16)
 
 
+def add_site_group_zero(segmk, site, prefix, vals, zero_val, val):
+    '''
+    Correctly add tags for a multi-bit enumerated value
+    Naively adding them directly doesn't work correctly because overlapping bits won't solve correctly
+    Instead, you need to carefully diff against a known zero value
+    Good zero values:
+    -An enum known to be zero
+    -A site that doesn't contain the enum
+
+    segmak: Segmaker object
+    site: the site to add tags to
+    prefix: tag string to prefix onto vals
+    vals: all possible tag enum vals
+    zero_val: tag value known to have no bits set
+    '''
+    assert zero_val in vals, "Got %s, need %s" % (zero_val, vals)
+    assert val in vals, "Got %s, need %s" % (val, vals)
+
+    if val == zero_val:
+        # Zero symbol occured, none of the others did
+        for aval in vals:
+            tag = prefix + aval
+            segmk.add_site_tag(site, tag, aval == val)
+    else:
+        # Only add the occured symbol
+        tag = prefix + val
+        segmk.add_site_tag(site, tag, 1)
+        # And zero so that it has something to solve against
+        tag = prefix + zero_val
+        segmk.add_site_tag(site, tag, 0)
+
+
 class Segmaker:
     def __init__(self, bitsfile, verbose=None, db_root=None):
         self.db_root = db_root
