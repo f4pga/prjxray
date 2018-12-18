@@ -73,7 +73,7 @@ proc loc_pins {} {
         }
         set_property PULLTYPE $val $port
         # puts "IOB $port $site $tile $pin $val"
-        puts $fp "$port,$site,$tile,$pin,$val"
+        puts $fp "$tile,$val,$site,$port,$pin"
     }
     close $fp
 }
