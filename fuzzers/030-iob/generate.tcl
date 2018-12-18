@@ -55,10 +55,10 @@ proc loc_pins {} {
 
         set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" $port
 
-        # list_property isn't working
+        # list_property isn't working (maybe due to empty?)
         # set keys [list_property_value PULLTYPE $port]
-        set keys "PULLUP PULLDOWN KEEPER"
-        # set keys "NONE KEEPER"
+        # NONE placeholder for ""
+        set keys "NONE PULLUP PULLDOWN KEEPER"
         set val [randsample_list 1 $keys]
         if { $val == "NONE" } {
             set val ""

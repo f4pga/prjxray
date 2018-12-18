@@ -1,26 +1,16 @@
 N := 1
-SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
-SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
+include ../fuzzer.mk
 
-database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_ioblx.db $(addsuffix /segdata_liob33.txt,$(SPECIMENS))
+database: build/segbits_liob33.db
 
-#pushdb:
-#	${XRAY_MERGEDB} ioblm_l build/segbits_ioblx.db
-#	${XRAY_MERGEDB} ioblm_r build/segbits_ioblx.db
+build/segbits_liob33.rdb:
+	${XRAY_SEGMATCH} -o build/segbits_liob33.rdb $(addsuffix /segdata_liob33.txt,$(SPECIMENS))
 
-$(SPECIMENS_OK):
-	bash generate.sh $(subst /OK,,$@)
-	touch $@
+build/segbits_liob33.db: build/segbits_liob33.rdb
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
 
-run:
-	$(MAKE) clean
-	$(MAKE) database
-	$(MAKE) pushdb
-	touch run.ok
+pushdb:
+	${XRAY_MERGEDB} liob33 build/segbits_liob33.db
 
-clean:
-	rm -rf build
-
-.PHONY: database pushdb run clean
+.PHONY: database pushdb
 
