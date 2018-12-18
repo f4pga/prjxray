@@ -2,9 +2,9 @@
 
 from prjxray import bitsmaker
 
-def run(bits_fn, design_fn, fnout, oneval, verbose=False):
-    # Raw: IOB_X0Y101 00020027_003_03
-    metastr = "DFRAME:27.DWORD:3.DBIT:3"
+
+def run(bits_fn, design_fn, fnout, oneval, dframe, dword, dbit, verbose=False):
+    metastr = "DFRAME:%02x.DWORD:%u.DBIT:%u" % (dframe, dword, dbit)
 
     tags = dict()
     f = open(design_fn, 'r')
@@ -29,9 +29,32 @@ def main():
     parser.add_argument("--design", default="design.csv", help="")
     parser.add_argument("--fnout", default="/dev/stdout", help="")
     parser.add_argument("--oneval", required=True, help="")
+    parser.add_argument(
+        "--dframe",
+        type=str,
+        required=True,
+        help="Reference frame delta (base 16)")
+    parser.add_argument(
+        "--dword",
+        type=str,
+        required=True,
+        help="Reference word delta (base 10)")
+    parser.add_argument(
+        "--dbit",
+        type=str,
+        required=True,
+        help="Reference bit delta (base 10)")
     args = parser.parse_args()
 
-    run(args.bits_file, args.design, args.fnout, oneval=args.oneval, verbose=args.verbose)
+    run(
+        args.bits_file,
+        args.design,
+        args.fnout,
+        args.oneval,
+        int(args.dframe, 16),
+        int(args.dword, 10),
+        int(args.dbit, 10),
+        verbose=args.verbose)
 
 
 if __name__ == "__main__":

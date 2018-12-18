@@ -197,3 +197,40 @@ def specn():
     # ex: build/specimen_001
     specdir = os.getenv("SPECDIR")
     return int(re.match(".*specimen_([0-9]*)", specdir).group(1), 10)
+
+
+def gen_fuzz_states(nvals):
+    '''
+    Generates an optimal encoding to solve single bits as quickly as possible
+
+    tilegrid's initial solve for 4 bits works like this:
+    Initial reference value of all 0s:
+    0000
+    Then one-hot for each:
+    0001
+    0010
+    0100
+    1000
+    Which requires 5 samples total to diff these
+
+    However, using correlation instead its possible to resolve n bits using ceil(log(n, 2)) + 1 samples
+    With 4 positions it takes only 3 samples:
+    0000
+    0101
+    1010
+    '''
+    bits = 0
+    # First pass all 0's
+    for speci in range(2, specn() + 1):
+        # First pass do nothing
+        # Second pass invert every other bit (mod 2)
+        # Third pass invert blocks of two (mod 4)
+        block_size = 2**(speci - 1)
+        for maski in range(nvals):
+            mask = (1 << maski)
+            if maski % block_size < block_size / 2:
+                bits ^= mask
+
+    for i in range(nvals):
+        mask = (1 << i)
+        yield int(bool(bits & mask))
