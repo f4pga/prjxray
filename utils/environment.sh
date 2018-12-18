@@ -10,6 +10,10 @@ export XRAY_DIR="$( dirname "$XRAY_UTILS_DIR" )"
 export XRAY_DATABASE_DIR="${XRAY_DIR}/database"
 export XRAY_TOOLS_DIR="${XRAY_DIR}/build/tools"
 
+if [ -e "${XRAY_DIR}/env/bin/activate" ]; then
+  source "${XRAY_DIR}/env/bin/activate"
+fi
+
 # misc
 export XRAY_PART_YAML="${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/${XRAY_PART}.yaml"
 export PYTHONPATH="${XRAY_DIR}:${XRAY_DIR}/third_party/fasm:$PYTHONPATH"
