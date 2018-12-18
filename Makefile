@@ -7,9 +7,9 @@ TCL_FORMAT ?= utils//tcl-reformat.sh
 IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi;
 env:
 	virtualenv --python=python3 --system-site-packages env
-	. env/bin/activate; pip install -r requirements.txt
+	$(IN_ENV) pip install -r requirements.txt
 	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
-	. env/bin/activate; python -c "import yaml" || (echo "Unable to find python-yaml" && exit 1)
+	$(IN_ENV) python -c "import yaml" || (echo "Unable to find python-yaml" && exit 1)
 
 build:
 	git submodule update --init --recursive
