@@ -1,11 +1,12 @@
 import argparse
 import datetime
 import progressbar
-import json
 import os.path
 import prjxray.lib
 import pickle
 import collections
+
+from utils import xjson
 
 
 def build_node_index(fname):
@@ -271,7 +272,7 @@ def main():
 
     print('{} Writing node tree'.format(datetime.datetime.now()))
     with open(os.path.join(args.output_dir, 'node_tree.json'), 'w') as f:
-        json.dump(nodes, f, indent=2)
+        xjson.pprint(f, nodes)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ intervaltree
 numpy
 progressbar2
 pyjson5
+pyyaml
 scipy
 sympy
 yapf==0.24.0

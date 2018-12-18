@@ -11,7 +11,8 @@ import prjxray.lib
 import os
 import os.path
 import re
-import json
+
+from utils import xjson
 
 
 def main():
@@ -55,7 +56,7 @@ def main():
         with open(os.path.join(args.output_dir,
                                'site_type_{}.json'.format(site_type)),
                   'w') as f:
-            json.dump(proto_site_type, f, indent=2)
+            xjson.pprint(f, proto_site_type)
 
 
 if __name__ == '__main__':

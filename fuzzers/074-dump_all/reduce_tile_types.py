@@ -18,6 +18,8 @@ import multiprocessing
 import os
 import functools
 
+from utils import xjson
+
 
 def check_and_strip_prefix(name, prefix):
     assert name.startswith(prefix), repr((name, prefix))
@@ -323,10 +325,10 @@ def main():
             with open(os.path.join(
                     args.output_dir, 'tile_type_{}_site_type_{}.json'.format(
                         tile_type, site_types[site_type]['type'])), 'w') as f:
-                json.dump(site_types[site_type], f, indent=2)
+                xjson.pprint(f, site_types[site_type])
 
         with open(tile_type_file, 'w') as f:
-            json.dump(reduced_tile, f, indent=2)
+            xjson.pprint(f, reduced_tile)
 
 
 if __name__ == '__main__':
