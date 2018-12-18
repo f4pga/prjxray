@@ -45,6 +45,7 @@ run:
 
 clean:
 	rm -rf build
+	cd iob && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 
