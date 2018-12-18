@@ -11,8 +11,9 @@ pushdb:
 build/tiles/tiles.txt:
 	bash generate.sh build/tiles tiles
 
-build/tilegrid_basic.json: generate.py build/tiles/tiles.txt
-	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt --out ${BUILD_DIR}/tilegrid_basic.json
+build/basicdb/tilegrid.json: generate.py build/tiles/tiles.txt
+	mkdir -p build/basicdb
+	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt --out ${BUILD_DIR}/basicdb/tilegrid.json
 
 build/clb/deltas:
 	bash generate.sh build/clb clb
@@ -25,9 +26,9 @@ build/iob/deltas:
 	bash generate.sh build/iob iob
 
 build/tilegrid_tdb.json: iob/build/segbits_tilegrid.tdb
-	python3 add_tdb.py --fn-in build/tilegrid_basic.json --fn-out build/tilegrid_tdb.json
+	python3 add_tdb.py --fn-in build/basicdb/tilegrid.json --fn-out build/tilegrid_tdb.json
 
-iob/build/segbits_tilegrid.tdb: build/tilegrid_basic.json
+iob/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd iob && $(MAKE)
 
 # FIXME: review IOB
@@ -44,6 +45,7 @@ run:
 
 clean:
 	rm -rf build
+	cd iob && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 

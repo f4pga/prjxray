@@ -5,6 +5,11 @@ from .db import Database
 
 
 def get_db_root():
+    # Used during tilegrid db bootstrap
+    ret = os.getenv("XRAY_DATABASE_ROOT", None)
+    if ret:
+        return ret
+
     return "%s/%s" % (
         os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"))
 
