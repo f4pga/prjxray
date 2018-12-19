@@ -27,13 +27,14 @@ export FUZDIR=$(shell pwd)
 database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
 	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
+	# Keep a copy to track iter progress
+	# Also is pre-fixup, which drops and converts
+	cp build/segbits_int_l.db build/$(ITER)/segbits_int_l.db
+	cp build/segbits_int_r.db build/$(ITER)/segbits_int_r.db
 # May be undersolved
 ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 endif
-	# Keep a copy to track iter progress
-	cp build/segbits_int_l.db build/$(ITER)/segbits_int_l.db
-	cp build/segbits_int_r.db build/$(ITER)/segbits_int_r.db
 
 pushdb:
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
