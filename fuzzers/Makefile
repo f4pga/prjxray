@@ -48,3 +48,4 @@ $(eval $(call fuzzer,072-ordered_wires,))
 $(eval $(call fuzzer,073-get_counts,))
 $(eval $(call fuzzer,074-dump_all,072-ordered_wires))
 endif
+$(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid))
