@@ -1,4 +1,4 @@
-proc route_via {net nodes} {
+proc route_via { net nodes {assert 1} } {
     # Route a simple source to dest net via one or more intermediate nodes
     # the nodes do not have have to be directly reachable from each other
     # net: net name string
@@ -12,7 +12,6 @@ proc route_via {net nodes} {
     # Implicit end node. Route it at the end
     lappend nodes [get_nodes -of_objects [get_site_pins -filter {DIRECTION == IN} -of_objects $net]]
 
-    puts ""
     puts "Routing net $net:"
 
     foreach to_node $nodes {
@@ -21,12 +20,13 @@ proc route_via {net nodes} {
         # Start at the last point
         set from_node [lindex $fixed_route end]
         # Make vivado do the hard work
+        puts "  set route \[find_routing_path -quiet -from $from_node -to $to_node\]"
         set route [find_routing_path -quiet -from $from_node -to $to_node]
         # TODO: check for this
         if {$route == ""} {
             # This can also happen if you try to route to a node already in the route
             if { [ lsearch $route $to_node ] >= 0 } {
-                puts "WARNING: route_via loop. $to_node is already in the path, ignoring"
+                puts "  WARNING: route_via loop. $to_node is already in the path, ignoring"
             } else {
                 puts "  $from_node -> $to_node: no route found - assuming direct PIP"
                 lappend fixed_route $to_node
@@ -41,9 +41,11 @@ proc route_via {net nodes} {
     # Earlier check should catch this now
     set status [get_property ROUTE_STATUS $net]
     if { $status != "ROUTED" } {
-        error "failed to route net $net, status $status, route: $fixed_route"
-        # maybe warn and fail?
-        # return 0
+        puts "  Failed to route net $net, status $status, route: $fixed_route"
+        if { $assert } {
+            error "Failed to route net"
+        }
+        return 0
     }
 
     set_property -quiet FIXED_ROUTE $fixed_route $net
