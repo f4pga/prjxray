@@ -59,8 +59,6 @@ while true; do
         exit 1
     fi
 
-    cp build/todo.txt todo/${i}.txt;
-    cp build/todo_all.txt todo/${i}_all.txt;
     if ${MAKE} ITER=$i database; then
         if $iter_pushdb ; then
             ${MAKE} pushdb

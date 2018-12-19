@@ -12,7 +12,7 @@ ignpip = set()
 todo = set()
 
 print("Loading todo from ../todo.txt.")
-with open("../todo.txt", "r") as f:
+with open("../../todo.txt", "r") as f:
     for line in f:
         line = tuple(line.strip().split("."))
         verbose and print('todo', line)
