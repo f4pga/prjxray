@@ -104,7 +104,8 @@ def zero_groups(tag, bits, zero_db, strict=True, verbose=False):
                     len(a), len(bits), bits_str(bits))
 
 
-def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
+def add_zero_bits(
+        fn_in, fn_out, zero_db, clb_int=False, strict=True, verbose=False):
     '''
     Add multibit entries
     This requires adding some zero bits (ex: !31_09)
@@ -115,6 +116,7 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
     changes = 0
 
     llast = None
+    drops = 0
     with open(fn_in, "r") as f:
         for line in f:
             # Hack: skip duplicate lines
@@ -124,6 +126,14 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
                 continue
 
             tag, bits, mode = util.parse_db_line(line)
+            # an enum that needs masking
+            # check below asserts that a mask was actually applied
+            if mode and mode != "<0 candidates>" and not strict:
+                verbose and print(
+                    "WARNING: dropping unresolved line: %s" % line)
+                drops += 1
+                continue
+
             assert mode not in (
                 "<const0>",
                 "<const1>"), "Entries must be resolved. line: %s" % (line, )
@@ -142,8 +152,7 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
                 """
                 if clb_int:
                     zero_range(tag, bits, 22, 25)
-                zero_groups(
-                    tag, bits, zero_db, strict=not clb_int, verbose=verbose)
+                zero_groups(tag, bits, zero_db, strict=strict, verbose=verbose)
 
                 new_line = " ".join([tag] + sorted(bits))
 
@@ -155,6 +164,9 @@ def add_zero_bits(fn_in, fn_out, zero_db, clb_int=False, verbose=False):
                 changes += 1
             new_lines.add(new_line)
             llast = line
+
+    if drops:
+        print("WARNING: %s dropped %s unresolved lines" % (fn_in, drops))
 
     with open(fn_out, "w") as f:
         for line in sorted(new_lines):
@@ -213,7 +225,8 @@ def load_zero_db(fn):
     return ret
 
 
-def update_seg_fns(fn_inouts, zero_db, clb_int, lazy=False, verbose=False):
+def update_seg_fns(
+        fn_inouts, zero_db, clb_int, lazy=False, strict=True, verbose=False):
     seg_files = 0
     seg_lines = 0
     for fn_in, fn_out in fn_inouts:
@@ -222,7 +235,12 @@ def update_seg_fns(fn_inouts, zero_db, clb_int, lazy=False, verbose=False):
             continue
 
         changes = add_zero_bits(
-            fn_in, fn_out, zero_db, clb_int=clb_int, verbose=verbose)
+            fn_in,
+            fn_out,
+            zero_db,
+            clb_int=clb_int,
+            strict=strict,
+            verbose=verbose)
         if changes is not None:
             seg_files += 1
             seg_lines += changes
@@ -259,7 +277,13 @@ def update_masks(db_root):
 
 
 def update_segs(
-        db_root, clb_int, seg_fn_in, seg_fn_out, zero_db_fn, verbose=False):
+        db_root,
+        clb_int,
+        seg_fn_in,
+        seg_fn_out,
+        zero_db_fn,
+        strict=True,
+        verbose=False):
     if clb_int:
         zero_db = clb_int_zero_db
         lazy = True
@@ -283,7 +307,8 @@ def update_segs(
         zero_db = load_zero_db(zero_db_fn)
     print("CLB INT mode: %s" % clb_int)
     print("Segbit groups: %s" % len(zero_db))
-    update_seg_fns(fn_inouts, zero_db, clb_int, lazy=lazy, verbose=verbose)
+    update_seg_fns(
+        fn_inouts, zero_db, clb_int, lazy=lazy, strict=strict, verbose=verbose)
 
 
 def run(
@@ -292,7 +317,11 @@ def run(
         zero_db_fn=None,
         seg_fn_in=None,
         seg_fn_out=None,
+        strict=None,
         verbose=False):
+
+    if strict is None:
+        strict = not clb_int
 
     # Probably should split this into two programs
     update_segs(
@@ -301,6 +330,7 @@ def run(
         seg_fn_in=seg_fn_in,
         seg_fn_out=seg_fn_out,
         zero_db_fn=zero_db_fn,
+        strict=strict,
         verbose=verbose)
     if clb_int:
         update_masks(db_root)
@@ -318,11 +348,17 @@ def main():
     parser.add_argument('--zero-db', help='Apply custom patches')
     parser.add_argument('--seg-fn-in', help='')
     parser.add_argument('--seg-fn-out', help='')
+    util.add_bool_arg(parser, "--strict", default=None)
     args = parser.parse_args()
 
     run(
-        args.db_root, args.clb_int, args.zero_db, args.seg_fn_in,
-        args.seg_fn_out, args.verbose)
+        args.db_root,
+        args.clb_int,
+        args.zero_db,
+        args.seg_fn_in,
+        args.seg_fn_out,
+        strict=args.strict,
+        verbose=args.verbose)
 
 
 if __name__ == '__main__':
