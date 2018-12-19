@@ -1,60 +1,108 @@
 source "$::env(XRAY_DIR)/utils/utils.tcl"
 
-create_project -force -part $::env(XRAY_PART) design design
+proc build_basic {} {
+    create_project -force -part $::env(XRAY_PART) design design
 
-read_verilog $::env(FUZDIR)/top.v
-synth_design -top top
+    read_verilog $::env(FUZDIR)/top.v
+    synth_design -top top
 
-set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports i]
-set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports o]
+    set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports i]
+    set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_01) IOSTANDARD LVCMOS33" [get_ports o]
 
-create_pblock roi
-resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
+    create_pblock roi
+    resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
 
-set_property CFGBVS VCCO [current_design]
-set_property CONFIG_VOLTAGE 3.3 [current_design]
-set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
-set_param tcl.collectionResultDisplayLimit 0
+    set_property CFGBVS VCCO [current_design]
+    set_property CONFIG_VOLTAGE 3.3 [current_design]
+    set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
+    set_param tcl.collectionResultDisplayLimit 0
 
-place_design
-route_design
-
-# write_checkpoint -force design.dcp
-
-set fp [open "../../todo.txt" r]
-set todo_lines {}
-for {gets $fp line} {$line != ""} {gets $fp line} {
-    lappend todo_lines [split $line .]
+    place_design
+    route_design
 }
-close $fp
 
-set int_l_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi] {TYPE == INT_L}]]
-set int_r_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi] {TYPE == INT_R}]]
+proc load_todo {} {
+    set fp [open "../../todo.txt" r]
+    set todo_lines {}
+    for {gets $fp line} {$line != ""} {gets $fp line} {
+        lappend todo_lines [split $line .]
+    }
+    close $fp
+    return $todo_lines
+}
 
-for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
-    set line [lindex $todo_lines $idx]
-    puts "== $idx: $line"
+proc lremove { l val } {
+    set idx [lsearch $l $val]
+    return [lreplace $l $idx $idx]
+}
 
-    set tile_type [lindex $line 0]
-    set dst_wire [lindex $line 1]
-    set src_wire [lindex $line 2]
+proc route_todo {} {
+    set todo_lines [load_todo]
+    set int_l_tiles [filter [pblock_tiles roi] {TYPE == INT_L}]
+    set int_r_tiles [filter [pblock_tiles roi] {TYPE == INT_R}]
 
-    if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]; set other_tile [lindex $int_r_tiles $idx]}
-    if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]; set other_tile [lindex $int_l_tiles $idx]}
+    for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
+        set line [lindex $todo_lines $idx]
+        puts ""
+        puts ""
+        puts "== $idx: $line"
+        set tile_type [lindex $line 0]
+        set dst_wire [lindex $line 1]
+        set src_wire [lindex $line 2]
 
-    puts "PIP Tile: $tile"
+        set mylut [create_cell -reference LUT1 mylut_$idx]
+        set mynet [create_net mynet_$idx]
+        connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
 
-    set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
-            -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
+        set tries 0
+        while {1} {
+            incr tries
 
-    puts "LUT Tile (Site): $other_tile ($driver_site)"
+            puts ""
+            puts "$mynet: try $tries"
+            if {$tile_type == "INT_L"} {
+                set tile [randsample_list 1 $int_l_tiles]
+                set int_l_tiles [lremove $int_l_tiles $tile]
+                set other_tile [randsample_list 1 $int_r_tiles]
+                set int_r_tiles [lremove $int_r_tiles $other_tile]
+            } elseif {$tile_type == "INT_R"} {
+                set tile [randsample_list 1 $int_r_tiles]
+                set int_r_tiles [lremove $int_r_tiles $tile]
+                set other_tile [randsample_list 1 $int_l_tiles]
+                set int_l_tiles [lremove $int_l_tiles $other_tile]
+            } else {
+                error "Bad tile type $tile_type"
+            }
+            puts "PIP Tile: $tile, LUT tile: $other_tile"
 
-    set mylut [create_cell -reference LUT1 mylut_$idx]
-    set_property -dict "LOC $driver_site BEL A6LUT" $mylut
+            set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+                    -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
+            puts "LUT site: $driver_site"
+            set_property -dict "LOC $driver_site BEL A6LUT" $mylut
 
-    set mynet [create_net mynet_$idx]
-    connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
-    route_via $mynet "$tile/$src_wire $tile/$dst_wire"
+            set route_list "$tile/$src_wire $tile/$dst_wire"
+            puts "route_via $mynet $route_list"
+            set rc [route_via $mynet $route_list 0]
+            if {$rc != 0} {
+                break
+            }
+
+            puts "WARNING: failed to route net"
+            write_checkpoint -force route_todo_$idx.$tries.fail.dcp
+            # sometimes it gets stuck in specific orientations
+            if {$tries >= 3} {
+                puts "WARNING: to route net after $tries tries"
+                continue
+            }
+
+            # Roll back
+            puts "Rolling back route"
+            set_property is_route_fixed 0 $mynet
+            set_property is_bel_fixed 0 $mylut
+            set_property is_loc_fixed 1 $mylut
+            route_design -unroute -nets $mynet
+        }
+    }
 }
 
 proc write_txtdata {filename} {
@@ -76,11 +124,17 @@ proc write_txtdata {filename} {
     close $fp
 }
 
-route_design
+proc run {} {
+    build_basic
+    route_todo
+    route_design
 
-# Ex: ERROR: [DRC RTSTAT-5] Partial antennas: 1 net(s) have a partial antenna. The problem bus(es) and/or net(s) are mynet_2.
-# set_property IS_ENABLED 0 [get_drc_checks {RTSTAT-5}]
+    # Ex: ERROR: [DRC RTSTAT-5] Partial antennas: 1 net(s) have a partial antenna. The problem bus(es) and/or net(s) are mynet_2.
+    # set_property IS_ENABLED 0 [get_drc_checks {RTSTAT-5}]
 
-write_checkpoint -force design.dcp
-write_bitstream -force design.bit
-write_txtdata design.txt
+    write_checkpoint -force design.dcp
+    write_bitstream -force design.bit
+    write_txtdata design.txt
+}
+
+run
