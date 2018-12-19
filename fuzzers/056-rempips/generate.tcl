@@ -129,9 +129,6 @@ proc run {} {
     route_todo
     route_design
 
-    # Ex: ERROR: [DRC RTSTAT-5] Partial antennas: 1 net(s) have a partial antenna. The problem bus(es) and/or net(s) are mynet_2.
-    # set_property IS_ENABLED 0 [get_drc_checks {RTSTAT-5}]
-
     write_checkpoint -force design.dcp
     write_bitstream -force design.bit
     write_txtdata design.txt
