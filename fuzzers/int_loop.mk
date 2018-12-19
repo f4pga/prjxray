@@ -50,9 +50,11 @@ build/$(PIP_TYPE)_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
 
 # Used 1) to see if we are done 2) pips to try in generate.tcl
 build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
-	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --pip-type $(PIP_TYPE) $(MAKETODO_FLAGS) >build/todo_all.txt
+	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --pip-type $(PIP_TYPE) $(MAKETODO_FLAGS) |sort >build/todo_all.txt
 	cat build/todo_all.txt | sort -R | head -n$(TODO_N) > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
+	mkdir -p build/$(ITER)
+	cp build/todo_all.txt build/todo.txt build/$(ITER)/
 
 # XXX: conider moving to script
 run:
