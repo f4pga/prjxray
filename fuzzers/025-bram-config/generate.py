@@ -6,7 +6,7 @@ from prjxray.segmaker import Segmaker
 from prjxray import verilog
 
 
-def isenv_tags(segmk, ps, site):
+def isinv_tags(segmk, ps, site):
     # all of these bits are inverted
     ks = [
         ('IS_CLKARDCLK_INVERTED', 'ZINV_CLKARDCLK'),
@@ -109,7 +109,7 @@ def run():
         site = verilog.unquote(ps['LOC'])
         #print('site', site)
 
-        isenv_tags(segmk, ps, site)
+        isinv_tags(segmk, ps, site)
         bus_tags(segmk, ps, site)
         rw_width_tags(segmk, ps, site)
         write_mode_tags(segmk, ps, site)
