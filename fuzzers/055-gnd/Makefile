@@ -41,7 +41,7 @@ endif
 	touch run.ok
 
 clean:
-	rm -rf build OK
+	rm -rf build run.ok
 
 .PHONY: database pushdb run clean
 
