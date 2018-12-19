@@ -7,6 +7,8 @@ fi
 
 set -ex
 
+export FUZDIR=$PWD
+
 # for some reason on sourced script set -e doesn't work
 # Scripts may have additional arguments, but first is reserved for build directory
 test $# -ge 1 || exit 1
