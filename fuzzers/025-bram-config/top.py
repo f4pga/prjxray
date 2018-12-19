@@ -126,50 +126,6 @@ for loci, (site_type, site) in enumerate(brams):
     j = {'module': modname, 'i': loci, 'params': params}
     f.write('%s\n' % (json.dumps(j)))
     print('')
-'''
-
-
-
-def randbits(n):
-    return ''.join([random.choice(('0', '1')) for _x in range(n)])
-
-
-loci = 0
-
-
-def make(module, gen_locs, pdatan, datan):
-    global loci
-
-    for loci, loc in enumerate(gen_locs()):
-        if loci >= DUTN:
-            break
-
-        pdata = randbits(pdatan * 0x100)
-        data = randbits(datan * 0x100)
-
-        print('    %s #(' % module)
-        for i in range(pdatan):
-            print(
-                "        .INITP_%02X(256'b%s)," %
-                (i, pdata[i * 256:(i + 1) * 256]))
-        for i in range(datan):
-            print(
-                "        .INIT_%02X(256'b%s)," %
-                (i, data[i * 256:(i + 1) * 256]))
-        print('        .LOC("%s"))' % (loc, ))
-        print(
-            '            inst_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
-            % (loci, 8 * loci, 8 * loci))
-
-        f.write('%s,%s,%s,%s\n' % (module, loc, pdata, data))
-        print('')
-        loci += 1
-    assert loci == DUTN
-
-
-#make('my_RAMB18E1', gen_bram18, 0x08, 0x40)
-make('my_RAMB36E1', gen_bram36, 0x10, 0x80)
-'''
 
 f.close()
 print(
