@@ -12,7 +12,9 @@ import os
 import os.path
 import re
 
-from utils import xjson
+# FIXME
+# from utils import xjson
+import json
 
 
 def main():
@@ -56,7 +58,8 @@ def main():
         with open(os.path.join(args.output_dir,
                                'site_type_{}.json'.format(site_type)),
                   'w') as f:
-            xjson.pprint(f, proto_site_type)
+            # xjson.pprint(f, proto_site_type)
+            json.dump(proto_site_type, f)
 
 
 if __name__ == '__main__':

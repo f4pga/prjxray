@@ -6,7 +6,9 @@ import prjxray.lib
 import pickle
 import collections
 
-from utils import xjson
+# FIXME
+# from utils import xjson
+import json
 
 
 def build_node_index(fname):
@@ -272,7 +274,8 @@ def main():
 
     print('{} Writing node tree'.format(datetime.datetime.now()))
     with open(os.path.join(args.output_dir, 'node_tree.json'), 'w') as f:
-        xjson.pprint(f, nodes)
+        #xjson.pprint(f, nodes)
+        json.dump(nodes, f)
 
 
 if __name__ == '__main__':

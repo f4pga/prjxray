@@ -15,7 +15,9 @@ import re
 import sys
 import copy
 
-from utils import xjson
+# FIXME
+# from utils import xjson
+import json
 
 # All site names appear to follow the pattern <type>_X<abs coord>Y<abs coord>.
 # Generally speaking, only the tile relatively coordinates are required to
@@ -115,7 +117,8 @@ def main():
 
             site_pin['name'] = site_pin['name'][len(orig_site_name) + 1:]
 
-    xjson.pprint(sys.stdout, output_site_pins)
+    # xjson.pprint(sys.stdout, output_site_pins)
+    json.dump(output_site_pins, sys.stdout)
 
 
 if __name__ == "__main__":

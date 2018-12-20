@@ -13,7 +13,9 @@ import datetime
 import pickle
 import sys
 
-from utils import xjson
+# FIXME
+# from utils import xjson
+import json
 
 
 def get_tile_grid_info(fname):
@@ -608,7 +610,8 @@ def main():
 
         print('{} Writing tileconn'.format(datetime.datetime.now()))
         with open(tileconn_file, 'w') as f:
-            xjson.pprint(f, tileconn)
+            # xjson.pprint(f, tileconn)
+            json.dump(tileconn, f)
     else:
         with open(wire_map_file, 'rb') as f:
             wire_map = pickle.load(f)
@@ -653,7 +656,8 @@ def main():
     if len(error_nodes) > 0:
         error_nodes_file = os.path.join(args.output_dir, 'error_nodes.json')
         with open(error_nodes_file, 'w') as f:
-            xjson.pprint(f, error_nodes)
+            # xjson.pprint(f, error_nodes)
+            json.dump(error_nodes, f)
 
         ignored_wires = []
         ignored_wires_file = args.ignored_wires
