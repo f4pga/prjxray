@@ -120,7 +120,7 @@ def main():
     )
 
     parser.add_argument('--verbose', action='store_true', help='')
-    parser.add_argument('--todo-dir', default="todo", help='')
+    parser.add_argument('--todo-dir', default="build/todo", help='')
     parser.add_argument(
         '--min-iters', default=None, help='Minimum total number of iterations')
     parser.add_argument(

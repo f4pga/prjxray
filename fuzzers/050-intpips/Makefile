@@ -57,8 +57,12 @@ build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
 	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --db-dir build $(MAKETODO_FLAGS) |sort >build/todo_all.txt
 	cat build/todo_all.txt | sort -R > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
+	# Per iter files
 	mkdir -p build/$(ITER)
 	cp build/todo_all.txt build/todo.txt build/$(ITER)/
+	# All in one dir for easier trending
+	mkdir -p build/todo
+	cp build/todo_all.txt build/todo.txt build/todo/
 
 # XXX: conider moving to script
 run:
