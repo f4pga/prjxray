@@ -27,6 +27,14 @@ format:
 	$(IN_ENV) find . -name \*.py $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) yapf -p -i
 	find . -name \*.tcl $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) -n 1 $(TCL_FORMAT)
 
+checkdb:
+	@for DB in database/*; do if [ -d $$DB ]; then \
+		echo ; \
+		echo "Checking $$DB"; \
+		echo "============================"; \
+		$(IN_ENV) python utils/checkdb.py --db-root $$DB; \
+	fi; done
+
 clean:
 	$(MAKE) -C database clean
 	$(MAKE) -C fuzzers clean
