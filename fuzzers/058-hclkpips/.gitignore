@@ -1,4 +1,2 @@
-/specimen_*/
-/seg_hclk_[lr].segbits
-/mask_hclk_[lr].segbits
-/ppips_hclk_[lr].txt
+build
+run.ok
