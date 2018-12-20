@@ -7,10 +7,14 @@ database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o build/segbits_dsp_l.db $(addsuffix /segdata_dsp_l_*.txt,$(SPECIMENS))
 	${XRAY_SEGMATCH} -o build/segbits_dsp_r.db $(addsuffix /segdata_dsp_r_*.txt,$(SPECIMENS))
 	${XRAY_DBFIXUP} --db-root build --clb-int
+	${XRAY_MASKMERGE} build/mask_dsp_l.db $(addsuffix /segdata_dsp_l_*.txt,$(SPECIMENS))
+	${XRAY_MASKMERGE} build/mask_dsp_r.db $(addsuffix /segdata_dsp_r_*.txt,$(SPECIMENS))
 
 pushdb:
 	${XRAY_MERGEDB} dsp_l build/segbits_dsp_l.db
 	${XRAY_MERGEDB} dsp_r build/segbits_dsp_r.db
+	${XRAY_MERGEDB} mask_dsp_l build/segbits_dsp_l.db
+	${XRAY_MERGEDB} mask_dsp_r build/segbits_dsp_r.db
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
