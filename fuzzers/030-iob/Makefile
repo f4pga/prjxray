@@ -5,7 +5,7 @@ SEGDATAS=$(addsuffix /segdata_liob33.txt,$(SPECIMENS))
 
 database: build/segbits_liob33.db
 
-build/segbits_liob33.rdb:
+build/segbits_liob33.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o build/segbits_liob33.rdb $(SEGDATAS)
 
 build/segbits_liob33.db: build/segbits_liob33.rdb
