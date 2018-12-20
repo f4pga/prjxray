@@ -11,7 +11,8 @@ build/tiles/tiles.txt:
 
 build/basicdb/tilegrid.json: generate.py build/tiles/tiles.txt
 	mkdir -p build/basicdb
-	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt --out ${BUILD_DIR}/basicdb/tilegrid.json
+	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt --out ${BUILD_DIR}/basicdb/tilegrid.json.tmp
+	python3 ${XRAY_DIR}/utils/xjson.py ${BUILD_DIR}/basicdb/tilegrid.json.tmp > ${BUILD_DIR}/basicdb/tilegrid.json
 
 build/clb/deltas:
 	bash generate.sh build/clb clb

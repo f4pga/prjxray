@@ -2,8 +2,6 @@
 
 import os, sys, json, re
 
-from utils import xjson
-
 
 def load_tiles(tiles_fn):
     '''
@@ -59,7 +57,7 @@ def run(tiles_fn, json_fn, verbose=False):
     database = make_database(tiles)
 
     # Save
-    xjson.pprint(open(json_fn, 'w'), database)
+    json.dump(database, open(json_fn, 'w'))
 
 
 def main():
