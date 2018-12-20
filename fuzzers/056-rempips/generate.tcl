@@ -92,7 +92,7 @@ proc route_todo {} {
             # sometimes it gets stuck in specific orientations
             if {$tries >= 3} {
                 puts "WARNING: to route net after $tries tries"
-                continue
+                break
             }
 
             # Roll back
