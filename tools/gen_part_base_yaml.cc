@@ -6,8 +6,10 @@
 #include <memory>
 #include <vector>
 
+#include <absl/strings/str_cat.h>
 #include <absl/types/optional.h>
 #include <absl/types/span.h>
+#include <gflags/gflags.h>
 #include <prjxray/memory_mapped_file.h>
 #include <prjxray/xilinx/xc7series/bitstream_reader.h>
 #include <prjxray/xilinx/xc7series/frame_address.h>
@@ -15,9 +17,15 @@
 #include <prjxray/xilinx/xc7series/part.h>
 #include <yaml-cpp/yaml.h>
 
+DEFINE_bool(f, false, "Use FAR registers instead of LOUT ones");
+
 namespace xc7series = prjxray::xilinx::xc7series;
 
 int main(int argc, char* argv[]) {
+	gflags::SetUsageMessage(
+	    absl::StrCat("Usage: ", argv[0], " [bitfile] [options]"));
+	gflags::ParseCommandLineFlags(&argc, &argv, true);
+
 	if (argc < 2) {
 		std::cerr << "ERROR: no input specified" << std::endl;
 		std::cerr << "Usage: " << basename(argv[0]) << " <bit_file>"
@@ -59,8 +67,15 @@ int main(int argc, char* argv[]) {
 		} else if (found_fdri_write &&
 		           (packet.address() ==
 		            xc7series::ConfigurationRegister::LOUT) &&
-		           packet.data().size() == 1) {
+		           (packet.data().size() == 1) && FLAGS_f == false) {
 			frame_addresses.push_back(packet.data()[0]);
+			found_fdri_write = false;
+		} else if (found_fdri_write &&
+		           (packet.address() ==
+		            xc7series::ConfigurationRegister::FAR) &&
+		           (packet.data().size() == 1) && FLAGS_f == true) {
+			frame_addresses.push_back(packet.data()[0]);
+			found_fdri_write = false;
 		}
 	}
 
@@ -70,8 +85,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (frame_addresses.empty()) {
-		std::cerr << "No LOUT writes found.  Was "
-		          << "BITSTREAM.GENERAL.DEBUGBITSTREAM set to YES?"
+		std::cerr << "No LOUT or FAR writes found.  Was "
+		          << "BITSTREAM.GENERAL.DEBUGBITSTREAM or "
+		          << "BITSTREAM.GENERAL.PERFRAMECRC set to YES?"
 		          << std::endl;
 		return 1;
 	}

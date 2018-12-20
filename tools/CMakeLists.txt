@@ -16,8 +16,8 @@ target_link_libraries(gen_part_base_yaml
 	absl::span
 	libprjxray
 	yaml-cpp
+	gflags
 )
-
 add_executable(xc7patch xc7patch.cc)
 target_link_libraries(xc7patch
 	absl::strings
