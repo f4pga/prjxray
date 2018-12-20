@@ -62,7 +62,7 @@ build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
 	cp build/todo_all.txt build/todo.txt build/$(ITER)/
 	# All in one dir for easier trending
 	mkdir -p build/todo
-	cp build/todo_all.txt build/todo.txt build/todo/
+	cp build/todo_all.txt build/todo/$(ITER)_all.txt
 
 # XXX: conider moving to script
 run:
