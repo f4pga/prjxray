@@ -1,17 +1,22 @@
 N ?= 1
 CLB_DBFIXUP ?=
+# Fuzzer that can accept SLICEL data
+# ie set to N if only for SLICEM
 SLICEL ?= Y
 
 include ../fuzzer.mk
 
 database: build/segbits_clbx.db
 
-build/segbits_clbx.rdb: $(SPECIMENS_OK)
 ifeq ($(SLICEL),Y)
-	${XRAY_SEGMATCH} -o build/segbits_clbx.rdb $(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
+SEGDATAS=$(addsuffix /segdata_clbl[lm]_[lr].txt,$(SPECIMENS))
 else
-	${XRAY_SEGMATCH} -o build/segbits_clbx.rdb $(addsuffix /segdata_clblm_[lr].txt,$(SPECIMENS))
+SEGDATAS=$(addsuffix /segdata_clblm_[lr].txt,$(SPECIMENS))
 endif
+
+
+build/segbits_clbx.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o build/segbits_clbx.rdb $(SEGDATAS)
 
 build/segbits_clbx.db: build/segbits_clbx.rdb
 ifeq ($(CLB_DBFIXUP),Y)
@@ -19,14 +24,19 @@ ifeq ($(CLB_DBFIXUP),Y)
 else
 	cp $^ $@
 endif
+	${XRAY_MASKMERGE} build/mask_clbx.db $(SEGDATAS)
 
 pushdb:
 ifeq ($(SLICEL),Y)
 	${XRAY_MERGEDB} clbll_l build/segbits_clbx.db
 	${XRAY_MERGEDB} clbll_r build/segbits_clbx.db
+	${XRAY_MERGEDB} mask_clbll_l build/mask_clbx.db
+	${XRAY_MERGEDB} mask_clbll_r build/mask_clbx.db
 endif
 	${XRAY_MERGEDB} clblm_l build/segbits_clbx.db
 	${XRAY_MERGEDB} clblm_r build/segbits_clbx.db
+	${XRAY_MERGEDB} mask_clblm_l build/mask_clbx.db
+	${XRAY_MERGEDB} mask_clblm_r build/mask_clbx.db
 
 .PHONY: database pushdb
 
