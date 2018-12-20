@@ -10,7 +10,7 @@ $(SPECIMENS): Makefile.specimen
 
 pushdb:
 	cp ${XRAY_PART}.yaml ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)
-	python -m utils.xyaml ${XRAY_PART}.yaml > ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}.json
+	python3 ${XRAY_DIR}/utils/xyaml.py ${XRAY_PART}.yaml > ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}.json
 
 run:
 	$(MAKE) clean

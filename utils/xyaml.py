@@ -5,7 +5,7 @@ import yaml
 import json
 import unittest
 
-from utils import xjson
+import xjson
 
 
 def load(f):
