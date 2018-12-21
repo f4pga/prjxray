@@ -14,6 +14,6 @@ for f in $(find -name design.bits) ; do
 done
 popd
 
-${XRAY_SEGMATCH} -o build/tmp.segbits $(find -name 'segdata_*.txt')
+${XRAY_SEGMATCH} -o build/tmp.segbits $(find build -name 'segdata_*.txt')
 cat build/tmp.segbits
 
