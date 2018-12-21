@@ -53,3 +53,11 @@ Includes:
 * Can solve: INT.BYP_ALT*.GFAN*
 * Cannot solve: INT.IMUX*.GFAN* (solves as "<m1 0> <const0>")
 
+### IMUX
+
+* Okay: BYP_ALT*.VCC_WIRE
+* Cannot solve: INT.IMUX[0-9]+.VCC_WIRE
+* Cannot solve: INT.IMUX_L[0-9]+.VCC_WIRE
+
+See https://github.com/SymbiFlow/prjxray/issues/383
+
