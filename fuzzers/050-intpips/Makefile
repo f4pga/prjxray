@@ -19,13 +19,9 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 export FUZDIR=$(shell pwd)
 
 # Specimens from current run must complete, but previous iterations may exist
-database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
-	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
-	${XRAY_MASKMERGE} build/mask_clbll_l.db $(shell find build -name segdata_int_l.txt)
-	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt)
-	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt)
-	${XRAY_MASKMERGE} build/mask_clblm_r.db $(shell find build -name segdata_int_r.txt)
+database: build/database
+
+build/database: build/segbits_int_l.db build/segbits_int_r.db build/mask_clbll_l.db build/mask_clbll_r.db build/mask_clblm_l.db build/mask_clblm_r.db
 	# Keep a copy to track iter progress
 	# Also is pre-fixup, which drops and converts
 	cp build/segbits_int_l.db build/$(ITER)/segbits_int_l.db
@@ -34,6 +30,25 @@ database: $(SPECIMENS_OK)
 ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 endif
+	touch build/database
+
+build/segbits_int_l.db: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt |sort)
+
+build/segbits_int_r.db: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt |sort)
+
+build/mask_clbll_l.db: $(SPECIMENS_OK)
+	${XRAY_MASKMERGE} build/mask_clbll_l.db $(shell find build -name segdata_int_l.txt |sort)
+
+build/mask_clbll_r.db: $(SPECIMENS_OK)
+	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt |sort)
+
+build/mask_clblm_l.db: $(SPECIMENS_OK)
+	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt |sort)
+
+build/mask_clblm_r.db: $(SPECIMENS_OK)
+	${XRAY_MASKMERGE} build/mask_clblm_r.db $(shell find build -name segdata_int_r.txt |sort)
 
 pushdb:
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
