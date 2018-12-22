@@ -167,13 +167,15 @@ class Segmaker:
         if '"' in site:
             raise ValueError("Invalid site: %s" % site)
         self.verbose and print(
-            'segmaker: site %s tag %s = %s' % (site, name, value))
+            'segmaker add tag: site %s tag %s = %s' % (site, name, value))
         assert site in self.sites, "Unknown site %s" % (site, )
         self.site_tags.setdefault(site, dict())[name] = value
 
     def add_tile_tag(self, tile, name, value):
         # TODO: test this out
         # assert tile in self.grid
+        self.verbose and print(
+            'segmaker add tag: tile %s tag %s = %s' % (tile, name, value))
         self.tile_tags.setdefault(tile, dict())[name] = value
 
     def compile(self, bitfilter=None):
@@ -336,6 +338,9 @@ class Segmaker:
                 if self.verbose:
                     for site in tiledata["sites"]:
                         assert site not in self.site_tags, "Site %s does not have bitstream info" % site
+                this_tile_tags = len(self.tile_tags.get(tilename, {}))
+                assert this_tile_tags == 0, "Tile %s does not have bitstream info but %s tags" % (
+                    tilename, this_tile_tags)
                 continue
             elif len(tiledata['bits']) == 1:
                 bitj = list(tiledata['bits'].values())[0]
