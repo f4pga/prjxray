@@ -21,10 +21,19 @@ route_design
 
 write_checkpoint -force design.dcp
 
-if [regexp "_001$" [pwd]] {set tile [lindex [filter [roi_tiles] {TILE_TYPE == HCLK_L}] 0]}
-if [regexp "_002$" [pwd]] {set tile [lindex [filter [roi_tiles] {TILE_TYPE == HCLK_R}] 0]}
-
 set net [get_nets o_OBUF]
+
+if [regexp "_001$" [pwd]] {
+    set hclk_tiles [filter [roi_tiles] {TYPE == HCLK_L}]
+} elseif [regexp "_002$" [pwd]] {
+    set hclk_tiles [filter [roi_tiles] {TYPE == HCLK_R}]
+} else {
+    error "unknown specimen"
+}
+
+# set tile [randsample_list 1 $hclk_tiles]
+set tile [lindex $hclk_tiles end]
+puts "Selected tile $tile"
 set pips [get_pips -of_objects $tile]
 
 for {set i 0} {$i < [llength $pips]} {incr i} {
