@@ -35,6 +35,12 @@ for arg in sys.argv[1:]:
             _, pip = pip.split("/")
             tile_type, pip = pip.split(".")
             src, dst = pip.split("->>")
+
+            # FIXME: workaround for https://github.com/SymbiFlow/prjxray/issues/392
+            if "CLB_IO_CLK" not in segmk.grid[tile]["bits"]:
+                print("WARNING: dropping tile %s" % tile)
+                continue
+
             tag = "%s.%s" % (dst, src)
             segmk.add_tile_tag(tile, tag, 1)
             if "HCLK_CK_BUFH" in src:
