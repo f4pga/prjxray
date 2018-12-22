@@ -5,7 +5,7 @@ SEGMATCH_FLAGS=
 else
 # Should be at least the -m value
 N ?= 20
-SEGMATCH_FLAGS=-m 10 -M 20
+SEGMATCH_FLAGS=-m 15 -M 45
 endif
 # Iteration number (each containing N specimens)
 # Driven by int_loop.sh
