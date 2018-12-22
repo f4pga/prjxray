@@ -373,7 +373,7 @@ class Segmaker:
             print("Used %u sites" % len(sites_used))
             print("Grid DB had %u tile types" % len(tile_types_found))
         assert ntags == len(tags_used), "Unused tags, %s used out of %s" % (
-            len(len(tags_used)), ntags)
+            len(tags_used), ntags)
 
     def write(self, suffix=None, roi=False, allow_empty=False):
         assert self.segments_by_type, 'No data to write'
