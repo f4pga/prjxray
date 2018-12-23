@@ -21,7 +21,7 @@ route_design
 
 # write_checkpoint -force design.dcp
 
-set fp [open "../../todo.txt" r]
+set fp [open "../todo.txt" r]
 set todo_lines {}
 for {gets $fp line} {$line != ""} {gets $fp line} {
     lappend todo_lines [split $line .]

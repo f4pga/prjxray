@@ -19,12 +19,12 @@ pushdb:
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
 	${XRAY_MERGEDB} int_r build/segbits_int_r.db
 
-$(SPECIMENS_OK): todo.txt
+$(SPECIMENS_OK): build/todo.txt
 	mkdir -p build
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
-todo.txt:
+build/todo.txt:
 	mkdir -p build
 	echo "INT_L.GFAN0.GND_WIRE" >  build/todo.txt
 	echo "INT_L.GFAN1.GND_WIRE" >> build/todo.txt
