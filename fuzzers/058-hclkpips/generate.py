@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import re
 
 from prjxray.segmaker import Segmaker
 
@@ -40,18 +41,26 @@ for arg in sys.argv[1:]:
             if "CLB_IO_CLK" not in segmk.grid[tile]["bits"]:
                 print("WARNING: dropping tile %s" % tile)
                 continue
-
             tag = "%s.%s" % (dst, src)
-            segmk.add_tile_tag(tile, tag, 1)
+
+            def add_tile_tag(tag, val):
+                # Workaround for https://github.com/SymbiFlow/prjxray/issues/396
+                # TODO: drop from tcl or make an ignpip
+                if re.match(r"HCLK_CK_INOUT_.*", tag):
+                    # print("Dropping %s %s" % (tag, val))
+                    return
+                segmk.add_tile_tag(tile, tag, val)
+
+            add_tile_tag(tag, 1)
             if "HCLK_CK_BUFH" in src:
                 en_tag = "ENABLE_BUFFER.%s" % src
-                segmk.add_tile_tag(tile, en_tag, 1)
+                add_tile_tag(en_tag, 1)
             for tag, tag_dst in tags.items():
                 if tag_dst != dst:
-                    segmk.add_tile_tag(tile, tag, 0)
+                    add_tile_tag(tag, 0)
             for en_tag, en_tag_src in en_tags.items():
                 if en_tag_src != src:
-                    segmk.add_tile_tag(tile, en_tag, 0)
+                    add_tile_tag(en_tag, 0)
 
     segmk.compile()
     segmk.write(arg)
