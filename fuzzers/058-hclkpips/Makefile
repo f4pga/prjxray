@@ -6,8 +6,8 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o build/segbits_hclk_l.db $(addsuffix /segdata_hclk_l_design_*.txt,$(SPECIMENS))
 	${XRAY_SEGMATCH} -o build/segbits_hclk_r.db $(addsuffix /segdata_hclk_r_design_*.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} mask_hclk_l.db $(addsuffix /segdata_hclk_l_design_*.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} mask_hclk_r.db $(addsuffix /segdata_hclk_r_design_*.txt,$(SPECIMENS))
+	${XRAY_MASKMERGE} build/mask_hclk_l.db $(addsuffix /segdata_hclk_l_design_*.txt,$(SPECIMENS))
+	${XRAY_MASKMERGE} build/mask_hclk_r.db $(addsuffix /segdata_hclk_r_design_*.txt,$(SPECIMENS))
 	grep CK_INOUT build/segbits_hclk_l.db | sed 's, .*, always,' > build/ppips_hclk_l.txt
 	grep CK_INOUT build/segbits_hclk_r.db | sed 's, .*, always,' > build/ppips_hclk_r.txt
 
