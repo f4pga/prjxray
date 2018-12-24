@@ -36,10 +36,17 @@ database: $(SPECIMENS_OK)
 	cp build/segbits_int_l.db build/$(ITER)/segbits_int_l.db
 	cp build/segbits_int_r.db build/$(ITER)/segbits_int_r.db
 # May be undersolved
+# Quick doesn't do additional iters
 ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
+	# https://github.com/SymbiFlow/prjxray/issues/399
+	# Clobber existing .db to eliminate potential conflicts
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db build/database/${XRAY_DATABASE}
+	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} int_l build/segbits_int_l.db
+	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} int_r build/segbits_int_r.db
 endif
 
+# Final pushdb to real repo
 pushdb:
 	${XRAY_MERGEDB} int_l build/segbits_int_l.db
 	${XRAY_MERGEDB} int_r build/segbits_int_r.db
@@ -58,8 +65,8 @@ build/$(PIP_TYPE)_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
 	cd build && vivado -mode batch -source $(PIPLIST_TCL)
 
 # Used 1) to see if we are done 2) pips to try in generate.tcl
-build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
-	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --pip-type $(PIP_TYPE) $(MAKETODO_FLAGS) |sort >build/todo_all.txt
+build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
+	XRAY_DATABASE_DIR=${FUZDIR}/build/database python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --pip-type $(PIP_TYPE) $(MAKETODO_FLAGS) |sort >build/todo_all.txt
 	cat build/todo_all.txt | sort -R | head -n$(TODO_N) > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
 	# Per iter files
@@ -69,18 +76,25 @@ build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
 	mkdir -p build/todo
 	cp build/todo_all.txt build/todo/$(ITER)_all.txt
 
+# Initial copy for first todo.txt
+# Subsequent are based on updated db
+build/database/seeded:
+	mkdir -p build/database/${XRAY_DATABASE}
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db build/database/${XRAY_DATABASE}
+	touch build/database/seeded
+
 # XXX: conider moving to script
 run:
 	$(MAKE) clean
-	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)" --iter-pushdb
+	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
 	touch run.ok
 
 clean:
 	rm -rf build run.ok todo
 
 # Remove iteration specific files, but keep piplist.tcl output
-cleanprj:
+cleaniter:
 	rm -rf build/$(ITER) build/todo.txt
 
-.PHONY: database pushdb run clean cleanprj
+.PHONY: database pushdb run clean cleaniter
 

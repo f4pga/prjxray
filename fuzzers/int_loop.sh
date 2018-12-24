@@ -48,7 +48,7 @@ MAKE=${MAKE:-make}
 echo $MAKE
 i=1
 while true; do
-    ${MAKE} ITER=$i cleanprj
+    ${MAKE} ITER=$i cleaniter
     ${MAKE} ITER=$i build/todo.txt
     if python3 ${XRAY_DIR}/fuzzers/int_loop_check.py $check_args ; then
         break
