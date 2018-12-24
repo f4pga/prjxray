@@ -32,7 +32,7 @@ checkdb:
 		echo ; \
 		echo "Checking $$DB"; \
 		echo "============================"; \
-		$(IN_ENV) python utils/checkdb.py --db-root $$DB; \
+		$(IN_ENV) python3 utils/checkdb.py --db-root $$DB; \
 	fi; done
 
 clean:
