@@ -11,6 +11,7 @@ import prjxray.lib
 import os
 import os.path
 import re
+import json
 
 from utils import xjson
 
