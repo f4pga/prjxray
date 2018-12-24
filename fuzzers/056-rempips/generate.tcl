@@ -89,18 +89,18 @@ proc route_todo {} {
 
             puts "WARNING: failed to route net"
             write_checkpoint -force route_todo_$idx.$tries.fail.dcp
-            # sometimes it gets stuck in specific orientations
-            if {$tries >= 3} {
-                puts "WARNING: to route net after $tries tries"
-                break
-            }
 
-            # Roll back
             puts "Rolling back route"
             set_property is_route_fixed 0 $mynet
             set_property is_bel_fixed 0 $mylut
             set_property is_loc_fixed 1 $mylut
             route_design -unroute -nets $mynet
+
+            # sometimes it gets stuck in specific orientations
+            if {$tries >= 3} {
+                puts "WARNING: failed to route net after $tries tries"
+                break
+            }
         }
     }
 }
