@@ -89,8 +89,8 @@ clean:
 	rm -rf build run.ok todo
 
 # Remove iteration specific files, but keep piplist.tcl output
-cleanprj:
+cleaniter:
 	rm -rf build/$(ITER) build/todo.txt
 
-.PHONY: database pushdb run clean cleanprj
+.PHONY: database pushdb run clean cleaniter
 
