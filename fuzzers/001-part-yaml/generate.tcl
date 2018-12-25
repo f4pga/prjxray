@@ -22,13 +22,9 @@ write_checkpoint -force design.dcp
 # Write a normal bitstream that will do a singe FDRI write of all the frames.
 write_bitstream -force design.bit
 
-# Write a debug bitstream which writes each frame individually followed by
+# Write a perframecrc bitstream which writes each frame individually followed by
 # the frame address.  This shows where there are gaps in the frame address
 # space.
-set_property BITSTREAM.GENERAL.DEBUGBITSTREAM YES [current_design]
-write_bitstream -force design.debug.bit
-set_property BITSTREAM.GENERAL.DEBUGBITSTREAM NO [current_design]
-
 set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 write_bitstream -force design.perframecrc.bit
 set_property BITSTREAM.GENERAL.PERFRAMECRC NO [current_design]

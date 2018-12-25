@@ -1,5 +1,5 @@
-part.yaml: design.debug.bit
-	${XRAY_TOOLS_DIR}/gen_part_base_yaml $< > $@
+part.yaml: design.perframecrc.bit
+	${XRAY_TOOLS_DIR}/gen_part_base_yaml $< -f > $@
 
-design.bit debug.perframecrc.bit design.debug.bit: ../generate.tcl
+design.bit design.perframecrc.bit: ../generate.tcl
 	vivado -mode batch -source ../generate.tcl
