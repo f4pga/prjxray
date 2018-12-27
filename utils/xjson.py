@@ -23,7 +23,7 @@ def extract_numbers(s):
 
 def sort(data):
     # FIXME: We assume that a list is a tileconn.json format...
-    if isinstance(data, list):
+    if isinstance(data, list) and len(data) > 0 and 'wire_pairs' in data[0]:
         for o in data:
             o['wire_pairs'].sort(
                 key=lambda o: (extract_numbers(o[0]), extract_numbers(o[1])))
