@@ -52,12 +52,12 @@ Creating HTML documentation:
 
 (Option 1) - Install the Python environment locally
 
-    apt-get install virtualenv python3-virtualenv python3-yaml
+    sudo apt-get install virtualenv python3-virtualenv python3-yaml
     make env
 
 (Option 2) - Install the Python environment globally
 
-    apt-get install python3-yaml
+    sudo apt-get install python3-yaml
     sudo pip3 install -r requirements.txt
 
 (Re-)creating the database:
