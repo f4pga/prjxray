@@ -4,6 +4,9 @@ QUICK=N
 # Skip metadata steps like tile and part generation
 # Ex: FUZZONLY=N: 30 min, FUZZONLY=Y: 6 min
 FUZZONLY=N
+# 074 fuzzer isn't changed often and is slow
+# Allow building without it
+BITONLY=N
 
 define fuzzer
 all:: $(1)/run.ok
@@ -44,9 +47,11 @@ $(eval $(call fuzzer,057-bipips,056-rempips))
 ifneq ($(QUICK),Y)
 $(eval $(call fuzzer,058-hclkpips,056-rempips))
 $(eval $(call fuzzer,071-ppips,057-bipips 058-hclkpips))
+ifneq ($(BITONLY),Y)
 $(eval $(call fuzzer,072-ordered_wires,))
 $(eval $(call fuzzer,073-get_counts,))
 $(eval $(call fuzzer,074-dump_all,072-ordered_wires))
+endif
 endif
 $(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid))
 
