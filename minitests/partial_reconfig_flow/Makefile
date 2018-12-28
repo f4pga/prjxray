@@ -18,25 +18,25 @@
 # feature.  inv.v is used as a sample reconfiguration design as one is
 # required to generate a partial reconfiguration design.
 harness_synth.dcp: harness_synthesize.tcl harness.v
-	vivado -mode batch -source harness_synthesize.tcl
+	${XRAY_VIVADO} -mode batch -source harness_synthesize.tcl
 
 harness_impl.dcp: harness_synth.dcp inv_synth.dcp harness_implement.tcl
-	vivado -mode batch -source harness_implement.tcl
+	${XRAY_VIVADO} -mode batch -source harness_implement.tcl
 
 # Synthesize an ROI design
 %_synth.dcp: %.v roi_synthesize.tcl
-	vivado -mode batch -source roi_synthesize.tcl -tclargs $< $@
+	${XRAY_VIVADO} -mode batch -source roi_synthesize.tcl -tclargs $< $@
 
 # Implement an ROI design
 %_impl.dcp: %_synth.dcp harness_impl.dcp roi_implement.tcl
-	vivado -mode batch -source roi_implement.tcl -tclargs $< $@
+	${XRAY_VIVADO} -mode batch -source roi_implement.tcl -tclargs $< $@
 
 # Generate bitstreams from an implemented design.  Two bitstreams are
 # generated: one containing a complete design including the harness (.bit) and
 # one that only contains the frames that implement the ROI design
 # (_roi_partial.bit).
 %.bit: %_impl.dcp write_bitstream.tcl
-	vivado -mode batch -source write_bitstream.tcl -tclargs $< $@
+	${XRAY_VIVADO} -mode batch -source write_bitstream.tcl -tclargs $< $@
 %_roi_partial.bit: %.bit ;
 
 # Conversions between various formats.

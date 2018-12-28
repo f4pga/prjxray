@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -ex
-vivado -mode batch -source runme.tcl
+${XRAY_VIVADO} -mode batch -source runme.tcl
 for ff in fdre fdse fdce fdce_inv fdpe ldce ldpe; do
     ${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design_$ff.bits -z -y design_$ff.bit
     ${XRAY_SEGPRINT} -z design_$ff.bits >design_$ff.seg

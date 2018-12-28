@@ -2,7 +2,7 @@
 
 source ${XRAY_GENHEADER}
 
-while ! vivado -mode batch -source ../generate.tcl; do
+while ! ${XRAY_VIVADO} -mode batch -source ../generate.tcl; do
 	rm -rf design*
 done
 

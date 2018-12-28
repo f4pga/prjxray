@@ -50,7 +50,7 @@ source tiledata.tcl
 EOT
 
 rm -f design.log
-vivado -nojournal -log design.log -mode batch -source design.tcl
+${XRAY_VIVADO} -nojournal -log design.log -mode batch -source design.tcl
 
 {
 	sed -e '/^--tiledata--/ { s/[^ ]* //; p; }; d;' design.log

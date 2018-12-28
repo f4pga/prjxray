@@ -21,7 +21,7 @@ $(SPECIMENS_OK): todo.txt
 	touch $@
 
 todo.txt:
-	vivado -mode batch -source piplist.tcl
+	${XRAY_VIVADO} -mode batch -source piplist.tcl
 	python3 maketodo.py > todo.txt
 
 clean:
