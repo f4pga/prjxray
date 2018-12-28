@@ -2,4 +2,4 @@
 
 source ${XRAY_GENHEADER}
 
-vivado -mode batch -source ../generate.tcl
+${XRAY_VIVADO} -mode batch -source ../generate.tcl

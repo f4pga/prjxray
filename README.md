@@ -12,10 +12,10 @@ More documentation can be found published on [prjxray ReadTheDocs site](http://p
 # Quickstart Guide
 
 Install Vivado 2017.2 (2017.3 has a known compatibility issue, see
-https://github.com/SymbiFlow/prjxray/issues/14). Then source the settings
-script, ie
+https://github.com/SymbiFlow/prjxray/issues/14). Then set the environment variable
+XRAY_VIVADO_SETTINGS to point to the settings64.sh file of the installed vivado version, ie
 
-    source /opt/Xilinx/Vivado/2017.2/settings64.sh
+    export XRAY_VIVADO_SETTINGS=/opt/Xilinx/Vivado/2017.2/settings64.sh
 
 Pull submodules:
 

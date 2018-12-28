@@ -65,7 +65,7 @@ $(SPECIMENS_OK): build/todo.txt
 
 build/pips_int_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
 	mkdir -p build/$(ITER)
-	cd build && vivado -mode batch -source $(XRAY_DIR)/fuzzers/piplist.tcl
+	cd build && ${XRAY_VIVADO} -mode batch -source $(XRAY_DIR)/fuzzers/piplist.tcl
 
 build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
 # Doesn't pushdb until very end. Compare against db so far

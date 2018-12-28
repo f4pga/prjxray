@@ -73,7 +73,7 @@ close \$fp
 EOT
 
 rm -rf design design.log
-vivado -nojournal -log design.log -mode batch -source design.tcl
+${XRAY_VIVADO} -nojournal -log design.log -mode batch -source design.tcl
 
 #${XRAY_BITREAD} -o design_roi.bits -z -y design_roi_partial.bit
 ${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit

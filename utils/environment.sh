@@ -32,4 +32,4 @@ export XRAY_BITTOOL="${XRAY_TOOLS_DIR}/bittool"
 export XRAY_BLOCKWIDTH="python3 ${XRAY_UTILS_DIR}/blockwidth.py"
 export XRAY_PARSEDB="python3 ${XRAY_UTILS_DIR}/parsedb.py"
 export XRAY_TCL_REFORMAT="${XRAY_UTILS_DIR}/tcl-reformat.sh"
-
+export XRAY_VIVADO="${XRAY_UTILS_DIR}/vivado.sh"

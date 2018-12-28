@@ -62,7 +62,7 @@ $(SPECIMENS_OK): build/todo.txt
 
 build/$(PIP_TYPE)_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
 	mkdir -p build/$(ITER)
-	cd build && vivado -mode batch -source $(PIPLIST_TCL)
+	cd build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
 
 # Used 1) to see if we are done 2) pips to try in generate.tcl
 build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
