@@ -3,10 +3,20 @@
 N := 8
 include ../fuzzer.mk
 
-database: $(SPECIMENS_OK)
+SEGDATAS=$(addsuffix /segdata_cmt_top_r_upper_t.txt,$(SPECIMENS))
+
+database: build/segbits_cmt_top_r_upper_t.db
+
+build/segbits_cmt_top_r_upper_t.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o build/segbits_cmt_top_r_upper_t.rdb $(SEGDATAS)
+
+build/segbits_cmt_top_r_upper_t.db: build/segbits_cmt_top_r_upper_t.rdb
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
+	${XRAY_MASKMERGE} build/mask_cmt_top_r_upper_t.db $(SEGDATAS)
 
 pushdb:
-	echo "FIXME" && false
+	${XRAY_MERGEDB} cmt_top_r_upper_t build/segbits_cmt_top_r_upper_t.db
+	${XRAY_MERGEDB} mask_cmt_top_r_upper_t build/mask_cmt_top_r_upper_t.db
 
 .PHONY: database pushdb
 
