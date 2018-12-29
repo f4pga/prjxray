@@ -10,9 +10,9 @@ More documentation can be found published on [prjxray ReadTheDocs site](http://p
  * [Overview of DB Development Process](http://prjxray.readthedocs.io/en/latest/db_dev_process/overview.html)
 
 # Quickstart Guide
+Instructions were originally written for Ubuntu 16.04. Please let us know if you have information on other distributions.
 
-Install Vivado 2017.2 (2017.3 has a known compatibility issue, see
-https://github.com/SymbiFlow/prjxray/issues/14). Then set the environment variable
+Install Vivado 2017.2. If you did not install to /opt/Xilinx default, then set the environment variable
 XRAY_VIVADO_SETTINGS to point to the settings64.sh file of the installed vivado version, ie
 
     export XRAY_VIVADO_SETTINGS=/opt/Xilinx/Vivado/2017.2/settings64.sh
@@ -20,14 +20,6 @@ XRAY_VIVADO_SETTINGS to point to the settings64.sh file of the installed vivado 
 Pull submodules:
 
     git submodule update --init --recursive
-
-Get a head start by downloading current database:
-
-    # Give the argument;
-    # - https if you to use the https protocol (default)
-    # - git+ssh if you want to use git+ssh protocol
-    # - git if you want to use the git protocol
-    ./download-latest-db.sh
 
 Install CMake and build the C++ tools:
 
@@ -44,12 +36,6 @@ running any other commands:
 
     source database/artix7/settings.sh
 
-Creating HTML documentation:
-
-    cd htmlgen
-    python3 htmlgen.py
-
-
 (Option 1) - Install the Python environment locally
 
     sudo apt-get install virtualenv python3-virtualenv python3-yaml
@@ -60,7 +46,12 @@ Creating HTML documentation:
     sudo apt-get install python3-yaml
     sudo pip3 install -r requirements.txt
 
-(Re-)creating the database:
+**If you are a prjxray developer, skip this step.** But, if you just want to use the Python API with a pre-generated database, just download a current stable version and skip the rest of the instructions: 
+
+    # WARNING: causes git issues, overrides environment
+    ./download-latest-db.sh
+
+(Re-)creating the entire database (this will take a very long time!):
 
     cd fuzzers
     make -j$(nproc)
@@ -69,6 +60,15 @@ Creating HTML documentation:
 
     cd fuzzers/010-lutinit
     make -j$(nproc) run
+
+Create HTML documentation:
+
+    cd htmlgen
+    python3 htmlgen.py
+
+
+
+# C++ Development
 
 Tests are not built by default.  Setting the PRJXRAY\_BUILD\_TESTING option to
 ON when running cmake will include them:
