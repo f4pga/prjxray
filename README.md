@@ -31,11 +31,6 @@ Install CMake and build the C++ tools:
     make
     popd
 
-Always make sure to set the environment for the device you are working on before
-running any other commands:
-
-    source database/artix7/settings.sh
-
 (Option 1) - Install the Python environment locally
 
     sudo apt-get install virtualenv python3-virtualenv python3-yaml
@@ -45,6 +40,11 @@ running any other commands:
 
     sudo apt-get install python3-yaml
     sudo pip3 install -r requirements.txt
+
+Always make sure to set the environment for the device you are working on before
+running any other commands:
+
+    source database/artix7/settings.sh
 
 **If you are a prjxray developer, skip this step.** But, if you just want to use the Python API with a pre-generated database, just download a current stable version and skip the rest of the instructions: 
 
