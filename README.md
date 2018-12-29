@@ -12,25 +12,29 @@ More documentation can be found published on [prjxray ReadTheDocs site](http://p
 # Quickstart Guide
 Instructions were originally written for Ubuntu 16.04. Please let us know if you have information on other distributions.
 
+### Step 1: ###
 Install Vivado 2017.2. If you did not install to /opt/Xilinx default, then set the environment variable
 XRAY_VIVADO_SETTINGS to point to the settings64.sh file of the installed vivado version, ie
 
     export XRAY_VIVADO_SETTINGS=/opt/Xilinx/Vivado/2017.2/settings64.sh
 
+### Step 2: ###
 Pull submodules:
 
     git submodule update --init --recursive
 
-Install CMake and build the C++ tools:
+### Step 3: ###
+Install CMake:
 
     sudo apt-get install cmake # version 3.5.0 or later required,
                                # for Ubuntu Trusty pkg is called cmake3
-    mkdir build
-    pushd build
-    cmake ..
-    make
-    popd
 
+### Step 4: ###
+Build the C++ tools:
+
+    make build
+
+### Step 5: ###
 (Option 1) - Install the Python environment locally
 
     sudo apt-get install virtualenv python3-virtualenv python3-yaml
@@ -41,32 +45,51 @@ Install CMake and build the C++ tools:
     sudo apt-get install python3-yaml
     sudo pip3 install -r requirements.txt
 
+This step is known to fail with a compiler error while building the `pyjson5`
+library when using Arch Linux and Fedora. `pyjson5` needs one change to build
+correctly:
+
+    git clone https://github.com/Kijewski/pyjson5.git
+    cd pyjson5
+    sed -i 's/char \*PyUnicode/const char \*PyUnicode/' src/_imports.pyx
+    sudo make
+
+This might give you and error about `sphinx_autodoc_typehints` but it should
+correctly build and install pyjson5. After this, run either option 1 or 2 again.
+
+### Step 6: ###
 Always make sure to set the environment for the device you are working on before
 running any other commands:
 
     source database/artix7/settings.sh
 
+### Step 7: ###
 **If you are a prjxray developer, skip this step.** But, if you just want to use the Python API with a pre-generated database, just download a current stable version and skip the rest of the instructions: 
 
     # WARNING: causes git issues, overrides environment
     ./download-latest-db.sh
 
+### Step 8: ###
 (Re-)creating the entire database (this will take a very long time!):
 
     cd fuzzers
     make -j$(nproc)
 
-(Re-)creating parts of the database, for example LUT init bits:
+If you want to (re-)create parts of the database, you first need to run:
+
+    cd fuzzers/001-part-yaml
+    make run
+
+Then pick any fuzzer and run (for example LUT init bits):
 
     cd fuzzers/010-lutinit
     make -j$(nproc) run
 
+### Step 9: ###
 Create HTML documentation:
 
     cd htmlgen
     python3 htmlgen.py
-
-
 
 # C++ Development
 
