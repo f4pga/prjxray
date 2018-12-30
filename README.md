@@ -64,23 +64,19 @@ running any other commands:
     source database/artix7/settings.sh
 
 ### Step 7: ###
-**If you are a prjxray developer, skip this step.** But, if you just want to use the Python API with a pre-generated database, just download a current stable version and skip the rest of the instructions: 
+(Option 1) - Download a current stable version (you can use the Python API with
+a pre-generated database)
 
     # WARNING: causes git issues, overrides environment
     ./download-latest-db.sh
 
-### Step 8: ###
-(Re-)creating the entire database (this will take a very long time!):
+(Option 2) - (Re-)create the entire database (this will take a very long time!)
 
     cd fuzzers
     make -j$(nproc)
 
-If you want to (re-)create parts of the database, you first need to run:
-
-    cd fuzzers/001-part-yaml
-    make run
-
-Then pick any fuzzer and run (for example LUT init bits):
+### Step 8: ###
+Pick a fuzzer (or write your own) and run:
 
     cd fuzzers/010-lutinit
     make -j$(nproc) run
