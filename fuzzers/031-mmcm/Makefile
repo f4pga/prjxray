@@ -3,20 +3,20 @@
 N := 8
 include ../fuzzer.mk
 
-SEGDATAS=$(addsuffix /segdata_cmt_top_r_upper_t.txt,$(SPECIMENS))
+SEGDATAS=$(addsuffix /segdata_cmt_top_r_lower_b.txt,$(SPECIMENS))
 
-database: build/segbits_cmt_top_r_upper_t.db
+database: build/segbits_cmt_top_r_lower_b.db
 
-build/segbits_cmt_top_r_upper_t.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_cmt_top_r_upper_t.rdb $(SEGDATAS)
+build/segbits_cmt_top_r_lower_b.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o build/segbits_cmt_top_r_lower_b.rdb $(SEGDATAS)
 
-build/segbits_cmt_top_r_upper_t.db: build/segbits_cmt_top_r_upper_t.rdb
+build/segbits_cmt_top_r_lower_b.db: build/segbits_cmt_top_r_lower_b.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
-	${XRAY_MASKMERGE} build/mask_cmt_top_r_upper_t.db $(SEGDATAS)
+	${XRAY_MASKMERGE} build/mask_cmt_top_r_lower_b.db $(SEGDATAS)
 
 pushdb:
-	${XRAY_MERGEDB} cmt_top_r_upper_t build/segbits_cmt_top_r_upper_t.db
-	${XRAY_MERGEDB} mask_cmt_top_r_upper_t build/mask_cmt_top_r_upper_t.db
+	${XRAY_MERGEDB} cmt_top_r_lower_b build/segbits_cmt_top_r_lower_b.db
+	${XRAY_MERGEDB} mask_cmt_top_r_lower_b build/mask_cmt_top_r_lower_b.db
 
 .PHONY: database pushdb
 

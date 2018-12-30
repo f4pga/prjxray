@@ -10,7 +10,7 @@ import json
 
 def gen_sites():
     for _tile_name, site_name, _site_type in sorted(util.get_roi().gen_sites(
-        ["PLLE2_ADV"])):
+        ["MMCME2_ADV"])):
         yield site_name
 
 
@@ -37,11 +37,22 @@ for loci, site in enumerate(sites):
 
     params = {
         "CLKOUT1_DIVIDE": random.randint(1, 128),
+        "STARTUP_WAIT": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT4_CASCADE": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "STARTUP_WAIT": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKFBOUT_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT0_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT1_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT2_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT3_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT4_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT5_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT6_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
     }
 
     modname = "my_MMCME2_ADV"
     verilog.instance(modname, "inst_%u" % loci, ports, params=params)
-    # LOC isn't support
+    # LOC isn't supported
     params["LOC"] = verilog.quote(site)
 
     j = {'module': modname, 'i': loci, 'params': params}
@@ -67,6 +78,16 @@ module my_MMCME2_ADV (input clk, input [7:0] din, output [7:0] dout);
     parameter CLKOUT6_DIVIDE = 1;
     parameter DIVCLK_DIVIDE = 1;
     parameter CLKFBOUT_MULT = 5;
+    parameter CLKOUT4_CASCADE = "FALSE";
+    parameter STARTUP_WAIT = "FALSE";
+    parameter CLKFBOUT_USE_FINE_PS = "FALSE";
+    parameter CLKOUT0_USE_FINE_PS = "FALSE";
+    parameter CLKOUT1_USE_FINE_PS = "FALSE";
+    parameter CLKOUT2_USE_FINE_PS = "FALSE";
+    parameter CLKOUT3_USE_FINE_PS = "FALSE";
+    parameter CLKOUT4_USE_FINE_PS = "FALSE";
+    parameter CLKOUT5_USE_FINE_PS = "FALSE";
+    parameter CLKOUT6_USE_FINE_PS = "FALSE";
 
     (* KEEP, DONT_TOUCH *)
     MMCME2_ADV #(
@@ -75,7 +96,17 @@ module my_MMCME2_ADV (input clk, input [7:0] din, output [7:0] dout);
             .CLKOUT3_DIVIDE(CLKOUT3_DIVIDE),
             .CLKOUT4_DIVIDE(CLKOUT4_DIVIDE),
             .CLKOUT5_DIVIDE(CLKOUT5_DIVIDE),
-            .CLKOUT6_DIVIDE(CLKOUT6_DIVIDE)
+            .CLKOUT6_DIVIDE(CLKOUT6_DIVIDE),
+            .CLKOUT4_CASCADE(CLKOUT4_CASCADE),
+            .STARTUP_WAIT(STARTUP_WAIT),
+            .CLKFBOUT_USE_FINE_PS(CLKFBOUT_USE_FINE_PS),
+            .CLKOUT0_USE_FINE_PS(CLKOUT0_USE_FINE_PS),
+            .CLKOUT1_USE_FINE_PS(CLKOUT1_USE_FINE_PS),
+            .CLKOUT2_USE_FINE_PS(CLKOUT2_USE_FINE_PS),
+            .CLKOUT3_USE_FINE_PS(CLKOUT3_USE_FINE_PS),
+            .CLKOUT4_USE_FINE_PS(CLKOUT4_USE_FINE_PS),
+            .CLKOUT5_USE_FINE_PS(CLKOUT5_USE_FINE_PS),
+            .CLKOUT6_USE_FINE_PS(CLKOUT6_USE_FINE_PS)
     ) dut(
             .CLKFBOUT(),
             .CLKFBOUTB(),
