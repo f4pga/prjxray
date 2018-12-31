@@ -64,10 +64,9 @@ running any other commands:
     source database/artix7/settings.sh
 
 ### Step 7: ###
-(Option 1) - Download a current stable version (you can use the Python API with
-a pre-generated database)
+(Option 1, recommended) - Download a current stable version (you can use the
+Python API with a pre-generated database)
 
-    # WARNING: causes git issues, overrides environment
     ./download-latest-db.sh
 
 (Option 2) - (Re-)create the entire database (this will take a very long time!)
