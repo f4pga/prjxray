@@ -61,7 +61,7 @@ correctly build and install pyjson5. After this, run either option 1 or 2 again.
 Always make sure to set the environment for the device you are working on before
 running any other commands:
 
-    source database/artix7/settings.sh
+    source settings/artix7.sh
 
 ### Step 7: ###
 (Option 1, recommended) - Download a current stable version (you can use the
