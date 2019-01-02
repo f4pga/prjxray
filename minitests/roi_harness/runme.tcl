@@ -186,6 +186,33 @@ if {$part eq "xc7a50tfgg484-1"} {
     } else {
         error "Unsupported config $pincfg"
     }
+} elseif {$part eq "xc7z010clg400-1"} {
+    if {$pincfg eq "ZYBOZ7-SWBUT"} {
+        # https://github.com/Digilent/digilent-xdc/blob/master/Zybo-Z7-Master.xdc
+
+        # Slide switches and buttons
+        set ins "G15 P15 W13 T16"
+        set outs "M14 M15 G14 D18"
+
+        # 125 MHz CLK onboard
+        set pin "K17"
+        set net2pin(clk) $pin
+
+        # DIN
+        for {set i 0} {$i < $DIN_N} {incr i} {
+            set pin [lindex $ins $i]
+            set net2pin(din[$i]) $pin
+        }
+
+        # DOUT
+        for {set i 0} {$i < $DOUT_N} {incr i} {
+            set pin [lindex $outs $i]
+            set net2pin(dout[$i]) $pin
+        }
+
+    } else {
+        error "Unsupported config $pincfg"
+    }
 } else {
     error "Pins: unsupported part $part"
 }
