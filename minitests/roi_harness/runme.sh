@@ -9,16 +9,6 @@ source ${XRAY_DIR}/utils/environment.sh
 export XRAY_PINCFG=${XRAY_PINCFG:-ARTY-A7-SWBUT}
 export BUILD_DIR=${BUILD_DIR:-build}
 
-DEVICE=`expr substr $XRAY_PART 4 1`
-if [ $DEVICE == "z" ] ; then
-    export XRAY_DEVICE=zynq7
-elif [ $DEVICE == "a" ] ; then
-    export XRAY_DEVICE=artix7
-else
-    echo "Unknown XRAY_DEVICE " $XRAY_DEVICE
-    exit 1
-fi
-
 # not part of the normal DB
 # to generate:
 cat >/dev/null <<EOF
@@ -31,7 +21,7 @@ make pushdb
 popd
 popd
 EOF
-stat ${XRAY_DIR}/database/${XRAY_DEVICE}/${XRAY_PART}.yaml >/dev/null
+stat ${XRAY_DIR}/database/${XRAY_DATABASE}/${XRAY_PART}.yaml >/dev/null
 
 # 6x by 18y CLBs (108)
 if [ "$SMALL" = Y ] ; then
