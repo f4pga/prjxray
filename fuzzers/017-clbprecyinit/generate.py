@@ -9,17 +9,20 @@ f = open('params.csv', 'r')
 f.readline()
 for l in f:
     module, loc, loc2 = l.split(',')
+
+    tmp = module.replace('clb_PRECYINIT_0', 'C0')
+    tmp = tmp.replace('clb_PRECYINIT_1', 'C1')
     # clb_PRECYINIT_AX => AX
-    src = module.replace('clb_PRECYINIT_', '')
+    src = tmp.replace('clb_PRECYINIT_', '')
     '''
     PRECYINIT
                 00_12   30_14   30_13
-    1           0       1       0
+    C1          0       1       0
     AX          1       0       0
     CIN         0       0       1
-    0           0       0       0
+    C0          0       0       0
     '''
-    srcs = ('0', '1', 'AX', 'CIN')
+    srcs = ('C0', 'C1', 'AX', 'CIN')
     for asrc in srcs:
         segmk.add_site_tag(loc, "PRECYINIT.%s" % asrc, int(src == asrc))
 
