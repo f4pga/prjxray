@@ -1,6 +1,6 @@
 # read/write width is relatively slow to resolve
 # Even slower with multi bit masks...
-N := 8
+N := 14
 include ../fuzzer.mk
 
 SEGDATAS=$(addsuffix /segdata_cmt_top_r_lower_b.txt,$(SPECIMENS))

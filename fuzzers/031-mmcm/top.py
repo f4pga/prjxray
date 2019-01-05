@@ -6,6 +6,7 @@ from prjxray import verilog
 from prjxray.verilog import vrandbit, vrandbits
 import sys
 import json
+import numpy as np
 
 
 def gen_sites():
@@ -36,18 +37,34 @@ for loci, site in enumerate(sites):
     }
 
     params = {
-        "CLKOUT1_DIVIDE": random.randint(1, 128),
-        "STARTUP_WAIT": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT4_CASCADE": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "STARTUP_WAIT": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKFBOUT_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT0_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT1_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT2_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT3_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT4_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT5_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT6_USE_FINE_PS": random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT1_DIVIDE":
+        int(
+            np.random.choice(
+                [1, 63, 127, 128, random.randint(2, 127)],
+                p=[0.2, 0.1, 0.1, 0.1,
+                   0.5])),  # make sure that special values are present
+        "STARTUP_WAIT":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT4_CASCADE":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "STARTUP_WAIT":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKFBOUT_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT0_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT1_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT2_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT3_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT4_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT5_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
+        "CLKOUT6_USE_FINE_PS":
+        random.choice(["\"TRUE\"", "\"FALSE\""]),
     }
 
     modname = "my_MMCME2_ADV"
