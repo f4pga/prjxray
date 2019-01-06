@@ -7,22 +7,40 @@ from prjxray import verilog
 
 
 def clkout_tags(segmk, ps, site):
-    """ Notes:
-    First bit is only active for value 1, for 1-128 in total 14 bits are toggling.
-    The relation is not clear yet, multiplication of the value by 2 does not fully correlate.
+    """
+    Special bit for value 1 (bypass), all bits off for value 128.
+    Two 7 bit counters, sharing LSB (one counter is value+1, inverting the LSB).
     """
     for param, tagname in [('CLKOUT1_DIVIDE', 'ZCLKOUT1_DIVIDE')]:
-        # 1-128 => 0-127 for actual 7 bit value
-        paramadj = 2 * int(ps[param])
-        bitstr = [int(x) for x in "{0:08b}".format(paramadj)[::-1]]
-        # FIXME: only bits 0 and 1 resolving
-        for i in range(8):
-            # for i in range(2):
-            #if i in [0, 3, 5]:
-            #    mybit = 1 ^ bitstr[i]
-            #else:
+        value = int(ps[param])
+
+        # bypass bit
+        segmk.add_site_tag(site, '%s_NODIV' % param, value == 1)
+
+        bitstr = [int(x) for x in "{0:08b}".format(value)[::-1]]
+        bitstr2 = [int(x) for x in "{0:08b}".format(value + 1)[::-1]]
+        for i in range(7):
             mybit = bitstr[i]
-            segmk.add_site_tag(site, '%s[%u]' % (param, i), mybit)
+            mybit2 = bitstr2[i]
+            if i == 0:
+                # shared (inverted) LSB
+                mybit2 = 1 ^ bitstr2[i]
+                assert mybit == mybit2, "{} value {} has invalid bit0 at".format(
+                    param, value)
+
+            # special cases
+            if value == 1:
+                if i == 0:
+                    mybit = 0
+                    mybit2 = 0
+                elif i == 1:
+                    mybit = 1
+            elif value == 128:
+                mybit = 0
+                mybit2 = 0
+
+            segmk.add_site_tag(site, '%s_CNT0_[%u]' % (param, i), mybit)
+            segmk.add_site_tag(site, '%s_CNT1_[%u]' % (param, i), mybit2)
 
 
 def misc_tags(segmk, ps, site):
@@ -54,7 +72,7 @@ def run():
         assert j['module'] == 'my_MMCME2_ADV'
         site = verilog.unquote(ps['LOC'])
 
-        #clkout_tags(segmk, ps, site)
+        clkout_tags(segmk, ps, site)
         misc_tags(segmk, ps, site)
 
     segmk.compile()
