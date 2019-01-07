@@ -15,7 +15,6 @@ test $# -ge 1 || exit 1
 test ! -e "$SPECDIR"
 export SPECDIR=$1
 
-rm -rf "$SPECDIR"
 mkdir -p "$SPECDIR"
 cd "$SPECDIR"
 
