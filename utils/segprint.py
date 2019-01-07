@@ -107,8 +107,8 @@ def print_unknown_bits(segments, bitdata):
         framebase = int(block["baseaddr"][0], 16)
         for i in range(block["frames"]):
             words = segframes.setdefault(framebase + i, set())
-            for j in range(block["baseaddr"][1],
-                           block["baseaddr"][1] + block["words"]):
+            for j in range(int(block["baseaddr"], 16),
+                           int(block["baseaddr"], 16) + block["words"]):
                 words.add(j)
 
     # print uncovered locations
