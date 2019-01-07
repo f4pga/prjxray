@@ -7,7 +7,6 @@ all: database
 $(SPECIMENS_OK):
 	mkdir -p build
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
-	touch $@
 
 run:
 	$(MAKE) clean
