@@ -6,8 +6,7 @@ from prjxray import verilog
 
 
 def gen_sites():
-    for tile_name, site_name, _site_type in util.get_roi().gen_sites(
-        ['PS7']):
+    for tile_name, site_name, _site_type in util.get_roi().gen_sites(['PS7']):
         yield tile_name, site_name
 
 
@@ -681,7 +680,11 @@ module top(input clk, stb, di, output do);
 	.SAXIHP3WSTRB			(),
 	.SAXIHP3WVALID			()
 	);
-    ''' % { 'loc': 'site_name', 'dut': 'site_name', 'isone': isone })
+    ''' % {
+		'loc': 'site_name',
+		'dut': 'site_name',
+		'isone': isone
+	})
 
     print("endmodule")
     write_params(params)
