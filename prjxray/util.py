@@ -103,6 +103,23 @@ def parse_db_line(line):
     return tag, bits, None
 
 
+def parse_db_lines(fn):
+    with open(fn, "r") as f:
+        for line in f:
+            yield line, parse_db_line(line)
+
+
+def write_db_lines(fn, entries):
+    new_lines = []
+    for tag, bits in entries.items():
+        new_line = " ".join([tag] + sorted(bits))
+        new_lines.append(new_line)
+
+    with open(fn, "w") as f:
+        for line in sorted(new_lines):
+            print(line, file=f)
+
+
 def parse_tagbit(x):
     # !30_07
     if x[0] == '!':
@@ -186,14 +203,12 @@ def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
         elif not os.path.exists(fn):
             continue
 
-        with open(fn, "r") as f:
-            for line in f:
-                tag, bits, mode = parse_db_line(line)
-                assert mode is None
-                for bitstr in bits:
-                    # 31_06
-                    _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
-                    yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
+        for line, (tag, bits, mode) in parse_db_lines(fn):
+            assert mode is None
+            for bitstr in bits:
+                # 31_06
+                _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
+                yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
 
 
 def specn():
