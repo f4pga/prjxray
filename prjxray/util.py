@@ -137,6 +137,9 @@ block_type_i2s = {
     # special...maybe should error until we know what it is?
     # 3: 'RESERVED',
 }
+block_type_s2i = {}
+for k, v in block_type_i2s.items():
+    block_type_s2i[v] = k
 
 
 def addr2btype(base_addr):
