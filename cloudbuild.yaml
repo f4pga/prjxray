@@ -7,7 +7,7 @@ steps:
     - '--build-arg'
     - 'NUM_PARALLEL_JOBS=${_NUM_CPUS}'
     - '-t'
-    - '${_GCR_ZONE}/$PROJECT_ID/${_IMAGE_NAME}:${TAG_NAME}'
+    - '${_GCR_ZONE}/$PROJECT_ID/${_IMAGE_NAME}:${SHORT_SHA}'
     - '.'
 options:
   disk_size_gb: 1000
@@ -18,4 +18,4 @@ substitutions:
   _IMAGE_NAME: 'prjxray-db'
   _NUM_CPUS: '16'
 images:
-  - '${_GCR_ZONE}/$PROJECT_ID/${_IMAGE_NAME}:${TAG_NAME}'
+  - '${_GCR_ZONE}/$PROJECT_ID/${_IMAGE_NAME}:${SHORT_SHA}'
