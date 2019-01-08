@@ -9,7 +9,7 @@ build/segbits_liob33.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -c -1 -o build/segbits_liob33.rdb $(SEGDATAS)
 
 build/segbits_liob33.db: build/segbits_liob33.rdb
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
+	python3 ${XRAY_DIR}/utils/groupmask.py $^ $@
 	${XRAY_MASKMERGE} build/mask_liob33.db $(SEGDATAS)
 
 pushdb:
