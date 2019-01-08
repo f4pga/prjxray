@@ -681,10 +681,10 @@ module top(input clk, stb, di, output do);
 	.SAXIHP3WVALID			()
 	);
     ''' % {
-		'loc': 'site_name',
-		'dut': 'site_name',
-		'isone': isone
-	})
+                'loc': 'site_name',
+                'dut': 'site_name',
+                'isone': isone
+            })
 
     print("endmodule")
     write_params(params)
