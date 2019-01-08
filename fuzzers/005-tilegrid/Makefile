@@ -1,5 +1,10 @@
 FUZDIR=$(shell pwd)
 BUILD_DIR=$(FUZDIR)/build
+TILEGRID_TDB_DEPS=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb
+
+ifeq ($(XRAY_DATABASE), "zynq7")
+TILEGRID_TDB_DEPS=$(TILEGRID_TDB_DEPS) ps7/build/segbits_tilegrid.tdb
+endif
 
 database: build/tilegrid.json
 
@@ -22,7 +27,7 @@ build/bram/deltas:
 build/iob/deltas:
 	bash generate.sh build/iob iob
 
-build/tilegrid_tdb.json: add_tdb.py iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb
+build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPS)
 	python3 add_tdb.py --fn-in build/basicdb/tilegrid.json --fn-out build/tilegrid_tdb.json
 
 iob/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
@@ -33,6 +38,9 @@ mmcm/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 
 pll/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd pll && $(MAKE)
+
+ps7/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd ps7 && $(MAKE)
 
 # FIXME: add monitor to ROI
 monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
@@ -54,6 +62,7 @@ clean:
 	cd iob && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
 	cd pll && $(MAKE) clean
+	cd ps7 && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 
