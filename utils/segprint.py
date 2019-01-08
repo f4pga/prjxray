@@ -7,6 +7,7 @@ Ex: BRAM_L_X6Y100:CLB_IO_CLK
 '''
 
 import sys, os, json, re
+import copy
 from prjxray import bitstream
 from prjxray import db as prjxraydb
 from prjxray import util
@@ -93,31 +94,42 @@ def mk_segbits(seginfo, bitdata):
     return segbits
 
 
-def print_unknown_bits(segments, bitdata):
+def gen_tilegrid_masks(tiles):
+    """yield (addr_min, addr_max + 1, word_min, word_max + 1)"""
+    for tilek, tilev in tiles.items():
+        for block_type, blockj in tilev["bits"].items():
+            baseaddr = int(blockj["baseaddr"], 0)
+            frames = blockj["frames"]
+            offset = blockj["offset"]
+            words = blockj["words"]
+            yield (baseaddr, baseaddr + frames, offset, offset + words)
+
+
+def print_unknown_bits(tiles, bitdata):
     '''
     Print bits not covered by known tiles
-    '''
 
-    # Index all known locations
-    # seggrames[address] = set()
-    # where set contains word numbers
-    segframes = dict()
-    for segname, segment in segments.items():
-        block = segment["block"]
-        framebase = int(block["baseaddr"][0], 16)
-        for i in range(block["frames"]):
-            words = segframes.setdefault(framebase + i, set())
-            for j in range(int(block["baseaddr"], 16),
-                           int(block["baseaddr"], 16) + block["words"]):
-                words.add(j)
+    tiles: tilegrid json
+    bitdata[addr][word] = set of bit indices (0 to 31)
+    '''
+    # Start with an open set and remove elements as we find them
+    tocheck = copy.deepcopy(bitdata)
+
+    for addr_min, addr_max_p1, word_min, word_max_p1 in gen_tilegrid_masks(
+            tiles):
+        for addr in range(addr_min, addr_max_p1):
+            if addr not in tocheck:
+                continue
+            for word in range(word_min, word_max_p1):
+                if word not in tocheck[addr]:
+                    continue
+                del tocheck[addr][word]
 
     # print uncovered locations
     print('Non-database bits:')
-    for frame in sorted(bitdata.keys()):
-        for wordidx in sorted(bitdata[frame].keys()):
-            if frame in segframes and wordidx in segframes[frame]:
-                continue
-            for bitidx in sorted(bitdata[frame][wordidx]):
+    for frame in sorted(tocheck.keys()):
+        for wordidx in sorted(tocheck[frame].keys()):
+            for bitidx in sorted(tocheck[frame][wordidx]):
                 print("bit_%08x_%03d_%02d" % (frame, wordidx, bitidx))
 
 
@@ -409,7 +421,8 @@ def run(
     bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
 
     if flag_unknown_bits:
-        print_unknown_bits(segments, bitdata)
+        print_unknown_bits(tiles, bitdata)
+        print("")
 
     # Default: print all
     if segnames:
