@@ -19,7 +19,7 @@ def run(
         metastr += ".DBIT:%u" % dbit
     if dframe is not None:
         metastr += ".DFRAME:%02x" % dframe
-    if multi is not None:
+    if multi:
         metastr += ".MULTI"
 
     tags = dict()
