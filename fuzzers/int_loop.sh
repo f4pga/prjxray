@@ -10,18 +10,12 @@ usage() {
 }
 
 check_args=
-iter_pushdb=false
 end_pushdb=true
 while [[ $# -gt 0 ]]; do
     case "$1" in
     --check-args)
         check_args=$2
         shift
-        shift
-        ;;
-    --iter-pushdb)
-        iter_pushdb=true
-        end_pushdb=false
         shift
         ;;
     -h|--help)
@@ -39,7 +33,6 @@ done
 # Quick solves are sloppy
 # Never push them in as they may be under solved
 if [ "$QUICK" = "Y" ] ; then
-    iter_pushdb=false
     end_pushdb=false
 fi
 
@@ -58,11 +51,7 @@ while true; do
         exit 1
     fi
 
-    if ${MAKE} ITER=$i database; then
-        if $iter_pushdb ; then
-            ${MAKE} pushdb
-        fi
-    fi;
+    ${MAKE} ITER=$i database
     if [ "$QUICK" = "Y" ] ; then
         break;
     fi
