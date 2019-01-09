@@ -14,7 +14,7 @@ steps:
 options:
   disk_size_gb: 1000
   machine_type: N1_HIGHCPU_32
-timeout: '21600s'
+timeout: '24h0m0s'
 substitutions:
   _GCR_ZONE: 'gcr.io'
   _IMAGE_NAME: 'prjxray-db'
