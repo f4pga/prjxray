@@ -6,6 +6,8 @@ steps:
     - 'DEV_ENV_IMAGE=${_DEV_ENV_IMAGE}'
     - '--build-arg'
     - 'NUM_PARALLEL_JOBS=${_NUM_CPUS}'
+    - '--build-arg'
+    - 'BUILD_TYPE=${_BUILD_TYPE}'
     - '-t'
     - '${_GCR_ZONE}/$PROJECT_ID/${_IMAGE_NAME}:${SHORT_SHA}'
     - '.'
@@ -17,5 +19,6 @@ substitutions:
   _GCR_ZONE: 'gcr.io'
   _IMAGE_NAME: 'prjxray-db'
   _NUM_CPUS: '16'
+  _BUILD_TYPE: ''
 images:
   - '${_GCR_ZONE}/$PROJECT_ID/${_IMAGE_NAME}:${SHORT_SHA}'
