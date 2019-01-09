@@ -34,10 +34,10 @@ def run(fn_ins, fn_out, strict=False, verbose=False):
                     print("  New line : %s" % line)
                     assert not strict, "strict: got duplicate bits"
 
-        entries[tag] = bits
-        tags[tag] = (bits, line)
-        if bits != None:
-            bitss[bits] = (tag, line)
+            entries[tag] = bits
+            tags[tag] = (bits, line)
+            if bits != None:
+                bitss[bits] = (tag, line)
 
     util.write_db_lines(fn_out, entries)
 
