@@ -1,7 +1,6 @@
 import os
 import re
 from .roi import Roi
-from .db import Database
 
 
 def get_db_root():
@@ -35,6 +34,7 @@ def slice_xy():
 
 
 def get_roi():
+    from .db import Database
     (x1, x2), (y1, y2) = roi_xy()
     db = Database(get_db_root())
     return Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2)
