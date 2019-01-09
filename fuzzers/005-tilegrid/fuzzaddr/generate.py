@@ -3,8 +3,24 @@
 from prjxray import bitsmaker
 
 
-def run(bits_fn, design_fn, fnout, oneval, dframe, dword, dbit, verbose=False):
-    metastr = "DFRAME:%02x.DWORD:%u.DBIT:%u" % (dframe, dword, dbit)
+def run(
+        bits_fn,
+        design_fn,
+        fnout,
+        oneval,
+        dframe,
+        dword,
+        dbit,
+        multi=False,
+        verbose=False):
+    # mimicing tag names, wasn't sure if it would break things otherwise
+    metastr = "DWORD:%u" % dword
+    if dbit is not None:
+        metastr += ".DBIT:%u" % dbit
+    if dframe is not None:
+        metastr += ".DFRAME:%02x" % dframe
+    if multi is not None:
+        metastr += ".MULTI"
 
     tags = dict()
     f = open(design_fn, 'r')
@@ -28,11 +44,18 @@ def main():
     parser.add_argument("--verbose", action="store_true", help="")
     parser.add_argument("--design", default="design.csv", help="")
     parser.add_argument("--fnout", default="/dev/stdout", help="")
-    parser.add_argument("--oneval", required=True, help="")
+    parser.add_argument(
+        "--oneval",
+        required=True,
+        help="Parameter value that correspodns to a set bit")
+    #
+    parser.add_argument(
+        "--multi", action="store_true", help="Are multiple bits expected?")
     parser.add_argument(
         "--dframe",
         type=str,
-        required=True,
+        required=False,
+        default="",
         help="Reference frame delta (base 16)")
     parser.add_argument(
         "--dword",
@@ -42,7 +65,8 @@ def main():
     parser.add_argument(
         "--dbit",
         type=str,
-        required=True,
+        required=False,
+        default="",
         help="Reference bit delta (base 10)")
     args = parser.parse_args()
 
@@ -51,9 +75,10 @@ def main():
         args.design,
         args.fnout,
         args.oneval,
-        int(args.dframe, 16),
+        None if args.dframe == "" else int(args.dframe, 16),
         int(args.dword, 10),
-        int(args.dbit, 10),
+        None if args.dbit == "" else int(args.dbit, 10),
+        multi=args.multi,
         verbose=args.verbose)
 
 
