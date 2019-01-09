@@ -29,6 +29,7 @@ ${XRAY_PARSEDB} --strict "$2"
 # However, expand back to L/R to make downstream tools not depend on this
 # in case we later find exceptions
 
+ismask=false
 case "$1" in
 	clbll_l)
 		sed < "$2" > "$tmp1" \
@@ -77,6 +78,7 @@ case "$1" in
 
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
+		ismask=true
 		cp "$2" "$tmp1" ;;
 
 	*)
@@ -86,7 +88,12 @@ case "$1" in
 esac
 
 touch "$db"
-sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2" || true
+if $ismask ; then
+    sort -u "$tmp1" "$db" | grep -v '<.*>' > "$tmp2" || true
+else
+    # tmp1 must be placed second to take precedence over old bad entries
+    python3 ${XRAY_DIR}/utils/mergedb.py --out "$tmp2" "$db" "$tmp1"
+fi
 # Check aggregate db for consistency and make canonical
 ${XRAY_PARSEDB} --strict "$tmp2" "$db"
 

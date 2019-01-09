@@ -425,10 +425,6 @@ def get_bit_info(dbstate, frameidx, bitidx, tiletype):
     bit_pos = "%02d_%02d" % (frameidx, bitidx)
 
     bit_name = get_bit_name(dbstate, frameidx, bitidx, bit_pos, tiletype)
-    if tiletype in ["clbll_l", "clbll_r", "clblm_l", "clblm_r", "dsp_l",
-                    "dsp_r", "bram_l", "bram_r"]:
-        if bit_name is not None:
-            return bit_pos, "INT", [bit_pos], "#88aaff"
 
     label = None
     title = [bit_pos]
@@ -490,7 +486,7 @@ def get_bit_info(dbstate, frameidx, bitidx, tiletype):
             else:
                 bgcolor = "#ff0000"
 
-        m = re.search(r"\.([ABCD])DI1MUX\.", bit_name)
+        m = re.search(r"\.([ABCD])LUT.DI1MUX\.", bit_name)
         if m:
             bgcolor = "#ffffaa"
             label = m.group(1) + "DI1"
@@ -581,11 +577,11 @@ def get_bit_info(dbstate, frameidx, bitidx, tiletype):
             bgcolor = "#4466bb"
             label = "LH"
 
-        if re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]FF.DMUX", bit_name):
+        if re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]5?FFMUX", bit_name):
             bgcolor = "#88aaff"
             label = "DMX"
 
-        if re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]MUX", bit_name):
+        if re.match("^CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]OUTMUX", bit_name):
             bgcolor = "#aa88ff"
             label = "OMX"
 
