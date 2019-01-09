@@ -10,6 +10,8 @@ steps:
     - 'BUILD_TYPE=${_BUILD_TYPE}'
     - '-t'
     - '${_GCR_ZONE}/$PROJECT_ID/${_IMAGE_NAME}:${SHORT_SHA}'
+    - '-f'
+    - '.github/cloudbuild/Dockerfile'
     - '.'
 options:
   disk_size_gb: 1000
