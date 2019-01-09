@@ -5,15 +5,10 @@ from prjxray import util
 from prjxray import verilog
 
 
-def gen_sites():
-    for tile_name, site_name, _site_type in util.get_roi().gen_sites(['PS7']):
-        yield tile_name, site_name
-
-
 def write_params(params):
-    pinstr = 'tile,val,site\n'
-    for tile, (site, val) in sorted(params.items()):
-        pinstr += '%s,%s,%s\n' % (tile, val, site)
+    pinstr = 'tile,val\n'
+    for tile, (val) in sorted(params.items()):
+        pinstr += '%s,%s\n' % (tile, val)
     open('params.csv', 'w').write(pinstr)
 
 
@@ -45,20 +40,15 @@ module top(input clk, stb, di, output do);
     params = {}
     # FIXME: can't LOC?
     # only one for now, worry about later
-    sites = list(gen_sites())
-    assert len(sites) == 1
-    for (tile_name, site_name), isone in zip(sites,
-                                             util.gen_fuzz_states(len(sites))):
-        # 0 is invalid
-        # shift one bit, keeping LSB constant
 
-        config_param = {0: "", 1: ""}[isone]
-        params[tile_name] = (site_name, config_param)
+    assert os.getenv('XRAY_PART') == "xc7z010clg400-1"
+    for isone in util.gen_fuzz_states(1):
+        params['INT_L_X0Y50'] = isone
         print(
             '''
     (* KEEP, DONT_TOUCH *)
 
-    PS7 #(/*.LOC("%(loc)s")*/) dut_%(dut)s(
+    PS7 dut_%(dut)s(
 	.DMA0DATYPE			(),
 	.DMA0DAVALID			(),
 	.DMA0DRREADY			(),
@@ -354,7 +344,7 @@ module top(input clk, stb, di, output do);
 	.PSCLK				(),
 	.PSPORB				(),
 	.PSSRSTB			(),
-	.DDRARB				(%(isone)s),
+	.DDRARB				(%(dout)u),
 	.DMA0ACLK			(),
 	.DMA0DAREADY			(),
 	.DMA0DRLAST			(),
@@ -681,9 +671,8 @@ module top(input clk, stb, di, output do);
 	.SAXIHP3WVALID			()
 	);
     ''' % {
-                'loc': 'site_name',
                 'dut': 'site_name',
-                'isone': isone
+                'dout': isone
             })
 
     print("endmodule")
