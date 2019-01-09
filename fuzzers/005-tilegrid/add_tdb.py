@@ -58,8 +58,10 @@ def load_db(fn):
         # FIXME: add offset to name
         # IOB_X0Y101.DFRAME:27.DWORD:3.DBIT:3 00020027_003_03
         parts = l.split(' ')
-        assert len(parts) == 2, "Unresolved bit: %s" % l
-        tagstr, addrstr = parts
+        # FIXME: need to check that all bits in part have same baseaddr, for now only the first bit is taken
+        #assert len(parts) == 2, "Unresolved bit: %s" % l
+        tagstr = parts[0]
+        addrstr = parts[1]
 
         frame, wordidx, bitidx = parse_addr(addrstr)
         bitidx_up = False
@@ -107,6 +109,9 @@ def run(fn_in, fn_out, verbose=False):
     if os.path.exists("monitor/build/segbits_tilegrid.tdb"):
         # FIXME: height
         tdb_fns.append(("monitor/build/segbits_tilegrid.tdb", 30, 101))
+    if os.path.exists("ps7/build/segbits_tilegrid.tdb"):
+        # FIXME: height
+        tdb_fns.append(("ps7/build/segbits_tilegrid.tdb", 42, 2))
 
     for (tdb_fn, frames, words) in tdb_fns:
         for (tile, frame, wordidx) in load_db(tdb_fn):
