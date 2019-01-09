@@ -21,6 +21,6 @@ design_bits.ok: vivado.ok
 	touch design_bits.ok
 
 generate.ok: design_bits.ok ${FUZDIR}/generate.py
-	python3 ${FUZDIR}/generate.py
+	python3 ${FUZDIR}/generate.py ${GENERATE_FLAGS}
 	touch generate.ok
 
