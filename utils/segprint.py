@@ -35,7 +35,7 @@ def process_db(db, tile_type, process, verbose):
                     process(line)
 
 
-def get_database(db, tile_type, verbose=False):
+def get_database(db, tile_type, bit_only=False, verbose=False):
     tags = list()
 
     if tile_type in segbitsdb:
@@ -48,6 +48,8 @@ def get_database(db, tile_type, verbose=False):
         name = parts[0]
 
         if parts[1] == 'always' or parts[1] == 'hint':
+            if bit_only:
+                return
             tagbits = []
         else:
             tagbits = [util.parse_tagbit(x) for x in parts[1:]]
@@ -157,7 +159,7 @@ def tag_matched(entry, segbits):
 decode_warnings = set()
 
 
-def seg_decode(db, seginfo, segbits, segments, verbose=False):
+def seg_decode(db, seginfo, segbits, segments, bit_only=False, verbose=False):
     '''
     Remove matched tags from segbits
     Returns a list of all matched tags
@@ -181,7 +183,8 @@ def seg_decode(db, seginfo, segbits, segments, verbose=False):
             return
 
         try:
-            entries = get_database(db, tile_type, verbose=verbose)
+            entries = get_database(
+                db, tile_type, bit_only=bit_only, verbose=verbose)
         except NoDB:
             verbose and print("WARNING: failed to load DB for %s" % tile_type)
             assert tile_type != 'BRAM_L'
@@ -259,10 +262,19 @@ def seg_decode(db, seginfo, segbits, segments, verbose=False):
     return segtags
 
 
-def print_seg(segname, segbits, segtags, decode_emit):
+def print_seg(
+        segname, seginfo, nbits, segbits, segtags, decode_emit, verbose=False):
     '''Print segment like used by segmaker/segmatch'''
 
     print("seg %s" % (segname, ))
+    if verbose:
+        print("Bits: %s" % nbits)
+        print(
+            "Address: %s, +%s" %
+            (seginfo["block"]["baseaddr"], seginfo["block"]["frames"]))
+        print(
+            "Words: %s, +%s" %
+            (seginfo["block"]["offset"], seginfo["block"]["words"]))
 
     # Bits that weren't decoded
     for bit in sorted(segbits):
@@ -281,27 +293,34 @@ def handle_segment(
         decode_omit,
         omit_empty_segs,
         segments,
+        bit_only=False,
         verbose=False):
 
     seginfo = segments[segname]
 
-    # only print bitstream tiles
-    #if segname not in segments:
-    #    return
-
     segbits = mk_segbits(seginfo, bitdata)
+    nbits = len(segbits)
 
     if decode_emit or decode_omit:
-        segtags = seg_decode(db, seginfo, segbits, segments, verbose=verbose)
+        segtags = seg_decode(
+            db, seginfo, segbits, segments, bit_only=bit_only, verbose=verbose)
     else:
         segtags = set()
 
     # Found something to print?
-    if not (not omit_empty_segs or len(segbits) > 0 or len(segtags) > 0):
+    keep = not omit_empty_segs or len(segbits) > 0 or len(segtags) > 0
+    if not keep:
         return
 
     print()
-    print_seg(segname, segbits, segtags, decode_emit)
+    print_seg(
+        segname,
+        seginfo,
+        nbits,
+        segbits,
+        segtags,
+        decode_emit,
+        verbose=verbose)
 
 
 def overlap(a, b):
@@ -414,6 +433,7 @@ def run(
         flag_unknown_bits=False,
         flag_decode_emit=False,
         flag_decode_omit=False,
+        bit_only=False,
         verbose=False):
     db = prjxraydb.Database(db_root)
     tiles = load_tiles(db_root)
@@ -445,6 +465,7 @@ def run(
             flag_decode_omit,
             omit_empty_segs,
             segments,
+            bit_only=bit_only,
             verbose=verbose)
 
 
@@ -466,19 +487,29 @@ def main():
         '-d',
         action='store_true',
         help='decode known segment bits and write them as tags')
-    # XXX: possibly broken, or we have missing DB data
     parser.add_argument(
         '-D',
         action='store_true',
         help='decode known segment bits and omit them in the output')
+    parser.add_argument(
+        '--bit-only',
+        action='store_true',
+        help='only decode real bitstream directives')
     parser.add_argument('bits_file', help='')
     parser.add_argument(
         'segnames', nargs='*', help='List of tile or tile:block to print')
     args = parser.parse_args()
 
     run(
-        args.db_root, args.bits_file, args.segnames, args.z, args.b, args.d,
-        args.D, args.verbose)
+        args.db_root,
+        args.bits_file,
+        args.segnames,
+        args.z,
+        args.b,
+        args.d,
+        args.D,
+        bit_only=args.bit_only,
+        verbose=args.verbose)
 
 
 if __name__ == '__main__':
