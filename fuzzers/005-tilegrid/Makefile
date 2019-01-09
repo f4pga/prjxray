@@ -1,9 +1,9 @@
 FUZDIR=$(shell pwd)
 BUILD_DIR=$(FUZDIR)/build
-TILEGRID_TDB_DEPS=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb
 
-ifeq ($(XRAY_DATABASE), "zynq7")
-TILEGRID_TDB_DEPS=$(TILEGRID_TDB_DEPS) ps7/build/segbits_tilegrid.tdb
+ifeq (${XRAY_DATABASE}, zynq7)
+TILEGRID_TDB_DEPENDENCIES += ps7/build/segbits_tilegrid.tdb
 endif
 
 database: build/tilegrid.json
@@ -27,7 +27,7 @@ build/bram/deltas:
 build/iob/deltas:
 	bash generate.sh build/iob iob
 
-build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPS)
+build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py --fn-in build/basicdb/tilegrid.json --fn-out build/tilegrid_tdb.json
 
 iob/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
