@@ -6,7 +6,15 @@ import os
 
 
 # Copied from generate_full.py
-def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
+def add_tile_bits(
+        tile_name,
+        tile_db,
+        baseaddr,
+        offset,
+        frames,
+        words,
+        height=None,
+        verbose=False):
     '''
     Record data structure geometry for the given tile baseaddr
     For most tiles there is only one baseaddr, but some like BRAM have multiple
@@ -22,11 +30,22 @@ def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
     assert offset + words <= 101, (
         tile_db, offset + words, offset, words, block_type)
 
-    assert block_type not in bits
+    baseaddr_str = '0x%08X' % baseaddr
+
+    block = bits.get(block_type, None)
+    if block is not None:
+        verbose and print(
+            "%s: existing defintion for %s" % (tile_name, block_type))
+        assert block["baseaddr"] == baseaddr_str
+        assert block["frames"] == frames
+        assert block["offset"] == offset, "%s; orig offset %s, new %s" % (
+            tile_name, block["offset"], offset)
+        assert block["words"] == words
+        return
     block = bits.setdefault(block_type, {})
 
     # FDRI address
-    block["baseaddr"] = '0x%08X' % baseaddr
+    block["baseaddr"] = baseaddr_str
     # Number of frames this entry is sretched across
     # that is the following FDRI addresses are used: range(baseaddr, baseaddr + frames)
     block["frames"] = frames
@@ -129,7 +148,8 @@ def run(fn_in, fn_out, verbose=False):
             bitsj = tilej['bits']
             bt = util.addr2btype(frame)
             verbose and print("Add %s %08X_%03u" % (tile, frame, wordidx))
-            add_tile_bits(tilej, frame, wordidx, frames, words)
+            add_tile_bits(
+                tile, tilej, frame, wordidx, frames, words, verbose=verbose)
 
     # Save
     json.dump(
