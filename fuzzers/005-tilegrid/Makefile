@@ -3,7 +3,7 @@ BUILD_DIR=$(FUZDIR)/build
 TILEGRID_TDB_DEPENDENCIES=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb
 
 ifeq (${XRAY_DATABASE}, zynq7)
-TILEGRID_TDB_DEPENDENCIES += ps7/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += ps7_int/build/segbits_tilegrid.tdb
 endif
 
 database: build/tilegrid.json
@@ -39,8 +39,8 @@ mmcm/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 pll/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd pll && $(MAKE)
 
-ps7/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
-	cd ps7 && $(MAKE)
+ps7_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd ps7_int && $(MAKE)
 
 # FIXME: add monitor to ROI
 monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
@@ -62,7 +62,7 @@ clean:
 	cd iob && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
 	cd pll && $(MAKE) clean
-	cd ps7 && $(MAKE) clean
+	cd ps7_int && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 
