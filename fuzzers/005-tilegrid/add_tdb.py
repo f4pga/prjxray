@@ -55,7 +55,7 @@ def parse_addr(line):
 def check_frames(frames):
     baseaddr = set()
     for frame in frames:
-        baseaddr.add(round(frame / 128))
+        baseaddr.add(frame // 128)
     assert len(baseaddr) == 1, "Multiple base addresses for the same tag"
 
 
@@ -67,16 +67,12 @@ def load_db(fn):
         parts = l.split(' ')
         tagstr = parts[0]
         addrlist = parts[1:]
-
         frames = list()
-
         for addrstr in addrlist:
             frame, wordidx, bitidx = parse_addr(addrstr)
             frames.append(frame)
-
-        # Check the frames base addresses
         check_frames(frames)
-        # Take the first bit in the list
+        # Take the first address in the list
         frame, wordidx, bitidx = parse_addr(addrlist[0])
 
         bitidx_up = False
