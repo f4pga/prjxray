@@ -192,6 +192,7 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                 segtype=tile_type.lower(),
                 baseaddr=tile_baseaddrs.get(tile_name, None))
 
+        # bram config, does not include data
         def process_bram_dsp():
             for k in range(5):
                 if tile_type in ["BRAM_L", "DSP_L"]:
@@ -372,7 +373,9 @@ def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
 
 
 def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
-    '''Populate segment base addresses: Up along INT/HCLK columns'''
+    '''
+    Populate segment base addresses: Up along INT/HCLK columns
+    '''
 
     verbose and print('')
     # Copy the initial list containing only base addresses
@@ -610,9 +613,10 @@ def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, verbose=False):
     tile_baseaddrs = make_tile_baseaddrs(tiles, site_baseaddr, verbose=verbose)
     tiles_by_grid = make_tiles_by_grid(tiles)
 
+    # Group related addresses (ex: INT and CLB)
+    # Base addresses will be propagated below
     segments = make_segments(
         database, tiles_by_grid, tile_baseaddrs, verbose=verbose)
-
     # Reference adjacent CLBs to locate adjacent tiles by known offsets
     seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=verbose)
     seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=verbose)
