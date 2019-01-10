@@ -1,5 +1,6 @@
 N ?= 10
 GENERATE_ARGS ?=
+GENERATE_PY ?= $(shell realpath ../fuzzaddr/generate.py)
 SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
@@ -9,7 +10,7 @@ build/segbits_tilegrid.tdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o build/segbits_tilegrid.tdb $$(find build -name "segdata_tilegrid.txt")
 
 $(SPECIMENS_OK):
-	GENERATE_ARGS=${GENERATE_ARGS} bash ../fuzzaddr/generate.sh $(subst /OK,,$@)
+	GENERATE_ARGS=${GENERATE_ARGS} GENERATE_PY=${GENERATE_PY} bash ../fuzzaddr/generate.sh $(subst /OK,,$@)
 	touch $@
 
 run:

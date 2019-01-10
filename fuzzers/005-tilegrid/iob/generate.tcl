@@ -32,7 +32,7 @@ proc loc_pins {} {
     set io_pin_sites [make_io_pin_sites]
 
     set fp [open "design.csv" w]
-    puts $fp "port,site,tile,pin,val"
+    puts $fp "port,site,site_type,tile,pin,val"
 
     puts "Looping"
     for {set idx 0} {$idx < [llength $pin_lines]} {incr idx} {
@@ -40,9 +40,10 @@ proc loc_pins {} {
         puts "$line"
 
         set site_str [lindex $line 0]
-        set pin_str [lindex $line 1]
-        set io [lindex $line 2]
-        set cell_str [lindex $line 3]
+        set site_type [lindex $line 1]
+        set pin_str [lindex $line 2]
+        set io [lindex $line 3]
+        set cell_str [lindex $line 4]
 
         # Have: site
         # Want: pin for site
@@ -73,7 +74,7 @@ proc loc_pins {} {
         }
         set_property PULLTYPE $val $port
         # puts "IOB $port $site $tile $pin $val"
-        puts $fp "$tile,$val,$site,$port,$pin"
+        puts $fp "$tile,$val,$site,$site_type,$port,$pin"
     }
     close $fp
 }

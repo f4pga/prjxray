@@ -11,24 +11,17 @@ from prjxray import verilog
 
 
 def gen_iobs():
-    '''
-    IOB33S: main IOB of a diff pair
-    IOB33M: secondary IOB of a diff pair
-    IOB33: not a diff pair. Relatively rare (at least in ROI...2 of them?)
-    Focus on IOB33S to start
-    '''
     for _tile_name, site_name, site_type in util.get_roi().gen_sites(
-            # ['IOB33', 'IOB33S']):
-            # FIXME: special cases on IOB33
-        ['IOB33S']):
+        ["IOB33M", "IOB33S"]):
         yield site_name, site_type
 
 
 def write_params(ports):
     pinstr = ''
-    for site, (name, dir_, cell) in sorted(ports.items(), key=lambda x: x[1]):
+    for site, (name, site_type, dir_, cell) in sorted(ports.items(),
+                                                      key=lambda x: x[1]):
         # pinstr += 'set_property -dict "PACKAGE_PIN %s IOSTANDARD LVCMOS33" [get_ports %s]' % (packpin, port)
-        pinstr += '%s,%s,%s,%s\n' % (site, name, dir_, cell)
+        pinstr += '%s,%s,%s,%s,%s\n' % (site, site_type, name, dir_, cell)
     open('params.csv', 'w').write(pinstr)
 
 
@@ -56,7 +49,7 @@ def run():
         assert site not in ports
         cell = "di_bufs[%u].ibuf" % DIN_N
         DIN_N += 1
-        ports[site] = (name, 'input', cell)
+        ports[site] = (name, iosites[site], 'input', cell)
 
     def assign_o(site, name):
         nonlocal DOUT_N
@@ -64,7 +57,7 @@ def run():
         assert site not in ports
         cell = "do_bufs[%u].obuf" % DOUT_N
         DOUT_N += 1
-        ports[site] = (name, 'output', cell)
+        ports[site] = (name, iosites[site], 'output', cell)
 
     # Assign at least one di and one do
     assign_i(rand_site(), 'di[0]')
