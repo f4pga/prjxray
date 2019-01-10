@@ -60,7 +60,7 @@ proc write_int_ppips_db {filename tile} {
     close $fp
 }
 
-foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R INT_L INT_R} {
+foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R INT_L INT_R BRAM_L BRAM_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
