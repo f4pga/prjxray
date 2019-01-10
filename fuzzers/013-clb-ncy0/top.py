@@ -60,7 +60,6 @@ module clb_NCY0_MX (input clk, input [7:0] din, output [7:0] dout);
     parameter N=-1;
 
     wire [3:0] o;
-    assign dout[0] = o[1];
     wire o6, o5;
     reg [3:0] s;
 
@@ -84,6 +83,15 @@ module clb_NCY0_MX (input clk, input [7:0] din, output [7:0] dout);
 
 	(* LOC=LOC, KEEP, DONT_TOUCH *)
     CARRY4 carry4(.O(o), .CO(), .DI(din[3:0]), .S(s), .CYINIT(1'b0), .CI());
+
+	(* LOC=LOC, BEL=\"AFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce1(.D(o[0]), .C(clk), .CE(), .R(), .Q());
+	(* LOC=LOC, BEL=\"BFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce2(.D(o[1]), .C(clk), .CE(), .R(), .Q());
+	(* LOC=LOC, BEL=\"CFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce3(.D(o[2]), .C(clk), .CE(), .R(), .Q());
+	(* LOC=LOC, BEL=\"DFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce4(.D(o[3]), .C(clk), .CE(), .R(), .Q());
 endmodule
 
 module clb_NCY0_O5 (input clk, input [7:0] din, output [7:0] dout);
@@ -92,7 +100,6 @@ module clb_NCY0_O5 (input clk, input [7:0] din, output [7:0] dout);
     parameter N=-1;
 
     wire [3:0] o;
-    assign dout[0] = o[1];
     wire o6, o5;
     reg [3:0] s;
     reg [3:0] di;
@@ -120,5 +127,14 @@ module clb_NCY0_O5 (input clk, input [7:0] din, output [7:0] dout);
 
 	(* LOC=LOC, KEEP, DONT_TOUCH *)
     CARRY4 carry4(.O(o), .CO(), .DI(di), .S(s), .CYINIT(1'b0), .CI());
+
+	(* LOC=LOC, BEL=\"AFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce1(.D(o[0]), .C(clk), .CE(), .R(), .Q());
+	(* LOC=LOC, BEL=\"BFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce2(.D(o[1]), .C(clk), .CE(), .R(), .Q());
+	(* LOC=LOC, BEL=\"CFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce3(.D(o[2]), .C(clk), .CE(), .R(), .Q());
+	(* LOC=LOC, BEL=\"DFF\", KEEP, DONT_TOUCH *)
+    FDRE fdce4(.D(o[3]), .C(clk), .CE(), .R(), .Q());
 endmodule
 ''')
