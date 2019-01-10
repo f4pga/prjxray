@@ -38,9 +38,8 @@ module top(input clk, stb, di, output do);
     ''')
 
     params = {}
-    # FIXME: can't LOC?
-    # only one for now, worry about later
 
+    # NOTE: The INT_L tile has been hardcoded and it works only for the part specified in the assertion
     assert os.getenv('XRAY_PART') == "xc7z010clg400-1"
     for isone in util.gen_fuzz_states(1):
         params['INT_L_X0Y50'] = isone

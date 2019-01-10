@@ -110,7 +110,6 @@ def run(fn_in, fn_out, verbose=False):
         # FIXME: height
         tdb_fns.append(("monitor/build/segbits_tilegrid.tdb", 30, 101))
     if os.path.exists("ps7_int/build/segbits_tilegrid.tdb"):
-        # FIXME: height
         tdb_fns.append(("ps7_int/build/segbits_tilegrid.tdb", 36, 2))
 
     for (tdb_fn, frames, words) in tdb_fns:
