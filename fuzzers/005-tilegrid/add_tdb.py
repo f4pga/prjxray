@@ -26,7 +26,7 @@ def add_tile_bits(
     block_type = util.addr2btype(baseaddr)
 
     assert offset <= 100, (tile_name, offset)
-    # Few rare cases at X=0 for double width tiles split in half
+    # Few rare cases at X=0 for double width tiles split in half => small negative offset
     assert offset >= 0 or "IOB" in tile_name, (tile_name, offset)
     assert 1 <= words <= 101
     assert offset + words <= 101, (
