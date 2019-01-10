@@ -4,6 +4,7 @@ import json
 
 from prjxray.segmaker import Segmaker
 from prjxray import verilog
+from prjxray import segmaker
 
 
 def isinv_tags(segmk, ps, site):
@@ -23,14 +24,9 @@ def isinv_tags(segmk, ps, site):
 
 
 def bus_tags(segmk, ps, site):
-    '''
-    parameter DOA_REG = 1'b0;
-    parameter DOB_REG = 1'b0;
-    parameter SRVAL_A = 18'b0;
-    parameter SRVAL_B = 18'b0;
-    parameter INIT_A = 18'b0;
-    parameter INIT_B = 18'b0;
-    '''
+    for param in ("DOA_REG", "DOB_REG"):
+        segmk.add_site_tag(site, param, verilog.parsei(ps[param]))
+
     for param, tagname in [('SRVAL_A', 'ZSRVAL_A'), ('SRVAL_B', 'ZSRVAL_B'),
                            ('INIT_A', 'ZINIT_A'), ('INIT_B', 'ZINIT_B')]:
         bitstr = verilog.parse_bitstr(ps[param])
@@ -54,34 +50,16 @@ def rw_width_tags(segmk, ps, site):
     9       1       1       0
     18      0       0       1
     '''
-    '''
-    for param, vals in {
-            "READ_WIDTH_A": [1, 2, 4, 9, 18],
-            "READ_WIDTH_B": [1, 2, 4, 9, 18],
-            "WRITE_WIDTH_A": [1, 2, 4, 9, 18],
-            "WRITE_WIDTH_B": [1, 2, 4, 9, 18],
-            }.items():
-        set_val = int(ps[param])
-        for val in vals:
-            has = set_val == val
-            segmk.add_site_tag(site, '%s_B0' % (param), has)
-    '''
     for param in ["READ_WIDTH_A", "READ_WIDTH_B", "WRITE_WIDTH_A",
                   "WRITE_WIDTH_B"]:
         set_val = int(ps[param])
-        # Multiple bits (not one hot)
-        # segmk.add_site_tag(site, '%s_B0' % (param), set_val in (2, 9))
-        # segmk.add_site_tag(site, '%s_B1' % (param), set_val in (4, 9))
-        # segmk.add_site_tag(site, '%s_B2' % (param), set_val in (18, ))
 
-        # 1 is special in that its all 0's
-        # diff only against that
-        segmk.add_site_tag(site, '%s_%u' % (param, 1), set_val != 1)
-        for widthn in [2, 4, 9, 18]:
-            if set_val == 1:
-                segmk.add_site_tag(site, '%s_%u' % (param, widthn), False)
-            elif set_val == widthn:
-                segmk.add_site_tag(site, '%s_%u' % (param, widthn), True)
+        def mk(x):
+            return '%s_%u' % (param, x)
+
+        segmaker.add_site_group_zero(
+            segmk, site, "",
+            [mk(1), mk(2), mk(4), mk(9), mk(18)], mk(1), mk(set_val))
 
 
 def write_mode_tags(segmk, ps, site):
@@ -107,7 +85,6 @@ def run():
         ps = j['params']
         assert j['module'] == 'my_RAMB18E1'
         site = verilog.unquote(ps['LOC'])
-        #print('site', site)
 
         isinv_tags(segmk, ps, site)
         bus_tags(segmk, ps, site)
