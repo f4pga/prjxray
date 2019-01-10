@@ -1,17 +1,39 @@
 #!/usr/bin/env python3
 
-import re, os
-
 from prjxray.segmaker import Segmaker
+import argparse
 
-segmk = Segmaker("design.bits")
+parser = argparse.ArgumentParser(description="Generate int segfiles")
+parser.add_argument(
+    '--todo', action='store', default='../../todo.txt', help='todo file path')
+parser.add_argument(
+    '--design',
+    action='store',
+    default='design.txt',
+    help='design description file path')
+parser.add_argument('--verbose', action='store_true', help='')
+parser.add_argument(
+    '--bits', action='store', default='design.bits', help='bits file path')
+
+args = parser.parse_args()
+segmk = Segmaker(args.bits)
+
+verbose = args.verbose
 
 tiledata = dict()
 pipdata = dict()
 ignpip = set()
+todo = set()
 
-print("Loading tags from design.txt.")
-with open("design.txt", "r") as f:
+print("Loading todo from %s." % args.todo)
+with open(args.todo, "r") as f:
+    for line in f:
+        line = tuple(line.strip().split("."))
+        verbose and print('todo', line)
+        todo.add(line)
+
+print("Loading tags from %s." % args.design)
+with open(args.design, "r") as f:
     for line in f:
         tile, pip, src, dst, pnum, pdir = line.split()
         _, pip = pip.split(".")
@@ -36,10 +58,13 @@ with open("design.txt", "r") as f:
             tiledata[tile]["srcs"].add(dst)
             tiledata[tile]["dsts"].add(src)
 
-        if pnum == 1 or pdir == 0 or \
-                re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", src) or \
-                re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", dst) or \
-                re.match(r"^(CTRL|GFAN)(_L)?[0-9]", dst):
+        if pnum == 1 or pdir == 0:
+            verbose and print('ignore pnum == 1 or pdir == 0: ', pip)
+            ignpip.add(pip)
+
+        t = ("_".join(tile.split("_")[0:2]), dst, src)
+        if t not in todo:
+            verbose and print('ignore not todo: ', t)
             ignpip.add(pip)
 
 for tile, pips_srcs_dsts in tiledata.items():
@@ -56,13 +81,5 @@ for tile, pips_srcs_dsts in tiledata.items():
         elif src_dst[1] not in dsts:
             segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
-
-def bitfilter(frame_idx, bit_idx):
-    assert os.getenv("XRAY_DATABASE") in ["artix7", "kintex7"]
-    if frame_idx in [30, 31]:
-        return False
-    return True
-
-
-segmk.compile(bitfilter=bitfilter)
-segmk.write(allow_empty=True)
+segmk.compile()
+segmk.write()

@@ -6,5 +6,8 @@ set -ex
 
 export FUZDIR=$PWD
 source ${XRAY_GENHEADER}
+
+echo '`define SEED 32'"'h$(echo $1 | md5sum | cut -c1-8)" > setseed.vh
+
 make -f $XRAY_DIR/utils/top_generate.mk
 
