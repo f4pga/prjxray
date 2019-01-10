@@ -17,16 +17,19 @@ def mktag(tile, dframe, dword, dbit, multi=False):
 
 
 def run(
-        fnout="/dev/stdout",
+        fnout="segdata_tilegrid.txt",
         bits_fn="design.bits",
         design_fn="design.csv",
         oneval="KEEPER",
         verbose=False):
     """
     LIOB33_SING_X0Y100  LIOB33_SING     00020026_000_28
-    LIOB33_X0Y101       LIOB33          00020027_003_03
+    LIOB33_X0Y101                       00020027_003_03
+    LIOB33_X0Y101                       00020026_004_28
     LIOB33_X0Y103       LIOB33          00020027_007_03
+    .
     LIOB33_X0Y105       LIOB33          00020027_011_03
+    .
     ...
     LIOB33_X0Y143       LIOB33          00020027_088_03
     LIOB33_X0Y145       LIOB33          00020027_092_03
@@ -37,8 +40,8 @@ def run(
     # convert either Y0 or Y1 position to relative offsets
     dy2delta = {
         # (dframe, dword, dbit)
-        0: (0x26, 0, 28),
-        1: (0x27, 3, 3),
+        0: (0x26, 2, 28),
+        1: (0x27, 1, 3),
     }
 
     tags = dict()

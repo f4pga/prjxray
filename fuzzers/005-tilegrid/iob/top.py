@@ -12,7 +12,9 @@ from prjxray import verilog
 
 def gen_iobs():
     for _tile_name, site_name, site_type in util.get_roi().gen_sites(
-        ["IOB33M", "IOB33S"]):
+            # ["IOB33M", "IOB33S", "IOB33"]):
+            # we could also solve IOB33M, but its redundant
+        ["IOB33S", "IOB33"]):
         yield site_name, site_type
 
 
@@ -64,7 +66,8 @@ def run():
     assign_o(rand_site(), 'do[0]')
     # Now assign the rest randomly
     while len(remain_sites()):
-        if random.randint(0, 1):
+        # if random.randint(0, 1):
+        if 0:
             assign_i(rand_site(), 'di[%u]' % DIN_N)
         else:
             assign_o(rand_site(), 'do[%u]' % DOUT_N)

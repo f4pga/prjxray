@@ -25,10 +25,12 @@ def add_tile_bits(
     bits = tile_db['bits']
     block_type = util.addr2btype(baseaddr)
 
-    assert 0 <= offset <= 100, offset
+    assert offset <= 100, (tile_name, offset)
+    # Few rare cases at X=0 for double width tiles split in half
+    assert offset >= 0 or "IOB" in tile_name, (tile_name, offset)
     assert 1 <= words <= 101
     assert offset + words <= 101, (
-        tile_db, offset + words, offset, words, block_type)
+        tile_name, offset + words, offset, words, block_type)
 
     baseaddr_str = '0x%08X' % baseaddr
 
@@ -148,8 +150,19 @@ def run(fn_in, fn_out, verbose=False):
             bitsj = tilej['bits']
             bt = util.addr2btype(frame)
             verbose and print("Add %s %08X_%03u" % (tile, frame, wordidx))
+            # Special case for half height IOB
+            if tile == "LIOB33_SING_X0Y149":
+                tile_words = 2
+            else:
+                tile_words = words
             add_tile_bits(
-                tile, tilej, frame, wordidx, frames, words, verbose=verbose)
+                tile,
+                tilej,
+                frame,
+                wordidx,
+                frames,
+                tile_words,
+                verbose=verbose)
 
     # Save
     json.dump(
