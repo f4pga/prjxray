@@ -60,10 +60,18 @@ proc write_int_ppips_db {filename tile} {
     close $fp
 }
 
-foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R INT_L INT_R} {
+foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
-        write_clb_ppips_db "ppips_[string tolower $tile_type].txt" $tile
+        write_clb_ppips_db "ppips_[string tolower $tile_type].db" $tile
+    }
+}
+
+foreach tile_type {INT_L INT_R BRAM_L BRAM_R BRAM_INT_INTERFACE_L BRAM_INT_INTERFACE_R} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_int_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
