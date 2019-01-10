@@ -4,10 +4,10 @@ SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 
 database: $(SPECIMENS_OK)
-	cp build/specimen_001/ppips_*.txt build/
+	cp build/specimen_001/ppips_*.db build/
 
 pushdb:
-	cp build/ppips_*.txt ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
+	cp build/ppips_*.db ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
