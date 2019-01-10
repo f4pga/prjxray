@@ -52,18 +52,33 @@ def parse_addr(line):
     return frame, wordidx, bitidx
 
 
+def check_frames(frames):
+    baseaddr = set()
+    for frame in frames:
+        baseaddr.add(round(frame / 128))
+    assert len(baseaddr) == 1, "Multiple base addresses for the same tag"
+
+
 def load_db(fn):
     for l in open(fn, "r"):
         l = l.strip()
         # FIXME: add offset to name
         # IOB_X0Y101.DFRAME:27.DWORD:3.DBIT:3 00020027_003_03
         parts = l.split(' ')
-        # FIXME: need to check that all bits in part have same baseaddr, for now only the first bit is taken
-        #assert len(parts) == 2, "Unresolved bit: %s" % l
         tagstr = parts[0]
-        addrstr = parts[1]
+        addrlist = parts[1:]
 
-        frame, wordidx, bitidx = parse_addr(addrstr)
+        frames = list()
+
+        for addrstr in addrlist:
+            frame, wordidx, bitidx = parse_addr(addrstr)
+            frames.append(frame)
+
+        # Check the frames base addresses
+        check_frames(frames)
+        # Take the first bit in the list
+        frame, wordidx, bitidx = parse_addr(addrlist[0])
+
         bitidx_up = False
 
         tparts = tagstr.split('.')
