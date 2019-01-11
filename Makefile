@@ -1,9 +1,6 @@
-CLANG_FORMAT ?= clang-format-5.0
-PYTHON_FORMAT ?= yapf
-TCL_FORMAT ?= utils//tcl-reformat.sh
+ALL_EXCLUDE = third_party .git env build
 
-.PHONY: database format clean env
-
+# Tools + Environment
 IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi;
 env:
 	virtualenv --python=python3 --system-site-packages env
@@ -17,22 +14,50 @@ build:
 	mkdir -p build
 	cd build; cmake ..; $(MAKE)
 
-database: build
-	$(MAKE) -C $@
+.PHONY: env build
 
-ALL_EXCLUDE = third_party .git env build
-
+# Run tests of code.
+# ------------------------
 TEST_EXCLUDE = $(foreach x,$(ALL_EXCLUDE) fuzzers minitests experiments,--ignore $(x))
-test: build
-	# FIXME: Add C++ unit tests
-	$(IN_ENV) py.test $(TEST_EXCLUDE) --doctest-modules
 
-FIND_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*')
-format:
-	find . -name \*.cc $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
-	find . -name \*.h $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
-	$(IN_ENV) find . -name \*.py $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) yapf -p -i
-	find . -name \*.tcl $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) -n 1 $(TCL_FORMAT)
+test: test-py test-cpp
+	@true
+
+test-py:
+	$(IN_ENV) py.test $(TEST_EXCLUDE) --doctest-modules --junitxml=build/py_test_results.xml
+
+test-cpp:
+	mkdir -p build
+	cd build && cmake -DPRJXRAY_BUILD_TESTING=ON ..
+	cd build && $(MAKE) -s
+	cd build && ctest --no-compress-output -T Test -C RelWithDebInfo --output-on-failure
+
+.PHONY: test test-py test-cpp
+
+# Auto formatting of code.
+# ------------------------
+FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*')
+
+CLANG_FORMAT ?= clang-format-5.0
+format-cpp:
+	find . -name \*.cc $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
+	find . -name \*.h $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
+
+PYTHON_FORMAT ?= yapf
+format-py:
+	$(IN_ENV) find . -name \*.py $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) yapf -p -i
+
+TCL_FORMAT ?= utils//tcl-reformat.sh
+format-tcl:
+	find . -name \*.tcl $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) -n 1 $(TCL_FORMAT)
+
+format: format-cpp format-py format-tcl
+	@true
+
+.PHONY: format format-cpp format-py format-tcl
+
+# Project X-Ray database
+# ------------------------
 
 checkdb:
 	@for DB in database/*; do if [ -d $$DB ]; then \
