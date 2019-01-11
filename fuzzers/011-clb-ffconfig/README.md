@@ -1,4 +1,6 @@
-# FFConfig Fuzzer
+# clb-ffconfig Fuzzer
+
+Documents FF configuration.
 
 Note Vivado GUI is misleading in some cases where it shows configuration per FF, but its actually per SLICE
 
@@ -28,7 +30,7 @@ Note Vivado GUI is misleading in some cases where it shows configuration per FF,
 
 ### FFSYNC
 
-Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
+Configures whether a storage element is synchronous or asynchronous.
 
 Scope: entire site (not individual FFs)
 
@@ -40,9 +42,7 @@ Scope: entire site (not individual FFs)
 
 ### LATCH
 
-Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
-
-Controls latch vs FF behavior for the CLB
+Configures latch vs FF behavior for the CLB
 
 | LATCH | Description | Primitives |
 |-------|-------------|------------|
@@ -50,11 +50,9 @@ Controls latch vs FF behavior for the CLB
 |1      | LUT6 storage elements are latches (LDCE or LDPE). LUT5 storage elements cannot be used  | LDCE, LDPE    |
 
 
-### [ABCD]*FF.ZRST
+### N*FF.ZRST
 
-Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
-
-Configured stored value when reset is asserted
+Configures stored value when reset is asserted
 
 | Prim                  |ZRST|On reset|
 |-----------------------|----|-----   |
@@ -64,11 +62,9 @@ Configured stored value when reset is asserted
 |FDPE, FDSE, and LDPE   | 1  | 1      |
 
 
-## [ABCD]*FF.ZINI
+## N*FF.ZINI
 
 Sets GSR FF or latch value
-
-Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
 
 | LATCH | ZINI | Set to |
 |-------|------|--------|
@@ -80,9 +76,7 @@ Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
 
 ## CEUSEDMUX
 
-Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
-
-Configure ability to drive clock enable (CE) or always enable clock
+Configures ability to drive clock enable (CE) or always enable clock
 
 | CEUSEDMUX | Description             |
 |-----------|-------------------------|
@@ -92,9 +86,7 @@ Configure ability to drive clock enable (CE) or always enable clock
 
 ## SRUSEDMUX
 
-Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
-
-Configure ability to reset FF after GSR
+Configures ability to reset FF after GSR
 
 | SRUSEDMUX | Description           |
 |-----------|-----------------------|
@@ -105,11 +97,9 @@ TODO: how used when SR?
 
 ## CLKINV
 
-Sites: CLBL[LM]_[LR].SLICE[LM]_X[01] (all CLB)
+Configures whether to invert the clock going into a slice.
 
 Scope: entire site (not individual FFs)
-
-Whether to invert the clock going into a slice.
 
 | LATCH | CLKINV | Description    |
 |-------|--------|----------------|

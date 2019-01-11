@@ -1,29 +1,50 @@
-# CLBRAM Fuzzer
+# clb-ram Fuzzer
 
-## Purpose  
-Solves SLICEM specific bits:  
-- Shift register LUT (SRL)  
-- Memory size  
-- RAM vs LUT  
-- Related muxes  
+| Primitive  | RAM | SMALL | SRL |
+|------------|-----|-------|-----|
+| LUT6       |     |       |     |
+| SRL16E     |     | X     | X   |
+| SRLC32E    |     |       | X   |
+| RAM32X1S   | X   | X     |     |
+| RAM64X1S   | X   |       |     |
+| RAM32M     | X   | X     |     |
+| RAM32X1D   | X   | X     |     |
+| RAM64M     | X   |       |     |
+| RAM64X1D   | X   |       |     |
+| RAM128X1D  | X   |       |     |
+| RAM256X1S  | X   |       |     |
+| RAM128X1S  | X   |       |     |
 
-## Algorithm  
-  
-## Outcome
-```
-CLB.SLICE_X0.ALUT.RAM 31_16
-CLB.SLICE_X0.ALUT.SMALL 00_04
-CLB.SLICE_X0.ALUT.SRL 30_16
-CLB.SLICE_X0.BLUT.RAM 31_17
-CLB.SLICE_X0.BLUT.SMALL 00_24
-CLB.SLICE_X0.BLUT.SRL 30_17
-CLB.SLICE_X0.CLUT.RAM 31_46
-CLB.SLICE_X0.CLUT.SMALL 00_28
-CLB.SLICE_X0.CLUT.SRL 30_46
-CLB.SLICE_X0.DLUT.RAM 31_47
-CLB.SLICE_X0.DLUT.SMALL 01_59
-CLB.SLICE_X0.DLUT.SRL 30_47
-CLB.SLICE_X0.WA7USED 00_40
-CLB.SLICE_X0.WA8USED 01_27
-CLB.SLICE_X0.WEMUX.CE 01_23
-```
+
+## NLUT.RAM
+
+Set to make a RAM* family primitive, otherwise is a SRL or LUT function generator.
+
+
+## NLUT.SMALL
+
+Seems to be set on smaller primitives.
+
+
+## NLUT.SRL
+
+Whether to make a shift register LUT (SRL). Set when using SRL16E or SRLC32E
+
+
+## WA7USED
+
+Set to 1 to propagate CLB's CX input to WA7
+
+
+## WA8USED
+
+Set to 1 to propagate CLB's BX input to WA8
+
+
+## WEMUX.CE
+
+| WEMUX.CE  | CLB RAM write enable | 
+|-----------|----------------------|
+| 0         | CLB WE input         |
+| 1         | CLB CE input         |
+
