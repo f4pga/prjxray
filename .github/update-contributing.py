@@ -29,7 +29,7 @@ contrib.append(
 ----
 
 This file is generated from [README.md](README.md), please edit that file then
-run the `./.update-contributing.py`.
+run the `./.github/update-contributing.py`.
 
 """)
 
