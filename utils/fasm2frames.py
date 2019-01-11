@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 
 from __future__ import print_function
-from prjxray import fasm_assembler
-from prjxray import db
+
 import argparse
 import os
 import os.path
+
+from prjxray import fasm_assembler
+from prjxray import db
+
+
+class FASMSyntaxError(SyntaxError):
+    pass
 
 
 def dump_frames_verbose(frames):

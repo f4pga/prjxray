@@ -92,5 +92,5 @@ In addition to the above contribution guidelines, see the guide to
 ----
 
 This file is generated from [README.md](README.md), please edit that file then
-run the `./.update-contributing.py`.
+run the `./.github/update-contributing.py`.
 
