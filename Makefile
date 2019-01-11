@@ -20,8 +20,14 @@ build:
 database: build
 	$(MAKE) -C $@
 
-FORMAT_EXCLUDE = third_party .git env build
-FIND_EXCLUDE = $(foreach x,$(FORMAT_EXCLUDE),-and -not -path './$(x)/*')
+ALL_EXCLUDE = third_party .git env build
+
+TEST_EXCLUDE = $(foreach x,$(ALL_EXCLUDE) fuzzers minitests experiments,--ignore $(x))
+test: build
+	# FIXME: Add C++ unit tests
+	$(IN_ENV) py.test $(TEST_EXCLUDE) --doctest-modules
+
+FIND_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*')
 format:
 	find . -name \*.cc $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
 	find . -name \*.h $(FIND_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
