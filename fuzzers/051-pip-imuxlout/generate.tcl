@@ -88,13 +88,13 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     }
 }
 
-proc write_txtdata {filename} {
+proc write_txtdata {filename tiles} {
     puts "Writing $filename."
     set fp [open $filename w]
     set all_pips [lsort -unique [get_pips -of_objects [get_nets -hierarchical]]]
     if {$all_pips != {}} {
         puts "Dumping pips."
-        foreach tile [get_tiles [regsub -all {CLBL[LM]} [get_tiles -of_objects [get_sites -of_objects [get_pblocks roi]]] INT]] {
+        foreach tile $tiles {
             foreach pip [filter $all_pips "TILE == $tile"] {
                 set src_wire [get_wires -uphill -of_objects $pip]
                 set dst_wire [get_wires -downhill -of_objects $pip]
@@ -110,4 +110,13 @@ proc write_txtdata {filename} {
 route_design
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
-write_txtdata design.txt
+
+# quick: only analyze manually routed tiles, skipping riscv and such
+if {[info exists ::env(QUICK) ] && "$::env(QUICK)" == "Y"} {
+    set lim [expr [llength $todo_lines] - 1]
+    set tiles [concat [lrange $int_l_tiles 0 $lim] [lrange $int_r_tiles 0 $lim]]
+} else {
+    set tiles [get_tiles [regsub -all {CLBL[LM]} [get_tiles -of_objects [get_sites -of_objects [get_pblocks roi]]] INT]]
+}
+
+write_txtdata design.txt $tiles
