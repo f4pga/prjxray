@@ -1,61 +1,94 @@
 # FFConfig Fuzzer
 
-Documents the following:  
-- FF clock inversion  
-- FF primitive mapping  
-- FF initialization value  
+Tags for CLB tiles use a dot-separated hierarchy for their tag names. For example the tag `CLBLL_L.SLICEL_X0.ALUT.INIT[00]` documents the bit position of the LSB LUT init bit for the ALUT for the slice with even X coordinate within a `CLBLL_L` tile. (There are 4 LUTs in a slice: ALUT, BLUT, CLUT, and DLUT. And there are two slices in a CLB tile: One with an even X coordinate using the `SLICEL_X0` namespace for tags, and one with an odd X coordinate using the `SLICEL_X1` namespace for tags.)
 
-Clock inversion is per slice (as BEL CLKINV)  
-Vivado GUI is misleading as it often shows it per FF, which is not actually true  
+Also note mapping between FF/latch library elements and CLB FF's:
 
-|      |FFSYNC|LATCH|ZRST |
-|------|------|-----|-----|
-|Sample| 00_48|30_32|30_12|
-|FDPE  |      |     |     |
-|FDSE  |   X  |     |     |
-|FDRE  |   X  |     |  X  |
-|FDCE  |      |     |  X  |
-|LDCE  |      |  X  |  X  |
-|LDPE  |      |  X  |     |
+|  Element | CE | CK | D | SR | Q |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| FDRE | CE | C | D | R | Q |
+| FDPE | CE | C | D | PRE | Q |
+| FDSE | CE | C | D | S | Q |
+| FDCE | CE | C | D | CLR | Q |
+| LDPE | GE | G | D | PRE | Q |
+| LDCE | GE | G | D | CLR | Q |
+
+And required configuration (as noted below):
+
+|  Element | FFSYNC | LATCH | ZRST |
+| ------------- | ------------- | ------------- | ------------- |
+| FDPE |  |  |  |
+| FDSE | 1 |  |  |
+| FDRE | 1 |  | 1 |
+| FDCE |  |  | 1 |
+| LDCE |  | 1 | 1 |
+| LDPE |  | 1 |  |
 
 
-```
-CLB.SLICE_X0.A5FF.ZINIT 31_06
-CLB.SLICE_X0.A5FF.ZRESET 01_07
-CLB.SLICE_X0.AFF.ZINIT 31_03
-CLB.SLICE_X0.AFF.ZRESET 30_12
-CLB.SLICE_X0.B5FF.ZINIT 31_22
-CLB.SLICE_X0.B5FF.ZRESET 01_19
-CLB.SLICE_X0.BFF.ZINIT 31_28
-CLB.SLICE_X0.BFF.ZRESET 30_30
-CLB.SLICE_X0.C5FF.ZINIT 31_41
-CLB.SLICE_X0.C5FF.ZRESET 01_47
-CLB.SLICE_X0.CFF.ZINIT 31_33
-CLB.SLICE_X0.CFF.ZRESET 30_33
-CLB.SLICE_X0.CLKINV 01_51
-CLB.SLICE_X0.D5FF.ZINIT 31_51
-CLB.SLICE_X0.D5FF.ZRESET 01_55
-CLB.SLICE_X0.DFF.ZINIT 31_58
-CLB.SLICE_X0.DFF.ZRESET 30_50
-CLB.SLICE_X0.FFSYNC 00_48
-CLB.SLICE_X0.LATCH 30_32
-CLB.SLICE_X1.A5FF.ZINIT 31_05
-CLB.SLICE_X1.A5FF.ZRESET 01_03
-CLB.SLICE_X1.AFF.ZINIT 31_04
-CLB.SLICE_X1.AFF.ZRESET 31_15
-CLB.SLICE_X1.B5FF.ZINIT 31_23
-CLB.SLICE_X1.B5FF.ZRESET 00_16
-CLB.SLICE_X1.BFF.ZINIT 31_29
-CLB.SLICE_X1.BFF.ZRESET 31_30
-CLB.SLICE_X1.C5FF.ZINIT 31_42
-CLB.SLICE_X1.C5FF.ZRESET 00_44
-CLB.SLICE_X1.CFF.ZINIT 31_34
-CLB.SLICE_X1.CFF.ZRESET 30_34
-CLB.SLICE_X1.CLKINV 00_52
-CLB.SLICE_X1.D5FF.ZINIT 31_52
-CLB.SLICE_X1.D5FF.ZRESET 00_56
-CLB.SLICE_X1.DFF.ZINIT 31_59
-CLB.SLICE_X1.DFF.ZRESET 31_50
-CLB.SLICE_X1.FFSYNC 01_31
-CLB.SLICE_X1.LATCH 31_32
-```
+## CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]*FF.ZINI
+
+Sets GSR FF or latch value
+
+FF
+* 0: reset / initialize to 1
+* 1: reset / initialize to 0
+
+Latch
+* 0: reset / initialize to 0
+* 1: reset / initialize to 1
+
+## CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]*FF.ZRST
+
+Set when reset signal should set storage element to 0. Specifically:
+
+ * 0: FDRE, FDCE, and LDCE primitives
+ * 1: FDPE, FDSE, and LDPE primitives
+
+## CLBL[LM]_[LR].SLICE[LM]_X[01].[ABCD]LUT.INIT
+
+TBD
+
+## CLBL[LM]_[LR].SLICE[LM]_X[01].FFSYNC
+
+Unlike most bits, shared between all CLB FFs
+
+ * 0: synchronous reset, specifically FDPE, FDCE, LDCE, and LDPE primitives
+ * 1: asynchronous reset, specifically FDSE and FDRE primitives
+
+## CLBL[LM]_[LR].SLICE[LM]_X[01].LATCH
+
+Controls latch vs FF behavior for the CLB
+
+ * 0: all storage elements in the CLB are FF's
+ * 1: LUT6 storage elements are latches (LDCE or LDPE). LUT5 storage elements cannot be used
+
+## CLBL[LM]_[LR].SLICE[LM]_X[01].CEUSEDMUX
+
+Configure ability to drive clock enable (CE) or always enable clock
+* 0: always on (CE=1)
+* 1: controlled (CE=mywire)
+
+## CLBL[LM]_[LR].SLICE[LM]_X[01].SRUSEDMUX
+
+Configure ability to reset FF after GSR
+* 0: never reset (R=0)
+* 1: controlled (R=mywire)
+
+TODO: how used when SR?
+
+## CLBL[LM]_[LR].SLICE[LM]_X[01].CLKINV
+
+Whether to invert the clock going into a slice.
+
+FF:
+* 0: normal clock
+* 1: invert clock
+
+Latch:
+* 0: invert clock
+* 1: normal clock
+
+That is, for example, FDSE_1 will have the bit set, but LDCE_1 will have the bit clear.
+
+Note: clock cannot be inverted at individual FF's
+
