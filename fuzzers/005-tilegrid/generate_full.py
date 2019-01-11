@@ -228,7 +228,8 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
             if "INT" not in tile_type:
                 assert 0
             else:
-                create_segment_for_int_lr(database, segments, tile_name, tiles_by_grid, verbose)
+                create_segment_for_int_lr(
+                    database, segments, tile_name, tiles_by_grid, verbose)
 
         def process_default():
             verbose and nolr(tile_type) not in (
@@ -306,6 +307,7 @@ def create_segment_for_int_lr(
             segtype=database[tile]["type"],
             verbose=verbose,
         )
+
 
 def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
     '''Populate segment base addresses: L/R along INT column'''
