@@ -105,11 +105,10 @@ def db_load():
     return db_res
 
 
-type_to_tiles, grid_to_tile, nodes, node_node_pip, reverse_node_node = db_load(
-)
-
-
 def route(args):
+    type_to_tiles, grid_to_tile, nodes, node_node_pip, reverse_node_node = db_load(
+    )
+
     active_pips = set()
     blocked_nodes = set()
 

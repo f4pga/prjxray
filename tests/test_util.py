@@ -53,9 +53,9 @@ class TestUtil(TestCase):
                 }
             }
         with setup_database(makedb({})):
-            self.assertEquals(list(get_roi().gen_sites()), [])
+            self.assertListEqual(list(get_roi().gen_sites()), [])
         with setup_database(makedb({'FOO': 'BAR'})):
-            self.assertEquals(
+            self.assertListEqual(
                 list(get_roi().gen_sites()), [('ATILE', 'FOO', 'BAR')])
 
 

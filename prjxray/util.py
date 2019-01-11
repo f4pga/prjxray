@@ -14,10 +14,10 @@ def get_db_root():
 
 
 def roi_xy():
-    x1 = int(os.getenv('XRAY_ROI_GRID_X1'))
-    x2 = int(os.getenv('XRAY_ROI_GRID_X2'))
-    y1 = int(os.getenv('XRAY_ROI_GRID_Y1'))
-    y2 = int(os.getenv('XRAY_ROI_GRID_Y2'))
+    x1 = int(os.getenv('XRAY_ROI_GRID_X1', 0))
+    x2 = int(os.getenv('XRAY_ROI_GRID_X2', 58))
+    y1 = int(os.getenv('XRAY_ROI_GRID_Y1', 0))
+    y2 = int(os.getenv('XRAY_ROI_GRID_Y2', 52))
 
     return (x1, x2), (y1, y2)
 
