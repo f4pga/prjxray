@@ -42,6 +42,7 @@ def add_tile_bits(
         assert block["offset"] == offset, "%s; orig offset %s, new %s" % (
             tile_name, block["offset"], offset)
         assert block["words"] == words
+        return
 
     block = bits.setdefault(block_type, {})
 
