@@ -5,6 +5,7 @@ from prjxray import util
 Local utils script to hold shared code of the 005-tilegrid fuzzer scripts
 '''
 
+
 def add_tile_bits(
         tile_name,
         tile_db,
