@@ -41,6 +41,7 @@ test-cpp:
 	cd build && cmake -DPRJXRAY_BUILD_TESTING=ON ..
 	cd build && $(MAKE) -s
 	cd build && ctest --no-compress-output -T Test -C RelWithDebInfo --output-on-failure
+	xsltproc .github/kokoro/ctest2junit.xsl build/Testing/*/Test.xml > build/cpp_test_results.xml
 
 .PHONY: test test-py test-cpp
 
