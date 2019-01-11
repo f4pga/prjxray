@@ -29,8 +29,11 @@ for {gets $fp line} {$line != ""} {gets $fp line} {
 }
 close $fp
 
-set int_l_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi] {TYPE == INT_L}]]
-set int_r_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi] {TYPE == INT_R}]]
+# each run can fail up to three times so we need to prepare 3*todo_lines tiles to work on
+set tiles [expr 3 * [llength $todo_lines]]
+
+set int_l_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_L}]]
+set int_r_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_R}]]
 
 for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set line [lindex $todo_lines $idx]
@@ -40,25 +43,57 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set dst_wire [lindex $line 1]
     set src_wire [lindex $line 2]
 
-    if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]; set other_tile [lindex $int_r_tiles $idx]}
-    if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]; set other_tile [lindex $int_l_tiles $idx]}
-
-    set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
-            -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
-
-    set recv_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
-            -of_objects [get_nodes -of_objects [get_wires $tile/$dst_wire]]]]]
-
     set mylut [create_cell -reference LUT1 mylut_$idx]
-    set_property -dict "LOC $driver_site BEL A6LUT" $mylut
-
     set myff [create_cell -reference FDRE myff_$idx]
-    set ffbel [lindex "AFF A5FF BFF B5FF CFF C5FF DFF D5FF" [expr {int(rand()*8)}]]
-    set_property -dict "LOC $recv_site BEL $ffbel" $myff
 
     set mynet [create_net mynet_$idx]
     connect_net -net $mynet -objects "$mylut/O $myff/C"
-    route_via $mynet "$tile/$src_wire $tile/$dst_wire"
+
+    set tries 0
+    while {1} {
+        set tile_idx [expr $tries + [expr $idx * 3]]
+        incr tries
+
+        if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $tile_idx]; set other_tile [lindex $int_r_tiles $tile_idx]}
+        if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $tile_idx]; set other_tile [lindex $int_l_tiles $tile_idx]}
+
+        set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+                -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
+
+        set recv_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+                -of_objects [get_nodes -of_objects [get_wires $tile/$dst_wire]]]]]
+
+        set_property -dict "LOC $driver_site BEL A6LUT" $mylut
+        set ffbel [lindex "AFF A5FF BFF B5FF CFF C5FF DFF D5FF" [expr {int(rand()*8)}]]
+        set_property -dict "LOC $recv_site BEL $ffbel" $myff
+
+        puts "ffbel $ffbel"
+        puts "tile $tile"
+
+        set rc [route_via $mynet "$tile/$src_wire $tile/$dst_wire" 0]
+        if {$rc != 0} {
+            puts "ROUTING DONE!"
+            break
+        }
+
+        # fallback
+        puts "WARNING: failed to route net"
+        write_checkpoint -force route_todo_$idx.$tries.fail.dcp
+
+        puts "Rolling back route"
+        set_property is_route_fixed 0 $mynet
+        set_property is_bel_fixed 0 $mylut
+        set_property is_loc_fixed 1 $mylut
+        set_property is_bel_fixed 0 $myff
+        set_property is_loc_fixed 1 $myff
+        route_design -unroute -nets $mynet
+
+        # sometimes it gets stuck in specific src -> dst locations
+        if {$tries >= 3} {
+            puts "WARNING: failed to route net after $tries tries"
+            error
+        }
+    }
 }
 
 proc write_txtdata {filename} {
