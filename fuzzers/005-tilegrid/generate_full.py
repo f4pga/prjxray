@@ -226,11 +226,9 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                     baseaddr=baseaddr)
 
         def process_int():
-            if "INT" not in tile_type:
-                assert 0
-            else:
-                create_segment_for_int_lr(
-                    database, segments, tile_name, tiles_by_grid, verbose)
+            assert "INT" in tile_type, "Tile is not of type INT_L/R"
+            create_segment_for_int_lr(
+                database, segments, tile_name, tiles_by_grid, verbose)
 
         def process_default():
             verbose and nolr(tile_type) not in (
