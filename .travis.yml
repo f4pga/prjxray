@@ -1,24 +1,6 @@
 matrix:
   include:
-    # Job 1) Test C++ w/ GCC
-    - os: linux
-      dist: trusty
-      language: cpp
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-      script:
-        - export CC=gcc-6
-        - export CXX=g++-6
-        - mkdir -p build
-        - pushd build
-        - cmake -DPRJXRAY_BUILD_TESTING=ON ..
-        - make -j 4
-        - ctest
-    # Job 2) Lint checks on Python and C++
+    # Job 1) Runs the tests
     - os: linux
       dist: trusty
       language: python
@@ -27,16 +9,35 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      install:
+        - export CC=gcc-6
+        - export CXX=g++-6
+        - make env
+      script:
+        - export CC=gcc-6
+        - export CXX=g++-6
+        - make test
+    # Job 2) Checks the formatting
+    - os: linux
+      dist: trusty
+      language: python
+      python: 3.6
+      addons:
+        apt:
+          sources:
             - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
           packages:
             - clang-format-5.0
             - g++-6
       install:
         - export CC=gcc-6
         - export CXX=g++-6
-        - pip install -r requirements.txt
+        - make env
       script:
         - export CC=gcc-6
         - export CXX=g++-6
         - make format
-        - test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; } 
+        - test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; }
