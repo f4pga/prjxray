@@ -12,6 +12,7 @@ A post processing step verifies that two tiles don't reference the same bitstrea
 
 from generate import load_tiles
 from prjxray import util
+import util as localutil
 
 
 def nolr(tile_type):
@@ -494,42 +495,6 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                 wordbase)
 
 
-def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
-    '''
-    Record data structure geometry for the given tile baseaddr
-    For most tiles there is only one baseaddr, but some like BRAM have multiple
-    Notes on multiple block types:
-    https://github.com/SymbiFlow/prjxray/issues/145
-    '''
-
-    bits = tile_db['bits']
-    block_type = util.addr2btype(baseaddr)
-    assert 0 <= offset <= 100, offset
-    assert 1 <= words <= 101
-    assert offset + words <= 101, (
-        tile_db, offset + words, offset, words, block_type)
-
-    #assert block_type not in bits:
-    block = bits.setdefault(block_type, {})
-
-    # FDRI address
-    block["baseaddr"] = '0x%08X' % baseaddr
-    # Number of frames this entry is sretched across
-    # that is the following FDRI addresses are used: range(baseaddr, baseaddr + frames)
-    block["frames"] = frames
-
-    # Index of first word used within each frame
-    block["offset"] = offset
-
-    # related to words...
-    # deprecated field? Don't worry about for now
-    # DSP has some differences between height and words
-    block["words"] = words
-    if height is None:
-        height = words
-    block["height"] = height
-
-
 def db_add_bits(database, segments):
     '''Transfer segment data into tiles'''
     for segment_name in segments.keys():
@@ -597,9 +562,9 @@ def db_add_bits(database, segments):
                 if frames:
                     # if we have a width, we should have a height
                     assert frames and words
-                    add_tile_bits(
-                        database[tile_name], baseaddr, offset, frames, words,
-                        height)
+                    localutil.add_tile_bits(
+                        tile_name, database[tile_name], baseaddr, offset,
+                        frames, words, height)
 
 
 def db_add_segments(database, segments):

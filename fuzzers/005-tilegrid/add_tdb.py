@@ -3,44 +3,7 @@
 from prjxray import util
 import json
 import os
-
-
-# Copied from generate_full.py
-def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
-    '''
-    Record data structure geometry for the given tile baseaddr
-    For most tiles there is only one baseaddr, but some like BRAM have multiple
-    Notes on multiple block types:
-    https://github.com/SymbiFlow/prjxray/issues/145
-    '''
-
-    bits = tile_db['bits']
-    block_type = util.addr2btype(baseaddr)
-
-    assert 0 <= offset <= 100, offset
-    assert 1 <= words <= 101
-    assert offset + words <= 101, (
-        tile_db, offset + words, offset, words, block_type)
-
-    assert block_type not in bits
-    block = bits.setdefault(block_type, {})
-
-    # FDRI address
-    block["baseaddr"] = '0x%08X' % baseaddr
-    # Number of frames this entry is sretched across
-    # that is the following FDRI addresses are used: range(baseaddr, baseaddr + frames)
-    block["frames"] = frames
-
-    # Index of first word used within each frame
-    block["offset"] = offset
-
-    # related to words...
-    # deprecated field? Don't worry about for now
-    # DSP has some differences between height and words
-    block["words"] = words
-    if height is None:
-        height = words
-    block["height"] = height
+import util as localutil
 
 
 def parse_addr(line):
@@ -129,7 +92,7 @@ def run(fn_in, fn_out, verbose=False):
             bitsj = tilej['bits']
             bt = util.addr2btype(frame)
             verbose and print("Add %s %08X_%03u" % (tile, frame, wordidx))
-            add_tile_bits(tilej, frame, wordidx, frames, words)
+            localutil.add_tile_bits(tile, tilej, frame, wordidx, frames, words)
 
     # Save
     json.dump(
