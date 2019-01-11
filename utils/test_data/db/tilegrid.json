@@ -1,0 +1,58 @@
+{
+    "CLBLM_L_X10Y102": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00020500",
+                "frames": 36,
+                "height": 2,
+                "offset": 4,
+                "words": 2
+            }
+        },
+        "grid_x": 30,
+        "grid_y": 49,
+        "segment": "SEG_CLBLM_L_X10Y102",
+        "segment_type": "clblm_l",
+        "sites": {
+            "SLICE_X12Y102": "SLICEM",
+            "SLICE_X13Y102": "SLICEL"
+        },
+        "type": "CLBLM_L"
+    },
+    "HCLK_L_X31Y130": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00020500",
+                "frames": 26,
+                "height": 1,
+                "offset": 50,
+                "words": 1
+            }
+        },
+        "grid_x": 31,
+        "grid_y": 26,
+        "segment": "SEG_HCLK_L_X31Y130",
+        "segment_type": "hclk_l",
+        "sites": {},
+        "type": "HCLK_L"
+    },
+    "INT_L_X10Y102": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00020500",
+                "frames": 28,
+                "height": 2,
+                "offset": 4,
+                "words": 2
+            }
+        },
+        "grid_x": 31,
+        "grid_y": 49,
+        "segment": "SEG_CLBLM_L_X10Y102",
+        "segment_type": "clblm_l",
+        "sites": {
+            "TIEOFF_X11Y102": "TIEOFF"
+        },
+        "type": "INT_L"
+    }
+}
