@@ -1,4 +1,8 @@
 # clb-ndi1mux Fuzzer
 
-See minitest for DI notes
+## NDI1MUX
+
+Configures the NDI1MUX mux which provides the DI1 input on CLB RAM.
+
+Availible selections varies by A/B/C/D, see db for details.
 
