@@ -1,19 +1,13 @@
-# CLBPRECYINIT Fuzzer
+# clb-precyinit Fuzzer
 
-## Purpose
-Document PRECYINIT mux
+## PRECYINIT
 
-## Algorithm
+Configures the PRECYINIT mux which provides CARRY4's first carry chain input
 
-## Outcome
+| PRECYINIT  | Value                           | 
+|------------|---------------------------------|
+| C0         | Logic 0                         |
+| C1         | Logic 1                         |
+| AX         | AX CLB input                    |
+| CIN        | Carry in from adjacent CLB COUT |
 
-```
-CLB.SLICE_X0.PRECYINIT.0 <0 candidates>
-CLB.SLICE_X0.PRECYINIT.1 00_12
-CLB.SLICE_X0.PRECYINIT.AX 30_14
-CLB.SLICE_X0.PRECYINIT.CIN 30_13
-CLB.SLICE_X1.PRECYINIT.0 <0 candidates>
-CLB.SLICE_X1.PRECYINIT.1 01_11
-CLB.SLICE_X1.PRECYINIT.AX 31_13
-CLB.SLICE_X1.PRECYINIT.CIN 31_12
-```

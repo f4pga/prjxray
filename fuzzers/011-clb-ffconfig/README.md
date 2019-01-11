@@ -1,61 +1,110 @@
-# FFConfig Fuzzer
+# clb-ffconfig Fuzzer
 
-Documents the following:  
-- FF clock inversion  
-- FF primitive mapping  
-- FF initialization value  
+Documents FF configuration.
 
-Clock inversion is per slice (as BEL CLKINV)  
-Vivado GUI is misleading as it often shows it per FF, which is not actually true  
+Note Vivado GUI is misleading in some cases where it shows configuration per FF, but its actually per SLICE
 
-|      |FFSYNC|LATCH|ZRST |
-|------|------|-----|-----|
-|Sample| 00_48|30_32|30_12|
-|FDPE  |      |     |     |
-|FDSE  |   X  |     |     |
-|FDRE  |   X  |     |  X  |
-|FDCE  |      |     |  X  |
-|LDCE  |      |  X  |  X  |
-|LDPE  |      |  X  |     |
+## Primitive pin map
+
+|  Element | CE | CK | D | SR  | Q |
+|----------|----|----|---|-----|---|
+| FDRE     | CE | C  | D | R   | Q |
+| FDPE     | CE | C  | D | PRE | Q |
+| FDSE     | CE | C  | D | S   | Q |
+| FDCE     | CE | C  | D | CLR | Q |
+| LDPE     | GE | G  | D | PRE | Q |
+| LDCE     | GE | G  | D | CLR | Q |
 
 
-```
-CLB.SLICE_X0.A5FF.ZINIT 31_06
-CLB.SLICE_X0.A5FF.ZRESET 01_07
-CLB.SLICE_X0.AFF.ZINIT 31_03
-CLB.SLICE_X0.AFF.ZRESET 30_12
-CLB.SLICE_X0.B5FF.ZINIT 31_22
-CLB.SLICE_X0.B5FF.ZRESET 01_19
-CLB.SLICE_X0.BFF.ZINIT 31_28
-CLB.SLICE_X0.BFF.ZRESET 30_30
-CLB.SLICE_X0.C5FF.ZINIT 31_41
-CLB.SLICE_X0.C5FF.ZRESET 01_47
-CLB.SLICE_X0.CFF.ZINIT 31_33
-CLB.SLICE_X0.CFF.ZRESET 30_33
-CLB.SLICE_X0.CLKINV 01_51
-CLB.SLICE_X0.D5FF.ZINIT 31_51
-CLB.SLICE_X0.D5FF.ZRESET 01_55
-CLB.SLICE_X0.DFF.ZINIT 31_58
-CLB.SLICE_X0.DFF.ZRESET 30_50
-CLB.SLICE_X0.FFSYNC 00_48
-CLB.SLICE_X0.LATCH 30_32
-CLB.SLICE_X1.A5FF.ZINIT 31_05
-CLB.SLICE_X1.A5FF.ZRESET 01_03
-CLB.SLICE_X1.AFF.ZINIT 31_04
-CLB.SLICE_X1.AFF.ZRESET 31_15
-CLB.SLICE_X1.B5FF.ZINIT 31_23
-CLB.SLICE_X1.B5FF.ZRESET 00_16
-CLB.SLICE_X1.BFF.ZINIT 31_29
-CLB.SLICE_X1.BFF.ZRESET 31_30
-CLB.SLICE_X1.C5FF.ZINIT 31_42
-CLB.SLICE_X1.C5FF.ZRESET 00_44
-CLB.SLICE_X1.CFF.ZINIT 31_34
-CLB.SLICE_X1.CFF.ZRESET 30_34
-CLB.SLICE_X1.CLKINV 00_52
-CLB.SLICE_X1.D5FF.ZINIT 31_52
-CLB.SLICE_X1.D5FF.ZRESET 00_56
-CLB.SLICE_X1.DFF.ZINIT 31_59
-CLB.SLICE_X1.DFF.ZRESET 31_50
-CLB.SLICE_X1.FFSYNC 01_31
-CLB.SLICE_X1.LATCH 31_32
-```
+## Primitive bit map
+
+| Prim | FFSYNC | LATCH | ZRST |
+|------|--------|-------|------|
+|FDPE  |        |       |      |
+|FDSE  | X      |       |      |
+|FDRE  | X      |       | X    |
+|FDCE  |        |       | X    |
+|LDCE  |        | X     | X    |
+|LDPE  |        | X     |      |
+
+
+### FFSYNC
+
+Configures whether a storage element is synchronous or asynchronous.
+
+Scope: entire site (not individual FFs)
+
+| FFSYNC | Reset        | Applicable prims          | 
+|--------|--------------|---------------------------|
+|0       | Synchronous  | FDPE, FDCE, LDCE, LDPE    |
+|1       | Asynchronous | FDSE, FDRE                |
+
+
+### LATCH
+
+Configures latch vs FF behavior for the CLB
+
+| LATCH | Description | Primitives |
+|-------|-------------|------------|
+|0      | All storage elements in the CLB are FF's  | FDPE, FDSE, FDRE, FDCE    |
+|1      | LUT6 storage elements are latches (LDCE or LDPE). LUT5 storage elements cannot be used  | LDCE, LDPE    |
+
+
+### N*FF.ZRST
+
+Configures stored value when reset is asserted
+
+| Prim                  |ZRST|On reset|
+|-----------------------|----|-----   |
+|FDRE, FDCE, and LDCE   | 0  | 1      |
+|FDRE, FDCE, and LDCE   | 1  | 0      |
+|FDPE, FDSE, and LDPE   | 0  | 0      |
+|FDPE, FDSE, and LDPE   | 1  | 1      |
+
+
+## N*FF.ZINI
+
+Sets GSR FF or latch value
+
+| LATCH | ZINI | Set to |
+|-------|------|--------|
+| FF    | 0    | 1      |
+| FF    | 1    | 0      |
+| LATCH | 0    | 0      |
+| LATCH | 1    | 1      |
+
+
+## CEUSEDMUX
+
+Configures ability to drive clock enable (CE) or always enable clock
+
+| CEUSEDMUX | Description             |
+|-----------|-------------------------|
+| 0         | always on (CE=1)        |
+| 1         | controlled (CE=mywire)  |
+
+
+## SRUSEDMUX
+
+Configures ability to reset FF after GSR
+
+| SRUSEDMUX | Description           |
+|-----------|-----------------------|
+| 0         | never reset (R=0)     |
+| 1         | controlled (R=mywire) |
+
+TODO: how used when SR?
+
+## CLKINV
+
+Configures whether to invert the clock going into a slice.
+
+Scope: entire site (not individual FFs)
+
+| LATCH | CLKINV | Description    |
+|-------|--------|----------------|
+| FF    | 0      | normal clock   |
+| FF    | 1      | invert clock   |
+| LATCH | 0      | invert clock   |
+| LATCH | 1      | normal clock   |
+

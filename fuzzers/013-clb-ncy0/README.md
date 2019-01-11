@@ -1,8 +1,11 @@
-# CLBnCY0 Fuzzer
+# clb-ncy0 Fuzzer
 
-## Purpose
-Document ACY0 family of CLB muxes
+## CARRY4.NCY0
 
-## Algorithm
+The ACY0 family of CLB muxes feeds the CARRY4.DI0 family
 
-## Outcome
+| NCY0  | CARRY4.DIN       | 
+|--------|------------------|
+| 0      | NX               |
+| 1      | O5               |
+
