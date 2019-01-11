@@ -44,6 +44,9 @@ format-cpp:
 	find . -name \*.cc $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
 	find . -name \*.h $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
 
+format-docs:
+	./.github/update-contributing.py
+
 PYTHON_FORMAT ?= yapf
 format-py:
 	$(IN_ENV) find . -name \*.py $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) yapf -p -i
@@ -52,7 +55,7 @@ TCL_FORMAT ?= utils//tcl-reformat.sh
 format-tcl:
 	find . -name \*.tcl $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) -n 1 $(TCL_FORMAT)
 
-format: format-cpp format-py format-tcl
+format: format-cpp format-docs format-py format-tcl
 	@true
 
 .PHONY: format format-cpp format-py format-tcl
