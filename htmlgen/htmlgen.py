@@ -541,7 +541,7 @@ def get_bit_info(dbstate, frameidx, bitidx, tiletype):
             label = bit_name[6:9]
 
         if re.match("^INT_[LR].IMUX", bit_name):
-            m = re.match("^INT_[LR].IMUX(_L)?(\d+)", bit_name)
+            m = re.match("^INT_[LR].IMUX(_L)?(\\d+)", bit_name)
             bgcolor = "#88aaff"
             label = "IM" + m.group(2)
 
