@@ -224,6 +224,12 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
                     segtype=tile_type.lower().replace("_", "%d_" % k, 1),
                     baseaddr=baseaddr)
 
+        def process_int():
+            if "INT" not in tile_type:
+                assert 0
+            else:
+                create_segment_for_int_lr(database, segments, tile_name, tiles_by_grid, verbose)
+
         def process_default():
             verbose and nolr(tile_type) not in (
                 'VBRK', 'INT', 'NULL') and print(
@@ -243,6 +249,7 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
             "HCLK": process_hclk,
             "BRAM": process_bram_dsp,
             "DSP": process_bram_dsp,
+            "INT": process_int,
         }.get(nolr(tile_type), process_default)()
 
     return segments
@@ -285,7 +292,6 @@ def create_segment_for_int_lr(
         adjacent_tile = tiles_by_grid[(grid_x, grid_y)]
     else:
         assert False, database[tile]["type"]
-
     if (database[adjacent_tile]['type'].startswith('INT_INTERFACE_') or
             database[adjacent_tile]['type'].startswith('PCIE_INT_INTERFACE_')
             or
@@ -300,9 +306,6 @@ def create_segment_for_int_lr(
             segtype=database[tile]["type"],
             verbose=verbose,
         )
-    else:
-        assert False, database[adjacent_tile]['type']
-
 
 def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
     '''Populate segment base addresses: L/R along INT column'''
@@ -499,13 +502,12 @@ def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
 
     bits = tile_db['bits']
     block_type = util.addr2btype(baseaddr)
-
     assert 0 <= offset <= 100, offset
     assert 1 <= words <= 101
     assert offset + words <= 101, (
         tile_db, offset + words, offset, words, block_type)
 
-    assert block_type not in bits
+    #assert block_type not in bits:
     block = bits.setdefault(block_type, {})
 
     # FDRI address
@@ -562,18 +564,27 @@ def db_add_bits(database, segments):
                     ("RIOB33_SING", "CLB_IO_CLK"): (42, 2, 4),
                     ("LIOB33_SING", "CLB_IO_CLK"): (42, 2, 4),
                 """
-                entry = {
-                    # (tile_type, block_type): (frames, words, height)
-                    ("CLBLL", "CLB_IO_CLK"): (36, 2, 2),
-                    ("CLBLM", "CLB_IO_CLK"): (36, 2, 2),
-                    ("HCLK", "CLB_IO_CLK"): (26, 1, 1),
-                    ("INT", "CLB_IO_CLK"): (28, 2, 2),
-                    ("BRAM", "CLB_IO_CLK"): (28, 10, None),
-                    ("BRAM", "BLOCK_RAM"): (128, 10, None),
-                    ("DSP", "CLB_IO_CLK"): (28, 2, 10),
-                    ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
-                    ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
-                }.get((nolr(tile_type), block_type), None)
+
+                is_not_segint = "SEG_INT" not in segment_name
+
+                if is_not_segint:
+                    entry = {
+                        # (tile_type, block_type): (frames, words, height)
+                        ("CLBLL", "CLB_IO_CLK"): (36, 2, 2),
+                        ("CLBLM", "CLB_IO_CLK"): (36, 2, 2),
+                        ("HCLK", "CLB_IO_CLK"): (26, 1, 1),
+                        ("INT", "CLB_IO_CLK"): (28, 2, 2),
+                        ("BRAM", "CLB_IO_CLK"): (28, 10, None),
+                        ("BRAM", "BLOCK_RAM"): (128, 10, None),
+                        ("DSP", "CLB_IO_CLK"): (28, 2, 10),
+                        ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
+                        ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
+                    }.get((nolr(tile_type), block_type), None)
+                else:
+                    entry = {
+                        ("INT", "CLB_IO_CLK"): (36, 2, 2),
+                    }.get((nolr(tile_type), block_type), None)
+
                 if entry is None:
                     # Other types are rare, not expected to have these
                     if block_type == "CLB_IO_CLK":
