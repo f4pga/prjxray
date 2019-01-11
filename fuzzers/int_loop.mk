@@ -1,6 +1,8 @@
+TODO_N ?= 10
 # Number of spcimens
 ifeq ($(QUICK),Y)
-N ?= 1
+N = 1
+TODO_N = 3
 SEGMATCH_FLAGS=
 else
 # Should be at least the -m value
@@ -11,7 +13,6 @@ endif
 # Driven by int_loop.sh
 ITER ?= 1
 MAKETODO_FLAGS ?=
-TODO_N ?= 10
 PIP_TYPE?=pips_int
 PIPLIST_TCL?=$(XRAY_DIR)/fuzzers/piplist.tcl
 
