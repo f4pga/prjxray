@@ -32,13 +32,20 @@ def main(argv):
     pipscount = get_nb_pips()
     blocksize = int(pipscount / nbBlocks)
 
+    # We handle the case of not integer multiple of pips
+    lastRun = False
+    modBlocks = pipscount % nbBlocks
+    if modBlocks != 0:
+        lastRun = True
+
     if not os.path.exists("wires"):
         os.mkdir("wires")
 
     print(
         "Pips Count: " + str(pipscount) + " - Number of blocks: " +
         str(nbBlocks) + " - Parallel blocks: " + str(nbParBlock) +
-        " - Blocksize: " + str(blocksize))
+        " - Blocksize: " + str(blocksize) + " - Modulo Blocks: " +
+        str(modBlocks))
 
     blockId = range(0, nbBlocks)
     startI = range(0, pipscount, blocksize)
@@ -48,6 +55,14 @@ def main(argv):
 
     with Pool(processes=nbParBlock) as pool:
         pool.map(start_vivado, argList)
+
+    if modBlocks != 0:
+        print("Caculate extra block")
+        start = nbBlocks * blocksize
+        stop = pipscount
+        bID = nbBlocks
+        start_vivado((bID, start, stop))
+        nbBlocks = nbBlocks + 1
 
     print("Generating final files")
 
