@@ -1,7 +1,7 @@
 #!/bin/bash
 
-set -e
 set -x
+set -e
 
 sudo apt-get update
 sudo apt-get install -y \
@@ -25,7 +25,27 @@ sudo apt-get install -y \
 ls -l ~/.Xilinx
 sudo chown -R $USER ~/.Xilinx
 
-cd github/symbiflow-prjxray-artix7/
+echo "----------------------------------------"
+echo "----------------------------------------"
+echo "----------------------------------------"
+
+export
+
+echo "----------------------------------------"
+echo "----------------------------------------"
+echo "----------------------------------------"
+
+find .
+
+echo "----------------------------------------"
+echo "----------------------------------------"
+echo "----------------------------------------"
+
+echo $PWD
+
+echo "----------------------------------------"
+
+cd github/$KOKORO_DIR/
 
 git fetch --tags || true
 git describe --tags || true
@@ -36,9 +56,9 @@ make build --output-sync=target --warn-undefined-variables
 # Setup the Python environment
 make env --output-sync=target --warn-undefined-variables
 
-source settings/artix7.sh
+source settings/$XRAY_SETTINGS.sh
 (
 	export XILINX_LOCAL_USER_DATA=no
 	cd fuzzers
-	make --output-sync=target --warn-undefined-variables QUICK=y
+	make --output-sync=target --warn-undefined-variables
 )

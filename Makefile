@@ -34,7 +34,7 @@ test: test-py test-cpp
 	@true
 
 test-py:
-	$(IN_ENV) PYTHONPATH="$(PWD):$(PWD)/third_party/fasm:$PYTHONPATH" py.test $(TEST_EXCLUDE) --doctest-modules --junitxml=build/py_test_results.xml
+	$(IN_ENV) which py.test; py.test $(TEST_EXCLUDE) --doctest-modules --junitxml=build/py_test_results.xml
 
 test-cpp:
 	mkdir -p build
