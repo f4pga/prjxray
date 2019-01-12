@@ -4,10 +4,19 @@ import sys
 import subprocess
 import signal
 from multiprocessing import Pool
+from itertools import chain
+
+# Can be used to redirect vivado tons of output
+# stdout=DEVNULL in subprocess.check_call
+#try:
+#    from subprocess import DEVNULL
+#except ImportError:
+#    import os
+#    DEVNULL = open(os.devnull, 'wb')
 
 
+# Worker function called from threads
 def start_vivado(argList):
-    print(argList)
     blockID, start, stop = argList
     print("Running instance :" + str(blockID))
     subprocess.check_call(
@@ -16,8 +25,9 @@ def start_vivado(argList):
         shell=True)
 
 
+# Function called once to get the total numbers of pips to list
 def get_nb_pips():
-    print("Fetching nb pips")
+    print("Fetching total number of pips")
     subprocess.check_call(
         "${XRAY_VIVADO} -mode batch -source $FUZDIR/get_pipscount.tcl",
         shell=True)
@@ -31,12 +41,14 @@ def main(argv):
 
     pipscount = get_nb_pips()
     blocksize = int(pipscount / nbBlocks)
+    intPipsCount = blocksize * nbBlocks
 
     # We handle the case of not integer multiple of pips
     lastRun = False
     modBlocks = pipscount % nbBlocks
     if modBlocks != 0:
         lastRun = True
+        nbBlocks = nbBlocks + 1
 
     if not os.path.exists("wires"):
         os.mkdir("wires")
@@ -48,21 +60,19 @@ def main(argv):
         str(modBlocks))
 
     blockId = range(0, nbBlocks)
-    startI = range(0, pipscount, blocksize)
-    stopI = range(blocksize, pipscount + 1, blocksize)
+    startI = range(0, intPipsCount, blocksize)
+    stopI = range(blocksize, intPipsCount + 1, blocksize)
+
+    # In case we have a last incomplete block we add it as a last
+    # element in the arguments list
+    if lastRun == True:
+        startI = chain(startI, [intPipsCount])
+        stopI = chain(stopI, [pipscount])
 
     argList = zip(blockId, startI, stopI)
 
     with Pool(processes=nbParBlock) as pool:
         pool.map(start_vivado, argList)
-
-    if modBlocks != 0:
-        print("Caculate extra block")
-        start = nbBlocks * blocksize
-        stop = pipscount
-        bID = nbBlocks
-        start_vivado((bID, start, stop))
-        nbBlocks = nbBlocks + 1
 
     print("Generating final files")
 
