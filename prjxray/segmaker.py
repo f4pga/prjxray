@@ -53,8 +53,8 @@ def add_site_group_zero(segmk, site, prefix, vals, zero_val, val):
     vals: all possible tag enum vals
     zero_val: tag value known to have no bits set
     '''
-    assert zero_val in vals, "Got %s, need %s" % (zero_val, vals)
-    assert val in vals, "Got %s, need %s" % (val, vals)
+    # assert zero_val in vals, "Got %s, need %s" % (zero_val, vals)
+    assert val in vals or val == zero_val, "Got %s, need %s" % (val, vals)
 
     if val == zero_val:
         # Zero symbol occured, none of the others did
@@ -64,10 +64,11 @@ def add_site_group_zero(segmk, site, prefix, vals, zero_val, val):
     else:
         # Only add the occured symbol
         tag = prefix + val
-        segmk.add_site_tag(site, tag, 1)
-        # And zero so that it has something to solve against
-        tag = prefix + zero_val
-        segmk.add_site_tag(site, tag, 0)
+        segmk.add_site_tag(site, tag, True)
+        if zero_val in vals:
+            # And zero so that it has something to solve against
+            tag = prefix + zero_val
+            segmk.add_site_tag(site, tag, False)
 
 
 class Segmaker:

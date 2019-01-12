@@ -1,7 +1,6 @@
 import os
 import re
 from .roi import Roi
-from .db import Database
 
 
 def get_db_root():
@@ -15,10 +14,10 @@ def get_db_root():
 
 
 def roi_xy():
-    x1 = int(os.getenv('XRAY_ROI_GRID_X1'))
-    x2 = int(os.getenv('XRAY_ROI_GRID_X2'))
-    y1 = int(os.getenv('XRAY_ROI_GRID_Y1'))
-    y2 = int(os.getenv('XRAY_ROI_GRID_Y2'))
+    x1 = int(os.getenv('XRAY_ROI_GRID_X1', 0))
+    x2 = int(os.getenv('XRAY_ROI_GRID_X2', 58))
+    y1 = int(os.getenv('XRAY_ROI_GRID_Y1', 0))
+    y2 = int(os.getenv('XRAY_ROI_GRID_Y2', 52))
 
     return (x1, x2), (y1, y2)
 
@@ -35,6 +34,7 @@ def slice_xy():
 
 
 def get_roi():
+    from .db import Database
     (x1, x2), (y1, y2) = roi_xy()
     db = Database(get_db_root())
     return Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2)
@@ -103,6 +103,23 @@ def parse_db_line(line):
     return tag, bits, None
 
 
+def parse_db_lines(fn):
+    with open(fn, "r") as f:
+        for line in f:
+            yield line, parse_db_line(line)
+
+
+def write_db_lines(fn, entries):
+    new_lines = []
+    for tag, bits in entries.items():
+        new_line = " ".join([tag] + sorted(bits))
+        new_lines.append(new_line)
+
+    with open(fn, "w") as f:
+        for line in sorted(new_lines):
+            print(line, file=f)
+
+
 def parse_tagbit(x):
     # !30_07
     if x[0] == '!':
@@ -137,6 +154,9 @@ block_type_i2s = {
     # special...maybe should error until we know what it is?
     # 3: 'RESERVED',
 }
+block_type_s2i = {}
+for k, v in block_type_i2s.items():
+    block_type_s2i[v] = k
 
 
 def addr2btype(base_addr):
@@ -183,14 +203,12 @@ def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
         elif not os.path.exists(fn):
             continue
 
-        with open(fn, "r") as f:
-            for line in f:
-                tag, bits, mode = parse_db_line(line)
-                assert mode is None
-                for bitstr in bits:
-                    # 31_06
-                    _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
-                    yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
+        for line, (tag, bits, mode) in parse_db_lines(fn):
+            assert mode is None
+            for bitstr in bits:
+                # 31_06
+                _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
+                yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
 
 
 def specn():

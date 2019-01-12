@@ -20,7 +20,7 @@ design_bits.ok: vivado.ok
         done
 	touch design_bits.ok
 
-generate.ok: design_bits.ok ${FUZDIR}/generate.py
-	python3 ${FUZDIR}/generate.py
+generate.ok: design_bits.ok
+	if [ -f ${FUZDIR}/generate.py ] ; then python3 ${FUZDIR}/generate.py ${GENERATE_FLAGS}; else python3 ${XRAY_DIR}/fuzzers/int_generate.py; fi
 	touch generate.ok
 

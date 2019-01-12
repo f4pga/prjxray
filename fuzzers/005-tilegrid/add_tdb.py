@@ -52,16 +52,29 @@ def parse_addr(line):
     return frame, wordidx, bitidx
 
 
+def check_frames(frames):
+    baseaddr = set()
+    for frame in frames:
+        baseaddr.add(frame // 128)
+    assert len(baseaddr) == 1, "Multiple base addresses for the same tag"
+
+
 def load_db(fn):
     for l in open(fn, "r"):
         l = l.strip()
         # FIXME: add offset to name
         # IOB_X0Y101.DFRAME:27.DWORD:3.DBIT:3 00020027_003_03
         parts = l.split(' ')
-        assert len(parts) == 2, "Unresolved bit: %s" % l
-        tagstr, addrstr = parts
+        tagstr = parts[0]
+        addrlist = parts[1:]
+        frames = list()
+        for addrstr in addrlist:
+            frame, wordidx, bitidx = parse_addr(addrstr)
+            frames.append(frame)
+        check_frames(frames)
+        # Take the first address in the list
+        frame, wordidx, bitidx = parse_addr(addrlist[0])
 
-        frame, wordidx, bitidx = parse_addr(addrstr)
         bitidx_up = False
 
         tparts = tagstr.split('.')
@@ -107,6 +120,8 @@ def run(fn_in, fn_out, verbose=False):
     if os.path.exists("monitor/build/segbits_tilegrid.tdb"):
         # FIXME: height
         tdb_fns.append(("monitor/build/segbits_tilegrid.tdb", 30, 101))
+    if os.path.exists("ps7_int/build/segbits_tilegrid.tdb"):
+        tdb_fns.append(("ps7_int/build/segbits_tilegrid.tdb", 36, 2))
 
     for (tdb_fn, frames, words) in tdb_fns:
         for (tile, frame, wordidx) in load_db(tdb_fn):

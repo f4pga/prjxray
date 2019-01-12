@@ -174,24 +174,32 @@ At a high level, the above learnings gave this process:
   - Group delays map onto the group pivot variable, typically setting other elements to 0 (if the processed set is not the one used to create the pivots they may be non-zero)
 
 
-## TODO
+## TODO, suggestions
 
-Milestone 1 (MVP)
-* DONE
-* Provide any process corner with at least some of the fabric
-
-Milestone 2
-* Provide all four fabric corners
-* Simple makefile based flow
-* Cleanup/separate fabric input targets
-
-Milestone 3
-* Create site delay model
-
-Final
-* Investigate ZERO
-* Investigate virtual switchboxes
-* Compare our vs Xilinx output on random designs
+Includes
+* Consider removing rref
+  - Intended to understand what can't be solved, maybe not useful in production
+* Need more coverage
+  - Consider instrumenting all fuzzers to output data to feed into timing anlayzer
+  - Justification: we need a lot of weird cases, we have code that does that in the other fuzzers
+* Tune performance parameters
+  - Can we improve quality of results?
+  - Do we have a good enough quality checker? (solve_qor.py)
+  - Compare our vs Xilinx output on random designs
+  - Does the solve take too long? What could speed it up?
+* Investigate min corner
+  - Tends to solve towards 0, making this not useful
+  - Low priority: most designs just close timing with setup time
+* Investigate characterizing full RC timing model
+* Can we split pivot delays among elements instead of entirely into pivot?
+* Consider breaking out timing analyzer into its own project / library so it can be re-used on other projects
+* Review "--massage". Does this help?
+* Review computed site delays vs published Xilinx numbers (DC and AC Switching Characteristics)
+* Fabric delay models are RC, but are the site delay models RC as well or maybe just linear?
+* Can we create antenna nets to get simpler solves?
+* Can we get tcl timing analyzer to analyze a partial route?
+   - Option says you should be able to do this
+   - I could not actually get it to work
 
 
 ### Improve test cases
@@ -206,7 +214,7 @@ At a minimum these should be moved to their own directory.
 Background: there are a number of speed models with the name ZERO in them.
 These generally seem to be zero delay, although needs more investigation.
 
-Example: see virtual switchbox item below
+Example: see pseudo pip item below
 
 The timing models will probably significantly improve if these are removed.
 In the past I was removing them, but decided to keep them in for now in the spirit of being more conservative.

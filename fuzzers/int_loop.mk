@@ -1,6 +1,8 @@
+TODO_N ?= 10
 # Number of spcimens
 ifeq ($(QUICK),Y)
-N ?= 1
+N = 1
+TODO_N = 3
 SEGMATCH_FLAGS=
 else
 # Should be at least the -m value
@@ -11,7 +13,6 @@ endif
 # Driven by int_loop.sh
 ITER ?= 1
 MAKETODO_FLAGS ?=
-TODO_N ?= 10
 PIP_TYPE?=pips_int
 PIPLIST_TCL?=$(XRAY_DIR)/fuzzers/piplist.tcl
 
@@ -41,7 +42,7 @@ ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 	# https://github.com/SymbiFlow/prjxray/issues/399
 	# Clobber existing .db to eliminate potential conflicts
-	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db build/database/${XRAY_DATABASE}
+	if [ -f ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db ] ; then cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db build/database/${XRAY_DATABASE}; else bash ${XRAY_DIR}/fuzzers/int_create_empty_db.sh; fi
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} int_l build/segbits_int_l.db
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} int_r build/segbits_int_r.db
 endif
