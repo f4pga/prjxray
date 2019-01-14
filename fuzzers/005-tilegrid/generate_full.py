@@ -14,6 +14,7 @@ from generate import load_tiles
 from prjxray import util
 import util as localutil
 
+
 def nolr(tile_type):
     '''
     Remove _L or _R suffix tile_type suffix, if present
@@ -75,7 +76,8 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
             if site_name not in site_baseaddr:
                 continue
             framebaseaddr = site_baseaddr[site_name]
-            localutil.add_baseaddr(tile_baseaddrs, tile["name"], framebaseaddr, verbose)
+            localutil.add_baseaddr(
+                tile_baseaddrs, tile["name"], framebaseaddr, verbose)
             added += 1
 
     assert added, "Failed to add any base addresses"
@@ -309,6 +311,7 @@ def create_segment_for_int_lr(
             verbose=verbose,
         )
 
+
 def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
     '''Populate segment base addresses: L/R along INT column'''
     '''
@@ -413,8 +416,11 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                     grid_x = database[inttile]["grid_x"]
                     grid_y = database[inttile]["grid_y"]
 
-                    for dst_tile, wordbase in localutil.propagate_up_INT(grid_x, grid_y, database,  tiles_by_grid, wordbase):
-                        assert 'segment' in dst_tile, ((grid_x, grid_y), dst_tile, tiles_by_grid[(grid_x, grid_y)])
+                    for dst_tile, wordbase in localutil.propagate_up_INT(
+                            grid_x, grid_y, database, tiles_by_grid, wordbase):
+                        assert 'segment' in dst_tile, (
+                            (grid_x, grid_y), dst_tile,
+                            tiles_by_grid[(grid_x, grid_y)])
 
                         #verbose and print('  dst_tile', dst_tile)
                         if 'segment' in dst_tile:
@@ -531,12 +537,16 @@ def db_int_fixup(database, tiles, tiles_by_grid):
 
         block_type, (baseaddr, offset) = sorted(tiles[tile_name].items())[0]
 
-        frames, words, height = localutil.get_entry(nolr(tile_type), block_type)
+        frames, words, height = localutil.get_entry(
+            nolr(tile_type), block_type)
         # Adding first bottom INT tile
-        localutil.add_tile_bits(tile_name, tile, baseaddr, offset, frames, words, height)
+        localutil.add_tile_bits(
+            tile_name, tile, baseaddr, offset, frames, words, height)
 
-        for tile, offset in localutil.propagate_up_INT(grid_x, grid_y, database, tiles_by_grid, offset):
-            localutil.add_tile_bits(tile_name, tile, baseaddr, offset, frames, words, height)
+        for tile, offset in localutil.propagate_up_INT(
+                grid_x, grid_y, database, tiles_by_grid, offset):
+            localutil.add_tile_bits(
+                tile_name, tile, baseaddr, offset, frames, words, height)
 
 
 def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, int_tdb, verbose=False):
@@ -589,14 +599,21 @@ def main():
     parser.add_argument(
         "deltas", nargs="*", help=".bit diffs to create base addresses from")
     parser.add_argument(
-        "--int-tdb", help=".tdb diffs to fill the interconnects without any adjacent CLB")
+        "--int-tdb",
+        help=".tdb diffs to fill the interconnects without any adjacent CLB")
     args = parser.parse_args()
 
     deltas = args.deltas
     if not args.deltas:
         deltas = glob.glob("*.delta")
 
-    run(args.json_in, args.json_out, args.tiles, deltas, args.int_tdb, verbose=args.verbose)
+    run(
+        args.json_in,
+        args.json_out,
+        args.tiles,
+        deltas,
+        args.int_tdb,
+        verbose=args.verbose)
 
 
 if __name__ == "__main__":

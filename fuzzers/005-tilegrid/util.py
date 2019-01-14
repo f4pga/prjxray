@@ -5,6 +5,7 @@ from prjxray import util
 Local utils script to hold shared code of the 005-tilegrid fuzzer scripts
 '''
 
+
 def check_frames(addrlist):
     frames = set()
     for addrstr in addrlist:

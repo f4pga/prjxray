@@ -5,6 +5,7 @@ import json
 import os
 import util as localutil
 
+
 def load_db(fn):
     for l in open(fn, "r"):
         l = l.strip()
