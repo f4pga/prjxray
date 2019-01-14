@@ -138,6 +138,7 @@ class FasmAssembler(object):
                 (gridinfo.tile_type, db_k, line))
 
     def parse_fasm_filename(self, filename):
+        missing_features = []
         for line in fasm.parse_fasm_filename(filename):
             if not line.set_feature:
                 continue
@@ -160,4 +161,10 @@ class FasmAssembler(object):
                 if flat_set_feature.start is not None:
                     address = flat_set_feature.start
 
-                self.enable_feature(tile, feature, address, line_str)
+                try:
+                    self.enable_feature(tile, feature, address, line_str)
+                except FasmLookupError as e:
+                    missing_features.append(str(e))
+
+        if missing_features:
+            raise FasmLookupError('\n'.join(missing_features))
