@@ -49,7 +49,8 @@ monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 build/tilegrid.json: generate_full.py build/tilegrid_tdb.json build/clb/deltas build/bram/deltas
 	cd build && python3 ${FUZDIR}/generate_full.py \
         --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json \
-        --tiles $(FUZDIR)/build/tiles/tiles.txt clb/design_*.delta bram/design_*.delta
+        --tiles $(FUZDIR)/build/tiles/tiles.txt clb/design_*.delta bram/design_*.delta \
+        --int-tdb $(FUZDIR)/ps7_int/build/segbits_tilegrid.tdb
 
 run:
 	$(MAKE) clean
