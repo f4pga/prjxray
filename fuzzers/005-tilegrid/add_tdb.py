@@ -5,23 +5,6 @@ import json
 import os
 import util as localutil
 
-
-def parse_addr(line):
-    # 00020027_003_03
-    line = line.split("_")
-    frame = int(line[0], 16)
-    wordidx = int(line[1], 10)
-    bitidx = int(line[2], 10)
-    return frame, wordidx, bitidx
-
-
-def check_frames(frames):
-    baseaddr = set()
-    for frame in frames:
-        baseaddr.add(frame // 128)
-    assert len(baseaddr) == 1, "Multiple base addresses for the same tag"
-
-
 def load_db(fn):
     for l in open(fn, "r"):
         l = l.strip()
@@ -30,13 +13,9 @@ def load_db(fn):
         parts = l.split(' ')
         tagstr = parts[0]
         addrlist = parts[1:]
-        frames = list()
-        for addrstr in addrlist:
-            frame, wordidx, bitidx = parse_addr(addrstr)
-            frames.append(frame)
-        check_frames(frames)
+        localutil.check_frames(addrlist)
         # Take the first address in the list
-        frame, wordidx, bitidx = parse_addr(addrlist[0])
+        frame, wordidx, bitidx = localutil.parse_addr(addrlist[0])
 
         bitidx_up = False
 
@@ -83,8 +62,6 @@ def run(fn_in, fn_out, verbose=False):
     if os.path.exists("monitor/build/segbits_tilegrid.tdb"):
         # FIXME: height
         tdb_fns.append(("monitor/build/segbits_tilegrid.tdb", 30, 101))
-    if os.path.exists("ps7_int/build/segbits_tilegrid.tdb"):
-        tdb_fns.append(("ps7_int/build/segbits_tilegrid.tdb", 36, 2))
 
     for (tdb_fn, frames, words) in tdb_fns:
         for (tile, frame, wordidx) in load_db(tdb_fn):
