@@ -310,6 +310,8 @@ def create_segment_for_int_lr(
             segtype=database[tile]["type"],
             verbose=verbose,
         )
+    else:
+        assert False, database[adjacent_tile]['type']
 
 
 def seg_base_addr_lr_INT(database, segments, tiles_by_grid, verbose=False):
