@@ -1,16 +1,18 @@
 N := 1
-SPECIMENS := $(addprefix specimen_,$(shell seq -f '%03.0f' $(N)))
+SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 
 database: $(SPECIMENS)
-	cp specimen_001/part.yaml ${XRAY_PART}.yaml
+	mkdir -p build
+	cp build/specimen_001/part.yaml build/part.yaml
+	python3 -m utils.xyaml build/part.yaml > build/part.json
 
 $(SPECIMENS): Makefile.specimen
 	mkdir -p $@
-	$(MAKE) -C $@ -f ../Makefile.specimen
+	$(MAKE) -C $@ -f ../../Makefile.specimen
 
 pushdb:
-	cp ${XRAY_PART}.yaml ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)
-	python3 -m utils.xyaml ${XRAY_PART}.yaml > ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}.json
+	cp build/part.yaml ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)
+	cp build/part.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)
 
 run:
 	$(MAKE) clean
@@ -19,6 +21,6 @@ run:
 	touch run.ok
 
 clean:
-	rm -rf specimen_[0-9][0-9][0-9]/ *.yaml run.ok
+	rm -rf build run.ok
 
 .PHONY: database pushdb clean run $(SPECIMENS)
