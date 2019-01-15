@@ -4,4 +4,4 @@ source ${XRAY_GENHEADER}
 
 ${XRAY_VIVADO} -mode batch -source $FUZDIR/generate.tcl
 
-cd .. && ./generate_after_dump.sh
+cd $FUZDIR && ./generate_after_dump.sh
