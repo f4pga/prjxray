@@ -26,8 +26,12 @@ export FUZDIR=$(shell pwd)
 
 # Specimens from current run must complete, but previous iterations may exist
 database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
-	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) -o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
+	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) \
+		--solved_bits_dbs ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clblm_l.db \
+		-o build/segbits_int_l.db $(shell find build -name segdata_int_l.txt)
+	${XRAY_SEGMATCH} $(SEGMATCH_FLAGS) \
+		--solved_bits_dbs ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clblm_r.db \
+		-o build/segbits_int_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_MASKMERGE} build/mask_clbll_l.db $(shell find build -name segdata_int_l.txt)
 	${XRAY_MASKMERGE} build/mask_clbll_r.db $(shell find build -name segdata_int_r.txt)
 	${XRAY_MASKMERGE} build/mask_clblm_l.db $(shell find build -name segdata_int_l.txt)
