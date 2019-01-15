@@ -2,6 +2,6 @@
 
 source ${XRAY_GENHEADER}
 
-${XRAY_VIVADO} -mode batch -source $FUZDIR/generate.tcl
+python3 $FUZDIR/run_fuzzer.py $2 $3 $4
 
 cd $FUZDIR && ./generate_after_dump.sh

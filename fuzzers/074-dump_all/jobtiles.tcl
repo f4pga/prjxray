@@ -1,15 +1,28 @@
-create_project -force -part $::env(XRAY_PART) design design
+set blocknb [lindex $argv 0]
+set start [expr int([lindex $argv 1])]
+set stop [expr int([lindex $argv 2])]
+
+create_project -force -part $::env(XRAY_PART) $blocknb $blocknb
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
-set root_fp [open root.csv w]
-puts $root_fp "filetype,subtype,filename"
-foreach tile [get_tiles] {
+#set_param tcl.collectionResultDisplayLimit 0
+set_param messaging.disableStorage 1
+
+set root_fp [open "root_${blocknb}.csv" w]
+#puts $root_fp "filetype,subtype,filename"
+
+set tiles [get_tiles]
+
+for {set j $start } { $j < $stop } { incr j } {
+
+    set tile [lindex $tiles $j]
+
     set fname tile_$tile.json5
     set tile_type [get_property TYPE $tile]
     puts $root_fp "tile,$tile_type,$fname"
 
-    set fp [open $fname w]
+    set fp [open "${fname}" w]
     puts $fp "\{"
     puts $fp "\t\"tile\": \"$tile\","
     # tile properties:
@@ -102,33 +115,6 @@ foreach tile [get_tiles] {
         puts $fp "\t\t\},"
     }
     puts $fp "\t\],"
-    puts $fp "\}"
-    close $fp
-}
-
-foreach node [get_nodes] {
-    file mkdir [file dirname $node]
-    set fname $node.json5
-    puts $root_fp "node,,$fname"
-
-    set fp [open $fname w]
-    # node properties:
-    # BASE_CLOCK_REGION CLASS COST_CODE COST_CODE_NAME IS_BAD IS_COMPLETE
-    # IS_GND IS_INPUT_PIN IS_OUTPUT_PIN IS_PIN IS_VCC NAME NUM_WIRES PIN_WIRE
-    # SPEED_CLASS
-    puts $fp "\{"
-    puts $fp "\t\"node\": \"$node\","
-    puts $fp "\t\"wires\": \["
-    foreach wire [get_wires -of_objects $node] {
-        # wire properties:
-        # CLASS COST_CODE ID_IN_TILE_TYPE IS_CONNECTED IS_INPUT_PIN IS_OUTPUT_PIN
-        # IS_PART_OF_BUS NAME NUM_DOWNHILL_PIPS NUM_INTERSECTS NUM_PIPS
-        # NUM_TILE_PORTS NUM_UPHILL_PIPS SPEED_INDEX TILE_NAME TILE_PATTERN_OFFSET
-        puts $fp "\t\t\{"
-        puts $fp "\t\t\t\"wire\":\"$wire\","
-        puts $fp "\t\t\},"
-    }
-    puts $fp "\t\]"
     puts $fp "\}"
     close $fp
 }
