@@ -75,8 +75,6 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
         set_property is_route_fixed 0 $mynet
         set_property is_bel_fixed 0 $mylut
         set_property is_loc_fixed 1 $mylut
-        set_property is_bel_fixed 0 $myff
-        set_property is_loc_fixed 1 $myff
         route_design -unroute -nets $mynet
 
         # sometimes it gets stuck in specific src -> dst locations
