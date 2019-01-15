@@ -551,7 +551,9 @@ def db_int_fixup(database, tiles, tiles_by_grid):
                 tile_name, tile, baseaddr, offset, frames, words, height)
 
 
-def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, int_tdb=None, verbose=False):
+def run(
+        json_in_fn, json_out_fn, tiles_fn, deltas_fns, int_tdb=None,
+        verbose=False):
     # Load input files
     tiles = load_tiles(tiles_fn)
     site_baseaddr = load_baseaddrs(deltas_fns)
