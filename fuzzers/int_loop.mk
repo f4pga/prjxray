@@ -81,7 +81,7 @@ build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py buil
 # Subsequent are based on updated db
 build/database/seeded:
 	mkdir -p build/database/${XRAY_DATABASE}
-	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db build/database/${XRAY_DATABASE}
+	if [ -f ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db ] ; then cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_clb*.db build/database/${XRAY_DATABASE}; else bash ${XRAY_DIR}/fuzzers/int_create_empty_db.sh; fi
 	touch build/database/seeded
 
 # XXX: conider moving to script
