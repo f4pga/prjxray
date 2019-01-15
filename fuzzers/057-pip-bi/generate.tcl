@@ -41,6 +41,11 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set dst_wire [lindex $line 1]
     set src_wire [lindex $line 2]
 
+    set mylut [create_cell -reference LUT1 mylut_$idx]
+
+    set mynet [create_net mynet_$idx]
+    connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
+
     set tries 0
     while {1} {
         set tile_idx [expr $tries + [expr $idx * 3]]
@@ -56,11 +61,8 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
 
         puts "LUT Tile (Site): $other_tile ($driver_site)"
 
-        set mylut [create_cell -reference LUT1 mylut_$idx]
         set_property -dict "LOC $driver_site BEL A6LUT" $mylut
 
-        set mynet [create_net mynet_$idx]
-        connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
         set rc [route_via $mynet "$tile/$src_wire $tile/$dst_wire" 0]
         if {$rc != 0} {
             puts "ROUTING DONE!"
