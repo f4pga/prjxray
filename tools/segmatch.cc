@@ -4,11 +4,11 @@
 #include <unistd.h>
 #include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include <map>
 #include <numeric>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -21,20 +21,22 @@ DEFINE_int32(
     4,
     "threshold under which candidates are output. set to -1 to output all.");
 DEFINE_bool(i, false, "add inverted tags");
-DEFINE_string(solved_bits_dbs, "", "Comma seperated db files with already solved bits.");
+DEFINE_string(solved_bits_dbs,
+              "",
+              "Comma seperated db files with already solved bits.");
 DEFINE_int32(m, 0, "min number of set/cleared samples each");
 DEFINE_int32(M, 0, "min number of set/cleared samples total");
 DEFINE_string(o, "", "set output file");
 DEFINE_string(k, "", "set output mask file");
 
-using std::set;
 using std::map;
+using std::set;
 using std::string;
 using std::tuple;
 using std::vector;
 
 int num_bits = 0, num_tags = 0;
-// mask_bit_ids are bits that are believed to already be assigned, and so is 
+// mask_bit_ids are bits that are believed to already be assigned, and so is
 // filtered prior to matching.
 set<string> mask_bit_ids;
 map<string, int> bit_ids, tag_ids;
@@ -246,8 +248,8 @@ void add_mask(std::istream& f) {
 		// Discard first token, it is the feature name.
 		string token;
 		ss >> token;
-		while(ss >> token) {
-			if(token.at(0) == '!') {
+		while (ss >> token) {
+			if (token.at(0) == '!') {
 				continue;
 			}
 			mask_bit_ids.insert(token);
@@ -260,9 +262,10 @@ int main(int argc, char** argv) {
 	    absl::StrCat("Usage: ", argv[0], " [options] file.."));
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-	if(!FLAGS_solved_bits_dbs.empty()) {
-		std::vector<std::string> mask_files = absl::StrSplit(FLAGS_solved_bits_dbs, ',');
-		for(const auto & mask_file : mask_files) {
+	if (!FLAGS_solved_bits_dbs.empty()) {
+		std::vector<std::string> mask_files =
+		    absl::StrSplit(FLAGS_solved_bits_dbs, ',');
+		for (const auto& mask_file : mask_files) {
 			std::ifstream f;
 			f.open(mask_file);
 			assert(!f.fail());
