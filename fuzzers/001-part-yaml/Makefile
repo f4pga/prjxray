@@ -11,8 +11,8 @@ $(SPECIMENS): Makefile.specimen
 	$(MAKE) -C $@ -f ../../Makefile.specimen
 
 pushdb:
-	cp build/part.yaml ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)
-	cp build/part.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)
+	cp build/part.yaml ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}.yaml
+	cp build/part.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}.json
 
 run:
 	$(MAKE) clean
