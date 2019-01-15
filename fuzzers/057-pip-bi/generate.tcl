@@ -41,22 +41,50 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set dst_wire [lindex $line 1]
     set src_wire [lindex $line 2]
 
-    if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]; set other_tile [lindex $int_r_tiles $idx]}
-    if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]; set other_tile [lindex $int_l_tiles $idx]}
+    set tries 0
+    while {1} {
+        set tile_idx [expr $tries + [expr $idx * 3]]
+        incr tries
 
-    puts "PIP Tile: $tile"
+        if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $tile_idx]; set other_tile [lindex $int_r_tiles $idx]}
+        if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $tile_idx]; set other_tile [lindex $int_l_tiles $idx]}
 
-    set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
-            -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
+        puts "PIP Tile: $tile"
 
-    puts "LUT Tile (Site): $other_tile ($driver_site)"
+        set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+                -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
 
-    set mylut [create_cell -reference LUT1 mylut_$idx]
-    set_property -dict "LOC $driver_site BEL A6LUT" $mylut
+        puts "LUT Tile (Site): $other_tile ($driver_site)"
 
-    set mynet [create_net mynet_$idx]
-    connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
-    route_via $mynet "$tile/$src_wire $tile/$dst_wire"
+        set mylut [create_cell -reference LUT1 mylut_$idx]
+        set_property -dict "LOC $driver_site BEL A6LUT" $mylut
+
+        set mynet [create_net mynet_$idx]
+        connect_net -net $mynet -objects "$mylut/I0 $mylut/O"
+        set rc [route_via $mynet "$tile/$src_wire $tile/$dst_wire" 0]
+        if {$rc != 0} {
+            puts "ROUTING DONE!"
+            break
+        }
+
+        # fallback
+        puts "WARNING: failed to route net"
+        write_checkpoint -force route_todo_$idx.$tries.fail.dcp
+
+        puts "Rolling back route"
+        set_property is_route_fixed 0 $mynet
+        set_property is_bel_fixed 0 $mylut
+        set_property is_loc_fixed 1 $mylut
+        set_property is_bel_fixed 0 $myff
+        set_property is_loc_fixed 1 $myff
+        route_design -unroute -nets $mynet
+
+        # sometimes it gets stuck in specific src -> dst locations
+        if {$tries >= 3} {
+            puts "WARNING: failed to route net after $tries tries"
+            error
+        }
+    }
 
     if {[get_pips -filter "NAME == \"${tile}/${tile_type}.${src_wire}<<->>${dst_wire}\" || NAME == \"${tile}/${tile_type}.${dst_wire}<<->>${src_wire}\""  -of_objects [get_nets $mynet]] != ""} {
         puts $fp "A $tile/$dst_wire $tile/$src_wire"
