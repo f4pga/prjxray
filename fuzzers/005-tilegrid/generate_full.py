@@ -551,7 +551,7 @@ def db_int_fixup(database, tiles, tiles_by_grid):
                 tile_name, tile, baseaddr, offset, frames, words, height)
 
 
-def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, int_tdb, verbose=False):
+def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, int_tdb=None, verbose=False):
     # Load input files
     tiles = load_tiles(tiles_fn)
     site_baseaddr = load_baseaddrs(deltas_fns)
@@ -570,8 +570,9 @@ def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, int_tdb, verbose=False):
     db_add_bits(database, segments)
     db_add_segments(database, segments)
 
-    tile_baseaddrs_fixup = load_tdb_baseaddr(database, int_tdb)
-    db_int_fixup(database, tile_baseaddrs_fixup, tiles_by_grid)
+    if int_tdb is not None:
+        tile_baseaddrs_fixup = load_tdb_baseaddr(database, int_tdb)
+        db_int_fixup(database, tile_baseaddrs_fixup, tiles_by_grid)
 
     # Save
     json.dump(
@@ -602,6 +603,7 @@ def main():
         "deltas", nargs="*", help=".bit diffs to create base addresses from")
     parser.add_argument(
         "--int-tdb",
+        default=None,
         help=".tdb diffs to fill the interconnects without any adjacent CLB")
     args = parser.parse_args()
 
