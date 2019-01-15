@@ -1,3 +1,3 @@
-N := 1
+N := 3
 include ../clb.mk
 
