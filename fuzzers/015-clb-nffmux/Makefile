@@ -1,4 +1,4 @@
-N := 1
+N := 3
 CLB_DBFIXUP=Y
 include ../clb.mk
 
