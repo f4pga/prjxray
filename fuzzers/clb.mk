@@ -16,7 +16,7 @@ endif
 
 
 build/segbits_clbx.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_clbx.rdb $(SEGDATAS)
+	${XRAY_SEGMATCH} -m 2 -M 2 -o build/segbits_clbx.rdb $(SEGDATAS)
 
 build/segbits_clbx.db: build/segbits_clbx.rdb
 ifeq ($(CLB_DBFIXUP),Y)
