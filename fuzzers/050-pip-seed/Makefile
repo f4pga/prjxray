@@ -11,9 +11,6 @@ endif
 ITER := 1
 MAKETODO_FLAGS=--re ".*" --not-endswith ".VCC_WIRE"
 PIPLIST_TCL=$(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
-# See int_loop_check.py
-# Original did 200 specimins open loop
-CHECK_ARGS := --max-iters 12 --stable-iters 2
 SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
@@ -69,7 +66,7 @@ $(XRAY_FUZZERS_DIR)/piplist/build/pips_int_l.txt: $(XRAY_FUZZERS_DIR)/piplist/pi
 	cd $(XRAY_FUZZERS_DIR)/piplist/build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
 
 build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
-	# Doesn't pushdb until very end. Compare against db so far
+# Doesn't pushdb until very end. Compare against db so far
 	mkdir -p build/$(ITER)
 	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --db-dir build $(MAKETODO_FLAGS) |sort >build/todo_all.txt
 	cat build/todo_all.txt | sort -R > build/todo.txt.tmp
@@ -84,7 +81,10 @@ build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/pips_int_l.txt $(XRAY_DIR)/fuz
 # XXX: conider moving to script
 run:
 	$(MAKE) clean
-	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
+	# Because 056 cannot solve IMUX and LOGIC_OUTS, force zero entries for the
+	# LOGIC_OUTS or IMUX entries.
+	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh \
+		--check-args "--max-iters 12 --min-progress 50  --zero-entries --zero-entries-filter (IMUX.*GFAN)"
 	touch run.ok
 
 clean:

@@ -1,59 +1,46 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
 import sys, re
 import os
 import glob
 import hashlib
 
 
-# len(txt.split("\n"))) is off by 1
-def wc(fn):
-    i = 0
-    with open(fn) as f:
-        for i, _l in enumerate(f, 1):
-            pass
-    return i
-
-
 def bytehex(x):
     return ''.join('{:02x}'.format(x) for x in x)
 
 
-def calc_stable_iters(todo_dir, max_iter):
-    m5s = []
-    wcs = []
-    m5_last = None
-    stablen = 0
-    for fni in range(1, max_iter + 1, 1):
-        fn = "%s/%u_all.txt" % (todo_dir, fni)
-        txt = open(fn, "r").read()
-        m5 = hashlib.md5(txt.encode("ascii")).hexdigest()
+def wc_for_iteration(todo_dir, fni):
+    with open("%s/%u_all.txt" % (todo_dir, fni), "rb") as f:
+        return sum(1 for _ in f)
 
-        m5s.append(m5)
-        wc_this = wc(fn)
-        wcs.append(wc_this)
 
-        if m5_last == m5:
-            stablen += 1
-        else:
-            stablen = 1
+def check_made_progress(todo_dir, max_iter, min_progress):
+    """ Returns true if minimum progress is being made. """
+    if max_iter == 1:
+        return True
 
+    prev_iteration = wc_for_iteration(todo_dir, max_iter - 1)
+    cur_iteration = wc_for_iteration(todo_dir, max_iter)
+
+    made_progress = prev_iteration - cur_iteration > min_progress
+    if not made_progress:
         print(
-            "% 4u %s % 6u lines % 6u stable" %
-            (fni, m5[0:8], wc_this, stablen))
+            "Between iteration %d and iteration %d only %d pips were solved.  Terminating iteration."
+            .format(max_iter - 1, max_iter, prev_iteration - cur_iteration))
 
-        m5_last = m5
-
-    return stablen
+    return made_progress
 
 
 def run(
         todo_dir,
         min_iters=None,
-        stable_iters=None,
+        min_progress=None,
         timeout_iters=None,
         max_iters=None,
         zero_entries=None,
+        zero_entries_filter=".*",
         verbose=False):
     timeout_fn = "%s/timeout" % todo_dir
     # make clean removes todo dir, but helps debugging
@@ -73,42 +60,63 @@ def run(
 
     verbose and print("Max iter: %u, need: %s" % (max_iter, min_iters))
 
-    fn = "%s/%u_all.txt" % (todo_dir, max_iter)
-    txt = open(fn, "r").read()
-    nbytes = len(txt)
-
-    stablen = calc_stable_iters(todo_dir, max_iter)
-
+    # Don't allow early termination if below min_iters
     if min_iters is not None and max_iter < min_iters:
         print("Incomplete: not enough iters")
         sys.exit(1)
 
+    # Force early termination if at or above max_iters.
     if max_iters is not None and max_iter >= max_iters:
         print(
             "Complete: reached max iters (want %u, got %u)" %
             (max_iters, max_iter))
         sys.exit(0)
 
+    # Mark timeout if above timeout_iters
     if timeout_iters is not None and max_iter > timeout_iters:
         print("ERROR: timeout (max %u, got %u)" % (timeout_iters, max_iter))
         with open(timeout_fn, "w") as _f:
             pass
         sys.exit(1)
 
-    if zero_entries and nbytes:
-        print("%s: %u bytes, %s lines" % (fn, nbytes, wc(fn)))
-        print("Incomplete: need zero entries")
-        sys.exit(1)
+    # Check if zero entries criteria is not met.
+    if zero_entries:
+        filt = re.compile(zero_entries_filter)
+        count = 0
+        fn = "%s/%u_all.txt" % (todo_dir, max_iter)
+        with open(fn, 'r') as f:
+            for l in f:
+                if filt.search(l):
+                    count += 1
 
-    if stable_iters:
-        if stablen < stable_iters:
+        if count > 0:
+            print("%s: %s lines" % (fn, count))
             print(
-                "Incomplete: insufficient stable iters (got %s, need %s)" %
-                (stablen, stable_iters))
+                "Incomplete: need zero entries (used filter: {})".format(
+                    repr(zero_entries_filter)))
             sys.exit(1)
+        else:
+            # If there are zero entries, check if min_progress criteria is in
+            # affect. If so, that becomes the new termination condition.
+            if min_progress is None:
+                print(
+                    "No unfiltered entries, done (used filter: {})!".format(
+                        repr(zero_entries_filter)))
+                sys.exit(0)
+            else:
+                # Even if there are 0 unfiltered entries, fuzzer may still be
+                # making progress with filtered entries.
+                print(
+                    "No unfiltered entries (used filter: {}), checking if progress is being made"
+                    .format(repr(zero_entries_filter)))
 
-    print("Complete!")
-    sys.exit(0)
+    # Check if minimum progress was achieved, continue iteration if so.
+    if min_progress is not None and not check_made_progress(todo_dir, max_iter,
+                                                            min_progress):
+        sys.exit(0)
+
+    print("No exit criteria met, keep going!")
+    sys.exit(1)
 
 
 def main():
@@ -124,9 +132,11 @@ def main():
     parser.add_argument(
         '--min-iters', default=None, help='Minimum total number of iterations')
     parser.add_argument(
-        '--stable-iters',
+        '--min-progress',
         default=None,
-        help='Number of iterations without any change')
+        help=
+        'Minimum amount of process between iterations.  If less progress is made, terminates immediately.'
+    )
     parser.add_argument(
         '--timeout-iters',
         default=None,
@@ -139,18 +149,25 @@ def main():
         '--zero-entries',
         action="store_true",
         help='Must be no unsolved entries in latest')
+    parser.add_argument(
+        '--zero-entries-filter',
+        default=".*",
+        help=
+        'When zero-entries is supplied, this filter is used to filter pips used for counting against zero entries termination condition.'
+    )
     args = parser.parse_args()
 
     def zint(x):
         return None if x is None else int(x)
 
     run(
-        args.todo_dir,
-        zint(args.min_iters),
-        zint(args.stable_iters),
-        zint(args.timeout_iters),
-        zint(args.max_iters),
-        args.zero_entries,
+        todo_dir=args.todo_dir,
+        min_iters=zint(args.min_iters),
+        min_progress=zint(args.min_progress),
+        timeout_iters=zint(args.timeout_iters),
+        max_iters=zint(args.max_iters),
+        zero_entries=args.zero_entries,
+        zero_entries_filter=args.zero_entries_filter,
         verbose=args.verbose)
 
 
