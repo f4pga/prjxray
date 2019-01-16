@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import re
+import os
 
 from prjxray.segmaker import Segmaker
+from prjxray.bitfilter import get_bitfilter
 
 segmk = Segmaker("design.bits")
 
@@ -53,5 +55,5 @@ for tile, pips_srcs_dsts in tiledata.items():
         elif src_dst[1] not in dsts:
             segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
-segmk.compile()
+segmk.compile(bitfilter=get_bitfilter(os.getenv('XRAY_PART'), 'INT'))
 segmk.write()
