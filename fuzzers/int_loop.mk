@@ -61,7 +61,7 @@ $(SPECIMENS_OK): build/todo.txt
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
 	touch $@
 
-$(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)_l.txt: $(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
+$(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)_l.txt: $(PIPLIST_TCL)
 	mkdir -p $(XRAY_FUZZERS_DIR)/piplist/build
 	cd $(XRAY_FUZZERS_DIR)/piplist/build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
 
