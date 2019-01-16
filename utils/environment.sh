@@ -44,3 +44,41 @@ if [ $(${XRAY_VIVADO} -h |grep Vivado |cut -d\  -f 2) != "v2017.2" ] ; then
     export XRAY_DIR="/bad/vivado/version"
     return
 fi
+
+function init_db
+{
+  # Check if database files exist. If don't, create empty ones
+  db_files="mask_clbll_l.db \
+            mask_clbll_r.db \
+            mask_clblm_l.db \
+            mask_clblm_r.db \
+            mask_hclk_l.db \
+            mask_hclk_r.db \
+            ppips_clbll_l.db \
+            ppips_clbll_r.db \
+            ppips_clblm_l.db \
+            ppips_clblm_r.db \
+            ppips_hclk_l.db \
+            ppips_hclk_r.db \
+            ppips_int_l.db \
+            ppips_int_r.db \
+            segbits_bram_l.block_ram.db \
+            segbits_bram_l.db \
+            segbits_bram_r.block_ram.db \
+            segbits_bram_r.db \
+            segbits_clbll_l.db \
+            segbits_clbll_r.db \
+            segbits_clblm_l.db \
+            segbits_clblm_r.db \
+            segbits_hclk_l.db \
+            segbits_hclk_r.db \
+            segbits_int_l.db \
+            segbits_int_r.db"
+
+  for db in $db_files
+  do
+    if [ ! -f ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/$db ]; then
+      touch ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/$db
+    fi
+  done
+}
