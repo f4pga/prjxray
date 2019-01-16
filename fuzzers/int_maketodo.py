@@ -85,20 +85,30 @@ def maketodo(pipfile, dbfile, intre, not_endswith=None, verbose=False):
     verbose and print('Print %u entries w/ %u drops' % (lines, drops))
 
 
-def run(build_dir, db_dir, intre, pip_type, not_endswith=None, verbose=False):
+def run(
+        build_dir,
+        db_dir,
+        pip_dir,
+        intre,
+        pip_type,
+        not_endswith=None,
+        verbose=False):
     if db_dir is None:
         db_dir = "%s/%s" % (
             os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"))
 
+    if pip_dir is None:
+        pip_dir = "%s/piplist/build" % (os.getenv("XRAY_FUZZERS_DIR"))
+
     assert intre, "RE is required"
     maketodo(
-        "%s/%s_l.txt" % (build_dir, pip_type),
+        "%s/%s_l.txt" % (pip_dir, pip_type),
         "%s/segbits_int_l.db" % db_dir,
         intre,
         not_endswith,
         verbose=verbose)
     maketodo(
-        "%s/%s_r.txt" % (build_dir, pip_type),
+        "%s/%s_r.txt" % (pip_dir, pip_type),
         "%s/segbits_int_r.db" % db_dir,
         intre,
         not_endswith,
@@ -114,6 +124,7 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument('--build-dir', default="build", help='')
     parser.add_argument('--db-dir', default=None, help='')
+    parser.add_argument('--pip-dir', default=None, help='')
     parser.add_argument('--re', required=True, help='')
     parser.add_argument('--pip-type', default="pips_int", help='')
     parser.add_argument(
@@ -123,6 +134,7 @@ def main():
     run(
         build_dir=args.build_dir,
         db_dir=args.db_dir,
+        pip_dir=args.pip_dir,
         intre=args.re,
         pip_type=args.pip_type,
         not_endswith=args.not_endswith,
