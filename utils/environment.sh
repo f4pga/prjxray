@@ -9,6 +9,7 @@ export XRAY_UTILS_DIR="$( cd -P "$( dirname "$XRAY_ENV_PATH" )" && pwd )"
 export XRAY_DIR="$( dirname "$XRAY_UTILS_DIR" )"
 export XRAY_DATABASE_DIR="${XRAY_DIR}/database"
 export XRAY_TOOLS_DIR="${XRAY_DIR}/build/tools"
+export XRAY_FUZZERS_DIR="${XRAY_DIR}/fuzzers"
 
 if [ -e "${XRAY_DIR}/env/bin/activate" ]; then
   source "${XRAY_DIR}/env/bin/activate"
