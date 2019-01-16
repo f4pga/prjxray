@@ -42,7 +42,7 @@ ifneq ($(QUICK),Y)
 	${XRAY_DBFIXUP} --db-root build --clb-int
 	# https://github.com/SymbiFlow/prjxray/issues/399
 	# Clobber existing .db to eliminate potential conflicts
-	if [ -f ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db ] ; then cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}; else bash ${XRAY_DIR}/fuzzers/int_create_empty_db.sh; fi
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} int_l build/segbits_int_l.db
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} int_r build/segbits_int_r.db
 endif
@@ -81,7 +81,7 @@ build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py buil
 # Subsequent are based on updated db
 build/database/seeded:
 	mkdir -p build/database/${XRAY_DATABASE}
-	if [ -f ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db ] ; then cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}; else bash ${XRAY_DIR}/fuzzers/int_create_empty_db.sh; fi
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
 	touch build/database/seeded
 
 # XXX: conider moving to script
