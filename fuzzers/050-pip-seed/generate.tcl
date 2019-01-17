@@ -1,7 +1,11 @@
+puts "FUZ([pwd]): Creating project"
 create_project -force -part $::env(XRAY_PART) design design
 
+puts "FUZ([pwd]): Reading verilog"
 read_verilog $::env(FUZDIR)/top.v
 read_verilog $::env(FUZDIR)/picorv32.v
+
+puts "FUZ([pwd]): Synth design"
 synth_design -top top
 
 set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
@@ -23,13 +27,15 @@ set_param tcl.collectionResultDisplayLimit 0
 source "$::env(XRAY_DIR)/utils/utils.tcl"
 randplace_pblock 100 roi
 
+puts "FUZ([pwd]): Placing design"
 place_design
+puts "FUZ([pwd]): Routing design"
 route_design
 
 write_checkpoint -force design.dcp
 
 proc write_txtdata {filename} {
-    puts "Writing $filename."
+    puts "FUZ([pwd]): Writing $filename."
     set fp [open $filename w]
     set all_pips [lsort -unique [get_pips -of_objects [get_nets -hierarchical]]]
     # FIXME: getting IOB. Don't think this works correctly
@@ -38,7 +44,9 @@ proc write_txtdata {filename} {
     set tilei 0
     foreach tile $tiles {
         incr tilei
-        puts "Dumping pips from tile $tile ($tilei / $ntiles)"
+        if {($tilei % 10) == 0 } {
+            puts "FUZ([pwd]): Dumping pips from tile $tile ($tilei / $ntiles)"
+        }
         foreach pip [filter $all_pips "TILE == $tile"] {
             set src_wire [get_wires -uphill -of_objects $pip]
             set dst_wire [get_wires -downhill -of_objects $pip]
