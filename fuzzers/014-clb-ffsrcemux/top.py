@@ -5,7 +5,10 @@ import re
 from prjxray import util
 from prjxray import verilog
 
-CLBN = 600
+# INCREMENT is the amount of additional CLBN to be instantiated in the design.
+# This makes the fuzzer compilation more robust against failures.
+INCREMENT = os.getenv('CLBN', 0)
+CLBN = 600 + int(INCREMENT)
 print('//Requested CLBs: %s' % str(CLBN))
 
 

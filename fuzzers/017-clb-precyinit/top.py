@@ -5,7 +5,10 @@ import re
 from prjxray import verilog
 from prjxray import util
 
-CLBN = 400
+# INCREMENT is the amount of additional CLBN to be instantiated in the design.
+# This makes the fuzzer compilation more robust against failures.
+INCREMENT = os.getenv('CLBN', 0)
+CLBN = 400 + int(INCREMENT)
 SLICEX, SLICEY = util.site_xy_minmax([
     'SLICEL',
     'SLICEM',

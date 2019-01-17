@@ -4,6 +4,17 @@ CLB_DBFIXUP ?=
 # ie set to N if only for SLICEM
 SLICEL ?= Y
 
+# This set of variables are used to store the increment
+# in the number of CLBs in case they are not enough and
+# the generated database is inconsistent
+CLBN ?= 0
+INC ?= 50
+VAR ?= "CLBN=$$(($(CLBN) + $(INC)))"
+ENV_VAR ?= "CLBN=$(CLBN)"
+ITER ?= 0
+MAX_ITER ?= 10
+FUZDIR = ${PWD}
+
 include ../fuzzer.mk
 
 database: build/segbits_clbx.db
@@ -26,7 +37,19 @@ else
 endif
 	${XRAY_MASKMERGE} build/mask_clbx.db $(SEGDATAS)
 
-pushdb:
+checkdb:
+	# If the database presents errors or is incomplete, the fuzzer is rerun.
+	# When it reaches the maximum number of iterations it fails.
+	@if [ $(ITER) -gt $(MAX_ITER) ]; then \
+	    echo "Max Iterations reached. Fuzzer unsolvable."; \
+	    exit 1; \
+	fi
+	$(MAKE) parsedb || $(MAKE) $(VAR) ITER=$$(($(ITER) + 1)) run
+
+parsedb:
+	${XRAY_PARSEDB} --strict build/segbits_clbx.db
+
+pushdb: checkdb
 ifeq ($(SLICEL),Y)
 	${XRAY_MERGEDB} clbll_l build/segbits_clbx.db
 	${XRAY_MERGEDB} clbll_r build/segbits_clbx.db
@@ -38,5 +61,5 @@ endif
 	${XRAY_MERGEDB} mask_clblm_l build/mask_clbx.db
 	${XRAY_MERGEDB} mask_clblm_r build/mask_clbx.db
 
-.PHONY: database pushdb
+.PHONY: database pushdb checkdb parsedb
 

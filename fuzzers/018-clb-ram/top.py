@@ -15,12 +15,15 @@ SRLC32E_N
 Note: LUT6 was added to try to simplify reduction, although it might not be needed
 '''
 
-import random
+import os, random
 random.seed(0)
 from prjxray import util
 from prjxray import verilog
 
-CLBN = 50
+# INCREMENT is the amount of additional CLBN to be instantiated in the design.
+# This makes the fuzzer compilation more robust against failures.
+INCREMENT = os.getenv('CLBN', 0)
+CLBN = 50 + int(INCREMENT)
 print('//Requested CLBs: %s' % str(CLBN))
 
 

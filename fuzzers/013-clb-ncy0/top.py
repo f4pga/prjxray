@@ -1,9 +1,12 @@
-import random
+import os, random
 random.seed(0)
 from prjxray import util
 from prjxray import verilog
 
-CLBN = 400
+# INCREMENT is the amount of additional CLBN to be instantiated in the design.
+# This makes the fuzzer compilation more robust against failures.
+INCREMENT = os.getenv('CLBN', 0)
+CLBN = 400 + int(INCREMENT)
 print('//Requested CLBs: %s' % str(CLBN))
 
 
@@ -107,7 +110,7 @@ module clb_NCY0_O5 (input clk, input [7:0] din, output [7:0] dout);
     always @(*) begin
         s = din[7:4];
         s[N] = o6;
-        
+
         di = {din[3:0]};
         di[N] = o5;
     end
