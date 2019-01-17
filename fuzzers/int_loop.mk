@@ -14,7 +14,7 @@ endif
 ITER ?= 1
 MAKETODO_FLAGS ?=
 PIP_TYPE?=pips_int
-PIPLIST_TCL?=$(XRAY_DIR)/fuzzers/piplist.tcl
+PIPLIST_TCL?=$(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
 
 # See int_loop_check.py
 # rempips took 35 iters once, so set 50 as a good start point
@@ -61,12 +61,12 @@ $(SPECIMENS_OK): build/todo.txt
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
 	touch $@
 
-build/$(PIP_TYPE)_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
-	mkdir -p build/$(ITER)
-	cd build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
+$(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)_l.txt: $(PIPLIST_TCL)
+	mkdir -p $(XRAY_FUZZERS_DIR)/piplist/build
+	cd $(XRAY_FUZZERS_DIR)/piplist/build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
 
 # Used 1) to see if we are done 2) pips to try in generate.tcl
-build/todo.txt: build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
+build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --pip-type $(PIP_TYPE) $(MAKETODO_FLAGS) |sort >build/todo_all.txt
 	cat build/todo_all.txt | sort -R | head -n$(TODO_N) > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
@@ -97,5 +97,8 @@ clean:
 cleaniter:
 	rm -rf build/$(ITER) build/todo.txt
 
-.PHONY: database pushdb run clean cleaniter
+cleanpiplist:
+	rm -rf $(XRAY_FUZZERS_DIR)/piplist/build
+
+.PHONY: database pushdb run clean cleaniter cleanpiplist
 

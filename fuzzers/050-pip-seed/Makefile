@@ -10,6 +10,7 @@ endif
 # Driven by int_loop.sh
 ITER := 1
 MAKETODO_FLAGS=--re ".*" --not-endswith ".VCC_WIRE"
+PIPLIST_TCL=$(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
 # See int_loop_check.py
 # Original did 200 specimins open loop
 CHECK_ARGS := --max-iters 12 --stable-iters 2
@@ -63,12 +64,13 @@ $(SPECIMENS_OK): build/todo.txt
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
-build/pips_int_l.txt: $(XRAY_DIR)/fuzzers/piplist.tcl
-	mkdir -p build/$(ITER)
-	cd build && ${XRAY_VIVADO} -mode batch -source $(XRAY_DIR)/fuzzers/piplist.tcl
+$(XRAY_FUZZERS_DIR)/piplist/build/pips_int_l.txt: $(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
+	mkdir -p $(XRAY_FUZZERS_DIR)/piplist/build
+	cd $(XRAY_FUZZERS_DIR)/piplist/build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
 
-build/todo.txt: build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
-# Doesn't pushdb until very end. Compare against db so far
+build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/pips_int_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py
+	# Doesn't pushdb until very end. Compare against db so far
+	mkdir -p build/$(ITER)
 	python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --db-dir build $(MAKETODO_FLAGS) |sort >build/todo_all.txt
 	cat build/todo_all.txt | sort -R > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
@@ -92,5 +94,8 @@ clean:
 cleaniter:
 	rm -rf build/$(ITER) build/todo.txt
 
-.PHONY: database pushdb run clean cleaniter
+# Remove piplist build files in piplist directory
+cleanpiplist:
+	rm -rf $(XRAY_FUZZERS_DIR)/piplist/build
 
+.PHONY: database pushdb run clean cleaniter cleanpiplist
