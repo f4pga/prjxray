@@ -4,6 +4,14 @@ CLB_DBFIXUP ?=
 # ie set to N if only for SLICEM
 SLICEL ?= Y
 
+# This set of variables are used to store the increment
+# in the number of CLBs in case they are not enough and
+# the generated database is inconsistent
+CLBN ?= 0
+INC ?= 50
+VAR ?= "CLBN=$$(($(CLBN) + $(INC)))"
+ENV_VAR ?= "CLBN=$(CLBN)"
+
 include ../fuzzer.mk
 
 database: build/segbits_clbx.db
