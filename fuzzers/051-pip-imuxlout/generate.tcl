@@ -26,6 +26,55 @@ route_design
 
 # write_checkpoint -force design.dcp
 
+proc find_dst_pin {tile dst_wire} {
+    # This function finds a CLB pin in a $tile which can be driven by the $dst_wire.
+    # The pin may not be directly driven by the wire, so the function follows possible
+    # routing path until it finds the desired pin.
+    puts "Looking for dst pin for wire $tile/$dst_wire"
+    set next_dst_wire $dst_wire
+    set iterations 0
+    while {$iterations < 10} {
+        set iterations [expr $iterations + 1]
+        set clb_dst_wire [get_wires -filter {TILE_NAME =~ CLB*} -of_objects [get_nodes -of_objects [get_wire $tile/$next_dst_wire]]]
+        # the selected wire does not connect to any CLB wire let's go further and try to find a CLB pin
+        if {$clb_dst_wire == ""} {
+            # BOUNCE* pips may lead to a different CLB
+            set pips [get_pips -regexp -downhill -of_objects [get_wire $tile/$next_dst_wire] (?!.*BOUNCE).*]
+            # choose a random pip and check if it will lead us to a CLB
+            set next_pip [lindex $pips [expr {int(rand()*[llength $pips])}]]
+            set next_dst_wire [regsub {.*->>(.*)} $next_pip {\1}]
+        } else {
+            set clb_dst_pin [get_site_pins -of_objects [get_nodes -downhill -of_objects [get_pips -of_objects $clb_dst_wire]]]
+            return $clb_dst_pin
+        }
+    }
+    error
+}
+
+proc find_src_pin {tile src_wire} {
+    # This function finds a CLB pin in a $tile which can drive the $src_wire
+    # The wire may not be directly driven by the pin, so the function follows
+    # possible routing path until it finds the desired pin.
+    puts "Looking for src pin for wire $tile/$src_wire"
+    set next_src_wire $src_wire
+    set iterations 0
+    while {$iterations < 10} {
+        set iterations [expr $iterations + 1]
+        set clb_src_wire [get_wires -filter {TILE_NAME =~ CLB*} -of_objects [get_nodes -of_objects [get_wire $tile/$next_src_wire]]]
+        # the selected wire does not connect to any CLB wire let's go further and try to find a CLB pin
+        if {$clb_src_wire == ""} {
+            set pips [get_pips -uphill -of_objects [get_wire $tile/$next_src_wire]]
+            # choose a random pip and check if it will lead us to a CLB
+            set next_pip [lindex $pips [expr {int(rand()*[llength $pips])}]]
+            set next_src_wire [regsub {(.*)->>.*} $next_pip {\1}]
+        } else {
+            set clb_src_pin [get_site_pins -of_objects [get_nodes -uphill -of_objects [get_pips -of_objects $clb_src_wire]]]
+            return $clb_src_pin
+        }
+    }
+    error
+}
+
 set fp [open "../../todo.txt" r]
 set todo_lines {}
 for {gets $fp line} {$line != ""} {gets $fp line} {
@@ -46,11 +95,8 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $idx]}
     if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $idx]}
 
-    set clb_dst_wire [get_wires -filter {TILE_NAME =~ CLB*} -of_objects [get_nodes -of_objects [get_wire $tile/$dst_wire]]]
-    set clb_src_wire [get_wires -filter {TILE_NAME =~ CLB*} -of_objects [get_nodes -of_objects [get_wire $tile/$src_wire]]]
-
-    set clb_dst_pin [get_site_pins -of_objects [get_nodes -downhill -of_objects [get_pips -of_objects $clb_dst_wire]]]
-    set clb_src_pin [get_site_pins -of_objects [get_nodes -uphill -of_objects [get_pips -of_objects $clb_src_wire]]]
+    set clb_dst_pin [find_dst_pin $tile $dst_wire]
+    set clb_src_pin [find_src_pin $tile $src_wire]
 
     set src_prefix [regsub {(.*/.).*} ${clb_src_pin} {\1}]
     set dst_prefix [regsub {(.*/.).*} ${clb_dst_pin} {\1}]
@@ -62,8 +108,15 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
 
     set mynet [create_net mynet_$idx]
     set mylut [create_cell -reference LUT1 mylut_$idx]
+    set dst_type [regsub {.*(.$)} $clb_dst_pin {\1}]
     set lutin [regsub {.*(.)} $clb_dst_pin {A\1}]
-    set_property -dict "LOC $slice BEL $lut LOCK_PINS I0:$lutin" $mylut
+
+    # some dst pins are not LUT inputs so they do not have LOCK_PINS property
+    if { $dst_type >= 0 && $dst_type <= 6 } {
+        set_property -dict "LOC $slice BEL $lut LOCK_PINS I0:$lutin" $mylut
+    } else {
+        set_property -dict "LOC $slice BEL $lut" $mylut
+    }
 
     # some source wires may be FF outputs, in such cases
     # we need to place and route an FF
