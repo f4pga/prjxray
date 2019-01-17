@@ -86,5 +86,5 @@ for tile, pips_srcs_dsts in tiledata.items():
         elif src_dst[1] not in dsts:
             segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
-segmk.compile(bitfilter=get_bitfilter(os.getenv('XRAY_PART'), 'INT'))
+segmk.compile(bitfilter=get_bitfilter(os.getenv('XRAY_DATABASE'), 'INT'))
 segmk.write()

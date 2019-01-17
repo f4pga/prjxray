@@ -39,4 +39,8 @@ def get_bitfilter(part, tile):
     Either returns bitfilter to specified part and tile type, or the default
     bitfilter, which includes all bits.
     """
-    return BITFILTERS.get((part, tile), None)
+    key = (part, tile)
+    if key in BITFILTERS:
+        return BITFILTERS[key].filter
+    else:
+        return None
