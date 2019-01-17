@@ -1,5 +1,7 @@
 class Bitfilter(object):
-    def __init__(self, frames_to_include=None, frames_to_exclude=[], bits_to_exclude=[]):
+    def __init__(
+            self, frames_to_include=None, frames_to_exclude=[],
+            bits_to_exclude=[]):
         self.frames_to_include = frames_to_include
         self.frames_to_exclude = frames_to_exclude
         self.bits_to_exclude = bits_to_exclude
@@ -17,16 +19,19 @@ class Bitfilter(object):
 
         return True
 
+
 BITFILTERS = {
-        ('artix7', 'INT'): Bitfilter(
-            frames_to_exclude=[
-                31,
-                ],
-            bits_to_exclude=[
-                #
-                (0, 36)
-                ]),
-        }
+    ('artix7', 'INT'):
+    Bitfilter(
+        frames_to_exclude=[
+            31,
+        ],
+        bits_to_exclude=[
+            #
+            (0, 36)
+        ]),
+}
+
 
 def get_bitfilter(part, tile):
     """ Returns bitfilter for specified part and tile.
