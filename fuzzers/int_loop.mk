@@ -1,4 +1,4 @@
-TODO_N ?= 10
+TODO_N ?= 50
 # Number of spcimens
 ifeq ($(QUICK),Y)
 N = 1
