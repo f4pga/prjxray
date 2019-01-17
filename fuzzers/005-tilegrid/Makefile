@@ -59,7 +59,7 @@ run:
 	touch run.ok
 
 clean:
-	rm -rf build
+	rm -rf build run.ok
 	cd iob && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
 	cd pll && $(MAKE) clean
