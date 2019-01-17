@@ -12,6 +12,7 @@ A post processing step verifies that two tiles don't reference the same bitstrea
 
 from generate import load_tiles
 from prjxray import util
+import util as localutil
 
 
 def nolr(tile_type):
@@ -43,10 +44,29 @@ def load_baseaddrs(deltas_fns):
     return site_baseaddr
 
 
+def load_tdb_baseaddr(database, int_tdb, verbose=False):
+    tdb_tile_baseaddrs = dict()
+    for line in open(int_tdb, 'r'):
+        line = line.strip()
+        parts = line.split(' ')
+        # INT_L_X0Y50.DWORD:0.DBIT:17.DFRAME:14
+        tagstr = parts[0]
+        # 00000914_000_17 00000918_000_17 ...
+        addrlist = parts[1:]
+        localutil.check_frames(addrlist)
+        frame = localutil.parse_addr(addrlist[0], get_base_frame=True)
+        tparts = tagstr.split('.')
+        # INT_L_X0Y50
+        tile = tparts[0]
+        assert tile in database.keys(), "Tile not in Database"
+        localutil.add_baseaddr(tdb_tile_baseaddrs, tile, frame, verbose)
+
+    return tdb_tile_baseaddrs
+
+
 def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
     # Look up a base address by tile name
     tile_baseaddrs = dict()
-
     verbose and print('')
     verbose and print('%u tiles' % len(tiles))
     verbose and print("%u baseaddrs" % len(site_baseaddr))
@@ -56,17 +76,8 @@ def make_tile_baseaddrs(tiles, site_baseaddr, verbose=False):
             if site_name not in site_baseaddr:
                 continue
             framebaseaddr = site_baseaddr[site_name]
-            bt = util.addr2btype(framebaseaddr)
-            tile_baseaddr = tile_baseaddrs.setdefault(tile["name"], {})
-            if bt in tile_baseaddr:
-                # actually lets just fail these, better to remove at tcl level to speed up processing
-                assert 0, 'duplicate base address'
-                assert tile_baseaddr[bt] == [framebaseaddr, 0]
-            else:
-                tile_baseaddr[bt] = [framebaseaddr, 0]
-            verbose and print(
-                "baseaddr: %s.%s @ %s.0x%08x" %
-                (tile["name"], site_name, bt, framebaseaddr))
+            localutil.add_baseaddr(
+                tile_baseaddrs, tile["name"], framebaseaddr, verbose)
             added += 1
 
     assert added, "Failed to add any base addresses"
@@ -118,7 +129,7 @@ def make_segments(database, tiles_by_grid, tile_baseaddrs, verbose=False):
         grid_x = tile_data["grid_x"]
         grid_y = tile_data["grid_y"]
 
-        def add_segment(name, tiles, segtype, baseaddr=None):
+        def add_segment(tiles, segtype, name=None, baseaddr=None):
             assert name not in segments
             segment = segments.setdefault(name, {})
             segment["tiles"] = tiles
@@ -285,7 +296,6 @@ def create_segment_for_int_lr(
         adjacent_tile = tiles_by_grid[(grid_x, grid_y)]
     else:
         assert False, database[tile]["type"]
-
     if (database[adjacent_tile]['type'].startswith('INT_INTERFACE_') or
             database[adjacent_tile]['type'].startswith('PCIE_INT_INTERFACE_')
             or
@@ -408,26 +418,15 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                     grid_x = database[inttile]["grid_x"]
                     grid_y = database[inttile]["grid_y"]
 
-                    for i in range(50):
-                        grid_y -= 1
-                        loc = (grid_x, grid_y)
-
-                        if loc not in tiles_by_grid:
-                            continue
-
-                        dst_tile = database[tiles_by_grid[loc]]
-
-                        if 'segment' not in dst_tile:
-                            continue
-                        #assert 'segment' in dst_tile, ((grid_x, grid_y), dst_tile, tiles_by_grid[(grid_x, grid_y)])
-
-                        if wordbase == 50:
-                            wordbase += 1
-                        else:
-                            wordbase += 2
+                    for dst_tile, wordbase in localutil.propagate_up_INT(
+                            grid_x, grid_y, database, tiles_by_grid, wordbase):
+                        assert 'segment' in dst_tile, (
+                            (grid_x, grid_y), dst_tile,
+                            tiles_by_grid[(grid_x, grid_y)])
 
                         #verbose and print('  dst_tile', dst_tile)
-                        dst_segment_name = dst_tile["segment"]
+                        if 'segment' in dst_tile:
+                            dst_segment_name = dst_tile["segment"]
                         #verbose and print('up_INT: %s => %s' % (src_segment_name, dst_segment_name))
                         segments[dst_segment_name].setdefault(
                             "baseaddr",
@@ -489,43 +488,6 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                 wordbase)
 
 
-def add_tile_bits(tile_db, baseaddr, offset, frames, words, height=None):
-    '''
-    Record data structure geometry for the given tile baseaddr
-    For most tiles there is only one baseaddr, but some like BRAM have multiple
-    Notes on multiple block types:
-    https://github.com/SymbiFlow/prjxray/issues/145
-    '''
-
-    bits = tile_db['bits']
-    block_type = util.addr2btype(baseaddr)
-
-    assert 0 <= offset <= 100, offset
-    assert 1 <= words <= 101
-    assert offset + words <= 101, (
-        tile_db, offset + words, offset, words, block_type)
-
-    assert block_type not in bits
-    block = bits.setdefault(block_type, {})
-
-    # FDRI address
-    block["baseaddr"] = '0x%08X' % baseaddr
-    # Number of frames this entry is sretched across
-    # that is the following FDRI addresses are used: range(baseaddr, baseaddr + frames)
-    block["frames"] = frames
-
-    # Index of first word used within each frame
-    block["offset"] = offset
-
-    # related to words...
-    # deprecated field? Don't worry about for now
-    # DSP has some differences between height and words
-    block["words"] = words
-    if height is None:
-        height = words
-    block["height"] = height
-
-
 def db_add_bits(database, segments):
     '''Transfer segment data into tiles'''
     for segment_name in segments.keys():
@@ -536,44 +498,9 @@ def db_add_bits(database, segments):
                          offset) in segments[segment_name]["baseaddr"].items():
             for tile_name in segments[segment_name]["tiles"]:
                 tile_type = database[tile_name]["type"]
-                """
-                FIXME: review IOB
-                    # IOB
-                    # design_IOB_X0Y100.delta:+bit_00020027_000_29
-                    # design_IOB_X0Y104.delta:+bit_00020027_008_29
-                    # design_IOB_X0Y112.delta:+bit_00020027_024_29
-                    # design_IOB_X0Y120.delta:+bit_00020027_040_29
-                    # design_IOB_X0Y128.delta:+bit_00020027_057_29
-                    # design_IOB_X0Y136.delta:+bit_00020027_073_29
-                    # design_IOB_X0Y144.delta:+bit_00020027_089_29
-                    # $XRAY_BLOCKWIDTH design_IOB_X0Y100.bit |grep 00020000
-                    # 0x00020000: 0x2A (42)
-                    ("RIOI3", "CLB_IO_CLK"): (42, 2, 4),
-                    ("LIOI3", "CLB_IO_CLK"): (42, 2, 4),
-                    ("RIOI3_SING", "CLB_IO_CLK"): (42, 2, 4),
-                    ("LIOI3_SING", "CLB_IO_CLK"): (42, 2, 4),
-                    ("RIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 4),
-                    ("LIOI3_TBYTESRC", "CLB_IO_CLK"): (42, 2, 4),
-                    ("RIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 4),
-                    ("LIOI3_TBYTETERM", "CLB_IO_CLK"): (42, 2, 4),
-                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 4),
-                    ("RIOB33", "CLB_IO_CLK"): (42, 2, 4),
-                    ("LIOB33", "CLB_IO_CLK"): (42, 2, 4),
-                    ("RIOB33_SING", "CLB_IO_CLK"): (42, 2, 4),
-                    ("LIOB33_SING", "CLB_IO_CLK"): (42, 2, 4),
-                """
-                entry = {
-                    # (tile_type, block_type): (frames, words, height)
-                    ("CLBLL", "CLB_IO_CLK"): (36, 2, 2),
-                    ("CLBLM", "CLB_IO_CLK"): (36, 2, 2),
-                    ("HCLK", "CLB_IO_CLK"): (26, 1, 1),
-                    ("INT", "CLB_IO_CLK"): (28, 2, 2),
-                    ("BRAM", "CLB_IO_CLK"): (28, 10, None),
-                    ("BRAM", "BLOCK_RAM"): (128, 10, None),
-                    ("DSP", "CLB_IO_CLK"): (28, 2, 10),
-                    ("INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
-                    ("BRAM_INT_INTERFACE", "CLB_IO_CLK"): (28, 2, None),
-                }.get((nolr(tile_type), block_type), None)
+
+                entry = localutil.get_entry(nolr(tile_type), block_type)
+
                 if entry is None:
                     # Other types are rare, not expected to have these
                     if block_type == "CLB_IO_CLK":
@@ -584,9 +511,9 @@ def db_add_bits(database, segments):
                 if frames:
                     # if we have a width, we should have a height
                     assert frames and words
-                    add_tile_bits(
-                        database[tile_name], baseaddr, offset, frames, words,
-                        height)
+                    localutil.add_tile_bits(
+                        tile_name, database[tile_name], baseaddr, offset,
+                        frames, words, height)
 
 
 def db_add_segments(database, segments):
@@ -600,11 +527,36 @@ def db_add_segments(database, segments):
             tiledata["segment_type"] = segments[segment]["type"]
 
 
-def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, verbose=False):
+def db_int_fixup(database, tiles, tiles_by_grid):
+    for tile_name in tiles.keys():
+        tiles_to_add = dict()
+
+        tile = database[tile_name]
+        grid_x = tile["grid_x"]
+        grid_y = tile["grid_y"]
+
+        tile_type = tile["type"]
+
+        block_type, (baseaddr, offset) = sorted(tiles[tile_name].items())[0]
+
+        frames, words, height = localutil.get_entry(
+            nolr(tile_type), block_type)
+        # Adding first bottom INT tile
+        localutil.add_tile_bits(
+            tile_name, tile, baseaddr, offset, frames, words, height)
+
+        for tile, offset in localutil.propagate_up_INT(
+                grid_x, grid_y, database, tiles_by_grid, offset):
+            localutil.add_tile_bits(
+                tile_name, tile, baseaddr, offset, frames, words, height)
+
+
+def run(
+        json_in_fn, json_out_fn, tiles_fn, deltas_fns, int_tdb=None,
+        verbose=False):
     # Load input files
     tiles = load_tiles(tiles_fn)
     site_baseaddr = load_baseaddrs(deltas_fns)
-
     database = json.load(open(json_in_fn, "r"))
 
     tile_baseaddrs = make_tile_baseaddrs(tiles, site_baseaddr, verbose=verbose)
@@ -619,6 +571,10 @@ def run(json_in_fn, json_out_fn, tiles_fn, deltas_fns, verbose=False):
 
     db_add_bits(database, segments)
     db_add_segments(database, segments)
+
+    if int_tdb is not None:
+        tile_baseaddrs_fixup = load_tdb_baseaddr(database, int_tdb)
+        db_int_fixup(database, tile_baseaddrs_fixup, tiles_by_grid)
 
     # Save
     json.dump(
@@ -647,13 +603,23 @@ def main():
         '--tiles', default='tiles.txt', help='Input tiles.txt tcl output')
     parser.add_argument(
         "deltas", nargs="*", help=".bit diffs to create base addresses from")
+    parser.add_argument(
+        "--int-tdb",
+        default=None,
+        help=".tdb diffs to fill the interconnects without any adjacent CLB")
     args = parser.parse_args()
 
     deltas = args.deltas
     if not args.deltas:
         deltas = glob.glob("*.delta")
 
-    run(args.json_in, args.json_out, args.tiles, deltas, verbose=args.verbose)
+    run(
+        args.json_in,
+        args.json_out,
+        args.tiles,
+        deltas,
+        args.int_tdb,
+        verbose=args.verbose)
 
 
 if __name__ == "__main__":

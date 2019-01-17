@@ -1,9 +1,11 @@
 FUZDIR=$(shell pwd)
 BUILD_DIR=$(FUZDIR)/build
 TILEGRID_TDB_DEPENDENCIES=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb
+GENERATE_FULL_ARGS=
 
 ifeq (${XRAY_DATABASE}, zynq7)
 TILEGRID_TDB_DEPENDENCIES += ps7_int/build/segbits_tilegrid.tdb
+GENERATE_FULL_ARGS += --int-tdb $(FUZDIR)/ps7_int/build/segbits_tilegrid.tdb
 endif
 
 database: build/tilegrid.json
@@ -49,8 +51,7 @@ monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 build/tilegrid.json: generate_full.py build/tilegrid_tdb.json build/clb/deltas build/bram/deltas
 	cd build && python3 ${FUZDIR}/generate_full.py \
         --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json \
-        --tiles $(FUZDIR)/build/tiles/tiles.txt clb/design_*.delta bram/design_*.delta
-
+        --tiles $(FUZDIR)/build/tiles/tiles.txt clb/design_*.delta bram/design_*.delta ${GENERATE_FULL_ARGS}
 run:
 	$(MAKE) clean
 	$(MAKE) database
