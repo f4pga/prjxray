@@ -7,7 +7,6 @@ FUZDIR ?= ${PWD}
 all: database
 
 $(SPECIMENS_OK):
-	echo ${ENV_VAR}
 	mkdir -p build
 	if [ -f $(FUZDIR)/generate.sh ]; then export $(ENV_VAR); bash $(FUZDIR)/generate.sh $(subst /OK,,$@); else bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@); fi
 
