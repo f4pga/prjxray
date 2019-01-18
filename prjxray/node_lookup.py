@@ -3,6 +3,7 @@ import progressbar
 import pyjson5 as json5
 import os.path
 
+
 def create_tables(conn):
     c = conn.cursor()
 
@@ -47,8 +48,7 @@ class NodeLookup(object):
             # build/specimen_001/tile_DSP_L_X34Y145.json5
             root, _ = os.path.splitext(os.path.basename(tile_file))
             tile = root[5:]
-            c.execute("INSERT INTO tile(name) VALUES (?);",
-                    (tile,))
+            c.execute("INSERT INTO tile(name) VALUES (?);", (tile, ))
             tile_pkeys[tile] = c.lastrowid
 
         nodes_processed = set()
@@ -69,8 +69,8 @@ class NodeLookup(object):
                     tile_pkey = tile_pkeys[tile]
                     c.execute(
                         """
-INSERT INTO wire(name, tile_pkey, node_pkey) VALUES (?, ?, ?);""", (
-                            wire['wire'], tile_pkey, node_pkey))
+INSERT INTO wire(name, tile_pkey, node_pkey) VALUES (?, ?, ?);""",
+                        (wire['wire'], tile_pkey, node_pkey))
 
         self.conn.commit()
 

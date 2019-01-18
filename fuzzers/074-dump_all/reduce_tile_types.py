@@ -225,8 +225,7 @@ def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
         chunksize = 1
         if len(tile_instances) < chunksize * 2:
             iter = map(
-                lambda file: read_json5(file, database_file),
-                tile_instances)
+                lambda file: read_json5(file, database_file), tile_instances)
         else:
             print(
                 '{} Using pool.imap_unordered'.format(datetime.datetime.now()))
