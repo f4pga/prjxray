@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
+
+import os
+
 from prjxray.segmaker import Segmaker
+from prjxray.bitfilter import get_bitfilter
 import argparse
 
 parser = argparse.ArgumentParser(description="Generate int segfiles")
@@ -81,5 +86,5 @@ for tile, pips_srcs_dsts in tiledata.items():
         elif src_dst[1] not in dsts:
             segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
-segmk.compile()
+segmk.compile(bitfilter=get_bitfilter(os.getenv('XRAY_DATABASE'), 'INT'))
 segmk.write()
