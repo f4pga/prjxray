@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# check_json.sh <database a> <database b>
+# diff_db_json.sh <database a> <database b>
 #
 # Tool for comparing database JSON outputs from two database's.
 
