@@ -24,7 +24,8 @@ BITFILTERS = {
     ('artix7', 'INT'):
     Bitfilter(
         frames_to_exclude=[
-            30, 31,
+            30,
+            31,
         ],
         bits_to_exclude=[
             #
