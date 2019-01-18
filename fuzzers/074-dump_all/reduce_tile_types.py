@@ -9,9 +9,9 @@ set tile, an error will be generated.
 
 import argparse
 import prjxray.lib
+import prjxray.node_lookup
 import datetime
 import os.path
-import json
 import pyjson5 as json5
 import progressbar
 import multiprocessing
@@ -190,15 +190,12 @@ def get_sites(tile, site_pin_node_to_wires):
             })
 
 
-def read_json5(fname, nodes):
-    node_lookup = prjxray.lib.NodeLookup()
-    node_lookup.load_from_nodes(nodes)
+def read_json5(fname, database_file):
+    node_lookup = prjxray.node_lookup.NodeLookup(database_file)
 
-    #print('{} Reading {} (in pid {})'.format(datetime.datetime.now(), fname, os.getpid()))
     with open(fname) as f:
         tile = json5.load(f)
 
-    #print('{} Done reading {}'.format(datetime.datetime.now(), fname))
     def get_site_types():
         for site in tile['sites']:
             yield get_prototype_site(site)
@@ -219,22 +216,21 @@ def read_json5(fname, nodes):
     return fname, tile, site_types, sites, pips, wires
 
 
-def reduce_tile(pool, site_types, tile_type, tile_instances, node_lookup):
+def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
     sites = None
     pips = None
     wires = set()
 
     with progressbar.ProgressBar(max_value=len(tile_instances)) as bar:
-        chunksize = 20
+        chunksize = 1
         if len(tile_instances) < chunksize * 2:
             iter = map(
-                lambda file: read_json5(file, node_lookup.nodes),
-                tile_instances)
+                lambda file: read_json5(file, database_file), tile_instances)
         else:
             print(
                 '{} Using pool.imap_unordered'.format(datetime.datetime.now()))
             iter = pool.imap_unordered(
-                functools.partial(read_json5, nodes=node_lookup.nodes),
+                functools.partial(read_json5, database_file=database_file),
                 tile_instances,
                 chunksize=chunksize,
             )
@@ -292,17 +288,16 @@ def main():
     tiles, nodes = prjxray.lib.read_root_csv(args.root_dir)
 
     print('{} Loading node<->wire mapping'.format(datetime.datetime.now()))
-    node_lookup = prjxray.lib.NodeLookup()
-    node_lookup_file = os.path.join(args.output_dir, 'nodes.pickle')
-    if os.path.exists(node_lookup_file) and not args.ignore_cache:
-        node_lookup.load_from_file(node_lookup_file)
+    database_file = os.path.join(args.output_dir, 'nodes.db')
+    if os.path.exists(database_file) and not args.ignore_cache:
+        node_lookup = prjxray.node_lookup.NodeLookup(database_file)
     else:
-        node_lookup.load_from_root_csv(nodes)
-        node_lookup.save_to_file(node_lookup_file)
+        node_lookup = prjxray.node_lookup.NodeLookup(database_file)
+        node_lookup.build_database(nodes=nodes, tiles=tiles)
 
     site_types = {}
 
-    processes = min(multiprocessing.cpu_count(), 10)
+    processes = multiprocessing.cpu_count()
     print('Running {} processes'.format(processes))
     pool = multiprocessing.Pool(processes=processes)
 
@@ -320,7 +315,7 @@ def main():
             '{} Generating reduced tile for {}'.format(
                 datetime.datetime.now(), tile_type))
         reduced_tile = reduce_tile(
-            pool, site_types, tile_type, tiles[tile_type], node_lookup)
+            pool, site_types, tile_type, tiles[tile_type], database_file)
         for site_type in site_types:
             with open(os.path.join(
                     args.output_dir, 'tile_type_{}_site_type_{}.json'.format(
