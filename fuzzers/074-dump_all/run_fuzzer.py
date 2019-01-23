@@ -53,7 +53,7 @@ def run_pool(itemcount, nbBlocks, blocksize, nbParBlock, workFunc):
     # We handle the case of not integer multiple of pips
     intitemcount = blocksize * nbBlocks
     lastRun = False
-    modBlocks = itemcount % nbBlocks
+    modBlocks = itemcount - intitemcount
     if modBlocks != 0:
         lastRun = True
         nbBlocks = nbBlocks + 1
