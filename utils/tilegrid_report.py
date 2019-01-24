@@ -41,7 +41,7 @@ def main():
                 have_bits += 1
                 total_have_bits += 1
 
-        if args.show_only_missing and have_bits == total_tile_count:
+        if args.show_only_missing and have_bits == len(tiles):
             continue
 
         print(
@@ -50,10 +50,14 @@ def main():
                 100. * float(have_bits) / len(tiles)))
 
         if args.verbose:
+            tiles_with_missing_bits = []
             for tile_name, gridinfo in tiles:
                 total_tile_count += 1
                 if BlockType.CLB_IO_CLK not in gridinfo.bits:
-                    print('{} is missing CLB_IO_CLK'.format(tile_name))
+                    tiles_with_missing_bits.append(tile_name)
+
+            for tile_name in sorted(tiles_with_missing_bits):
+                print('{} is missing CLB_IO_CLK'.format(tile_name))
 
     print('')
     print(
