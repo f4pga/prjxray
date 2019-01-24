@@ -421,9 +421,11 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                     for dst_tile, wordbase in localutil.propagate_up_INT(
                             grid_x, grid_y, database, tiles_by_grid, wordbase):
                         if 'segment' not in dst_tile:
-                            print('WARNING: Missing segment for {} ({}, {}) {}'.format(
-                                tiles_by_grid[(grid_x, grid_y)], grid_x, grid_y,
-                                dst_tile))
+                            print(
+                                'WARNING: Missing segment for {} ({}, {}) {}'.
+                                format(
+                                    tiles_by_grid[(grid_x, grid_y)], grid_x,
+                                    grid_y, dst_tile))
                             continue
 
                         #verbose and print('  dst_tile', dst_tile)
