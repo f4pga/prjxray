@@ -30,9 +30,13 @@ def main():
                 a_json_base)) as a_json_out, tempfile.NamedTemporaryFile(
                     suffix="_b_{}".format(a_json_base)) as b_json_out:
             subprocess.check_call(
-                "python3 -m utils.xjson {}".format(a_json_in), shell=True, stdout=a_json_out)
+                "python3 -m utils.xjson {}".format(a_json_in),
+                shell=True,
+                stdout=a_json_out)
             subprocess.check_call(
-                "python3 -m utils.xjson {}".format(b_json_in), shell=True, stdout=b_json_out)
+                "python3 -m utils.xjson {}".format(b_json_in),
+                shell=True,
+                stdout=b_json_out)
 
             print("Comparing {}".format(a_json_base))
             subprocess.call(
