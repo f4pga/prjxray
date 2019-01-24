@@ -2,8 +2,10 @@
 import simplejson as json
 import argparse
 
+
 def main():
-    parser = argparse.ArgumentParser(description="")
+    parser = argparse.ArgumentParser(
+        description="Tool for checking which tiles have bits defined.")
     parser.add_argument('tilegrid_json')
 
     args = parser.parse_args()
@@ -33,10 +35,17 @@ def main():
                 have_bits += 1
                 total_have_bits += 1
 
-        print('{}: {}/{} ({:.2f} %)'.format(tile_type, have_bits, len(tiles), 100.*float(have_bits)/len(tiles)))
+        print(
+            '{}: {}/{} ({:.2f} %)'.format(
+                tile_type, have_bits, len(tiles),
+                100. * float(have_bits) / len(tiles)))
 
     print('')
-    print('Summary: {}/{} ({:.2f} %)'.format(total_have_bits, total_tile_count, 100.*float(total_have_bits)/total_tile_count))
+    print(
+        'Summary: {}/{} ({:.2f} %)'.format(
+            total_have_bits, total_tile_count,
+            100. * float(total_have_bits) / total_tile_count))
+
 
 if __name__ == "__main__":
     main()
