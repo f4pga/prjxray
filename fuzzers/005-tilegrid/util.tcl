@@ -138,7 +138,7 @@ proc assign_iobs {} {
 
 proc make_project {} {
     # Generate .bit only over ROI
-    make_project_roi XRAY_ROI
+    make_project_roi XRAY_ROI_TILEGRID
 }
 
 proc make_project_roi { roi_var } {

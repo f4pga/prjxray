@@ -420,9 +420,11 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
 
                     for dst_tile, wordbase in localutil.propagate_up_INT(
                             grid_x, grid_y, database, tiles_by_grid, wordbase):
-                        assert 'segment' in dst_tile, (
-                            (grid_x, grid_y), dst_tile,
-                            tiles_by_grid[(grid_x, grid_y)])
+                        if 'segment' not in dst_tile:
+                            print('WARNING: Missing segment for {} ({}, {}) {}'.format(
+                                tiles_by_grid[(grid_x, grid_y)], grid_x, grid_y,
+                                dst_tile))
+                            continue
 
                         #verbose and print('  dst_tile', dst_tile)
                         if 'segment' in dst_tile:
@@ -468,6 +470,9 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
 
                     # FIXME: PCIE block cuts out some BRAM
                     # this messes up algorithm  as is and may cause this to fail
+                    if grid_y < 0:
+                        continue
+
                     dst_tile_name = tiles_by_grid[(grid_x, grid_y)]
 
                     dst_tile = database[dst_tile_name]

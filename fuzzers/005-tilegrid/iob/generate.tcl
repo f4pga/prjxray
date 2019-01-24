@@ -86,7 +86,7 @@ proc run {} {
     # Mostly doesn't matter since IOB are special, but add anyway
     create_pblock roi
     add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-    resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI)"
+    resize_pblock [get_pblocks roi] -add "$::env(XRAY_ROI_TILEGRID)"
 
     loc_pins
 
