@@ -57,12 +57,8 @@ def run(fn_in, fn_out, verbose=False):
         ("mmcm/build/segbits_tilegrid.tdb", 30, 101),
         # FIXME: height
         ("pll/build/segbits_tilegrid.tdb", 30, 101),
+        ("monitor/build/segbits_tilegrid.tdb", 30, 101),
     ]
-
-    # FIXME: support XADC in ROI
-    if os.path.exists("monitor/build/segbits_tilegrid.tdb"):
-        # FIXME: height
-        tdb_fns.append(("monitor/build/segbits_tilegrid.tdb", 30, 101))
 
     for (tdb_fn, frames, words) in tdb_fns:
         for (tile, frame, wordidx) in load_db(tdb_fn):

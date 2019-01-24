@@ -2,13 +2,19 @@ import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
-from prjxray import verilog
+from prjxray.db import Database
 
 
 def gen_sites():
-    # yield ("MONITOR_BOT_X46Y79", "XADC_X0Y0")
-    for tile_name, site_name, _site_type in util.get_roi().gen_sites(['XADC']):
-        yield tile_name, site_name
+    db = Database(util.get_db_root())
+    grid = db.grid()
+    for tile_name in grid.tiles():
+        loc = grid.loc_of_tilename(tile_name)
+        gridinfo = grid.gridinfo_at_loc(loc)
+
+        for site_name, site_type in gridinfo.sites.items():
+            if site_type in ['XADC']:
+                yield tile_name, site_name
 
 
 def write_params(params):

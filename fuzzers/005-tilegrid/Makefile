@@ -1,6 +1,6 @@
 FUZDIR=$(shell pwd)
 BUILD_DIR=$(FUZDIR)/build
-TILEGRID_TDB_DEPENDENCIES=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb monitor/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
 ifeq (${XRAY_DATABASE}, zynq7)
@@ -10,7 +10,7 @@ endif
 
 database: build/tilegrid.json
 
-pushdb:
+pushdb: build/tilegrid.json
 	cp build/tilegrid.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/tilegrid.json
 
 build/tiles/tiles.txt:
@@ -44,7 +44,6 @@ pll/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 ps7_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd ps7_int && $(MAKE)
 
-# FIXME: add monitor to ROI
 monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd monitor && $(MAKE)
 
