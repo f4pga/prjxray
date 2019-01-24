@@ -9,3 +9,4 @@ sympy
 yapf==0.24.0
 textx
 pytest
+simplejson
