@@ -1,6 +1,14 @@
 FUZDIR=$(shell pwd)
 BUILD_DIR=$(FUZDIR)/build
-TILEGRID_TDB_DEPENDENCIES=iob/build/segbits_tilegrid.tdb mmcm/build/segbits_tilegrid.tdb pll/build/segbits_tilegrid.tdb monitor/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES=
+TILEGRID_TDB_DEPENDENCIES += iob/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += mmcm/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += pll/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += monitor/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += bram/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += bram_block/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += clb/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += clb_int/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
 ifeq (${XRAY_DATABASE}, zynq7)
@@ -18,19 +26,15 @@ build/tiles/tiles.txt:
 
 build/basicdb/tilegrid.json: generate.py build/tiles/tiles.txt
 	mkdir -p build/basicdb
-	cd build && python3 ${FUZDIR}/generate.py --tiles $(FUZDIR)/build/tiles/tiles.txt --out ${BUILD_DIR}/basicdb/tilegrid.json
+	cd build && python3 ${FUZDIR}/generate.py \
+		--tiles $(FUZDIR)/build/tiles/tiles.txt \
+		--out ${BUILD_DIR}/basicdb/tilegrid.json
 
-build/clb/deltas:
-	bash generate.sh build/clb clb
+clb/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd clb && $(MAKE)
 
-build/bram/deltas:
-	bash generate.sh build/bram bram
-
-build/iob/deltas:
-	bash generate.sh build/iob iob
-
-build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
-	python3 add_tdb.py --fn-in build/basicdb/tilegrid.json --fn-out build/tilegrid_tdb.json
+clb_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd clb_int && $(MAKE)
 
 iob/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd iob && $(MAKE)
@@ -47,10 +51,21 @@ ps7_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd monitor && $(MAKE)
 
-build/tilegrid.json: generate_full.py build/tilegrid_tdb.json build/clb/deltas build/bram/deltas
+bram/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd bram && $(MAKE)
+
+bram_block/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd bram_block && $(MAKE)
+
+build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
+	python3 add_tdb.py \
+		--fn-in build/basicdb/tilegrid.json \
+		--fn-out build/tilegrid_tdb.json
+
+build/tilegrid.json: generate_full.py build/tilegrid_tdb.json
 	cd build && python3 ${FUZDIR}/generate_full.py \
         --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json \
-        --tiles $(FUZDIR)/build/tiles/tiles.txt clb/design_*.delta bram/design_*.delta ${GENERATE_FULL_ARGS}
+        --tiles $(FUZDIR)/build/tiles/tiles.txt ${GENERATE_FULL_ARGS}
 run:
 	$(MAKE) clean
 	$(MAKE) database
@@ -59,10 +74,15 @@ run:
 
 clean:
 	rm -rf build run.ok
+	cd clb && $(MAKE) clean
+	cd clb_int && $(MAKE) clean
 	cd iob && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
 	cd pll && $(MAKE) clean
 	cd ps7_int && $(MAKE) clean
+	cd bram && $(MAKE) clean
+	cd bram_block && $(MAKE) clean
+	cd monitor && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 

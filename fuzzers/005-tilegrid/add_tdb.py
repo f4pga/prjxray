@@ -51,6 +51,8 @@ def run(fn_in, fn_out, verbose=False):
     # FIXME: generate frames from part file (or equivilent)
     # See https://github.com/SymbiFlow/prjxray/issues/327
     # FIXME: generate words from pitch
+    int_frames = 28
+    int_words = 2
     tdb_fns = [
         ("iob/build/segbits_tilegrid.tdb", 42, 4),
         # FIXME: height
@@ -58,6 +60,10 @@ def run(fn_in, fn_out, verbose=False):
         # FIXME: height
         ("pll/build/segbits_tilegrid.tdb", 30, 101),
         ("monitor/build/segbits_tilegrid.tdb", 30, 101),
+        ("bram/build/segbits_tilegrid.tdb", 28, 10),
+        ("bram_block/build/segbits_tilegrid.tdb", 128, 10),
+        ("clb/build/segbits_tilegrid.tdb", 36, 2),
+        ("clb_int/build/segbits_tilegrid.tdb", int_frames, int_words),
     ]
 
     for (tdb_fn, frames, words) in tdb_fns:
