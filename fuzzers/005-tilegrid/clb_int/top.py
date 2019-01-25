@@ -46,6 +46,8 @@ module top();
                                              util.gen_fuzz_states(len(sites))):
         params[tile_name] = (site_name, isone)
 
+        # Force HARD0 -> GFAN1 with I2 = 0
+        # Toggle 1 pip with I1 = ?
         print(
             '''
             wire lut_to_f7_{0}, f7_to_f8_{0};

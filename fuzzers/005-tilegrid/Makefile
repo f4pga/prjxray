@@ -2,6 +2,7 @@ FUZDIR=$(shell pwd)
 BUILD_DIR=$(FUZDIR)/build
 TILEGRID_TDB_DEPENDENCIES=
 TILEGRID_TDB_DEPENDENCIES += iob/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += iob_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += mmcm/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += pll/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += monitor/build/segbits_tilegrid.tdb
@@ -38,6 +39,9 @@ clb_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 
 iob/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd iob && $(MAKE)
+
+iob_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd iob_int && $(MAKE)
 
 mmcm/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd mmcm && $(MAKE)
@@ -77,6 +81,7 @@ clean:
 	cd clb && $(MAKE) clean
 	cd clb_int && $(MAKE) clean
 	cd iob && $(MAKE) clean
+	cd iob_int && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
 	cd pll && $(MAKE) clean
 	cd ps7_int && $(MAKE) clean
