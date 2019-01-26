@@ -71,6 +71,16 @@ checkdb:
 		$(IN_ENV) python3 utils/checkdb.py --db-root $$DB; \
 	fi; done
 
+formatdb:
+	@make checkdb
+	@for DB in database/*; do if [ -d $$DB ]; then \
+		echo ; \
+		echo "Formatting $$DB"; \
+		echo "============================"; \
+		($(IN_ENV) cd $$DB; python3 ../../utils/sort_db.py); \
+	fi; done
+	$(IN_ENV) ./utils/info_md.py
+
 clean:
 	$(MAKE) -C database clean
 	$(MAKE) -C fuzzers clean
