@@ -32,16 +32,17 @@ def gen_brams():
 
         int_tile_locs = [
             (int_grid_x, loc.grid_y),
-            (int_grid_x, loc.grid_y-1),
-            (int_grid_x, loc.grid_y-2),
-            (int_grid_x, loc.grid_y-3),
-            (int_grid_x, loc.grid_y-4),
+            (int_grid_x, loc.grid_y - 1),
+            (int_grid_x, loc.grid_y - 2),
+            (int_grid_x, loc.grid_y - 3),
+            (int_grid_x, loc.grid_y - 4),
         ]
 
         int_tiles = []
         for int_tile_loc in int_tile_locs:
             int_gridinfo = grid.gridinfo_at_loc(int_tile_loc)
-            assert int_gridinfo.tile_type == int_tile_type, (int_gridinfo.tile_type, int_tile_type)
+            assert int_gridinfo.tile_type == int_tile_type, (
+                int_gridinfo.tile_type, int_tile_type)
 
             int_tiles.append(grid.tilename_at_loc(int_tile_loc))
 
@@ -50,26 +51,25 @@ def gen_brams():
 
 def write_params(params):
     pinstr = 'tile,val\n'
-    for tile, (val,) in sorted(params.items()):
+    for tile, (val, ) in sorted(params.items()):
         pinstr += '%s,%s\n' % (tile, val)
     open('params.csv', 'w').write(pinstr)
 
 
 def run():
-    print(
-        '''
+    print('''
 module top();
     ''')
 
     params = {}
 
     sites = list(gen_brams())
-    fuzz_iter = iter(util.gen_fuzz_states(len(sites)*5))
+    fuzz_iter = iter(util.gen_fuzz_states(len(sites) * 5))
     for tile_name, bram_sites, int_tiles in sites:
         # Each BRAM tile has 5 INT tiles.
         # The following feature is used to toggle a one PIP in each INT tile
         #
-        # For BRAM_L_X6Y0, there are the following INT tiles and the feature 
+        # For BRAM_L_X6Y0, there are the following INT tiles and the feature
         # to toggle
         #
         #  - INT_L_X6Y0, tie bram_sites[0].DIADI[2] = 0, toggle bram_sites[0].DIADI[3]
@@ -77,12 +77,13 @@ module top();
         #  - INT_L_X6Y2, tie bram_sites[1].ADDRARDADDR[9] = 0, toggle bram_sites[1].ADDRBWRADDR[9]
         #  - INT_L_X6Y3, tie bram_sites[1].ADDRBWRADDR[4] = 0, toggle bram_sites[1].ADDRBWRADDR[13]
         #  - INT_L_X6Y4, tie bram_sites[1].DIBDI[15] = 0, toggle bram_sites[1].DIADI[7]
-        (b0_diadi3, b1_wraddr10, b1_wraddr9, b1_wraddr13, b1_diadi7) = itertools.islice(fuzz_iter, 5)
-        params[int_tiles[0]] = (b0_diadi3,)
-        params[int_tiles[1]] = (b1_wraddr10,)
-        params[int_tiles[2]] = (b1_wraddr9,)
-        params[int_tiles[3]] = (b1_wraddr13,)
-        params[int_tiles[4]] = (b1_diadi7,)
+        (b0_diadi3, b1_wraddr10, b1_wraddr9, b1_wraddr13,
+         b1_diadi7) = itertools.islice(fuzz_iter, 5)
+        params[int_tiles[0]] = (b0_diadi3, )
+        params[int_tiles[1]] = (b1_wraddr10, )
+        params[int_tiles[2]] = (b1_wraddr9, )
+        params[int_tiles[3]] = (b1_wraddr13, )
+        params[int_tiles[4]] = (b1_diadi7, )
 
         print(
             '''
@@ -168,14 +169,13 @@ module top();
                     .DOPADOP(),
                     .DOPBDOP());
 '''.format(
-    bram_site0=bram_sites[0],
-    bram_site1=bram_sites[1],
-    b0_diadi3=b0_diadi3,
-    b1_wraddr10=b1_wraddr10,
-    b1_wraddr9=b1_wraddr9,
-    b1_wraddr13=b1_wraddr13,
-    b1_diadi7=b1_diadi7
-    ))
+                bram_site0=bram_sites[0],
+                bram_site1=bram_sites[1],
+                b0_diadi3=b0_diadi3,
+                b1_wraddr10=b1_wraddr10,
+                b1_wraddr9=b1_wraddr9,
+                b1_wraddr13=b1_wraddr13,
+                b1_diadi7=b1_diadi7))
 
     print("endmodule")
     write_params(params)
