@@ -8,6 +8,7 @@ TILEGRID_TDB_DEPENDENCIES += pll/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += monitor/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += bram/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += bram_block/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += bram_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb_int/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
@@ -61,6 +62,9 @@ bram/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 bram_block/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd bram_block && $(MAKE)
 
+bram_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd bram_int && $(MAKE)
+
 build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
 		--fn-in build/basicdb/tilegrid.json \
@@ -87,6 +91,7 @@ clean:
 	cd ps7_int && $(MAKE) clean
 	cd bram && $(MAKE) clean
 	cd bram_block && $(MAKE) clean
+	cd bram_int && $(MAKE) clean
 	cd monitor && $(MAKE) clean
 
 .PHONY: database pushdb clean run

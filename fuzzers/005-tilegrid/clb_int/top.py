@@ -34,8 +34,7 @@ def write_params(params):
 
 
 def run():
-    print(
-        '''
+    print('''
 module top();
     ''')
 
@@ -72,7 +71,7 @@ module top();
             MUXF8 f8_{0} (
                 .I0(f7_to_f8_{0})
                 );
-''' .format(site_name, isone))
+'''.format(site_name, isone))
 
     print("endmodule")
     write_params(params)

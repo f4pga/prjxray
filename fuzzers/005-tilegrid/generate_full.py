@@ -58,6 +58,7 @@ def make_tiles_by_grid(tiles):
 
     return tiles_by_grid
 
+
 def add_int_bits(database, tile, baseaddr, offset):
     """
     Add INT bits for given tile.
@@ -66,8 +67,8 @@ def add_int_bits(database, tile, baseaddr, offset):
         return
 
     localutil.add_tile_bits(
-        tile, database[tile], baseaddr, offset,
-        frames=28, words=2, height=2)
+        tile, database[tile], baseaddr, offset, frames=28, words=2, height=2)
+
 
 def add_adjacent_int_tiles(database, tiles_by_grid, verbose=False):
     '''
@@ -81,7 +82,8 @@ def add_adjacent_int_tiles(database, tiles_by_grid, verbose=False):
         grid_x = database[inttile]["grid_x"]
         grid_y = database[inttile]["grid_y"]
 
-        framebase = int(database[parent_tile]['bits']['CLB_IO_CLK']['baseaddr'], 0)
+        framebase = int(
+            database[parent_tile]['bits']['CLB_IO_CLK']['baseaddr'], 0)
         parent_wordbase = database[parent_tile]['bits']['CLB_IO_CLK']['offset']
 
         for dst_tile, wordbase in localutil.propagate_up_INT(
@@ -90,8 +92,7 @@ def add_adjacent_int_tiles(database, tiles_by_grid, verbose=False):
             dst_y = dst_tile['grid_y']
 
             add_int_bits(
-                    database, tiles_by_grid[(dst_x, dst_y)], framebase,
-                    wordbase)
+                database, tiles_by_grid[(dst_x, dst_y)], framebase, wordbase)
 
     verbose and print('')
     for tile_name, tile_data in database.items():

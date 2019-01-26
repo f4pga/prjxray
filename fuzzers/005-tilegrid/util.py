@@ -11,9 +11,7 @@ def check_frames(addrlist):
     for addrstr in addrlist:
         frame = parse_addr(addrstr, get_base_frame=True)
         frames.add(frame)
-    assert len(frames) == 1, (
-            "More than one base address", map(hex,frames)
-            )
+    assert len(frames) == 1, ("More than one base address", map(hex, frames))
 
 
 def parse_addr(line, only_frame=False, get_base_frame=False):
@@ -122,7 +120,8 @@ def add_tile_bits(
 
     assert offset <= 100, (tile_name, offset)
     # Few rare cases at X=0 for double width tiles split in half => small negative offset
-    assert offset >= 0 or "IOB" in tile_name, (tile_name, hex(baseaddr), offset)
+    assert offset >= 0 or "IOB" in tile_name, (
+        tile_name, hex(baseaddr), offset)
     assert 1 <= words <= 101, words
     assert offset + words <= 101, (
         tile_name, offset + words, offset, words, block_type)

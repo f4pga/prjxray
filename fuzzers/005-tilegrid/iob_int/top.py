@@ -43,8 +43,8 @@ def gen_sites():
             int_tile_type = 'INT_R'
 
         int_tile_locs = [
-                (int_grid_x, loc.grid_y),
-                ]
+            (int_grid_x, loc.grid_y),
+        ]
 
         pad_gridinfo = grid.gridinfo_at_loc((pad_grid_x, loc.grid_y))
         pad_sites = sorted(pad_gridinfo.sites.keys())
@@ -52,12 +52,15 @@ def gen_sites():
         if not gridinfo.tile_type.endswith("_SING"):
             int_tile_locs.append((int_grid_x, loc.grid_y - 1))
 
-        assert len(sites) == len(int_tile_locs), (tile_name, sites, int_tile_locs)
+        assert len(sites) == len(int_tile_locs), (
+            tile_name, sites, int_tile_locs)
         assert len(sites) == len(pad_sites), (sites, pad_sites)
 
-        for site_name, pad_site, int_tile_loc in zip(sites, pad_sites, int_tile_locs):
+        for site_name, pad_site, int_tile_loc in zip(sites, pad_sites,
+                                                     int_tile_locs):
             int_tile_name = grid.tilename_at_loc(int_tile_loc)
-            assert int_tile_name.startswith(int_tile_type), (int_tile_name, site_name, int_tile_loc)
+            assert int_tile_name.startswith(int_tile_type), (
+                int_tile_name, site_name, int_tile_loc)
             yield int_tile_name, site_name, pad_site
 
 
@@ -85,8 +88,8 @@ module top(input wire [`N_DI-1:0] di);
 
     params = {}
 
-    for idx, ((tile_name, site_name, pad_site_name), isone) in enumerate(zip(sites,
-                                             util.gen_fuzz_states(len(sites)))):
+    for idx, ((tile_name, site_name, pad_site_name), isone) in enumerate(zip(
+            sites, util.gen_fuzz_states(len(sites)))):
         params[tile_name] = (site_name, isone, pad_site_name, "di[%u]" % idx)
 
         # Force HARD0 -> GFAN1 with CNTVALUEIN4 = 0

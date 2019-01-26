@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
 from prjxray import util
 import json
-import os
 import util as localutil
 
 
@@ -65,13 +65,12 @@ def run(fn_in, fn_out, verbose=False):
         ("clb/build/segbits_tilegrid.tdb", 36, 2),
         ("clb_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("iob_int/build/segbits_tilegrid.tdb", int_frames, int_words),
+        ("bram_int/build/segbits_tilegrid.tdb", int_frames, int_words),
     ]
 
     for (tdb_fn, frames, words) in tdb_fns:
         for (tile, frame, wordidx) in load_db(tdb_fn):
             tilej = database[tile]
-            bitsj = tilej['bits']
-            bt = util.addr2btype(frame)
             verbose and print("Add %s %08X_%03u" % (tile, frame, wordidx))
             localutil.add_tile_bits(tile, tilej, frame, wordidx, frames, words)
 
