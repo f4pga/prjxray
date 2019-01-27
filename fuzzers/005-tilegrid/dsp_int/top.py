@@ -158,7 +158,7 @@ module top();
                 int2=int_tiles[2],
                 int3=int_tiles[3],
                 int4=int_tiles[4],
-                ))
+            ))
 
     print("endmodule")
     write_params(params)

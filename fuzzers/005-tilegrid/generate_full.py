@@ -373,7 +373,6 @@ def add_hclk_bits(database, tiles_by_grid):
         assert database[tile_above]['type'] == expected_tile_type, (
             tile_name, tile_above)
 
-
         if not database[tile_below]['bits']:
             continue
         if not database[tile_above]['bits']:
@@ -388,14 +387,16 @@ def add_hclk_bits(database, tiles_by_grid):
         offset_below = bits_below['offset']
         offset_above = bits_above['offset']
 
-        assert offset_above - offset_below == (int_words + hclk_words), (tile_name, offset_below, offset_above, int_words + hclk_words)
+        assert offset_above - offset_below == (int_words + hclk_words), (
+            tile_name, offset_below, offset_above, int_words + hclk_words)
 
         localutil.add_tile_bits(
-            tile_name, database[tile_name], 
-            baseaddr=int(bits_below['baseaddr'], 0), 
-            offset=offset_below+int_words,
-            frames=hclk_frames, words=hclk_words)
-
+            tile_name,
+            database[tile_name],
+            baseaddr=int(bits_below['baseaddr'], 0),
+            offset=offset_below + int_words,
+            frames=hclk_frames,
+            words=hclk_words)
 
 
 def run(json_in_fn, json_out_fn, int_tdb=None, verbose=False):
@@ -404,7 +405,6 @@ def run(json_in_fn, json_out_fn, int_tdb=None, verbose=False):
     tiles_by_grid = make_tiles_by_grid(database)
 
     add_hclk_bits(database, tiles_by_grid)
-
 
     # Save
     xjson.pprint(open(json_out_fn, "w"), database)
@@ -429,11 +429,7 @@ def main():
         help=".tdb diffs to fill the interconnects without any adjacent CLB")
     args = parser.parse_args()
 
-    run(
-        args.json_in,
-        args.json_out,
-        args.int_tdb,
-        verbose=args.verbose)
+    run(args.json_in, args.json_out, args.int_tdb, verbose=args.verbose)
 
 
 if __name__ == "__main__":

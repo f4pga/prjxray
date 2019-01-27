@@ -157,6 +157,7 @@ def add_tile_bits(
         height = words
     block["height"] = height
 
+
 def get_int_params():
     int_frames = 28
     int_words = 2
