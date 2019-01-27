@@ -42,6 +42,7 @@ def propagate_up_INT(grid_x, grid_y, database, tiles_by_grid, wordbase):
             wordbase += 1
         else:
             wordbase += 2
+
         yield tile, wordbase
 
 
@@ -155,3 +156,8 @@ def add_tile_bits(
     if height is None:
         height = words
     block["height"] = height
+
+def get_int_params():
+    int_frames = 28
+    int_words = 2
+    return int_frames, int_words

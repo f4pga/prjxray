@@ -19,7 +19,7 @@ def gen_sites():
     '''
     db = Database(util.get_db_root())
     grid = db.grid()
-    for tile_name in grid.tiles():
+    for tile_name in sorted(grid.tiles()):
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
 
@@ -31,7 +31,7 @@ def gen_sites():
         if len(sites) == 0:
             continue
 
-        sites = sorted(sites)
+        sites.sort()
 
         if gridinfo.tile_type[0] == 'L':
             int_grid_x = loc.grid_x + 3
@@ -97,6 +97,7 @@ module top(input wire [`N_DI-1:0] di);
         print(
             '''
 
+            // Solving for {3}
             (* KEEP, DONT_TOUCH *)
             IBUF ibuf_{0}(.I(di[{2}]), .O(di_buf[{2}]));
 
@@ -105,7 +106,7 @@ module top(input wire [`N_DI-1:0] di);
                 .CNTVALUEIN(5'b0{1}111),
                 .IDATAIN(di_buf[{2}])
                 );
-'''.format(site_name, isone, idx))
+'''.format(site_name, isone, idx, tile_name))
 
     print("endmodule")
     write_params(params)

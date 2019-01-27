@@ -49,12 +49,13 @@ def load_tdb_baseaddr(database, int_tdb, verbose=False):
     return tdb_tile_baseaddrs
 
 
-def make_tiles_by_grid(tiles):
+def make_tiles_by_grid(database):
     # lookup tile names by (X, Y)
     tiles_by_grid = dict()
 
-    for tile in tiles:
-        tiles_by_grid[(tile["grid_x"], tile["grid_y"])] = tile["name"]
+    for tile_name in database:
+        tile = database[tile_name]
+        tiles_by_grid[(tile["grid_x"], tile["grid_y"])] = tile_name
 
     return tiles_by_grid
 
@@ -233,7 +234,7 @@ def seg_base_addr_up_INT(database, segments, tiles_by_grid, verbose=False):
                 for inttile in list(get_inttile(database, src_segment)) + list(
                         get_iobtile(database, src_segment)):
                     verbose and print(
-                        '  up_INT CLK_IO_CLK: %s => inttile %s' %
+                        '  up_INT CLB_IO_CLK: %s => inttile %s' %
                         (src_segment_name, inttile),
                         file=sys.stderr)
                     grid_x = database[inttile]["grid_x"]
@@ -344,57 +345,66 @@ def db_add_bits(database, segments):
                         frames, words, height)
 
 
-def db_add_segments(database, segments):
-    # TODO: Migrate to new tilegrid format via library.  This data is added for
-    # compability with unconverted tools.  Update tools then remove this data from
-    # tilegrid.json.
-    # looks like only htmlgen is using this?
-    for tiledata in database.values():
-        if "segment" in tiledata:
-            segment = tiledata["segment"]
-            tiledata["segment_type"] = segments[segment]["type"]
+def add_hclk_bits(database, tiles_by_grid):
+    """ Propigate HCLK baseaddr and wordbase from INT tiles above and below.
 
+    HCLK tiles are located between two INT tiles.  The offset seperate between
+    these two tiles should be 3.  The HCLK tile has an offset of 2 from the
+    lower INT offset and an offset of 1 from the upper INT offset.
 
-def db_int_fixup(database, tiles, tiles_by_grid):
-    for tile_name in tiles.keys():
-        tiles_to_add = dict()
+    """
 
+    _, int_words, _ = localutil.get_entry('INT', 'CLB_IO_CLK')
+    hclk_frames, hclk_words, _ = localutil.get_entry('HCLK', 'CLB_IO_CLK')
+
+    for tile_name in sorted(database.keys()):
         tile = database[tile_name]
-        grid_x = tile["grid_x"]
-        grid_y = tile["grid_y"]
 
-        tile_type = tile["type"]
+        if tile['type'] not in ['HCLK_L', 'HCLK_R']:
+            continue
 
-        block_type, (baseaddr, offset) = sorted(tiles[tile_name].items())[0]
+        tile_below = tiles_by_grid[(tile['grid_x'], tile['grid_y'] + 1)]
+        tile_above = tiles_by_grid[(tile['grid_x'], tile['grid_y'] - 1)]
 
-        frames, words, height = localutil.get_entry(
-            nolr(tile_type), block_type)
-        # Adding first bottom INT tile
+        expected_tile_type = 'INT_{}'.format(tile['type'][-1])
+
+        assert database[tile_below]['type'] == expected_tile_type, (
+            tile_name, tile_below)
+        assert database[tile_above]['type'] == expected_tile_type, (
+            tile_name, tile_above)
+
+
+        if not database[tile_below]['bits']:
+            continue
+        if not database[tile_above]['bits']:
+            continue
+
+        bits_below = database[tile_below]['bits']['CLB_IO_CLK']
+        bits_above = database[tile_above]['bits']['CLB_IO_CLK']
+
+        assert bits_below['baseaddr'] == bits_above['baseaddr'], (
+            tile_name, bits_below['baseaddr'], bits_above['baseaddr'])
+
+        offset_below = bits_below['offset']
+        offset_above = bits_above['offset']
+
+        assert offset_above - offset_below == (int_words + hclk_words), (tile_name, offset_below, offset_above, int_words + hclk_words)
+
         localutil.add_tile_bits(
-            tile_name, tile, baseaddr, offset, frames, words, height)
-
-        for tile, offset in localutil.propagate_up_INT(
-                grid_x, grid_y, database, tiles_by_grid, offset):
-            localutil.add_tile_bits(
-                tile_name, tile, baseaddr, offset, frames, words, height)
+            tile_name, database[tile_name], 
+            baseaddr=int(bits_below['baseaddr'], 0), 
+            offset=offset_below+int_words,
+            frames=hclk_frames, words=hclk_words)
 
 
-def run(json_in_fn, json_out_fn, tiles_fn, int_tdb=None, verbose=False):
+
+def run(json_in_fn, json_out_fn, int_tdb=None, verbose=False):
     # Load input files
-    tiles = load_tiles(tiles_fn)
-    #site_baseaddr = {}
     database = json.load(open(json_in_fn, "r"))
+    tiles_by_grid = make_tiles_by_grid(database)
 
-    tiles_by_grid = make_tiles_by_grid(tiles)
+    add_hclk_bits(database, tiles_by_grid)
 
-    if int_tdb is not None:
-        tile_baseaddrs_fixup = load_tdb_baseaddr(database, int_tdb)
-        db_int_fixup(database, tile_baseaddrs_fixup, tiles_by_grid)
-
-    #add_adjacent_int_tiles(database, tiles_by_grid, verbose=verbose)
-
-    # Reference adjacent CLBs to locate adjacent tiles by known offsets
-    #seg_base_addr_lr_INT(database, tiles_by_grid, verbose=verbose)
 
     # Save
     xjson.pprint(open(json_out_fn, "w"), database)
@@ -414,8 +424,6 @@ def main():
     parser.add_argument(
         "--json-out", default="tilegrid.json", help="Output JSON")
     parser.add_argument(
-        '--tiles', default='tiles.txt', help='Input tiles.txt tcl output')
-    parser.add_argument(
         "--int-tdb",
         default=None,
         help=".tdb diffs to fill the interconnects without any adjacent CLB")
@@ -424,7 +432,6 @@ def main():
     run(
         args.json_in,
         args.json_out,
-        args.tiles,
         args.int_tdb,
         verbose=args.verbose)
 

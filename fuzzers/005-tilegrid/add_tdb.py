@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from __future__ import print_function
-from prjxray import util
 import json
 import util as localutil
 
@@ -51,8 +50,7 @@ def run(fn_in, fn_out, verbose=False):
     # FIXME: generate frames from part file (or equivilent)
     # See https://github.com/SymbiFlow/prjxray/issues/327
     # FIXME: generate words from pitch
-    int_frames = 28
-    int_words = 2
+    int_frames, int_words, _ = localutil.get_entry('INT', 'CLB_IO_CLK')
     tdb_fns = [
         ("iob/build/segbits_tilegrid.tdb", 42, 4),
         # FIXME: height

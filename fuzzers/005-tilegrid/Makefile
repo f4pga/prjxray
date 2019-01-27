@@ -81,7 +81,7 @@ build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 build/tilegrid.json: generate_full.py build/tilegrid_tdb.json
 	cd build && python3 ${FUZDIR}/generate_full.py \
         --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json \
-        --tiles $(FUZDIR)/build/tiles/tiles.txt ${GENERATE_FULL_ARGS}
+        ${GENERATE_FULL_ARGS}
 run:
 	$(MAKE) clean
 	$(MAKE) database

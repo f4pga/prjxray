@@ -66,6 +66,8 @@ module top();
     sites = list(gen_dsps())
     fuzz_iter = iter(util.gen_fuzz_states(len(sites) * 5))
     for tile_name, dsp_sites, int_tiles in sites:
+        int_tiles.reverse()
+
         # Each DSP tile has 5 INT tiles.
         # The following feature is used to toggle a one PIP in each INT tile
         #
@@ -104,22 +106,22 @@ module top();
             wire [6:0] {dsp_site1}_opmode;
             wire [2:0] {dsp_site1}_carryinsel;
 
-            // INT 0
+            // INT 0, {int0}
             assign {dsp_site1}_c[36] = 0;
             assign {dsp_site1}_carryinsel[1] = {d1_carryinsel1};
 
-            // INT 1
+            // INT 1, {int1}
             assign {dsp_site0}_carryinsel[0] = {d0_carryinsel0};
 
-            // INT 2
+            // INT 2, {int2}
             assign {dsp_site1}_a[29] = 0;
             assign {dsp_site1}_b[8] = {d1_b8};
 
-            // INT 3
+            // INT 3, {int3}
             assign {dsp_site1}_b[4] = 0;
             assign {dsp_site1}_b[6] = {d1_b6};
 
-            // INT 4
+            // INT 4, {int4}
             assign {dsp_site1}_c[20] = 0;
             assign {dsp_site1}_b[2] = {d1_b2};
 
@@ -150,7 +152,13 @@ module top();
                 d0_carryinsel0=d0_carryinsel0,
                 d1_b8=d1_b8,
                 d1_b6=d1_b6,
-                d1_b2=d1_b2))
+                d1_b2=d1_b2,
+                int0=int_tiles[0],
+                int1=int_tiles[1],
+                int2=int_tiles[2],
+                int3=int_tiles[3],
+                int4=int_tiles[4],
+                ))
 
     print("endmodule")
     write_params(params)
