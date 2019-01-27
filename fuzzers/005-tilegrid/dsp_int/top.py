@@ -85,8 +85,8 @@ module top();
         #
         # INT_L_X34Y85/INT_L.GFAN1->>IMUX_L30 :: Dark Green :: D1.C20 = 0
         # INT_L_X34Y85/INT_L.GFAN1->>IMUX_L28 :: Color 10 :: D1.B2 = toggle
-        (d1_carryinsel1, d0_carryinsel0, d1_b8, d1_b6, d1_b2
-         ) = itertools.islice(fuzz_iter, 5)
+        (d1_carryinsel1, d0_carryinsel0, d1_b8, d1_b6,
+         d1_b2) = itertools.islice(fuzz_iter, 5)
         params[int_tiles[0]] = (d1_carryinsel1, )
         params[int_tiles[1]] = (d0_carryinsel0, )
         params[int_tiles[2]] = (d1_b8, )

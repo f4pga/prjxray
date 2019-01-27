@@ -24,8 +24,7 @@ def write_params(params):
 
 
 def run():
-    print(
-        '''
+    print('''
 module top();
     ''')
 
