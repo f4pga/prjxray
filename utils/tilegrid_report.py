@@ -34,6 +34,11 @@ def main():
                 tile_type_info.get_sites()) == 0:
             continue
 
+        # INT_INTERFACE tiles likely don't contain configuration?  Remove this
+        # if this ends up false.
+        if 'INT_INTERFACE' in tile_type:
+            continue
+
         have_bits = 0
         for tile_name, gridinfo in tiles:
             total_tile_count += 1
