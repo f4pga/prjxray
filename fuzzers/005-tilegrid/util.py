@@ -11,7 +11,8 @@ def check_frames(tagstr, addrlist):
     for addrstr in addrlist:
         frame = parse_addr(addrstr, get_base_frame=True)
         frames.add(frame)
-    assert len(frames) == 1, ("{}: More than one base address".format(tagstr), map(hex, frames))
+    assert len(frames) == 1, (
+        "{}: More than one base address".format(tagstr), map(hex, frames))
 
 
 def parse_addr(line, only_frame=False, get_base_frame=False):
