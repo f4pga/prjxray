@@ -2,7 +2,6 @@ import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
-from prjxray import verilog
 
 
 def write_params(params):

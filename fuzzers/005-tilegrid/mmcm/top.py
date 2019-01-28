@@ -47,7 +47,7 @@ module top(input clk, stb, di, output do);
     # FIXME: can't LOC?
     # only one for now, worry about later
     sites = list(gen_sites())
-    assert len(sites) == 1
+    assert len(sites) == 1, len(sites)
     for (tile_name, site_name), isone in zip(sites,
                                              util.gen_fuzz_states(len(sites))):
         # 0 is invalid

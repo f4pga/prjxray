@@ -3,6 +3,7 @@
 from __future__ import print_function
 import json
 import util as localutil
+import os.path
 
 
 def load_db(fn):
@@ -13,7 +14,7 @@ def load_db(fn):
         parts = l.split(' ')
         tagstr = parts[0]
         addrlist = parts[1:]
-        localutil.check_frames(addrlist)
+        localutil.check_frames(tagstr, addrlist)
         # Take the first address in the list
         frame, wordidx, bitidx = localutil.parse_addr(addrlist[0])
 
@@ -67,9 +68,14 @@ def run(fn_in, fn_out, verbose=False):
         ("bram_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("dsp_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("fifo_int/build/segbits_tilegrid.tdb", int_frames, int_words),
+        ("ps7_int/build/segbits_tilegrid.tdb", int_frames, int_words),
     ]
 
     for (tdb_fn, frames, words) in tdb_fns:
+        if not os.path.exists(tdb_fn):
+            verbose and print('Skipping {}, file not found!'.format(tdb_fn))
+            continue
+
         for (tile, frame, wordidx) in load_db(tdb_fn):
             tilej = database[tile]
             verbose and print("Add %s %08X_%03u" % (tile, frame, wordidx))

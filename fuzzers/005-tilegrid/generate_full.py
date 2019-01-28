@@ -28,26 +28,6 @@ def nolr(tile_type):
         return tile_type
 
 
-def load_tdb_baseaddr(database, int_tdb, verbose=False):
-    tdb_tile_baseaddrs = dict()
-    for line in open(int_tdb, 'r'):
-        line = line.strip()
-        parts = line.split(' ')
-        # INT_L_X0Y50.DWORD:0.DBIT:17.DFRAME:14
-        tagstr = parts[0]
-        # 00000914_000_17 00000918_000_17 ...
-        addrlist = parts[1:]
-        localutil.check_frames(addrlist)
-        frame = localutil.parse_addr(addrlist[0], get_base_frame=True)
-        tparts = tagstr.split('.')
-        # INT_L_X0Y50
-        tile = tparts[0]
-        assert tile in database.keys(), "Tile not in Database"
-        localutil.add_baseaddr(tdb_tile_baseaddrs, tile, frame, verbose)
-
-    return tdb_tile_baseaddrs
-
-
 def make_tiles_by_grid(database):
     # lookup tile names by (X, Y)
     tiles_by_grid = dict()
@@ -101,8 +81,8 @@ def propagate_INT_lr_bits(database, tiles_by_grid, verbose=False):
             assert 0
 
         localutil.add_tile_bits(
-            other_tile, database[other_tile], baseaddr, offset,
-            int_frames, int_words)
+            other_tile, database[other_tile], baseaddr, offset, int_frames,
+            int_words)
 
 
 def propagate_INT_bits_in_column(database, tiles_by_grid):
@@ -142,13 +122,16 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
             next_tile_type = database[next_tile]['type']
 
             if tile['bits']['CLB_IO_CLK']['offset'] == 0:
-                assert next_tile_type in ['B_TERM_INT', 'BRKH_INT', 'BRKH_B_TERM_INT'], next_tile_type
+                assert next_tile_type in [
+                    'B_TERM_INT', 'BRKH_INT', 'BRKH_B_TERM_INT'
+                ], next_tile_type
                 break
 
             baseaddr = int(tile['bits']['CLB_IO_CLK']['baseaddr'], 0)
             offset = tile['bits']['CLB_IO_CLK']['offset']
 
-            if tile['type'].startswith('INT_') and next_tile_type == tile['type']:
+            if tile['type'].startswith(
+                    'INT_') and next_tile_type == tile['type']:
                 # INT next to INT
                 offset -= int_words
                 localutil.add_tile_bits(
@@ -156,7 +139,8 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                     int_frames, int_words)
             elif tile['type'].startswith('INT_'):
                 # INT above HCLK
-                assert next_tile_type.startswith('HCLK_{}'.format(l_or_r)), next_tile_type
+                assert next_tile_type.startswith(
+                    'HCLK_{}'.format(l_or_r)), next_tile_type
 
                 offset -= hclk_words
                 localutil.add_tile_bits(
@@ -164,7 +148,8 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                     hclk_frames, hclk_words)
             else:
                 # HCLK above INT
-                assert tile['type'].startswith('HCLK_{}'.format(l_or_r)), tile['type']
+                assert tile['type'].startswith(
+                    'HCLK_{}'.format(l_or_r)), tile['type']
                 if next_tile_type == 'INT_{}'.format(l_or_r):
                     offset -= int_words
                     localutil.add_tile_bits(
@@ -174,7 +159,6 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                     # Handle special case column where the PCIE tile is present.
                     assert next_tile_type in ['PCIE_NULL'], next_tile_type
                     break
-
 
             tile_name = next_tile
             tile = database[tile_name]
@@ -187,13 +171,16 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
             next_tile_type = database[next_tile]['type']
 
             if tile['bits']['CLB_IO_CLK']['offset'] == 99:
-                assert next_tile_type in ['T_TERM_INT', 'BRKH_INT', 'BRKH_TERM_INT'], next_tile_type
+                assert next_tile_type in [
+                    'T_TERM_INT', 'BRKH_INT', 'BRKH_TERM_INT'
+                ], next_tile_type
                 break
 
             baseaddr = int(tile['bits']['CLB_IO_CLK']['baseaddr'], 0)
             offset = tile['bits']['CLB_IO_CLK']['offset']
 
-            if tile['type'].startswith('INT_') and next_tile_type == tile['type']:
+            if tile['type'].startswith(
+                    'INT_') and next_tile_type == tile['type']:
                 # INT next to INT
                 offset += int_words
                 localutil.add_tile_bits(
@@ -201,7 +188,8 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                     int_frames, int_words)
             elif tile['type'].startswith('INT_'):
                 # INT below HCLK
-                assert next_tile_type.startswith('HCLK_{}'.format(l_or_r)), next_tile_type
+                assert next_tile_type.startswith(
+                    'HCLK_{}'.format(l_or_r)), next_tile_type
 
                 offset += int_words
                 localutil.add_tile_bits(
@@ -209,8 +197,10 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                     hclk_frames, hclk_words)
             else:
                 # HCLK below INT
-                assert tile['type'].startswith('HCLK_{}'.format(l_or_r)), tile['type']
-                assert next_tile_type == 'INT_{}'.format(l_or_r), next_tile_type
+                assert tile['type'].startswith(
+                    'HCLK_{}'.format(l_or_r)), tile['type']
+                assert next_tile_type == 'INT_{}'.format(
+                    l_or_r), next_tile_type
 
                 offset += hclk_words
                 localutil.add_tile_bits(
@@ -221,7 +211,7 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
             tile = database[tile_name]
 
 
-def run(json_in_fn, json_out_fn, int_tdb=None, verbose=False):
+def run(json_in_fn, json_out_fn, verbose=False):
     # Load input files
     database = json.load(open(json_in_fn, "r"))
     tiles_by_grid = make_tiles_by_grid(database)
@@ -246,13 +236,9 @@ def main():
         help="Input .json without addresses")
     parser.add_argument(
         "--json-out", default="tilegrid.json", help="Output JSON")
-    parser.add_argument(
-        "--int-tdb",
-        default=None,
-        help=".tdb diffs to fill the interconnects without any adjacent CLB")
     args = parser.parse_args()
 
-    run(args.json_in, args.json_out, args.int_tdb, verbose=args.verbose)
+    run(args.json_in, args.json_out, verbose=args.verbose)
 
 
 if __name__ == "__main__":

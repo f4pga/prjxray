@@ -26,13 +26,17 @@ def main():
 
     total_tile_count = 0
     total_have_bits = 0
-    for tile_type, tiles in sorted(tile_types.items()):
-        tile_type_info = db.get_tile_type(tile_type)
 
-        # Skip empty tiles, as no base address is requied.
-        if len(tile_type_info.get_pips()) == 0 and len(
-                tile_type_info.get_sites()) == 0:
-            continue
+    for tile_type, tiles in sorted(tile_types.items()):
+        try:
+            tile_type_info = db.get_tile_type(tile_type)
+
+            # Skip empty tiles, as no base address is requied.
+            if len(tile_type_info.get_pips()) == 0 and len(
+                    tile_type_info.get_sites()) == 0:
+                continue
+        except KeyError:
+            pass
 
         # INT_INTERFACE tiles likely don't contain configuration?  Remove this
         # if this ends up false.
