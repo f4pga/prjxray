@@ -66,6 +66,7 @@ def run(fn_in, fn_out, verbose=False):
         ("iob_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("bram_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("dsp_int/build/segbits_tilegrid.tdb", int_frames, int_words),
+        ("fifo_int/build/segbits_tilegrid.tdb", int_frames, int_words),
     ]
 
     for (tdb_fn, frames, words) in tdb_fns:

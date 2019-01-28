@@ -23,15 +23,14 @@ def gen_fifos():
                     int_tile_type = 'INT_R'
 
                 int_tile_locs = [
-                        (int_grid_x, loc.grid_y+idx-5) for idx in range(12)
-                        ]
+                    (int_grid_x, loc.grid_y + idx - 5) for idx in range(12)
+                ]
 
                 int_tiles = []
                 for int_tile_loc in int_tile_locs:
                     int_gridinfo = grid.gridinfo_at_loc(int_tile_loc)
                     assert int_gridinfo.tile_type == int_tile_type, (
-                        int_tile_loc,
-                        int_gridinfo.tile_type, int_tile_type)
+                        int_tile_loc, int_gridinfo.tile_type, int_tile_type)
 
                     int_tiles.append(grid.tilename_at_loc(int_tile_loc))
 
@@ -68,11 +67,11 @@ module top();
         #
         # INT[idx].IMUX_L40 = IN.D{idx}[1]
         # INT[idx].IMUX_L42 = IN.D{idx}[3]
-        CHANNEL    = [0, 1, 2, 3, 4, 5, 5, 6, 6, 7, 8, 9]
+        CHANNEL = [0, 1, 2, 3, 4, 5, 5, 6, 6, 7, 8, 9]
         HOLD_BIT_0 = [1, 1, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1]
         TOGGLE_BIT = [3, 3, 3, 3, 3, 3, 7, 7, 3, 3, 3, 3]
         #             0  1  2  3  4  5  6  7  8  9
-        WIDTH      = [4, 4, 4, 4, 4, 8, 8, 4, 4, 4]
+        WIDTH = [4, 4, 4, 4, 4, 8, 8, 4, 4, 4]
 
         bits_set = set()
 
@@ -81,29 +80,33 @@ module top();
             bits_set.add((CHANNEL[idx], TOGGLE_BIT[idx]))
 
             assigns.append('            // {}'.format(int_tile))
-            assigns.append('            assign {site}_in_d{channel}[{bit}] = 0;'.format(
-                site=site,
-                channel=CHANNEL[idx],
-                bit=HOLD_BIT_0[idx],
+            assigns.append(
+                '            assign {site}_in_d{channel}[{bit}] = 0;'.format(
+                    site=site,
+                    channel=CHANNEL[idx],
+                    bit=HOLD_BIT_0[idx],
                 ))
-            assigns.append('            assign {site}_in_d{channel}[{bit}] = {toggle_bit};'.format(
-                site=site,
-                channel=CHANNEL[idx],
-                bit=TOGGLE_BIT[idx],
-                toggle_bit=bit,
+            assigns.append(
+                '            assign {site}_in_d{channel}[{bit}] = {toggle_bit};'
+                .format(
+                    site=site,
+                    channel=CHANNEL[idx],
+                    bit=TOGGLE_BIT[idx],
+                    toggle_bit=bit,
                 ))
-            params[int_tile] = (bit,)
+            params[int_tile] = (bit, )
 
             assigns.append('')
-
 
         for channel, width in enumerate(WIDTH):
             for bit in range(width):
                 if (channel, bit) not in bits_set:
-                    assigns.append('            assign {site}_in_d{channel}[{bit}] = 1;'.format(
-                        site=site,
-                        channel=channel,
-                        bit=bit,
+                    assigns.append(
+                        '            assign {site}_in_d{channel}[{bit}] = 1;'.
+                        format(
+                            site=site,
+                            channel=channel,
+                            bit=bit,
                         ))
 
         print(

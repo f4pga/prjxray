@@ -39,6 +39,9 @@ def main():
         if 'INT_INTERFACE' in tile_type:
             continue
 
+        if 'BRKH' in tile_type:
+            continue
+
         have_bits = 0
         for tile_name, gridinfo in tiles:
             total_tile_count += 1

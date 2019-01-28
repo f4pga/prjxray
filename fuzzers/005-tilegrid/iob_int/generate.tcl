@@ -49,7 +49,6 @@ proc loc_pins {} {
         set tile [get_tiles -of_objects $site]
 
         set pin [dict get $io_pin_sites $site]
-
         set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" $port
     }
 }

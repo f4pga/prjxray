@@ -8,6 +8,7 @@ import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray.db import Database
+import re
 
 
 def gen_sites():
@@ -31,7 +32,9 @@ def gen_sites():
         if len(sites) == 0:
             continue
 
-        sites.sort()
+        sites_y = [int(re.match('IDELAY_X[0-9]+Y([0-9]+)', site).group(1)) for site in sites]
+
+        sites, _ = zip(*sorted(zip(sites, sites_y), key=lambda x: x[1]))
 
         if gridinfo.tile_type[0] == 'L':
             int_grid_x = loc.grid_x + 3
@@ -47,7 +50,10 @@ def gen_sites():
         ]
 
         pad_gridinfo = grid.gridinfo_at_loc((pad_grid_x, loc.grid_y))
-        pad_sites = sorted(pad_gridinfo.sites.keys())
+
+        pad_sites = pad_gridinfo.sites.keys()
+        pad_sites_y = [int(re.match('IOB_X[0-9]+Y([0-9]+)', site).group(1)) for site in pad_sites]
+        pad_sites, _ = zip(*sorted(zip(pad_sites, pad_sites_y), key=lambda x: x[1]))
 
         if not gridinfo.tile_type.endswith("_SING"):
             int_tile_locs.append((int_grid_x, loc.grid_y - 1))

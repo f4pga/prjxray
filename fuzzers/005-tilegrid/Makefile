@@ -13,6 +13,7 @@ TILEGRID_TDB_DEPENDENCIES += clb/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += dsp/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += dsp_int/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += fifo_int/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
 ifeq (${XRAY_DATABASE}, zynq7)
@@ -73,6 +74,9 @@ dsp/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 dsp_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd dsp_int && $(MAKE)
 
+fifo_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd fifo_int && $(MAKE)
+
 build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
 		--fn-in build/basicdb/tilegrid.json \
@@ -102,6 +106,7 @@ clean:
 	cd bram_int && $(MAKE) clean
 	cd dsp && $(MAKE) clean
 	cd dsp_int && $(MAKE) clean
+	cd fifo_int && $(MAKE) clean
 	cd monitor && $(MAKE) clean
 
 .PHONY: database pushdb clean run
