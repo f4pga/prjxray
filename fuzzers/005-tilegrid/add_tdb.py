@@ -6,6 +6,30 @@ import util as localutil
 import os.path
 
 
+def check_frames(tagstr, addrlist):
+    frames = set()
+    for addrstr in addrlist:
+        frame = parse_addr(addrstr, get_base_frame=True)
+        frames.add(frame)
+    assert len(frames) == 1, (
+        "{}: More than one base address".format(tagstr), map(hex, frames))
+
+
+def parse_addr(line, only_frame=False, get_base_frame=False):
+    # 00020027_003_03
+    line = line.split("_")
+    frame = int(line[0], 16)
+    wordidx = int(line[1], 10)
+    bitidx = int(line[2], 10)
+
+    if get_base_frame:
+        delta = frame % 128
+        frame -= delta
+        return frame
+
+    return frame, wordidx, bitidx
+
+
 def load_db(fn):
     for l in open(fn, "r"):
         l = l.strip()
@@ -14,9 +38,9 @@ def load_db(fn):
         parts = l.split(' ')
         tagstr = parts[0]
         addrlist = parts[1:]
-        localutil.check_frames(tagstr, addrlist)
+        check_frames(tagstr, addrlist)
         # Take the first address in the list
-        frame, wordidx, bitidx = localutil.parse_addr(addrlist[0])
+        frame, wordidx, bitidx = parse_addr(addrlist[0])
 
         bitidx_up = False
 
@@ -51,18 +75,16 @@ def run(fn_in, fn_out, verbose=False):
     # FIXME: generate frames from part file (or equivilent)
     # See https://github.com/SymbiFlow/prjxray/issues/327
     # FIXME: generate words from pitch
-    int_frames, int_words, _ = localutil.get_entry('INT', 'CLB_IO_CLK')
+    int_frames, int_words = localutil.get_int_params()
     tdb_fns = [
         ("iob/build/segbits_tilegrid.tdb", 42, 4),
-        # FIXME: height
         ("mmcm/build/segbits_tilegrid.tdb", 30, 101),
-        # FIXME: height
         ("pll/build/segbits_tilegrid.tdb", 30, 101),
         ("monitor/build/segbits_tilegrid.tdb", 30, 101),
         ("bram/build/segbits_tilegrid.tdb", 28, 10),
         ("bram_block/build/segbits_tilegrid.tdb", 128, 10),
         ("clb/build/segbits_tilegrid.tdb", 36, 2),
-        ("dsp/build/segbits_tilegrid.tdb", 28, 2),
+        ("dsp/build/segbits_tilegrid.tdb", 28, 10),
         ("clb_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("iob_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("bram_int/build/segbits_tilegrid.tdb", int_frames, int_words),
