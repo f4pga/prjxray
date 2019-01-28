@@ -14,7 +14,8 @@ with open('params.csv', 'r') as f:
         pattern = int(d['pattern'])
 
         for i in range(48):
-            segmk.add_site_tag(d['site'], "%s.MASK[%d]" % (dsp, i), (mask >> i) & 1)
+            segmk.add_site_tag(
+                d['site'], "%s.MASK[%d]" % (dsp, i), (mask >> i) & 1)
             segmk.add_site_tag(
                 d['site'], "%s.PATTERN[%d]" % (dsp, i), (pattern >> i) & 1)
 

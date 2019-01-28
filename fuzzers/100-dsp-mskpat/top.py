@@ -34,8 +34,8 @@ module top();
 
     sites = list(gen_sites())
     for (tile_name, site_name) in sites:
-        mask = random.randint(0, 2**48-1)
-        pattern = random.randint(0, 2**48-1)
+        mask = random.randint(0, 2**48 - 1)
+        pattern = random.randint(0, 2**48 - 1)
         lines.append((tile_name, site_name, mask, pattern))
 
         print(

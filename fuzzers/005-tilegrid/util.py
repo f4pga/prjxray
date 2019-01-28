@@ -6,6 +6,7 @@ from prjxray import util
 Local utils script to hold shared code of the 005-tilegrid fuzzer scripts
 '''
 
+
 def get_entry(tile_type, block_type):
     """ Get frames and words for a given tile_type (e.g. CLBLL) and block_type (CLB_IO_CLK, BLOCK_RAM, etc). """
     return {
@@ -26,13 +27,7 @@ def get_int_params():
 
 
 def add_tile_bits(
-        tile_name,
-        tile_db,
-        baseaddr,
-        offset,
-        frames,
-        words,
-        verbose=False):
+        tile_name, tile_db, baseaddr, offset, frames, words, verbose=False):
     '''
     Record data structure geometry for the given tile baseaddr
     For most tiles there is only one baseaddr, but some like BRAM have multiple
