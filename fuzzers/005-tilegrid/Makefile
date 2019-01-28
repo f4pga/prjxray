@@ -10,7 +10,6 @@ TILEGRID_TDB_DEPENDENCIES += bram_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += dsp/build/segbits_tilegrid.tdb
-TILEGRID_TDB_DEPENDENCIES += dsp_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += fifo_int/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
@@ -21,6 +20,12 @@ else
 # Artix7/Kintex7 only
 TILEGRID_TDB_DEPENDENCIES += pll/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += mmcm/build/segbits_tilegrid.tdb
+endif
+
+ifeq (${XRAY_DATABASE}, kintex7)
+else
+# Disable DSP INT fuzzer on kintex7.  It doesn't work, and isn't required.
+TILEGRID_TDB_DEPENDENCIES += dsp_int/build/segbits_tilegrid.tdb
 endif
 
 database: build/tilegrid.json
