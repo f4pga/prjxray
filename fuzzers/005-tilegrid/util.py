@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import print_function
 from prjxray import util
 '''
 Local utils script to hold shared code of the 005-tilegrid fuzzer scripts
