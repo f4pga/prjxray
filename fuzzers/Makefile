@@ -9,7 +9,7 @@ FUZZONLY=N
 BITONLY=N
 
 define fuzzer
-all:: $(1)/run.ok
+all: $(1)/run.ok
 clean::
 	$$(MAKE) -C $(1) clean
 $(1)/run.ok: $(addsuffix /run.ok,$(2))
