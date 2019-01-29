@@ -225,12 +225,18 @@ class Segmaker:
                     bitname_frame = bit_frame - base_frame
                     bitname_bit = 32 * (
                         bit_wordidx - bitj["offset"]) + bit_bitidx
+
+                    # Skip bits above the frame limit.
+                    if bitname_frame >= bitj["frames"]:
+                        continue
+
                     # some bits are hard to de-correlate
                     # allow force dropping some bits from search space for practicality
                     if bitfilter is None or bitfilter(bitname_frame,
                                                       bitname_bit):
                         bitname = "%02d_%02d" % (bitname_frame, bitname_bit)
                         segment["bits"].add(bitname)
+
             return segment
 
         '''
