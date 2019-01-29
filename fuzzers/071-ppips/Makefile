@@ -13,6 +13,8 @@ $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
 	touch $@
 
+run.ok: run
+
 run:
 	$(MAKE) clean
 	$(MAKE) database
