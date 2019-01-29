@@ -28,6 +28,7 @@ run:
 	$(MAKE) clean
 	$(MAKE) database
 	$(MAKE) pushdb
+	touch run.ok
 
 clean:
 	rm -rf build run.ok
