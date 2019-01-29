@@ -7,6 +7,7 @@ import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
+from prjxray.db import Database
 from prjxray import verilog
 
 
@@ -17,11 +18,15 @@ def gen_iobs():
     IOB33: not a diff pair. Relatively rare (at least in ROI...2 of them?)
     Focus on IOB33S to start
     '''
-    for _tile_name, site_name, site_type in util.get_roi().gen_sites(
-            # ['IOB33', 'IOB33S']):
-            # FIXME: special cases on IOB33
-        ['IOB33S']):
-        yield site_name, site_type
+    db = Database(util.get_db_root())
+    grid = db.grid()
+    for tile_name in grid.tiles():
+        loc = grid.loc_of_tilename(tile_name)
+        gridinfo = grid.gridinfo_at_loc(loc)
+
+        for site_name, site_type in gridinfo.sites.items():
+            if site_type in ['IOB33S']:
+                yield site_name, site_type
 
 
 def write_params(ports):

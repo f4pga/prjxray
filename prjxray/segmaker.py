@@ -209,14 +209,13 @@ class Segmaker:
                     "tags": dict(),
                     # verify new entries match this
                     "offset": bitj["offset"],
-                    "height": bitj["height"],
                     "words": bitj["words"],
                     "frames": bitj["frames"],
                 })
 
             base_frame = json_hex2i(bitj["baseaddr"])
             for wordidx in range(bitj["offset"],
-                                 bitj["offset"] + bitj["height"]):
+                                 bitj["offset"] + bitj["words"]):
                 if base_frame not in self.bits:
                     continue
                 if wordidx not in self.bits[base_frame]:
@@ -247,7 +246,6 @@ class Segmaker:
                 else:
                     segment = segments[segname]
                     assert segment["offset"] == bitj["offset"]
-                    assert segment["height"] == bitj["height"]
                     assert segment["words"] == bitj["words"]
                     assert segment["frames"] == bitj["frames"]
                     return segment

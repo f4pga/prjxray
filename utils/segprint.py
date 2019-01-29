@@ -366,14 +366,14 @@ def mk_segtiles(tiles):
             seglets = segtiles.setdefault(ref_tile_name, [])
             ref_as = (
                 ref_block["offset"],
-                ref_block["offset"] + ref_block["height"] - 1)
+                ref_block["offset"] + ref_block["words"] - 1)
 
             for cmpi in range(refi + 1, len(values)):
                 (_cmp_block_offset, cmp_tile_name, cmp_block,
                  cmp_block_name) = values[cmpi]
                 cmp_as = (
                     cmp_block["offset"],
-                    cmp_block["offset"] + cmp_block["height"] - 1)
+                    cmp_block["offset"] + cmp_block["words"] - 1)
 
                 if overlap(ref_as, cmp_as):
                     seglets.append((cmp_tile_name, cmp_block_name))

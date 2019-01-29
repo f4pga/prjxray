@@ -1,27 +1,23 @@
 #!/usr/bin/env python3
 
-import sys
-
 from prjxray.segmaker import Segmaker
+import csv
 
-segmk = Segmaker("design_%s.bits" % sys.argv[1])
+segmk = Segmaker("design.bits", verbose=True)
 
-pipdata = dict()
-ignpip = set()
+print("Loading tags")
+with open('params.csv', 'r') as f:
+    for d in csv.DictReader(f):
+        dsp = "DSP_0" if d['site'][-1] in "02468" else "DSP_1"
 
-print("Loading tags from design.txt.")
-with open("design_%s.txt" % sys.argv[1], "r") as f:
-    for line in f:
-        tile, loc, mask, pattern = line.split()
-        dsp = "DSP_0" if loc[-1] in "02468" else "DSP_1"
-
-        mask = int(mask.replace("48'h", ""), 16)
-        pattern = int(pattern.replace("48'h", ""), 16)
+        mask = int(d['mask'])
+        pattern = int(d['pattern'])
 
         for i in range(48):
-            segmk.add_tile_tag(tile, "%s.MASK[%d]" % (dsp, i), (mask >> i) & 1)
-            segmk.add_tile_tag(
-                tile, "%s.PATTERN[%d]" % (dsp, i), (pattern >> i) & 1)
+            segmk.add_site_tag(
+                d['site'], "%s.MASK[%d]" % (dsp, i), (mask >> i) & 1)
+            segmk.add_site_tag(
+                d['site'], "%s.PATTERN[%d]" % (dsp, i), (pattern >> i) & 1)
 
 segmk.compile()
-segmk.write(suffix=sys.argv[1])
+segmk.write()

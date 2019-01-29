@@ -8,6 +8,8 @@ proc run {} {
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
+    set_property IS_ENABLED 0 [get_drc_checks {DSPS-3}]
+    set_property IS_ENABLED 0 [get_drc_checks {DSPS-5}]
 
     place_design
     route_design

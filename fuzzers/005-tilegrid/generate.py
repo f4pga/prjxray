@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import os, sys, json, re
-
 from utils import xjson
 
 
@@ -64,7 +62,6 @@ def run(tiles_fn, json_fn, verbose=False):
 
 def main():
     import argparse
-    import glob
 
     parser = argparse.ArgumentParser(
         description='Generate tilegrid.json from bitstream deltas')

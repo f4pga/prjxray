@@ -11,10 +11,9 @@ def gen_sites():
     for tile_name in grid.tiles():
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
-
-        for site_name, site_type in gridinfo.sites.items():
-            if site_type in ['XADC']:
-                yield tile_name, site_name
+        if gridinfo.tile_type in ['CLBLL_L', 'CLBLL_R', 'CLBLM_L', 'CLBLM_R']:
+            site_name = sorted(gridinfo.sites.keys())[0]
+            yield tile_name, site_name
 
 
 def write_params(params):
@@ -50,43 +49,18 @@ module top(input clk, stb, di, output do);
     ''')
 
     params = {}
-    # only one for now, worry about later
+
     sites = list(gen_sites())
-    assert len(sites) == 1, len(sites)
     for (tile_name, site_name), isone in zip(sites,
                                              util.gen_fuzz_states(len(sites))):
-        INIT_43 = isone
-        params[tile_name] = (site_name, INIT_43)
+        params[tile_name] = (site_name, isone)
 
         print(
             '''
-    (* KEEP, DONT_TOUCH *)
-    XADC #(/*.LOC("%s"),*/ .INIT_43(%u)) dut_%s(
-            .BUSY(),
-            .DRDY(),
-            .EOC(),
-            .EOS(),
-            .JTAGBUSY(),
-            .JTAGLOCKED(),
-            .JTAGMODIFIED(),
-            .OT(),
-            .DO(),
-            .ALM(),
-            .CHANNEL(),
-            .MUXADDR(),
-            .CONVST(),
-            .CONVSTCLK(clk),
-            .DCLK(clk),
-            .DEN(),
-            .DWE(),
-            .RESET(),
-            .VN(),
-            .VP(),
-            .DI(),
-            .VAUXN(),
-            .VAUXP(),
-            .DADDR());
-''' % (site_name, INIT_43, site_name))
+            (* KEEP, DONT_TOUCH, LOC = "%s" *)
+            CARRY4 carry4_%s (
+                    .CYINIT(%u));
+''' % (site_name, site_name, isone))
 
     print("endmodule")
     write_params(params)

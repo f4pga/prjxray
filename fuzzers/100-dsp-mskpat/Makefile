@@ -1,33 +1,31 @@
+N ?= 8
 
-N := 1
-SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
-SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
+include ../fuzzer.mk
 
-database: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_dsp_l.db $(addsuffix /segdata_dsp_l_*.txt,$(SPECIMENS))
-	${XRAY_SEGMATCH} -o build/segbits_dsp_r.db $(addsuffix /segdata_dsp_r_*.txt,$(SPECIMENS))
-	${XRAY_DBFIXUP} --db-root build --clb-int
-	${XRAY_MASKMERGE} build/mask_dsp_l.db $(addsuffix /segdata_dsp_l_*.txt,$(SPECIMENS))
-	${XRAY_MASKMERGE} build/mask_dsp_r.db $(addsuffix /segdata_dsp_r_*.txt,$(SPECIMENS))
+database: build/segbits_dsp_l.db build/mask_dsp_r.db build/segbits_dsp_r.db build/mask_dsp_r.db
 
-pushdb:
+SEGDATAS_L=$(addsuffix /segdata_dsp_l.txt,$(SPECIMENS))
+SEGDATAS_R=$(addsuffix /segdata_dsp_r.txt,$(SPECIMENS))
+
+build/segbits_dsp_l.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o build/segbits_dsp_l.rdb $(SEGDATAS_L)
+
+build/segbits_dsp_l.db build/mask_dsp_l.db: build/segbits_dsp_l.rdb
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
+	${XRAY_MASKMERGE} build/mask_dsp_l.db $(SEGDATAS_L)
+
+build/segbits_dsp_r.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o build/segbits_dsp_r.rdb $(SEGDATAS_R)
+
+build/segbits_dsp_r.db build/mask_dsp_r.db: build/segbits_dsp_r.rdb
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
+	${XRAY_MASKMERGE} build/mask_dsp_r.db $(SEGDATAS_R)
+
+pushdb: database
 	${XRAY_MERGEDB} dsp_l build/segbits_dsp_l.db
 	${XRAY_MERGEDB} dsp_r build/segbits_dsp_r.db
 	${XRAY_MERGEDB} mask_dsp_l build/segbits_dsp_l.db
 	${XRAY_MERGEDB} mask_dsp_r build/segbits_dsp_r.db
 
-$(SPECIMENS_OK):
-	bash generate.sh $(subst /OK,,$@)
-	touch $@
-
-run:
-	$(MAKE) clean
-	$(MAKE) database
-	$(MAKE) pushdb
-	touch run.ok
-
-clean:
-	rm -rf build run.ok
-
-.PHONY: database pushdb run clean
+.PHONY: database pushdb
 

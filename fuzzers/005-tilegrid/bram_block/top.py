@@ -13,7 +13,7 @@ def gen_sites():
         gridinfo = grid.gridinfo_at_loc(loc)
 
         for site_name, site_type in gridinfo.sites.items():
-            if site_type in ['XADC']:
+            if site_type in ['RAMBFIFO36E1']:
                 yield tile_name, site_name
 
 
@@ -50,43 +50,41 @@ module top(input clk, stb, di, output do);
     ''')
 
     params = {}
-    # only one for now, worry about later
+
     sites = list(gen_sites())
-    assert len(sites) == 1, len(sites)
     for (tile_name, site_name), isone in zip(sites,
                                              util.gen_fuzz_states(len(sites))):
-        INIT_43 = isone
-        params[tile_name] = (site_name, INIT_43)
+        params[tile_name] = (site_name, isone)
 
         print(
             '''
-    (* KEEP, DONT_TOUCH *)
-    XADC #(/*.LOC("%s"),*/ .INIT_43(%u)) dut_%s(
-            .BUSY(),
-            .DRDY(),
-            .EOC(),
-            .EOS(),
-            .JTAGBUSY(),
-            .JTAGLOCKED(),
-            .JTAGMODIFIED(),
-            .OT(),
-            .DO(),
-            .ALM(),
-            .CHANNEL(),
-            .MUXADDR(),
-            .CONVST(),
-            .CONVSTCLK(clk),
-            .DCLK(clk),
-            .DEN(),
-            .DWE(),
-            .RESET(),
-            .VN(),
-            .VP(),
-            .DI(),
-            .VAUXN(),
-            .VAUXP(),
-            .DADDR());
-''' % (site_name, INIT_43, site_name))
+            (* KEEP, DONT_TOUCH, LOC = "%s" *)
+            RAMB36E1 #(
+                    .INIT_00(256'b%u)
+                ) bram_%s (
+                    .CLKARDCLK(),
+                    .CLKBWRCLK(),
+                    .ENARDEN(),
+                    .ENBWREN(),
+                    .REGCEAREGCE(),
+                    .REGCEB(),
+                    .RSTRAMARSTRAM(),
+                    .RSTRAMB(),
+                    .RSTREGARSTREG(),
+                    .RSTREGB(),
+                    .ADDRARDADDR(),
+                    .ADDRBWRADDR(),
+                    .DIADI(),
+                    .DIBDI(),
+                    .DIPADIP(),
+                    .DIPBDIP(),
+                    .WEA(),
+                    .WEBWE(),
+                    .DOADO(),
+                    .DOBDO(),
+                    .DOPADOP(),
+                    .DOPBDOP());
+''' % (site_name, isone, site_name))
 
     print("endmodule")
     write_params(params)
