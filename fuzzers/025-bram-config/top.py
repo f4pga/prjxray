@@ -4,7 +4,6 @@ random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
 from prjxray.verilog import vrandbit, vrandbits
-import sys
 import json
 
 

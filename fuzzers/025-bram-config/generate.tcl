@@ -23,3 +23,13 @@ route_design
 
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
+
+set fp [open "design.csv" "w"]
+puts $fp "site,IS_CLKARDCLK_INVERTED,IS_CLKBWRCLK_INVERTED"
+foreach ram [get_cells "roi/inst_*/ram"] {
+    set site [get_sites -of_objects [get_bels -of_objects $ram]]
+    set IS_CLKARDCLK_INVERTED [get_property IS_CLKARDCLK_INVERTED $ram]
+    set IS_CLKBWRCLK_INVERTED [get_property IS_CLKBWRCLK_INVERTED $ram]
+    puts $fp "$site,$IS_CLKARDCLK_INVERTED,$IS_CLKBWRCLK_INVERTED"
+}
+close $fp
