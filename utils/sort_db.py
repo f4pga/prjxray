@@ -335,20 +335,20 @@ def sort_json(filename):
 
 
 def main(argv):
-    for n in os.listdir():
+    for n in sorted(os.listdir()):
         if not os.path.isfile(n):
             continue
 
         base, ext = os.path.splitext(n)
 
         if ext == '.db':
-            print("Sorting DB   file {}".format(n), end=" ", flush=True)
+            print("Sorting DB   file {:40s}".format(n), end=" ", flush=True)
             x = sort_db(n)
         elif ext == '.json':
-            print("Sorting JSON file {}".format(n), end=" ", flush=True)
+            print("Sorting JSON file {:40s}".format(n), end=" ", flush=True)
             x = sort_json(n)
         else:
-            print("Ignoring     file {}".format(n), end=" ", flush=True)
+            print("Ignoring    file {:40s}".format(n), end=" ", flush=True)
             x = True
         if x:
             print(".. success.")
