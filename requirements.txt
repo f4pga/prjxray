@@ -1,12 +1,13 @@
 futures
 intervaltree
 numpy
+parse
 progressbar2
 pyjson5
+pytest
 pyyaml
 scipy
-sympy
-yapf==0.24.0
-textx
-pytest
 simplejson
+sympy
+textx
+yapf==0.24.0
