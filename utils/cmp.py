@@ -106,8 +106,17 @@ def cmp(a, b):
     >>> cmp(b'AA', b'A')
     1
 
+    >>> def bit(*args):
+    ...   return args
+    >>> a = ('CLBLL', 'L', 'SLICEL', ('X', 0), 'AFFMUX', 'XOR')
+    >>> b = ('CLBLL', 'L', 'SLICEL', ('X', 0), 'AFFMUX', ('F', 7))
+    >>> cmp(a, b)
+    -1
+    >>> cmp(b, a)
+    1
+
     """
-    if not isinstance(a, (str, bytes)):
+    if not isinstance(a, (str, bytes)) and not isinstance(b, (str, bytes)):
         try:
             for i, j in itertools.zip_longest(iter(a), iter(b)):
                 r = cmp(i, j)
