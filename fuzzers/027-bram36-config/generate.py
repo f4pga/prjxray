@@ -12,7 +12,8 @@ def write_ram_ext_tags(segmk, tile_param):
             segmk.add_site_tag(
                 tile_param['site'], "{}_{}".format(param, opt), set_val == opt)
         segmk.add_site_tag(
-            tile_param['site'], "{}_NONE_OR_UPPER".format(param, opt), set_val != "LOWER")
+            tile_param['site'], "{}_NONE_OR_UPPER".format(param, opt),
+            set_val != "LOWER")
 
 
 def main():
@@ -25,8 +26,10 @@ def main():
     for tile_param in params:
         write_ram_ext_tags(segmk, tile_param)
 
-        segmk.add_site_tag(tile_param['site'], 'EN_ECC_READ', tile_param['EN_ECC_READ'])
-        segmk.add_site_tag(tile_param['site'], 'EN_ECC_WRITE', tile_param['EN_ECC_WRITE'])
+        segmk.add_site_tag(
+            tile_param['site'], 'EN_ECC_READ', tile_param['EN_ECC_READ'])
+        segmk.add_site_tag(
+            tile_param['site'], 'EN_ECC_WRITE', tile_param['EN_ECC_WRITE'])
 
     segmk.compile()
     segmk.write()
