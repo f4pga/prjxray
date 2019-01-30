@@ -311,7 +311,8 @@ def sort_db(filename):
         copy.sort(key=cmp.cmp_key)
         assert len(copy) == len(tosort)
         for i in range(0, len(copy)):
-            assert copy[i] == tosort[i], "\n%r\n != \n%r\n" % (copy[i], tosort[i])
+            assert copy[i] == tosort[i], "\n%r\n != \n%r\n" % (
+                copy[i], tosort[i])
 
     with open(filename, 'w') as f:
         for _, l in tosort:
