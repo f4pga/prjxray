@@ -11,6 +11,9 @@ proc run {} {
     set_property IS_ENABLED 0 [get_drc_checks {REQP-192}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-193}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-194}]
+    set_property IS_ENABLED 0 [get_drc_checks {AVAL-94}]
+    set_property IS_ENABLED 0 [get_drc_checks {AVAL-95}]
+    set_property IS_ENABLED 0 [get_drc_checks {PDCN-1576}]
 
     place_design
     route_design

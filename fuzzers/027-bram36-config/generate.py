@@ -3,7 +3,6 @@
 import json
 
 from prjxray.segmaker import Segmaker
-from prjxray import verilog
 
 
 def write_ram_ext_tags(segmk, tile_param):
@@ -25,6 +24,9 @@ def main():
 
     for tile_param in params:
         write_ram_ext_tags(segmk, tile_param)
+
+        segmk.add_site_tag(tile_param['site'], 'EN_ECC_READ', tile_param['EN_ECC_READ'])
+        segmk.add_site_tag(tile_param['site'], 'EN_ECC_WRITE', tile_param['EN_ECC_WRITE'])
 
     segmk.compile()
     segmk.write()

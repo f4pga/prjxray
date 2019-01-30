@@ -28,6 +28,8 @@ module top();
     for tile_name, site_name in gen_bram36():
         ram_extension_a = random.choice(RAM_EXTENSION_OPTS)
         ram_extension_b = random.choice(RAM_EXTENSION_OPTS)
+        en_ecc_read = random.randint(0, 1)
+        en_ecc_write = random.randint(0, 1)
 
         print(
             '''
@@ -38,7 +40,9 @@ module top();
                 .READ_WIDTH_B(1),
                 .WRITE_WIDTH_B(1),
                 .RAM_EXTENSION_A({ram_extension_a}),
-                .RAM_EXTENSION_B({ram_extension_b})
+                .RAM_EXTENSION_B({ram_extension_b}),
+                .EN_ECC_READ({en_ecc_read}),
+                .EN_ECC_WRITE({en_ecc_write})
                 ) bram_{site} (
                     .CLKARDCLK(),
                     .CLKBWRCLK(),
@@ -66,6 +70,8 @@ module top();
                 site=site_name,
                 ram_extension_a=verilog.quote(ram_extension_a),
                 ram_extension_b=verilog.quote(ram_extension_b),
+                en_ecc_read=en_ecc_read,
+                en_ecc_write=en_ecc_write,
             ))
 
         params.append(
@@ -74,6 +80,8 @@ module top();
                 'site': site_name,
                 'RAM_EXTENSION_A': ram_extension_a,
                 'RAM_EXTENSION_B': ram_extension_b,
+                'EN_ECC_READ': en_ecc_read,
+                'EN_ECC_WRITE': en_ecc_write,
             })
 
     print("endmodule")
