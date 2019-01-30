@@ -40,7 +40,7 @@ def main():
 
             print("Comparing {}".format(a_json_base))
             subprocess.call(
-                "diff -U 3 {} {}".format(a_json_out.name, b_json_out.name),
+                "diff -U 10 {} {}".format(a_json_out.name, b_json_out.name),
                 shell=True)
 
 
