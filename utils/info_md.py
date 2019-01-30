@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import argparse
 import hashlib
 import os
+import parse as format_parser
 import subprocess
 import sys
 """Module for generating the Info.md file found in the database directory."""
@@ -37,7 +39,7 @@ Results have checksums;
 
 """
 
-info_md_file = " * [`{file_sha256}  {file_short_path}`]({file_real_path})\n"
+info_md_file = " * [`{file_sha256}  ./{file_short_path}`]({file_real_path})\n"
 
 
 def sha256(s):
@@ -57,6 +59,19 @@ def run(c):
 
 def main(argv):
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--keep',
+        default=False,
+        action="store_true",
+        help="""\
+Keep the existing commit information.
+""")
+    args = parser.parse_args()
+
+    info_md_filename = os.path.join('database', 'Info.md')
+    assert os.path.exists(info_md_filename)
+
     info_md = []
 
     info_md.append(open('database/README.md').read())
@@ -64,9 +79,20 @@ def main(argv):
     v = {}
     v['human_date'] = run('TZ=UTC date')
     v['iso8601_date'] = run('TZ=UTC date --iso-8601=seconds')
-    v['commit_latest'] = run('git log -1')
-    v['commit_hash_short'] = run('git log -1 --pretty=%h')
-    v['commit_hash_long'] = run('git log -1 --pretty=%H')
+    if not args.keep:
+        v['commit_latest'] = run('git log -1')
+        v['commit_hash_short'] = run('git log -1 --pretty=%h')
+        v['commit_hash_long'] = run('git log -1 --pretty=%H')
+    else:
+        with open(info_md_filename) as f:
+            result = format_parser.parse(
+                '{before}' + info_md_header + '{after}', f.read())
+        assert result
+        assert result['human_date']
+        assert result['iso8601_date']
+        v['commit_latest'] = result['commit_latest']
+        v['commit_hash_short'] = result['commit_hash_short']
+        v['commit_hash_long'] = result['commit_hash_long']
 
     info_md.append(info_md_header.format(**v))
 
@@ -106,7 +132,7 @@ def main(argv):
                 x['file_sha256'] = sha256_file(p)
                 info_md.append(info_md_file.format(**x))
 
-    with open(os.path.join('database', 'Info.md'), 'w') as f:
+    with open(info_md_filename, 'w') as f:
         f.write("".join(info_md))
 
     return 0
