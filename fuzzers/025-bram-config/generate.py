@@ -98,6 +98,18 @@ def write_mode_tags(segmk, ps, site):
         segmk.add_site_tag(
             site, '%s_NO_CHANGE' % (param), set_val == "NO_CHANGE")
 
+def write_rstreg_priority(segmk, ps, site):
+    for param in ["RSTREG_PRIORITY_A", "RSTREG_PRIORITY_B"]:
+        set_val = verilog.unquote(ps[param])
+        for opt in ["RSTREG", "REGCE"]:
+            segmk.add_site_tag(site, "{}_{}".format(param, opt),
+                    set_val == opt)
+
+def write_rdaddr_collision(segmk, ps, site):
+    for opt in ["DELAYED_WRITE", "PERFORMANCE"]:
+        set_val = verilog.unquote(ps['RDADDR_COLLISION_HWCONFIG'])
+        segmk.add_site_tag(site, "RDADDR_COLLISION_HWCONFIG_{}".format(opt),
+                set_val == opt)
 
 def run():
 
@@ -121,6 +133,8 @@ def run():
         bus_tags(segmk, ps, site)
         rw_width_tags(segmk, ps, site)
         write_mode_tags(segmk, ps, site)
+        write_rstreg_priority(segmk, ps, site)
+        write_rdaddr_collision(segmk, ps, site)
 
     def bitfilter(frame, bit):
         # rw_width_tags() aliasing interconnect on large widths
