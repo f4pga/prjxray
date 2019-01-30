@@ -39,7 +39,7 @@ Results have checksums;
 
 """
 
-info_md_file = " * [`{file_sha256}  ./{file_short_path}`]({file_real_path})\n"
+info_md_file = " * [`{file_sha256}  ./{file_short_path}`](./{file_short_path})\n"
 
 
 def sha256(s):
@@ -118,19 +118,19 @@ Keep the existing commit information.
 
         info_md.append(info_md_section.format(**w))
 
+        files = []
         for dirpath, dirnames, filenames in os.walk(part_path):
-            dirnames.sort()
-            filenames.sort()
-
             for f in filenames:
-                p = os.path.join(dirpath, f)
+                files.append(os.path.join(dirpath, f))
 
-                x = {}
-                x['file_real_path'] = './' + p
-                x['file_short_path'] = os.path.join(
-                    part_line, os.path.relpath(p, part_path))
-                x['file_sha256'] = sha256_file(p)
-                info_md.append(info_md_file.format(**x))
+        files.sort()
+        for p in files:
+            x = {}
+            x['file_real_path'] = './' + p
+            x['file_short_path'] = os.path.join(
+                part_line, os.path.relpath(p, part_path))
+            x['file_sha256'] = sha256_file(p)
+            info_md.append(info_md_file.format(**x))
 
     with open(info_md_filename, 'w') as f:
         f.write("".join(info_md))
