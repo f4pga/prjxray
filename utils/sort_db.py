@@ -303,6 +303,13 @@ def sort_db(filename):
 
     tosort.sort(key=cmp.cmp_key)
 
+    # Make sure the sort is stable
+    copy = tosort.copy()
+    copy.sort(key=cmp.cmp_key)
+    assert len(copy) == len(tosort)
+    for i in range(0, len(copy)):
+        assert copy[i] == tosort[i], "\n%r\n != \n%r\n" % (copy[i], tosort[i])
+
     with open(filename, 'w') as f:
         for _, l in tosort:
             f.write(l)
