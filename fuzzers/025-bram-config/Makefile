@@ -1,6 +1,6 @@
 # read/write width is relatively slow to resolve
 # Even slower with multi bit masks...
-N ?= 8
+N ?= 10
 
 include ../fuzzer.mk
 
