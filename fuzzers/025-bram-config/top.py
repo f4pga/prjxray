@@ -36,6 +36,52 @@ def gen_brams():
         yield ('RAMB18E1', site)
 
 
+def place_bram18(site, loci):
+    ports = {
+        'clk': 'clk',
+        'din': 'din[  %d +: 8]' % (8 * loci, ),
+        'dout': 'dout[  %d +: 8]' % (8 * loci, ),
+    }
+
+    write_modes = ["WRITE_FIRST", "READ_FIRST", "NO_CHANGE"]
+    collisions = ["DELAYED_WRITE", "PERFORMANCE"]
+    priorities = ["RSTREG", "REGCE"]
+
+    # Datasheet says 72 is legal in some cases, but think its a copy paste error from BRAM36
+    # also 0 and 36 aren't real sizes
+    # Bias choice to 18 as its needed to solve certain bits quickly
+    widths = [1, 2, 4, 9, 18, 18, 18, 18]
+    params = {
+        'LOC': verilog.quote(site),
+        'IS_CLKARDCLK_INVERTED': vrandbit(),
+        'IS_CLKBWRCLK_INVERTED': vrandbit(),
+        'IS_ENARDEN_INVERTED': vrandbit(),
+        'IS_ENBWREN_INVERTED': vrandbit(),
+        'IS_RSTRAMARSTRAM_INVERTED': vrandbit(),
+        'IS_RSTRAMB_INVERTED': vrandbit(),
+        'IS_RSTREGARSTREG_INVERTED': vrandbit(),
+        'IS_RSTREGB_INVERTED': vrandbit(),
+        'RAM_MODE': '"TDP"',
+        'WRITE_MODE_A': verilog.quote(random.choice(write_modes)),
+        'WRITE_MODE_B': verilog.quote(random.choice(write_modes)),
+        "DOA_REG": vrandbit(),
+        "DOB_REG": vrandbit(),
+        "SRVAL_A": vrandbits(18),
+        "SRVAL_B": vrandbits(18),
+        "INIT_A": vrandbits(18),
+        "INIT_B": vrandbits(18),
+        "READ_WIDTH_A": random.choice(widths),
+        "READ_WIDTH_B": random.choice(widths),
+        "WRITE_WIDTH_A": random.choice(widths),
+        "WRITE_WIDTH_B": random.choice(widths),
+        "RDADDR_COLLISION_HWCONFIG": verilog.quote(random.choice(collisions)),
+        "RSTREG_PRIORITY_A": verilog.quote(random.choice(priorities)),
+        "RSTREG_PRIORITY_B": verilog.quote(random.choice(priorities)),
+    }
+
+    return ('my_RAMB18E1', ports, params)
+
+
 def main():
     brams = list(gen_brams())
     DUTN = len(brams)
@@ -51,56 +97,10 @@ def main():
         (DIN_N - 1, DOUT_N - 1))
 
     for loci, (site_type, site) in enumerate(brams):
-
-        def place_bram18():
-            ports = {
-                'clk': 'clk',
-                'din': 'din[  %d +: 8]' % (8 * loci, ),
-                'dout': 'dout[  %d +: 8]' % (8 * loci, ),
-            }
-
-            write_modes = ["WRITE_FIRST", "READ_FIRST", "NO_CHANGE"]
-            collisions = ["DELAYED_WRITE", "PERFORMANCE"]
-            priorities = ["RSTREG", "REGCE"]
-
-            # Datasheet says 72 is legal in some cases, but think its a copy paste error from BRAM36
-            # also 0 and 36 aren't real sizes
-            # Bias choice to 18 as its needed to solve certain bits quickly
-            widths = [1, 2, 4, 9, 18, 18, 18, 18]
-            params = {
-                'LOC': verilog.quote(site),
-                'IS_CLKARDCLK_INVERTED': vrandbit(),
-                'IS_CLKBWRCLK_INVERTED': vrandbit(),
-                'IS_ENARDEN_INVERTED': vrandbit(),
-                'IS_ENBWREN_INVERTED': vrandbit(),
-                'IS_RSTRAMARSTRAM_INVERTED': vrandbit(),
-                'IS_RSTRAMB_INVERTED': vrandbit(),
-                'IS_RSTREGARSTREG_INVERTED': vrandbit(),
-                'IS_RSTREGB_INVERTED': vrandbit(),
-                'RAM_MODE': '"TDP"',
-                'WRITE_MODE_A': verilog.quote(random.choice(write_modes)),
-                'WRITE_MODE_B': verilog.quote(random.choice(write_modes)),
-                "DOA_REG": vrandbit(),
-                "DOB_REG": vrandbit(),
-                "SRVAL_A": vrandbits(18),
-                "SRVAL_B": vrandbits(18),
-                "INIT_A": vrandbits(18),
-                "INIT_B": vrandbits(18),
-                "READ_WIDTH_A": random.choice(widths),
-                "READ_WIDTH_B": random.choice(widths),
-                "WRITE_WIDTH_A": random.choice(widths),
-                "WRITE_WIDTH_B": random.choice(widths),
-                "RDADDR_COLLISION_HWCONFIG": verilog.quote(random.choice(collisions)),
-                "RSTREG_PRIORITY_A": verilog.quote(random.choice(priorities)),
-                "RSTREG_PRIORITY_B": verilog.quote(random.choice(priorities)),
-            }
-
-            return ('my_RAMB18E1', ports, params)
-
         modname, ports, params = {
             'RAMB18E1': place_bram18,
             #'RAMBFIFO36E1': place_bram36,
-        }[site_type]()
+        }[site_type](site, loci)
 
         verilog.instance(modname, 'inst_%u' % loci, ports, params=params)
 
@@ -212,6 +212,7 @@ def main():
                 .DOPBDOP(dout[3]));
     endmodule
     ''')
+
 
 if __name__ == "__main__":
     main()
