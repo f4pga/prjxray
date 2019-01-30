@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 
 import json
+import csv
 
 from prjxray.segmaker import Segmaker
 from prjxray import verilog
 from prjxray import segmaker
 
 
-def isinv_tags(segmk, ps, site):
+def isinv_tags(segmk, ps, site, actual_ps):
     # all of these bits are inverted
     ks = [
         ('IS_CLKARDCLK_INVERTED', 'ZINV_CLKARDCLK'),
         ('IS_CLKBWRCLK_INVERTED', 'ZINV_CLKBWRCLK'),
+        ('IS_REGCLKARDRCLK_INVERTED', 'ZINV_REGCLKARDRCLK'),
+        ('IS_REGCLKB_INVERTED', 'ZINV_REGCLKB'),
         ('IS_ENARDEN_INVERTED', 'ZINV_ENARDEN'),
         ('IS_ENBWREN_INVERTED', 'ZINV_ENBWREN'),
         ('IS_RSTRAMARSTRAM_INVERTED', 'ZINV_RSTRAMARSTRAM'),
@@ -19,8 +22,33 @@ def isinv_tags(segmk, ps, site):
         ('IS_RSTREGARSTREG_INVERTED', 'ZINV_RSTREGARSTREG'),
         ('IS_RSTREGB_INVERTED', 'ZINV_RSTREGB'),
     ]
+
     for param, tagname in ks:
-        segmk.add_site_tag(site, tagname, 1 ^ verilog.parsei(ps[param]))
+        # The CLK inverts sometimes are changed during synthesis, resulting
+        # in addition inversions.  Take this into account.
+        if param in actual_ps:
+            tag = 1 ^ verilog.parsei(actual_ps[param])
+        elif param == 'IS_REGCLKARDRCLK_INVERTED':
+            if verilog.parsei(ps['DOA_REG']):
+                # When DOA_REG == 1, REGCLKARDRCLK follows the CLKARDCLK setting.
+                tag = 1 ^ verilog.parsei(actual_ps['IS_CLKARDCLK_INVERTED'])
+            else:
+                # When DOA_REG == 0, REGCLKARDRCLK is always inverted.
+                tag = 0
+
+            segmk.add_site_tag(site, tagname, tag)
+        elif param == 'IS_REGCLKB_INVERTED':
+            if verilog.parsei(ps['DOB_REG']):
+                # When DOB_REG == 1, REGCLKB follows the CLKBWRCLK setting.
+                tag = 1 ^ verilog.parsei(actual_ps['IS_CLKBWRCLK_INVERTED'])
+            else:
+                # When DOB_REG == 0, REGCLKB is always inverted.
+                tag = 0
+
+        else:
+            tag = 1 ^ verilog.parsei(ps[param])
+
+        segmk.add_site_tag(site, tagname, tag)
 
 
 def bus_tags(segmk, ps, site):
@@ -72,10 +100,29 @@ def write_mode_tags(segmk, ps, site):
             site, '%s_NO_CHANGE' % (param), set_val == "NO_CHANGE")
 
 
+def write_rstreg_priority(segmk, ps, site):
+    for param in ["RSTREG_PRIORITY_A", "RSTREG_PRIORITY_B"]:
+        set_val = verilog.unquote(ps[param])
+        for opt in ["RSTREG", "REGCE"]:
+            segmk.add_site_tag(
+                site, "{}_{}".format(param, opt), set_val == opt)
+
+
+def write_rdaddr_collision(segmk, ps, site):
+    for opt in ["DELAYED_WRITE", "PERFORMANCE"]:
+        set_val = verilog.unquote(ps['RDADDR_COLLISION_HWCONFIG'])
+        segmk.add_site_tag(
+            site, "RDADDR_COLLISION_HWCONFIG_{}".format(opt), set_val == opt)
+
+
 def run():
 
     segmk = Segmaker("design.bits")
-    #segmk.set_def_bt('BLOCK_RAM')
+
+    clk_inverts = {}
+    with open('design.csv', 'r') as f:
+        for params in csv.DictReader(f):
+            clk_inverts[params['site']] = params
 
     print("Loading tags")
     f = open('params.jl', 'r')
@@ -86,10 +133,12 @@ def run():
         assert j['module'] == 'my_RAMB18E1'
         site = verilog.unquote(ps['LOC'])
 
-        isinv_tags(segmk, ps, site)
+        isinv_tags(segmk, ps, site, clk_inverts[site])
         bus_tags(segmk, ps, site)
         rw_width_tags(segmk, ps, site)
         write_mode_tags(segmk, ps, site)
+        write_rstreg_priority(segmk, ps, site)
+        write_rdaddr_collision(segmk, ps, site)
 
     def bitfilter(frame, bit):
         # rw_width_tags() aliasing interconnect on large widths
