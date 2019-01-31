@@ -26,7 +26,12 @@ with open("design.txt", "r") as f:
         pdir = int(pdir)
 
         if tile not in tiledata:
-            tiledata[tile] = {"type": tile_type, "pips": set(), "srcs": set(), "dsts": set()}
+            tiledata[tile] = {
+                "type": tile_type,
+                "pips": set(),
+                "srcs": set(),
+                "dsts": set()
+            }
 
         if tile_type not in pipdata:
             pipdata[tile_type] = {}

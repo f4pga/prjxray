@@ -72,7 +72,7 @@ proc write_bram_ppips_db {filename tile} {
             puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
         }
 
-        # LOGIC_OUTS pips appear to be always, even thought multiple inputs to 
+        # LOGIC_OUTS pips appear to be always, even thought multiple inputs to
         # the pip junction.  Best guess is that the underlying hardware is
         # actually just one wire, and there is no actually junction.
         if [string match "*LOGIC_OUTS*" dst_wire] {

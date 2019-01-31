@@ -104,8 +104,7 @@ def zero_groups(tag, bits, zero_db, strict=True, verbose=False):
                     len(a), len(bits), bits_str(bits))
 
 
-def add_zero_bits(
-        fn_in, zero_db, clb_int=False, strict=True, verbose=False):
+def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
     '''
     Add multibit entries
     This requires adding some zero bits (ex: !31_09)
@@ -159,7 +158,6 @@ def add_zero_bits(
                         "WARNING: dropping unresolved line: %s" % line)
                     drops += 1
                     continue
-
 
                 new_line = " ".join([tag] + sorted(bits))
 
@@ -227,6 +225,7 @@ def load_zero_db(fn):
         ret.append(l)
     return ret
 
+
 def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
     """ Removes features with identical solutions.
 
@@ -245,12 +244,11 @@ def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
         if bits in solutions:
             if strict:
                 assert False, "Found solution {} at least twice, in {} and {}".format(
-                        bits, feature, solutions[bits])
+                    bits, feature, solutions[bits])
             else:
                 dropped_solutions.add(bits)
         else:
             solutions[bits] = feature
-
 
     if strict:
         return 0, db_lines
@@ -277,8 +275,6 @@ def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
     return drops, output_lines
 
 
-
-
 def update_seg_fns(
         fn_inouts, zero_db, clb_int, lazy=False, strict=True, verbose=False):
     seg_files = 0
@@ -289,21 +285,16 @@ def update_seg_fns(
             continue
 
         changes, new_lines = add_zero_bits(
-            fn_in,
-            zero_db,
-            clb_int=clb_int,
-            strict=strict,
-            verbose=verbose)
+            fn_in, zero_db, clb_int=clb_int, strict=strict, verbose=verbose)
 
         new_changes, final_lines = remove_ambiguous_solutions(
-                fn_in,
-                new_lines,
-                strict=strict,
-                verbose=verbose,
-                )
+            fn_in,
+            new_lines,
+            strict=strict,
+            verbose=verbose,
+        )
 
         changes += new_changes
-
 
         with open(fn_out, "w") as f:
             for line in sorted(final_lines):
@@ -315,7 +306,6 @@ def update_seg_fns(
     print(
         "Segbit: checked %u files w/ %u changed lines" %
         (seg_files, seg_lines))
-
 
 
 def update_masks(db_root):
