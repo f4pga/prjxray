@@ -60,6 +60,29 @@ proc write_int_ppips_db {filename tile} {
     close $fp
 }
 
+proc write_bram_ppips_db {filename tile} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+
+        # LOGIC_OUTS pips appear to be always, even thought multiple inputs to
+        # the pip junction.  Best guess is that the underlying hardware is
+        # actually just one wire, and there is no actually junction.
+        if [string match "*LOGIC_OUTS*" dst_wire] {
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
+
+    close $fp
+}
+
 foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
@@ -68,10 +91,17 @@ foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     }
 }
 
-foreach tile_type {INT_L INT_R BRAM_L BRAM_R BRAM_INT_INTERFACE_L BRAM_INT_INTERFACE_R} {
+foreach tile_type {INT_L INT_R  BRAM_INT_INTERFACE_L BRAM_INT_INTERFACE_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
         write_int_ppips_db "ppips_[string tolower $tile_type].db" $tile
+    }
+}
+foreach tile_type {BRAM_L BRAM_R} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_bram_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }

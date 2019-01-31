@@ -17,6 +17,7 @@ design_bits.ok: vivado.ok
 	\
         for x in design*.bit; do \
             ${XRAY_BITREAD} -F ${XRAY_ROI_FRAMES} -o $${x}s -z -y $$x ; \
+			${XRAY_BIT2FASM} --verbose $$x > $${x%.*}.fasm; \
         done
 	touch design_bits.ok
 

@@ -20,7 +20,7 @@ clb_int_zero_db = [
 def zero_range(tag, bits, wordmin, wordmax):
     """
     If any bits occur wordmin <= word <= wordmax,
-    default bits in wordmin <= word <= wordmax to 0 
+    default bits in wordmin <= word <= wordmax to 0
     """
 
     # The bit index, if any, that needs to be one hotted
@@ -104,8 +104,7 @@ def zero_groups(tag, bits, zero_db, strict=True, verbose=False):
                     len(a), len(bits), bits_str(bits))
 
 
-def add_zero_bits(
-        fn_in, fn_out, zero_db, clb_int=False, strict=True, verbose=False):
+def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
     '''
     Add multibit entries
     This requires adding some zero bits (ex: !31_09)
@@ -154,6 +153,14 @@ def add_zero_bits(
                     zero_range(tag, bits, 22, 25)
                 zero_groups(tag, bits, zero_db, strict=strict, verbose=verbose)
 
+                if strict:
+                    assert len(bits) > 0, 'Line {} found no bits.'.format(line)
+                elif len(bits) == 0:
+                    verbose and print(
+                        "WARNING: dropping unresolved line: %s" % line)
+                    drops += 1
+                    continue
+
                 new_line = " ".join([tag] + sorted(bits))
 
             if re.match(r'.*<.*>.*', new_line):
@@ -168,11 +175,7 @@ def add_zero_bits(
     if drops:
         print("WARNING: %s dropped %s unresolved lines" % (fn_in, drops))
 
-    with open(fn_out, "w") as f:
-        for line in sorted(new_lines):
-            print(line, file=f)
-
-    return changes
+    return changes, new_lines
 
 
 def update_mask(db_root, mask_db, src_dbs, offset=0):
@@ -225,6 +228,55 @@ def load_zero_db(fn):
     return ret
 
 
+def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
+    """ Removes features with identical solutions.
+
+    During solving, some tags may be tightly coupled and solve to the same
+    solution.  In these cases, those solutions must be dropped until
+    disambiguating information can be found.
+    """
+    solutions = {}
+    dropped_solutions = set()
+
+    for l in db_lines:
+        parts = l.split()
+        feature = parts[0]
+        bits = frozenset(parts[1:])
+
+        if bits in solutions:
+            if strict:
+                assert False, "Found solution {} at least twice, in {} and {}".format(
+                    bits, feature, solutions[bits])
+            else:
+                dropped_solutions.add(bits)
+        else:
+            solutions[bits] = feature
+
+    if strict:
+        return 0, db_lines
+
+    drops = 0
+    output_lines = []
+
+    for l in db_lines:
+        parts = l.split()
+        feature = parts[0]
+        bits = frozenset(parts[1:])
+
+        if bits not in dropped_solutions:
+            output_lines.append(l)
+            drops += 1
+        else:
+            if verbose:
+                print(
+                    "WARNING: dropping line due to duplicate solution: %s" % l)
+
+    if drops > 0:
+        print("WARNING: %s dropped %s duplicate solutions" % (fn_in, drops))
+
+    return drops, output_lines
+
+
 def update_seg_fns(
         fn_inouts, zero_db, clb_int, lazy=False, strict=True, verbose=False):
     seg_files = 0
@@ -234,13 +286,22 @@ def update_seg_fns(
         if lazy and not os.path.exists(fn_in):
             continue
 
-        changes = add_zero_bits(
+        changes, new_lines = add_zero_bits(
+            fn_in, zero_db, clb_int=clb_int, strict=strict, verbose=verbose)
+
+        new_changes, final_lines = remove_ambiguous_solutions(
             fn_in,
-            fn_out,
-            zero_db,
-            clb_int=clb_int,
+            new_lines,
             strict=strict,
-            verbose=verbose)
+            verbose=verbose,
+        )
+
+        changes += new_changes
+
+        with open(fn_out, "w") as f:
+            for line in sorted(final_lines):
+                print(line, file=f)
+
         if changes is not None:
             seg_files += 1
             seg_lines += changes
@@ -348,7 +409,7 @@ def main():
     parser.add_argument('--zero-db', help='Apply custom patches')
     parser.add_argument('--seg-fn-in', help='')
     parser.add_argument('--seg-fn-out', help='')
-    util.add_bool_arg(parser, "--strict", default=None)
+    util.add_bool_arg(parser, "--strict", default=False)
     args = parser.parse_args()
 
     run(

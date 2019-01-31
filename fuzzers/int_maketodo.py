@@ -91,6 +91,7 @@ def run(
         pip_dir,
         intre,
         pip_type,
+        seg_type,
         not_endswith=None,
         verbose=False):
     if db_dir is None:
@@ -103,13 +104,13 @@ def run(
     assert intre, "RE is required"
     maketodo(
         "%s/%s_l.txt" % (pip_dir, pip_type),
-        "%s/segbits_int_l.db" % db_dir,
+        "%s/segbits_%s_l.db" % (db_dir, seg_type),
         intre,
         not_endswith,
         verbose=verbose)
     maketodo(
         "%s/%s_r.txt" % (pip_dir, pip_type),
-        "%s/segbits_int_r.db" % db_dir,
+        "%s/segbits_%s_r.db" % (db_dir, seg_type),
         intre,
         not_endswith,
         verbose=verbose)
@@ -127,6 +128,7 @@ def main():
     parser.add_argument('--pip-dir', default=None, help='')
     parser.add_argument('--re', required=True, help='')
     parser.add_argument('--pip-type', default="pips_int", help='')
+    parser.add_argument('--seg-type', default="int", help='')
     parser.add_argument(
         '--not-endswith', help='Drop lines if they end with this')
     args = parser.parse_args()
@@ -137,6 +139,7 @@ def main():
         pip_dir=args.pip_dir,
         intre=args.re,
         pip_type=args.pip_type,
+        seg_type=args.seg_type,
         not_endswith=args.not_endswith,
         verbose=args.verbose)
 
