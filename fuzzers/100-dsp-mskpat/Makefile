@@ -24,8 +24,8 @@ build/segbits_dsp_r.db build/mask_dsp_r.db: build/segbits_dsp_r.rdb
 pushdb: database
 	${XRAY_MERGEDB} dsp_l build/segbits_dsp_l.db
 	${XRAY_MERGEDB} dsp_r build/segbits_dsp_r.db
-	${XRAY_MERGEDB} mask_dsp_l build/segbits_dsp_l.db
-	${XRAY_MERGEDB} mask_dsp_r build/segbits_dsp_r.db
+	${XRAY_MERGEDB} mask_dsp_l build/mask_dsp_l.db
+	${XRAY_MERGEDB} mask_dsp_r build/mask_dsp_r.db
 
 .PHONY: database pushdb
 
