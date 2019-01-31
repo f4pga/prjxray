@@ -53,16 +53,10 @@ git fetch --tags || true
 git describe --tags || true
 
 # Build the C++ tools
-make build --output-sync=target --warn-undefined-variables
+make build --output-sync=target --warn-undefined-variables -j$CORES
 
 # Setup the Python environment
 make env --output-sync=target --warn-undefined-variables
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-find .
 
 echo "----------------------------------------"
 echo "----------------------------------------"
