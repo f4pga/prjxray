@@ -8,6 +8,8 @@ FUZZONLY=N
 # Allow building without it
 BITONLY=N
 
+all:
+
 define fuzzer
 all: $(1)/run.ok
 clean::
