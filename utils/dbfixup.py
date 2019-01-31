@@ -153,7 +153,9 @@ def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
                     zero_range(tag, bits, 22, 25)
                 zero_groups(tag, bits, zero_db, strict=strict, verbose=verbose)
 
-                if len(bits) == 0:
+                if strict:
+                    assert len(bits) > 0, 'Line {} found no bits.'.format(line)
+                elif len(bits) == 0:
                     verbose and print(
                         "WARNING: dropping unresolved line: %s" % line)
                     drops += 1

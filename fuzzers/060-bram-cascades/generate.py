@@ -60,13 +60,25 @@ for tile, pips_srcs_dsts in tiledata.items():
 
     for pip, src_dst in pipdata[tile_type].items():
         src, dst = src_dst
+
+        # BRAM_R has some _R_ added to some pips.  Because BRAM_L and BRAM_R
+        # appears to shares all bits, overlap the names during fuzzing to avoid
+        # extra work.
+        #
+        # BRAM.BRAM_ADDRARDADDRL0.BRAM_IMUX_R_ADDRARDADDRL0
+        #
+        # becomes
+        #
+        # BRAM.BRAM_ADDRARDADDRL0.BRAM_IMUX_ADDRARDADDRL0
+        src_no_r = src.replace('BRAM_R_IMUX_ADDR', 'BRAM_IMUX_ADDR')
+
         if pip in ignpip:
             pass
 
         elif pip in pips:
-            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
+            segmk.add_tile_tag(tile, "%s.%s" % (dst, src_no_r), 1)
         elif src_dst[1] not in dsts:
-            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
+            segmk.add_tile_tag(tile, "%s.%s" % (dst, src_no_r), 0)
 
 segmk.compile()
 segmk.write()

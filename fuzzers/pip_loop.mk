@@ -3,11 +3,11 @@ TODO_N ?= 50
 ifeq ($(QUICK),Y)
 N = 1
 TODO_N = 3
-SEGMATCH_FLAGS=
+SEGMATCH_FLAGS?=
 else
 # Should be at least the -m value
 N ?= 20
-SEGMATCH_FLAGS=-m 15 -M 45
+SEGMATCH_FLAGS?=-m 15 -M 45
 endif
 # Iteration number (each containing N specimens)
 # Driven by int_loop.sh
