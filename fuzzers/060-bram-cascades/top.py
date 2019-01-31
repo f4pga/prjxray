@@ -111,18 +111,21 @@ def emit_sdp_bram(luts, name, modules, lines, width, address_bits):
     modules.append(sdp_bram(name=name, width=width, address_bits=address_bits))
 
     lines.append('''
-    wire [9:0] {name}_wraddr;
-    wire [9:0] {name}_rdaddr;
-    '''.format(name=name))
+    wire [{address_bits}-1:0] {name}_wraddr;
+    wire [{address_bits}-1:0] {name}_rdaddr;
+    '''.format(
+        name=name,
+        address_bits=address_bits,
+        ))
 
-    for bit in range(10):
+    for bit in range(address_bits):
         lines.append("""
     assign {name}_wraddr[{bit}] = {net};""".format(
         name=name,
         bit=bit,
         net=luts.get_next_output_net()))
 
-    for bit in range(10):
+    for bit in range(address_bits):
         lines.append("""
     assign {name}_rdaddr[{bit}] = {net};""".format(
         name=name,
