@@ -10,7 +10,6 @@ FRAME_WORD_COUNT = 101
 
 # What alignment is expect for columns.
 FRAME_ALIGNMENT = 0x80
-
 '''
 Sample:
 bit_0002000f_079_06

@@ -37,7 +37,8 @@ class FasmDisassembler(object):
         self.segment_map = self.grid.get_segment_map()
         self.decode_warnings = set()
 
-    def find_features_in_tile(self, tile_name, bits, solved_bitdata, bitdata, verbose=False):
+    def find_features_in_tile(
+            self, tile_name, bits, solved_bitdata, bitdata, verbose=False):
         gridinfo = self.grid.gridinfo_at_tilename(tile_name)
 
         try:
@@ -138,15 +139,18 @@ class FasmDisassembler(object):
                     bitidx = bit % bitstream.WORD_SIZE_BITS
 
                     annotations = []
-                    annotations.append(fasm.Annotation(
-                        'unknown_bit', '{:08x}_{}_{}'.format(
-                            frame, wordidx, bitidx)))
-                    annotations.append(fasm.Annotation(
-                        'unknown_segment', '0x{:08x}'.format(aligned_frame)))
-                    annotations.append(fasm.Annotation(
-                        'unknown_segbit', '{:02d}_{:02d}'.format(
-                            frame_offset, bit
-                        )))
+                    annotations.append(
+                        fasm.Annotation(
+                            'unknown_bit', '{:08x}_{}_{}'.format(
+                                frame, wordidx, bitidx)))
+                    annotations.append(
+                        fasm.Annotation(
+                            'unknown_segment',
+                            '0x{:08x}'.format(aligned_frame)))
+                    annotations.append(
+                        fasm.Annotation(
+                            'unknown_segbit', '{:02d}_{:02d}'.format(
+                                frame_offset, bit)))
                     yield fasm.FasmLine(
                         set_feature=None,
                         annotations=annotations,
