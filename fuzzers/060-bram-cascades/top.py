@@ -148,19 +148,19 @@ def max_address_bits(width):
 def random_sdp_bram(luts, name, modules, lines):
     sdp_choices = set()
 
-    for width in (1, 18, 36):
+    for width in (1, 2, 4, 8, 16, 18, 32, 36):
         sdp_choices.add((width, (1, max_address_bits(width))))
 
     for nbram in range(2, MAX_BRAM+1):
-        #sdp_choices.add((nbram*32, (1, max_address_bits(nbram*32))))
-        #sdp_choices.add((nbram*36, (1, max_address_bits(nbram*36))))
-        #sdp_choices.add((nbram*16, (1, max_address_bits(nbram*16))))
-        #sdp_choices.add((nbram*32, (1, max_address_bits(nbram*32))))
+        sdp_choices.add((nbram*32, (1, max_address_bits(nbram*32))))
+        sdp_choices.add((nbram*36, (1, max_address_bits(nbram*36))))
+        sdp_choices.add((nbram*16, (1, max_address_bits(nbram*16))))
+        sdp_choices.add((nbram*32, (1, max_address_bits(nbram*32))))
 
         # Bias some wide but shallow BRAMs to toggle the lower address bits
         # more.
         for address_bits in range(1, 4):
-            sdp_choices.add((nbram*32, (address_bits, address_bits)))
+            sdp_choices.add((nbram*16, (address_bits, address_bits)))
 
     sdp_choices = sorted(sdp_choices)
 
