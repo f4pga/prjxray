@@ -66,5 +66,5 @@ source settings/$XRAY_SETTINGS.sh
 (
 	export XILINX_LOCAL_USER_DATA=no
 	cd fuzzers
-	make --output-sync=target --warn-undefined-variables QUICK=y -j$CORES
+	make --warn-undefined-variables QUICK=y -j$CORES
 )

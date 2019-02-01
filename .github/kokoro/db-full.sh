@@ -66,7 +66,7 @@ source settings/$XRAY_SETTINGS.sh
 (
 	export XILINX_LOCAL_USER_DATA=no
 	cd fuzzers
-	make --output-sync=target --warn-undefined-variables -j$CORES MAX_VIVADO_PROCESS=$CORES
+	make --warn-undefined-variables -j$CORES MAX_VIVADO_PROCESS=$CORES
 )
 
 # Output how the database differs
