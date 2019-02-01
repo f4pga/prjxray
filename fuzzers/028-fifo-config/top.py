@@ -96,6 +96,7 @@ module top();
     params_list = []
     for tile_name, sites in gen_sites():
         params = {}
+        params['tile'] = tile_name
         params['site'] = sites['RAMBFIFO36E1']
 
         params['DATA_WIDTH'] = random.choice([4, 9, 18, 36, 72])
