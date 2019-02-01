@@ -37,7 +37,8 @@ class FasmDisassembler(object):
         self.segment_map = self.grid.get_segment_map()
         self.decode_warnings = set()
 
-    def find_features_in_tile(self, tile_name, bits, bitdata, verbose=False):
+    def find_features_in_tile(
+            self, tile_name, bits, solved_bitdata, bitdata, verbose=False):
         gridinfo = self.grid.gridinfo_at_tilename(tile_name)
 
         try:
@@ -70,13 +71,18 @@ class FasmDisassembler(object):
 
         for ones_matched, feature in tile_segbits.match_bitdata(bits, bitdata):
             for frame, bit in ones_matched:
-                bitdata[frame][1].remove(bit)
+                if frame not in solved_bitdata:
+                    solved_bitdata[frame] = set()
+                solved_bitdata[frame].add(bit)
 
             yield mk_fasm(tile_name=tile_name, feature=feature)
 
     def find_features_in_bitstream(self, bitdata, verbose=False):
+        solved_bitdata = {}
         frames = set(bitdata.keys())
         tiles_checked = set()
+
+        emitted_features = set()
 
         while len(frames) > 0:
             frame = frames.pop()
@@ -104,11 +110,17 @@ class FasmDisassembler(object):
                 tiles_checked.add(bits_info.tile)
 
                 for fasm_line in self.find_features_in_tile(
-                        bits_info.tile, bits_info.bits, bitdata,
-                        verbose=verbose):
-                    yield fasm_line
+                        bits_info.tile, bits_info.bits, solved_bitdata,
+                        bitdata, verbose=verbose):
+                    if fasm_line not in emitted_features:
+                        emitted_features.add(fasm_line)
+                        yield fasm_line
 
-            if len(bitdata[frame][1]) > 0 and verbose:
+            remaining_bits = bitdata[frame][1]
+            if frame in solved_bitdata:
+                remaining_bits -= solved_bitdata[frame]
+
+            if len(remaining_bits) > 0 and verbose:
                 # Some bits were not decoded, add warning and annotations to
                 # FASM.
                 yield fasm.FasmLine(
@@ -117,17 +129,30 @@ class FasmDisassembler(object):
                     comment=" In frame 0x{:08x} {} bits were not converted.".
                     format(
                         frame,
-                        len(bitdata[frame][1]),
+                        len(remaining_bits),
                     ))
 
-                for bit in bitdata[frame][1]:
+                for bit in remaining_bits:
+                    frame_offset = frame % bitstream.FRAME_ALIGNMENT
+                    aligned_frame = frame - frame_offset
                     wordidx = bit // bitstream.WORD_SIZE_BITS
                     bitidx = bit % bitstream.WORD_SIZE_BITS
-                    annotation = fasm.Annotation(
-                        'unknown_bit', '{:08x}_{}_{}'.format(
-                            frame, wordidx, bitidx))
+
+                    annotations = []
+                    annotations.append(
+                        fasm.Annotation(
+                            'unknown_bit', '{:08x}_{}_{}'.format(
+                                frame, wordidx, bitidx)))
+                    annotations.append(
+                        fasm.Annotation(
+                            'unknown_segment',
+                            '0x{:08x}'.format(aligned_frame)))
+                    annotations.append(
+                        fasm.Annotation(
+                            'unknown_segbit', '{:02d}_{:02d}'.format(
+                                frame_offset, bit)))
                     yield fasm.FasmLine(
                         set_feature=None,
-                        annotations=[annotation],
+                        annotations=annotations,
                         comment=None,
                     )
