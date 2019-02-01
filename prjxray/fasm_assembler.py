@@ -99,14 +99,15 @@ class FasmAssembler(object):
     def enable_feature(self, tile, feature, address, line):
         gridinfo = self.grid.gridinfo_at_tilename(tile)
 
-        # TODO: How to determine if the feature targets BLOCK_RAM segment type?
-        bits = gridinfo.bits[grid.BlockType.CLB_IO_CLK]
-
-        seg_baseaddr = bits.base_address
-        seg_word_base = bits.offset
-
         def update_segbit(bit):
             '''Set or clear a single bit in a segment at the given word column and word bit position'''
+
+            # TODO: How to determine if the feature targets BLOCK_RAM segment type?
+            bits = gridinfo.bits[grid.BlockType.CLB_IO_CLK]
+
+            seg_baseaddr = bits.base_address
+            seg_word_base = bits.offset
+
             # Now we have the word column and word bit index
             # Combine with the segments relative frame position to fully get the position
             frame_addr = seg_baseaddr + bit.word_column
@@ -120,22 +121,27 @@ class FasmAssembler(object):
 
         segbits = self.db.get_tile_segbits(gridinfo.tile_type)
 
-        # Mark all frames used by this tile as in use.
-        if tile not in self.seen_tile:
-            for frame in segbits.frames(bits):
-                self.frames_in_use.add(frame)
-
         self.seen_tile.add(tile)
 
         db_k = '%s.%s' % (gridinfo.tile_type, feature)
 
+        any_bits = False
+
         try:
             for bit in segbits.feature_to_bits(db_k, address):
+                any_bits = True
                 update_segbit(bit)
         except KeyError:
             raise FasmLookupError(
                 "Segment DB %s, key %s not found from line '%s'" %
                 (gridinfo.tile_type, db_k, line))
+
+        if any_bits:
+            # Mark all frames used by this tile as in use.
+            bits = gridinfo.bits[grid.BlockType.CLB_IO_CLK]
+            if tile not in self.seen_tile:
+                for frame in segbits.frames(bits):
+                    self.frames_in_use.add(frame)
 
     def parse_fasm_filename(self, filename):
         missing_features = []
