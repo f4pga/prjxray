@@ -15,6 +15,7 @@ sudo apt-get install -y \
         fontconfig \
         git \
         jq \
+        psmisc \
         python \
         python3 \
         python3-dev \
