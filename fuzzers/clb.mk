@@ -1,3 +1,5 @@
+SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
 N ?= 1
 CLB_DBFIXUP ?=
 # Fuzzer that can accept SLICEL data
@@ -15,7 +17,7 @@ ITER ?= 0
 MAX_ITER ?= 10
 FUZDIR = ${PWD}
 
-include ../fuzzer.mk
+include $(SELF_DIR)/fuzzer.mk
 
 database: build/segbits_clbx.db
 

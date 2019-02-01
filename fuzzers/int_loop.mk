@@ -1,4 +1,5 @@
-include pip_loop.mk
+SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+include $(SELF_DIR)/pip_loop.mk
 
 # Specimens from current run must complete, but previous iterations may exist
 database: $(SPECIMENS_OK)
