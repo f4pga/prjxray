@@ -9,6 +9,7 @@ from prjxray import verilog
 from prjxray.verilog import vrandbits
 from prjxray.db import Database
 
+
 def gen_sites():
     db = Database(util.get_db_root())
     grid = db.grid()
@@ -25,6 +26,7 @@ def gen_sites():
 
         yield tile_name, sites
 
+
 @functools.lru_cache(maxsize=None)
 def prepare_rand_int_choices(minval, maxval):
     """ Creates list ints between minval and maxval to allow fuzzer to uniquely identify all bits."""
@@ -32,14 +34,15 @@ def prepare_rand_int_choices(minval, maxval):
     assert maxval >= minval
 
     min_p2 = math.floor(math.log(max(minval, 1), 2))
-    max_p2 = math.ceil(math.log(maxval+1, 2))
+    max_p2 = math.ceil(math.log(maxval + 1, 2))
 
     if 2**max_p2 > maxval:
         max_search_p2 = max_p2 - 1
     else:
         max_search_p2 = max_p2
 
-    choices = set([minval, maxval, 2**(min_p2+1)-1, 2**(max_search_p2)-1])
+    choices = set(
+        [minval, maxval, 2**(min_p2 + 1) - 1, 2**(max_search_p2) - 1])
 
     lb = min_p2
     ub = max_search_p2
@@ -65,7 +68,7 @@ def prepare_rand_int_choices(minval, maxval):
             choices.add(2**bit)
         else:
             choices.add(2**bit | 2**max_search_p2)
-            choices.add(2**bit | 2**(max_search_p2-1))
+            choices.add(2**bit | 2**(max_search_p2 - 1))
 
     zeros = set()
     ones = set()
@@ -85,8 +88,10 @@ def prepare_rand_int_choices(minval, maxval):
 
     return tuple(sorted(choices))
 
+
 def rand_int(minval, maxval):
     return random.choice(prepare_rand_int_choices(minval, maxval))
+
 
 def main():
     print('''
@@ -146,18 +151,23 @@ module top();
                 MIN_ALMOST_EMPTY_OFFSET = MIN_ALMOST_FULL_OFFSET + 1
                 MAX_ALMOST_EMPTY_OFFSET = MAX_ALMOST_FULL_OFFSET + 1
 
-        ALMOST_EMPTY_OFFSET = rand_int(MIN_ALMOST_EMPTY_OFFSET, MAX_ALMOST_EMPTY_OFFSET)
-        ALMOST_FULL_OFFSET = rand_int(MIN_ALMOST_FULL_OFFSET, MAX_ALMOST_FULL_OFFSET)
-        params['ALMOST_EMPTY_OFFSET'] = "13'b{:013b}".format(ALMOST_EMPTY_OFFSET)
+        ALMOST_EMPTY_OFFSET = rand_int(
+            MIN_ALMOST_EMPTY_OFFSET, MAX_ALMOST_EMPTY_OFFSET)
+        ALMOST_FULL_OFFSET = rand_int(
+            MIN_ALMOST_FULL_OFFSET, MAX_ALMOST_FULL_OFFSET)
+        params['ALMOST_EMPTY_OFFSET'] = "13'b{:013b}".format(
+            ALMOST_EMPTY_OFFSET)
         params['ALMOST_FULL_OFFSET'] = "13'b{:013b}".format(ALMOST_FULL_OFFSET)
 
         if params['DATA_WIDTH'] == 36:
             params['FIFO_MODE'] = verilog.quote('FIFO36_72')
         else:
-            params['FIFO_MODE'] = verilog.quote('FIFO36_72')#verilog.quote('FIFO18') #verilog.quote(random.choice(('FIFO18', 'FIFO18_36')))
+            params['FIFO_MODE'] = verilog.quote(
+                'FIFO36_72'
+            )  #verilog.quote('FIFO18') #verilog.quote(random.choice(('FIFO18', 'FIFO18_36')))
 
-        params['INIT'] = '0' #vrandbits(36)
-        params['SRVAL'] = '0' #vrandbits(36)
+        params['INIT'] = '0'  #vrandbits(36)
+        params['SRVAL'] = '0'  #vrandbits(36)
 
         print(
             '''
@@ -174,9 +184,7 @@ module top();
                 .SRVAL({SRVAL})
                 ) fifo_{site} (
                 );
-            '''.format(
-                **params,
-            ))
+            '''.format(**params, ))
 
         params['FIFO_MODE'] = verilog.unquote(params['FIFO_MODE'])
 
