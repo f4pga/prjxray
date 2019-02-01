@@ -26,18 +26,22 @@ stat ${XRAY_DIR}/database/${XRAY_DATABASE}/${XRAY_PART}.yaml >/dev/null
 # 6x by 18y CLBs (108)
 if [ "$SMALL" = Y ] ; then
     echo "Design: small"
-    export PITCH=1
+    export PITCH=${XRAY_PITCH:-1}
     export DIN_N=${XRAY_DIN_N_SMALL:-8}
     export DOUT_N=${XRAY_DOUT_N_SMALL:-8}
     export XRAY_ROI=${XRAY_ROI_SMALL:-SLICE_X12Y100:SLICE_X17Y117}
 # All of CMT X0Y2
 else
     echo "Design: large"
-    export PITCH=2
+    export PITCH=${XRAY_PITCH:-2}
     export DIN_N=${XRAY_DIN_N_LARGE:-8}
     export DOUT_N=${XRAY_DOUT_N_LARGE:-8}
     export XRAY_ROI=${XRAY_ROI_LARGE:-SLICE_X0Y100:SLICE_X35Y149}
 fi
+
+echo ${DIN_N}
+echo ${DOUT_N}
+echo ${XRAY_ROI}
 
 mkdir -p $BUILD_DIR
 pushd $BUILD_DIR

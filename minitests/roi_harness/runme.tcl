@@ -18,6 +18,12 @@ if { [info exists ::env(PITCH) ] } {
     set PITCH "$::env(PITCH)"
 }
 
+if { [info exists ::env(XRAY_ROI_HCLK)] } {
+    set XRAY_ROI_HCLK "$::env(XRAY_ROI_HCLK)"
+} else {
+    puts "WARNING: No HCLK has been set"
+}
+
 # X12 in the ROI, X10 just to the left
 # Start at bottom left of ROI and work up
 # (IOs are to left)
@@ -423,7 +429,7 @@ if {$fixed_xdc eq ""} {
     # It will go to high level interconnect that goes everywhere
     # But we still need to record something, so lets force a route
     # FIXME: very ROI specific
-    set node "CLK_HROW_TOP_R_X60Y130/CLK_HROW_CK_BUFHCLK_L0"
+    set node "$XRAY_ROI_HCLK"
     set wire [node2wire $node]
     route_via2 "clk_IBUF_BUFG" "$node"
     set net "clk"
@@ -441,7 +447,11 @@ if {$fixed_xdc eq ""} {
             route_via2 "din_IBUF[$i]" "$node"
             set y_left [expr {$y_left + $PITCH}]
         } else {
-            set node "INT_R_X25Y${y_right}/WW2BEG1"
+            if {$part eq "xc7z010clg400-1"} {
+                set node "INT_R_X31Y${y_right}/WW2BEG2"
+            } else {
+                set node "INT_R_X25Y${y_right}/WW2BEG1"
+            }
             route_via2 "din_IBUF[$i]" "$node"
             set y_right [expr {$y_right + $PITCH}]
         }
@@ -478,8 +488,13 @@ if {$fixed_xdc eq ""} {
             set y_left [expr {$y_left + $PITCH}]
             # XXX: only care about right ports on Arty
         } else {
-            set node "INT_R_X23Y${y_right}/LH12"
-            route_via2 "roi/dout[$i]" "$node"
+            if {$part eq "xc7z010clg400-1"} {
+                set node "INT_R_X29Y${y_right}/EE2BEG0"
+                route_via2 "roi/dout[$i]" "$node INT_R_X31Y${y_right}"
+            } else {
+                set node "INT_R_X23Y${y_right}/LH12"
+                route_via2 "roi/dout[$i]" "$node"
+            }
             set y_right [expr {$y_right + $PITCH}]
         }
         set net "dout[$i]"

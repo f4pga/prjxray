@@ -16,4 +16,10 @@ export XRAY_PIN_06="K19"
 # ROI is in top right
 export XRAY_ROI_LARGE="SLICE_X22Y50:SLICE_X43Y99"
 
+# HCLK Tile
+export XRAY_ROI_HCLK="CLK_HROW_TOP_R_X82Y78/CLK_HROW_CK_BUFHCLK_R0"
+
+# PITCH
+export XRAY_PITCH=3
+
 source $XRAY_DIR/utils/environment.sh

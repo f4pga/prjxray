@@ -1,6 +1,8 @@
 # XC7A35T-1CPG236C
 export XRAY_PART=xc7a35tcpg236-1
 export XRAY_PINCFG=BASYS3-SWBUT
+export XRAY_DIN_N_LARGE=17
+export XRAY_DOUT_N_LARGE=17
 
 # For generating DB
 export XRAY_PIN_00="V17"
@@ -10,5 +12,11 @@ export XRAY_PIN_03="W17"
 export XRAY_PIN_04="W15"
 export XRAY_PIN_05="V15"
 export XRAY_PIN_06="W14"
+
+# ROI is in the top left
+export XRAY_ROI_LARGE=SLICE_X0Y100:SLICE_X35Y149
+
+# HCLK Tile
+export XRAY_ROI_HCLK="CLK_HROW_TOP_R_X60Y130/CLK_HROW_CK_BUFHCLK_L0"
 
 source $XRAY_DIR/utils/environment.sh
