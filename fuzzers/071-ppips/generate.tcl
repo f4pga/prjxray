@@ -70,13 +70,13 @@ proc write_bram_ppips_db {filename tile} {
         if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
             set src_wire [get_wires -uphill -of_objects $pip]
             puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
-        }
-
-        # LOGIC_OUTS pips appear to be always, even thought multiple inputs to
-        # the pip junction.  Best guess is that the underlying hardware is
-        # actually just one wire, and there is no actually junction.
-        if [string match "*LOGIC_OUTS*" dst_wire] {
-            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        } elseif [string match "*LOGIC_OUTS*" $dst_wire] {
+            # LOGIC_OUTS pips appear to be always, even thought multiple inputs to
+            # the pip junction.  Best guess is that the underlying hardware is
+            # actually just one wire, and there is no actually junction.
+            foreach src_wire [get_wires -uphill -of_objects $pip] {
+                puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+            }
         }
     }
 
