@@ -1,6 +1,4 @@
-# read/write width is relatively slow to resolve
-# Even slower with multi bit masks...
-N ?= 2
+N ?= 5
 
 include ../fuzzer.mk
 
@@ -13,7 +11,7 @@ build/segbits_bramx.db: build/segbits_bramx.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
 	${XRAY_MASKMERGE} build/mask_bramx.db $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS))
 
-pushdb: database
+pushdb:
 	${XRAY_MERGEDB} bram_l build/segbits_bramx.db
 	${XRAY_MERGEDB} bram_r build/segbits_bramx.db
 	${XRAY_MERGEDB} mask_bram_l build/mask_bramx.db
