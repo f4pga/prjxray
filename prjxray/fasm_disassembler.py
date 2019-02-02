@@ -38,7 +38,13 @@ class FasmDisassembler(object):
         self.decode_warnings = set()
 
     def find_features_in_tile(
-            self, tile_name, block_type, bits, solved_bitdata, bitdata, verbose=False):
+            self,
+            tile_name,
+            block_type,
+            bits,
+            solved_bitdata,
+            bitdata,
+            verbose=False):
         gridinfo = self.grid.gridinfo_at_tilename(tile_name)
 
         try:
@@ -69,7 +75,8 @@ class FasmDisassembler(object):
             self.decode_warnings.add(gridinfo.tile_type)
             return
 
-        for ones_matched, feature in tile_segbits.match_bitdata(block_type, bits, bitdata):
+        for ones_matched, feature in tile_segbits.match_bitdata(block_type,
+                                                                bits, bitdata):
             for frame, bit in ones_matched:
                 if frame not in solved_bitdata:
                     solved_bitdata[frame] = set()
@@ -110,9 +117,8 @@ class FasmDisassembler(object):
                 tiles_checked.add((bits_info.tile, bits_info.block_type))
 
                 for fasm_line in self.find_features_in_tile(
-                        bits_info.tile, bits_info.block_type,
-                        bits_info.bits, solved_bitdata,
-                        bitdata, verbose=verbose):
+                        bits_info.tile, bits_info.block_type, bits_info.bits,
+                        solved_bitdata, bitdata, verbose=verbose):
                     if fasm_line not in emitted_features:
                         emitted_features.add(fasm_line)
                         yield fasm_line
