@@ -1,5 +1,5 @@
 import os.path
-import json
+import simplejson as json
 from prjxray import grid
 from prjxray import tile
 from prjxray import tile_segbits
@@ -51,6 +51,11 @@ class Database(object):
                 if not os.path.isfile(segbits):
                     segbits = None
 
+                block_ram_segbits = os.path.join(
+                    self.db_root, 'segbits_{}.block_ram.db'.format(tile_type))
+                if not os.path.isfile(block_ram_segbits):
+                    block_ram_segbits = None
+
                 ppips = os.path.join(
                     self.db_root, 'ppips_{}.db'.format(tile_type))
                 if not os.path.isfile(ppips):
@@ -69,6 +74,7 @@ class Database(object):
 
                 self.tile_types[tile_type.upper()] = tile.TileDbs(
                     segbits=segbits,
+                    block_ram_segbits=block_ram_segbits,
                     ppips=ppips,
                     mask=mask,
                     tile_type=tile_type_file,

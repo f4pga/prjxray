@@ -12,9 +12,9 @@ class BlockType(enum.Enum):
 
 
 GridLoc = namedtuple('GridLoc', 'grid_x grid_y')
-GridInfo = namedtuple('GridInfo', 'segment bits sites tile_type')
+GridInfo = namedtuple('GridInfo', 'bits sites tile_type')
 Bits = namedtuple('Bits', 'base_address frames offset words')
-BitsInfo = namedtuple('BitsInfo', 'segment_type tile bits')
+BitsInfo = namedtuple('BitsInfo', 'block_type tile bits')
 
 
 class Grid(object):
@@ -28,14 +28,6 @@ class Grid(object):
         self.tilegrid = tilegrid
         self.loc = {}
         self.tileinfo = {}
-        # Map of segment name to tiles in that segment
-        self.segments = {}
-
-        # Map of (base_address, segment type) -> segment name
-        self.base_addresses = {}
-
-        # Map of base_address -> (segment type, segment name)
-        self.base_addresses = {}
 
         for tile in self.tilegrid:
             tileinfo = self.tilegrid[tile]
@@ -44,12 +36,6 @@ class Grid(object):
             self.loc[grid_loc] = tile
 
             bits = {}
-
-            if 'segment' in tileinfo:
-                if tileinfo['segment'] not in self.segments:
-                    self.segments[tileinfo['segment']] = []
-
-                self.segments[tileinfo['segment']].append(tile)
 
             if 'bits' in tileinfo:
                 for k in tileinfo['bits']:
@@ -63,7 +49,6 @@ class Grid(object):
                     )
 
             self.tileinfo[tile] = GridInfo(
-                segment=tileinfo['segment'] if 'segment' in tileinfo else None,
                 bits=bits,
                 sites=tileinfo['sites'],
                 tile_type=tileinfo['type'],
@@ -102,9 +87,9 @@ class Grid(object):
 
     def iter_all_frames(self):
         for tile, tileinfo in self.tileinfo.items():
-            for segment_type, bits in tileinfo.bits.items():
+            for block_type, bits in tileinfo.bits.items():
                 yield BitsInfo(
-                    segment_type=segment_type,
+                    block_type=block_type,
                     tile=tile,
                     bits=bits,
                 )
