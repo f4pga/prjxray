@@ -31,6 +31,8 @@ Optionally, use these as a small performance optimization:
 - XRAY_ROI_GRID_Y2
 
 These should, if unused, be set to -1, with this caveat:
+
 WARNING: CLB test generates this based on CLBs but implicitly includes INT
+
 Therefore, if you don't set an explicit XRAY_ROI_GRID_* it may fail
 if you don't have a CLB*_L at left and a CLB*_R at right.
