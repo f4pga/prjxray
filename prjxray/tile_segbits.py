@@ -107,7 +107,7 @@ class TileSegbits(object):
         """
 
         if block_type not in self.segbits:
-            raise StopIteration()
+            return
 
         for feature, segbit in self.segbits[block_type].items():
             match = True
