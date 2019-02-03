@@ -1,82 +1,61 @@
 #!/bin/bash
 
-set -x
 set -e
-
-sudo apt-get update
-sudo apt-get install -y \
-        bison \
-        build-essential \
-        ca-certificates \
-        clang-format \
-        cmake \
-        curl \
-        flex \
-        fontconfig \
-        git \
-        jq \
-        psmisc \
-        python \
-        python3 \
-        python3-dev \
-        python3-virtualenv \
-        python3-yaml \
-        virtualenv \
-
-ls -l ~/.Xilinx
-sudo chown -R $USER ~/.Xilinx
-
-CORES=$(nproc --all)
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-export
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-cat /proc/cpuinfo
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-find .
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-echo $PWD
-
-echo "----------------------------------------"
 
 cd github/$KOKORO_DIR/
 
-git fetch --tags || true
-git describe --tags || true
+source ./.github/kokoro/steps/hostsetup.sh
+source ./.github/kokoro/steps/hostinfo.sh
+source ./.github/kokoro/steps/git.sh
 
-# Build the C++ tools
-make build --output-sync=target --warn-undefined-variables -j$CORES
+source ./.github/kokoro/steps/xilinx.sh
 
-# Setup the Python environment
-make env --output-sync=target --warn-undefined-variables
+source ./.github/kokoro/steps/prjxray-env.sh
 
+echo
+echo "========================================"
+echo "Downloading current database"
 echo "----------------------------------------"
-echo "----------------------------------------"
+(
+	./download-latest-db.sh
+)
 echo "----------------------------------------"
 
 source settings/$XRAY_SETTINGS.sh
-(
-	export XILINX_LOCAL_USER_DATA=no
-	cd fuzzers
-	make --warn-undefined-variables -j$CORES MAX_VIVADO_PROCESS=$CORES
-)
 
-# Output how the database differs
+echo
+echo "========================================"
+echo "Cleaning out current database"
+echo "----------------------------------------"
+(
+	cd database
+	make clean-${XRAY_SETTINGS}-db
+)
+echo "----------------------------------------"
+
+echo
+echo "========================================"
+echo "Running Database build"
+echo "----------------------------------------"
+(
+	cd fuzzers
+	echo "make --dry-run"
+	make --dry-run
+	echo "----------------------------------------"
+	export MAX_VIVADO_PROCESS=$CORES
+	set -x
+	make -j $CORES MAX_VIVADO_PROCESS=$CORES
+	set +x
+	echo "----------------------------------------"
+	echo "make --dry-run"
+	make --dry-run
+)
+echo "----------------------------------------"
+
+echo
+echo "========================================"
+echo " Database Differences"
+echo "----------------------------------------"
 (
 	make formatdb
 	cd database
@@ -92,5 +71,5 @@ source settings/$XRAY_SETTINGS.sh
 	echo " Database Diff"
 	echo "----------------------------------------"
 	git diff
-	echo "----------------------------------------"
 )
+echo "----------------------------------------"

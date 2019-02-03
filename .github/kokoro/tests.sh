@@ -1,88 +1,33 @@
 #!/bin/bash
 
-set -x
 set -e
-
-sudo apt-get update
-sudo apt-get install -y \
-        bison \
-        build-essential \
-        ca-certificates \
-        clang-format \
-        cmake \
-        curl \
-        flex \
-        fontconfig \
-        git \
-        jq \
-        psmisc \
-        python \
-        python3 \
-        python3-dev \
-        python3-virtualenv \
-        python3-yaml \
-        virtualenv \
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-export
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-cat /proc/cpuinfo
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-find .
-
-echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-echo $PWD
-
-echo "----------------------------------------"
 
 cd github/$KOKORO_DIR/
 
-git fetch --tags || true
-git describe --tags || true
+source ./.github/kokoro/steps/hostsetup.sh
+source ./.github/kokoro/steps/hostinfo.sh
+source ./.github/kokoro/steps/git.sh
 
-# Build the C++ tools
-make build --output-sync=target --warn-undefined-variables
+source ./.github/kokoro/steps/prjxray-env.sh
 
-# Setup the Python environment
-make env --output-sync=target --warn-undefined-variables
-
+echo
+echo "========================================"
+echo "Running tests"
 echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-find .
-
-echo "----------------------------------------"
-echo "----------------------------------------"
+(
+	make test --output-sync=target --warn-undefined-variables
+)
 echo "----------------------------------------"
 
-# Run the tests
-make test --output-sync=target --warn-undefined-variables
-
+echo
+echo "========================================"
+echo "Copying tests logs"
 echo "----------------------------------------"
-echo "----------------------------------------"
-echo "----------------------------------------"
-
-cat build/*test_results.xml
-mkdir build/py
-cp build/py_test_results.xml build/py/sponge_log.xml
-mkdir build/cpp
-cp build/cpp_test_results.xml build/cpp/sponge_log.xml
-
-echo "----------------------------------------"
-echo "----------------------------------------"
+(
+	cat build/*test_results.xml
+	mkdir build/py
+	cp build/py_test_results.xml build/py/sponge_log.xml
+	mkdir build/cpp
+	cp build/cpp_test_results.xml build/cpp/sponge_log.xml
+)
 echo "----------------------------------------"
