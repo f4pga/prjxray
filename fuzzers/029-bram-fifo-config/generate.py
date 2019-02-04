@@ -16,6 +16,7 @@ def bitfilter(frame, bit):
 
     return True
 
+
 def main():
     segmk = Segmaker("design.bits")
 
@@ -25,11 +26,11 @@ def main():
 
     for tile_param in params:
         for param, tag in (
-                ('Y0_IN_USE', 'RAMB18_Y0.IN_USE'),
-                ('Y1_IN_USE', 'RAMB18_Y1.IN_USE'),
-                ('FIFO_Y0_IN_USE', 'RAMB18_Y0.FIFO_MODE'),
-                ('FIFO_Y1_IN_USE', 'RAMB18_Y1.FIFO_MODE'),
-                ):
+            ('Y0_IN_USE', 'RAMB18_Y0.IN_USE'),
+            ('Y1_IN_USE', 'RAMB18_Y1.IN_USE'),
+            ('FIFO_Y0_IN_USE', 'RAMB18_Y0.FIFO_MODE'),
+            ('FIFO_Y1_IN_USE', 'RAMB18_Y1.FIFO_MODE'),
+        ):
             segmk.add_tile_tag(tile_param['tile'], tag, tile_param[param])
 
     segmk.compile(bitfilter=bitfilter)

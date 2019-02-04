@@ -9,6 +9,7 @@ from prjxray.lut_maker import LutMaker
 
 WRITE_MODES = ("WRITE_FIRST", "NO_CHANGE", "READ_FIRST")
 
+
 def gen_sites():
     db = Database(util.get_db_root())
     grid = db.grid()
@@ -24,6 +25,7 @@ def gen_sites():
             sites[site_type] = site_name
 
         yield tile_name, sites
+
 
 def ramb18(tile_name, luts, lines, sites):
     """ RAMB18E1 in either top or bottom site. """
@@ -48,10 +50,10 @@ def ramb18(tile_name, luts, lines, sites):
         RAMB18E1 #(
             ) bram_{site} (
             );
-        '''.format(
-            site=site))
+        '''.format(site=site))
 
     return params
+
 
 def ramb18_2x(tile_name, luts, lines, sites):
     """ RAMB18E1 in both top and bottom site. """
@@ -76,9 +78,10 @@ def ramb18_2x(tile_name, luts, lines, sites):
         '''.format(
             top_site=sites['FIFO18E1'],
             bottom_site=sites['RAMB18E1'],
-            ))
+        ))
 
     return params
+
 
 def ramb36(tile_name, luts, lines, sites):
     """ RAMB36 consuming entire tile. """
@@ -102,16 +105,26 @@ def ramb36(tile_name, luts, lines, sites):
         """.format(site=site))
 
     for bit in range(15):
-        lines.append('assign rdaddr_{site}[{bit}] = {net};'.format(bit=bit, site=site,net=luts.get_next_output_net()))
-        lines.append('assign wraddr_{site}[{bit}] = {net};'.format(bit=bit, site=site,net=luts.get_next_output_net()))
+        lines.append(
+            'assign rdaddr_{site}[{bit}] = {net};'.format(
+                bit=bit, site=site, net=luts.get_next_output_net()))
+        lines.append(
+            'assign wraddr_{site}[{bit}] = {net};'.format(
+                bit=bit, site=site, net=luts.get_next_output_net()))
 
     for bit in range(8):
-        lines.append('assign webwe_{site}[{bit}] = {net};'.format(bit=bit, site=site,net=luts.get_next_output_net()))
+        lines.append(
+            'assign webwe_{site}[{bit}] = {net};'.format(
+                bit=bit, site=site, net=luts.get_next_output_net()))
 
     for bit in range(4):
-        lines.append('assign wea_{site}[{bit}] = {net};'.format(bit=bit, site=site,net=luts.get_next_output_net()))
+        lines.append(
+            'assign wea_{site}[{bit}] = {net};'.format(
+                bit=bit, site=site, net=luts.get_next_output_net()))
 
-    lines.append('assign regce_{site} = {net};'.format(bit=bit, site=site,net=luts.get_next_output_net()))
+    lines.append(
+        'assign regce_{site} = {net};'.format(
+            bit=bit, site=site, net=luts.get_next_output_net()))
 
     do_reg = verilog.vrandbit()
     ram_mode = random.choice(('SDP', 'TDP'))
@@ -165,9 +178,10 @@ def ramb36(tile_name, luts, lines, sites):
             READ_WIDTH_B=READ_WIDTH_B,
             WRITE_WIDTH_A=WRITE_WIDTH_A,
             WRITE_WIDTH_B=WRITE_WIDTH_B,
-            ))
+        ))
 
     return params
+
 
 def fifo18(tile_name, luts, lines, sites):
     """ FIFO18E1 without bottom RAMB site. """
@@ -198,7 +212,7 @@ def fifo18(tile_name, luts, lines, sites):
         '''.format(
             site=sites['FIFO18E1'],
             data_width=random.choice((4, 9)),
-            ))
+        ))
 
     return params
 
@@ -236,9 +250,10 @@ def fifo18_ramb18(tile_name, luts, lines, sites):
         '''.format(
             fifo_site=sites['FIFO18E1'],
             ramb_site=sites['RAMB18E1'],
-            ))
+        ))
 
     return params
+
 
 def fifo36(tile_name, luts, lines, sites):
     """ FIFO36E1 consuming entire tile. """
@@ -284,6 +299,7 @@ def fifo36(tile_name, luts, lines, sites):
 
     return params
 
+
 def main():
     print('''
 module top();
@@ -294,7 +310,8 @@ module top();
 
     params_list = []
     for tile_name, sites in gen_sites():
-        gen_fun = random.choice((ramb18, ramb18_2x, ramb36, fifo18, fifo18_ramb18, fifo36))
+        gen_fun = random.choice(
+            (ramb18, ramb18_2x, ramb36, fifo18, fifo18_ramb18, fifo36))
         params_list.append(gen_fun(tile_name, luts, lines, sites))
 
     for lut in luts.create_wires_and_luts():
