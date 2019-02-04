@@ -1,6 +1,8 @@
 from collections import namedtuple
 from prjxray import bitstream
+from prjxray.grid import BlockType
 import enum
+import functools
 
 
 class PsuedoPipType(enum.Enum):
@@ -75,31 +77,39 @@ class TileSegbits(object):
 
         if tile_db.segbits is not None:
             with open(tile_db.segbits) as f:
-                self.segbits = read_segbits(f)
+                self.segbits[BlockType.CLB_IO_CLK] = read_segbits(f)
 
-        for feature in self.segbits:
-            sidx = feature.rfind('[')
-            eidx = feature.rfind(']')
+        if tile_db.block_ram_segbits is not None:
+            with open(tile_db.block_ram_segbits) as f:
+                self.segbits[BlockType.BLOCK_RAM] = read_segbits(f)
 
-            if sidx != -1:
-                assert eidx != -1
+        for block_type in self.segbits:
+            for feature in self.segbits[block_type]:
+                sidx = feature.rfind('[')
+                eidx = feature.rfind(']')
 
-                base_feature = feature[:sidx]
+                if sidx != -1:
+                    assert eidx != -1
 
-                if base_feature not in self.feature_addresses:
-                    self.feature_addresses[base_feature] = {}
+                    base_feature = feature[:sidx]
 
-                self.feature_addresses[base_feature][int(
-                    feature[sidx + 1:eidx])] = feature
+                    if base_feature not in self.feature_addresses:
+                        self.feature_addresses[base_feature] = {}
 
-    def match_bitdata(self, bits, bitdata):
+                    self.feature_addresses[base_feature][int(
+                        feature[sidx + 1:eidx])] = (block_type, feature)
+
+    def match_bitdata(self, block_type, bits, bitdata):
         """ Return matching features for tile bits data (grid.Bits) and bitdata.
 
         See bitstream.load_bitdata for details on bitdata structure.
 
         """
 
-        for feature, segbit in self.segbits.items():
+        if block_type not in self.segbits:
+            return
+
+        for feature, segbit in self.segbits[block_type].items():
             match = True
             for query_bit in segbit:
                 frame = bits.base_address + query_bit.word_column
@@ -134,15 +144,12 @@ class TileSegbits(object):
         if feature in self.ppips:
             return
 
-        if address == 0 and feature in self.segbits:
-            for bit in self.segbits[feature]:
-                yield bit
-        else:
-            for bit in self.segbits[self.feature_addresses[feature][address]]:
-                yield bit
+        for block_type in self.segbits:
+            if address == 0 and feature in self.segbits[block_type]:
+                for bit in self.segbits[block_type][feature]:
+                    yield bit
+                return
 
-    def frames(self, bits):
-        """ Iterate over frames this tile uses for a given bit location. """
-        for query_bits in self.segbits.values():
-            for bit in query_bits:
-                yield bits.base_address + bit.word_column
+        block_type, feature = self.feature_addresses[feature][address]
+        for bit in self.segbits[block_type][feature]:
+            yield bit

@@ -38,7 +38,13 @@ class FasmDisassembler(object):
         self.decode_warnings = set()
 
     def find_features_in_tile(
-            self, tile_name, bits, solved_bitdata, bitdata, verbose=False):
+            self,
+            tile_name,
+            block_type,
+            bits,
+            solved_bitdata,
+            bitdata,
+            verbose=False):
         gridinfo = self.grid.gridinfo_at_tilename(tile_name)
 
         try:
@@ -69,7 +75,8 @@ class FasmDisassembler(object):
             self.decode_warnings.add(gridinfo.tile_type)
             return
 
-        for ones_matched, feature in tile_segbits.match_bitdata(bits, bitdata):
+        for ones_matched, feature in tile_segbits.match_bitdata(block_type,
+                                                                bits, bitdata):
             for frame, bit in ones_matched:
                 if frame not in solved_bitdata:
                     solved_bitdata[frame] = set()
@@ -94,7 +101,7 @@ class FasmDisassembler(object):
             # Iterate over all tiles that use this frame.
             for bits_info in self.segment_map.segment_info_for_frame(frame):
                 # Don't examine a tile twice
-                if bits_info.tile in tiles_checked:
+                if (bits_info.tile, bits_info.block_type) in tiles_checked:
                     continue
 
                 # Check if this frame has any data for the relevant tile.
@@ -107,11 +114,11 @@ class FasmDisassembler(object):
                 if not any_column:
                     continue
 
-                tiles_checked.add(bits_info.tile)
+                tiles_checked.add((bits_info.tile, bits_info.block_type))
 
                 for fasm_line in self.find_features_in_tile(
-                        bits_info.tile, bits_info.bits, solved_bitdata,
-                        bitdata, verbose=verbose):
+                        bits_info.tile, bits_info.block_type, bits_info.bits,
+                        solved_bitdata, bitdata, verbose=verbose):
                     if fasm_line not in emitted_features:
                         emitted_features.add(fasm_line)
                         yield fasm_line
