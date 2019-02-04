@@ -18,8 +18,10 @@ $(1)/run.ok: $(addsuffix /run.ok,$(2))
 	$$(MAKE) -C $(1) run
 endef
 
+$(eval $(call fuzzer,000-init-db,))
+
 ifneq ($(FUZZONLY),Y)
-$(eval $(call fuzzer,001-part-yaml,))
+$(eval $(call fuzzer,001-part-yaml,000-init-db))
 $(eval $(call fuzzer,005-tilegrid,001-part-yaml))
 else
 all:: 005-tilegrid/run.ok

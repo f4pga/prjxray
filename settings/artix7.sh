@@ -24,4 +24,3 @@ export XRAY_PIN_05="G22"
 export XRAY_PIN_06="F21"
 
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
-init_db
