@@ -14,4 +14,7 @@ export XRAY_PIN_06="U14"
 # HCLK Tile
 export XRAY_ROI_HCLK="CLK_HROW_TOP_R_X60Y130/CLK_HROW_CK_BUFHCLK_L0"
 
+# PITCH
+export XRAY_PITCH=2
+
 source $XRAY_DIR/utils/environment.sh
