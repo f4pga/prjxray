@@ -10,14 +10,14 @@ SEGDATAS_R=$(addsuffix /segdata_dsp_r.txt,$(SPECIMENS))
 build/segbits_dsp_l.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o build/segbits_dsp_l.rdb $(SEGDATAS_L)
 
-build/segbits_dsp_l.db build/mask_dsp_l.db: build/segbits_dsp_l.rdb
+build/segbits_dsp_l.db: build/segbits_dsp_l.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
 	${XRAY_MASKMERGE} build/mask_dsp_l.db $(SEGDATAS_L)
 
 build/segbits_dsp_r.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o build/segbits_dsp_r.rdb $(SEGDATAS_R)
 
-build/segbits_dsp_r.db build/mask_dsp_r.db: build/segbits_dsp_r.rdb
+build/segbits_dsp_r.db: build/segbits_dsp_r.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
 	${XRAY_MASKMERGE} build/mask_dsp_r.db $(SEGDATAS_R)
 
