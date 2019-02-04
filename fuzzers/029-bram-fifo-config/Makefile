@@ -10,8 +10,7 @@ build/segbits_bramx.rdb: $(SPECIMENS_OK)
 build/segbits_bramx.db: build/segbits_bramx.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
 		--seg-fn-in build/segbits_bramx.rdb \
-		--seg-fn-out build/segbits_bramx.unmerged.db
-	python3 merge_in_use.py build/segbits_bramx.unmerged.db > build/segbits_bramx.db
+		--seg-fn-out build/segbits_bramx.db
 	${XRAY_MASKMERGE} build/mask_bramx.db $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS))
 
 pushdb:

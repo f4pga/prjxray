@@ -32,8 +32,6 @@ def ramb18(tile_name, luts, lines, sites):
     params['tile'] = tile_name
     params['Y0_IN_USE'] = random.randint(0, 1) == 1
     params['Y1_IN_USE'] = not params['Y0_IN_USE']
-    params['RAMB_Y0_IN_USE'] = params['Y0_IN_USE']
-    params['RAMB_Y1_IN_USE'] = params['Y1_IN_USE']
     params['FIFO_Y0_IN_USE'] = False
     params['FIFO_Y1_IN_USE'] = False
 
@@ -62,8 +60,6 @@ def ramb18_2x(tile_name, luts, lines, sites):
     params['tile'] = tile_name
     params['Y0_IN_USE'] = True
     params['Y1_IN_USE'] = True
-    params['RAMB_Y0_IN_USE'] = True
-    params['RAMB_Y1_IN_USE'] = True
     params['FIFO_Y0_IN_USE'] = False
     params['FIFO_Y1_IN_USE'] = False
 
@@ -91,8 +87,6 @@ def ramb36(tile_name, luts, lines, sites):
     params['tile'] = tile_name
     params['Y0_IN_USE'] = True
     params['Y1_IN_USE'] = True
-    params['RAMB_Y0_IN_USE'] = True
-    params['RAMB_Y1_IN_USE'] = True
     params['FIFO_Y0_IN_USE'] = False
     params['FIFO_Y1_IN_USE'] = False
 
@@ -182,8 +176,6 @@ def fifo18(tile_name, luts, lines, sites):
     params['tile'] = tile_name
     params['Y0_IN_USE'] = True
     params['Y1_IN_USE'] = False
-    params['RAMB_Y0_IN_USE'] = False
-    params['RAMB_Y1_IN_USE'] = False
     params['FIFO_Y0_IN_USE'] = True
     params['FIFO_Y1_IN_USE'] = False
 
@@ -218,8 +210,6 @@ def fifo18_ramb18(tile_name, luts, lines, sites):
     params['tile'] = tile_name
     params['Y0_IN_USE'] = True
     params['Y1_IN_USE'] = True
-    params['RAMB_Y0_IN_USE'] = False
-    params['RAMB_Y1_IN_USE'] = True
     params['FIFO_Y0_IN_USE'] = True
     params['FIFO_Y1_IN_USE'] = False
 
@@ -257,8 +247,6 @@ def fifo36(tile_name, luts, lines, sites):
     params['tile'] = tile_name
     params['Y0_IN_USE'] = True
     params['Y1_IN_USE'] = True
-    params['RAMB_Y0_IN_USE'] = False
-    params['RAMB_Y1_IN_USE'] = False
     params['FIFO_Y0_IN_USE'] = True
     params['FIFO_Y1_IN_USE'] = True
 

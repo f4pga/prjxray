@@ -27,10 +27,8 @@ def main():
         for param, tag in (
                 ('Y0_IN_USE', 'RAMB18_Y0.IN_USE'),
                 ('Y1_IN_USE', 'RAMB18_Y1.IN_USE'),
-                ('RAMB_Y0_IN_USE', 'RAMB18_Y0.RAM_IN_USE'),
-                ('RAMB_Y1_IN_USE', 'RAMB18_Y1.RAM_IN_USE'),
-                ('FIFO_Y0_IN_USE', 'RAMB18_Y0.FIFO_IN_USE'),
-                ('FIFO_Y1_IN_USE', 'RAMB18_Y1.FIFO_IN_USE'),
+                ('FIFO_Y0_IN_USE', 'RAMB18_Y0.FIFO_MODE'),
+                ('FIFO_Y1_IN_USE', 'RAMB18_Y1.FIFO_MODE'),
                 ):
             segmk.add_tile_tag(tile_param['tile'], tag, tile_param[param])
 
