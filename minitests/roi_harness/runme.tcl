@@ -46,6 +46,9 @@ set Y_DIN_BASE [expr "$Y_CLK_BASE + $PITCH"]
 # Note: can actually go up one more if we want
 set Y_DOUT_BASE [expr "$XRAY_ROI_Y1 - $DIN_N * $PITCH"]
 
+# Y_OFFSET: offset amount to shift the components on the y column to avoid hard blocks
+set Y_OFFSET 24
+
 set part "$::env(XRAY_PART)"
 set pincfg ""
 if { [info exists ::env(XRAY_PINCFG) ] } {
@@ -135,6 +138,7 @@ if {$part eq "xc7a50tfgg484-1"} {
             set pin [lindex $leds $i]
             set net2pin(dout[$i]) $pin
         }
+
         # Arty A7 pmod
         # Disabled per above
     } elseif {$pincfg eq "ARTY-A7-PMOD"} {
@@ -215,6 +219,9 @@ if {$part eq "xc7a50tfgg484-1"} {
             set pin [lindex $outs $i]
             set net2pin(dout[$i]) $pin
         }
+
+        # setting Y_OFFSET to zero only for zynq parts
+        set Y_OFFSET 0
 
     } else {
         error "Unsupported config $pincfg"
@@ -321,7 +328,7 @@ if {$fixed_xdc eq ""} {
     puts "Placing ROI inputs"
     set y_left $Y_DIN_BASE
     # Shift y_right up to avoid PCIe block that makes routing hard.
-    set y_right [expr {$Y_DIN_BASE + 24}]
+    set y_right [expr {$Y_DIN_BASE + $Y_OFFSET}]
     for {set i 0} {$i < $DIN_N} {incr i} {
         if {[net_bank_left "din[$i]"]} {
             loc_lut_in $i $XRAY_ROI_X0 $y_left
@@ -439,7 +446,7 @@ if {$fixed_xdc eq ""} {
     puts "Routing ROI inputs"
     # Arbitrary offset as observed
     set y_left $Y_DIN_BASE
-    set y_right [expr {$Y_DIN_BASE + 24}]
+    set y_right [expr {$Y_DIN_BASE + $Y_OFFSET}]
     for {set i 0} {$i < $DIN_N} {incr i} {
         # needed to force routes away to avoid looping into ROI
         if {[net_bank_left "din[$i]"]} {
