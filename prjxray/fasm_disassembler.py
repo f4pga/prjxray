@@ -59,10 +59,10 @@ class FasmDisassembler(object):
             )
             yield fasm.FasmLine(
                 set_feature=None,
-                annotations=[
+                annotations=(
                     fasm.Annotation('missing_segbits', gridinfo.tile_type),
                     fasm.Annotation('exception', str(e)),
-                ],
+                ),
                 comment=None,
             )
 
@@ -153,6 +153,6 @@ class FasmDisassembler(object):
                                 frame_offset, bit)))
                     yield fasm.FasmLine(
                         set_feature=None,
-                        annotations=annotations,
+                        annotations=tuple(annotations),
                         comment=None,
                     )
