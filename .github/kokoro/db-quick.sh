@@ -34,7 +34,7 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 	export MAX_VIVADO_PROCESS=$CORES
 	set -x
-	make -j $CORES MAX_VIVADO_PROCESS=$CORES QUICK=y
+	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$CORES QUICK=y" -
 	set +x
 )
 echo "----------------------------------------"
