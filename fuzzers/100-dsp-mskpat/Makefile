@@ -2,7 +2,7 @@ N ?= 8
 
 include ../fuzzer.mk
 
-database: build/segbits_dsp_l.db build/mask_dsp_r.db build/segbits_dsp_r.db build/mask_dsp_r.db
+database: build/segbits_dsp_l.db build/segbits_dsp_r.db
 
 SEGDATAS_L=$(addsuffix /segdata_dsp_l.txt,$(SPECIMENS))
 SEGDATAS_R=$(addsuffix /segdata_dsp_r.txt,$(SPECIMENS))
