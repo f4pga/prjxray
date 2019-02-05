@@ -69,28 +69,49 @@ format: format-cpp format-docs format-py format-tcl
 
 .PHONY: format format-cpp format-py format-tcl
 
-# Project X-Ray database
+# Targets related to Project X-Ray databases
 # ------------------------
 
+DATABASES=artix7 kintex7 zynq7
+
+define database
+
+# $(1) - Database name
+
+checkdb-$(1):
+	@echo
+	@echo "Checking $(1) database"
+	@echo "============================"
+	@$(IN_ENV) python3 utils/checkdb.py --db-root database/$(1)
+
+formatdb-$(1):
+	@echo
+	@echo "Formatting $(1) database"
+	@echo "============================"
+	@$(IN_ENV) cd database/$(1); python3 ../../utils/sort_db.py
+	@if [ -e database/Info.md ]; then $(IN_ENV) ./utils/info_md.py --keep; fi
+
+.PHONY: checkdb-$(1) formatdb-$(1)
+.NOTPARALLEL: checkdb-$(1) formatdb-$(1)
+
+checkdb: checkdb-$(1)
+formatdb: formatdb-$(1)
+
+endef
+
+$(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
+
 checkdb:
-	@for DB in database/*; do if [ -d $$DB ]; then \
-		echo ; \
-		echo "Checking $$DB"; \
-		echo "============================"; \
-		$(IN_ENV) python3 utils/checkdb.py --db-root $$DB; \
-	fi; done
+	@true
 
 formatdb:
-	@for DB in database/*; do if [ -d $$DB ]; then \
-		echo ; \
-		echo "Formatting $$DB"; \
-		echo "============================"; \
-		($(IN_ENV) cd $$DB; python3 ../../utils/sort_db.py || exit 1) || exit 1; \
-	fi; done
-	@make checkdb
-	$(IN_ENV) ./utils/info_md.py --keep
+	@true
+
+.PHONY: checkdb formatdb
 
 clean:
 	$(MAKE) -C database clean
 	$(MAKE) -C fuzzers clean
 	rm -rf build
+
+.PHONY: clean
