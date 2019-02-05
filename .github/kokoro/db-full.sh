@@ -39,16 +39,30 @@ echo "Running Database build"
 echo "----------------------------------------"
 (
 	cd fuzzers
+
+	# Output which fuzzers we are going to run
 	echo "make --dry-run"
 	make --dry-run
 	echo "----------------------------------------"
+
+	# Run the fuzzers
 	export MAX_VIVADO_PROCESS=$CORES
 	set -x
 	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$CORES" -
 	set +x
 	echo "----------------------------------------"
-	echo "make --dry-run"
-	make --dry-run
+
+	# Check there is nothing to do after running...
+	if [ $(make --dry-run | wc -l) -gt 0 ]; then
+		echo "The following targets need to still run!"
+		make --dry-run
+		echo "----------------------------------------"
+		echo "Debug output on why they still need to run"
+		make --dry-run --debug
+		echo "----------------------------------------"
+	else
+		echo "All good, nothing more to do!"
+	fi
 )
 echo "----------------------------------------"
 
