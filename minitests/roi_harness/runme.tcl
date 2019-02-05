@@ -24,6 +24,40 @@ if { [info exists ::env(XRAY_ROI_HCLK)] } {
     puts "WARNING: No HCLK has been set"
 }
 
+# Setting all the PIPs for DIN and DOUT
+if { [info exists ::env(XRAY_ROI_DIN_LPIP)] } {
+    set DIN_LPIP "$::env(XRAY_ROI_DIN_LPIP)"
+} else { puts "Warning: No left pip for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DIN_RPIP)] } {
+    set DIN_RPIP "$::env(XRAY_ROI_DIN_RPIP)"
+} else { puts "Warning: No right pip for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_LPIP)] } {
+    set DOUT_LPIP "$::env(XRAY_ROI_DOUT_LPIP)"
+} else { puts "Warning: No left pip for DOUT has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_RPIP)] } {
+    set DOUT_RPIP "$::env(XRAY_ROI_DOUT_RPIP)"
+} else { puts "Warning: No right pip for DOUT has been set"  }
+
+# Setting all INT_L/R tiles for DIN and DOUT X values
+if { [info exists ::env(XRAY_ROI_DIN_INT_L_X)] } {
+    set DIN_INT_L_X "$::env(XRAY_ROI_DIN_INT_L_X)"
+} else { puts "Warning: No INT_L for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DIN_INT_R_X)] } {
+    set DIN_INT_R_X "$::env(XRAY_ROI_DIN_INT_R_X)"
+} else { puts "Warning: No INT_R for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_INT_L_X)] } {
+    set DOUT_INT_L_X "$::env(XRAY_ROI_DOUT_INT_L_X)"
+} else { puts "Warning: No INT_L for DOUT has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_INT_R_X)] } {
+    set DOUT_INT_R_X "$::env(XRAY_ROI_DOUT_INT_R_X)"
+} else { puts "Warning: No INT_R for DOUT has been set"  }
+
 # X12 in the ROI, X10 just to the left
 # Start at bottom left of ROI and work up
 # (IOs are to left)
@@ -450,15 +484,11 @@ if {$fixed_xdc eq ""} {
     for {set i 0} {$i < $DIN_N} {incr i} {
         # needed to force routes away to avoid looping into ROI
         if {[net_bank_left "din[$i]"]} {
-            set node "INT_L_X0Y${y_left}/EE2BEG2"
+            set node "INT_L_X${DIN_INT_L_X}Y${y_left}/${DIN_LPIP}"
             route_via2 "din_IBUF[$i]" "$node"
             set y_left [expr {$y_left + $PITCH}]
         } else {
-            if {$part eq "xc7z010clg400-1"} {
-                set node "INT_R_X31Y${y_right}/WW2BEG2"
-            } else {
-                set node "INT_R_X25Y${y_right}/WW2BEG1"
-            }
+            set node "INT_R_X${DIN_INT_R_X}Y${y_right}/${DIN_RPIP}"
             route_via2 "din_IBUF[$i]" "$node"
             set y_right [expr {$y_right + $PITCH}]
         }
@@ -477,31 +507,13 @@ if {$fixed_xdc eq ""} {
     set y_right [expr {$Y_DOUT_BASE + 0}]
     for {set i 0} {$i < $DOUT_N} {incr i} {
         if {[net_bank_left "dout[$i]"]} {
-            # XXX: find a better solution if we need harness long term
-            # works on 50t but not 35t
-            if {$part eq "xc7a50tfgg484-1"} {
-                set node "INT_L_X1Y${y_left}/WW2BEG0"
-                route_via2 "roi/dout[$i]" "$node"
-                # works on 35t but not 50t
-            } elseif {$part eq "xc7a35tcsg324-1"} {
-                set node "INT_L_X2Y${y_left}/SW6BEG0"
-                route_via2 "roi/dout[$i]" "$node"
-            } elseif {$part eq "xc7a35tcpg236-1"} {
-                set node "INT_L_X2Y${y_left}/SW6BEG0"
-                route_via2 "roi/dout[$i]" "$node"
-            } else {
-                error "Routing: unsupported part $part"
-            }
+            set node "INT_L_X${DOUT_INT_L_X}Y${y_left}/${DOUT_LPIP}"
+            route_via2 "roi/dout[$i]" "$node"
             set y_left [expr {$y_left + $PITCH}]
             # XXX: only care about right ports on Arty
         } else {
-            if {$part eq "xc7z010clg400-1"} {
-                set node "INT_R_X29Y${y_right}/EE2BEG0"
-                route_via2 "roi/dout[$i]" "$node INT_R_X31Y${y_right}"
-            } else {
-                set node "INT_R_X23Y${y_right}/LH12"
-                route_via2 "roi/dout[$i]" "$node"
-            }
+            set node "INT_R_X${DOUT_INT_R_X}Y${y_right}/${DOUT_RPIP}"
+            route_via2 "roi/dout[$i]" "$node"
             set y_right [expr {$y_right + $PITCH}]
         }
         set net "dout[$i]"
