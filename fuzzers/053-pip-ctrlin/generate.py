@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, re
+import re
 
 from prjxray.segmaker import Segmaker
 
@@ -14,6 +14,10 @@ print("Loading tags from design.txt.")
 with open("design.txt", "r") as f:
     for line in f:
         tile, pip, src, dst, pnum, pdir = line.split()
+
+        if not tile.startswith('INT_'):
+            continue
+
         _, pip = pip.split(".")
         _, src = src.split("/")
         _, dst = dst.split("/")
