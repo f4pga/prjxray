@@ -70,7 +70,7 @@ Keep the existing commit information.
     args = parser.parse_args()
 
     info_md_filename = os.path.join('database', 'Info.md')
-    assert os.path.exists(info_md_filename)
+    assert os.path.exists(info_md_filename), info_md_filename
 
     info_md = []
 
