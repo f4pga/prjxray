@@ -53,7 +53,7 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 
 	# Check there is nothing to do after running...
-	if [ $(make --dry-run | wc -l) -gt 0 ]; then
+	if [ $(make --dry-run | grep -v 'Nothing to be done' | wc -l) -gt 0 ]; then
 		echo "The following targets need to still run!"
 		make --dry-run
 		echo "----------------------------------------"
