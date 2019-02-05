@@ -25,7 +25,7 @@ source settings/$XRAY_SETTINGS.sh
 
 echo
 echo "========================================"
-echo "Running quick Database build"
+echo "Running quick fuzzer sanity check"
 echo "----------------------------------------"
 (
 	cd fuzzers

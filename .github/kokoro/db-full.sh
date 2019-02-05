@@ -52,12 +52,17 @@ echo "----------------------------------------"
 )
 echo "----------------------------------------"
 
+# Check the database
+make checkdb-${XRAY_SETTINGS} || true
+# Format the database
+make formatdb-${XRAY_SETTINGS}
+
+# Output if the database has differences
 echo
 echo "========================================"
 echo " Database Differences"
 echo "----------------------------------------"
 (
-	make formatdb
 	cd database
 	echo "----------------------------------------"
 	echo " Database Status"
@@ -73,3 +78,6 @@ echo "----------------------------------------"
 	git diff
 )
 echo "----------------------------------------"
+
+# Check the database and fail if it is broken.
+make checkdb-${XRAY_SETTINGS}
