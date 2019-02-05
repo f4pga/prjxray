@@ -67,7 +67,7 @@ echo "----------------------------------------"
 echo "----------------------------------------"
 
 # Check the database
-make checkdb-${XRAY_SETTINGS} || true
+#make checkdb-${XRAY_SETTINGS} || true
 # Format the database
 make formatdb-${XRAY_SETTINGS}
 
