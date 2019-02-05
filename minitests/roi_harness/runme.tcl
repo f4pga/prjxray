@@ -18,6 +18,46 @@ if { [info exists ::env(PITCH) ] } {
     set PITCH "$::env(PITCH)"
 }
 
+if { [info exists ::env(XRAY_ROI_HCLK)] } {
+    set XRAY_ROI_HCLK "$::env(XRAY_ROI_HCLK)"
+} else {
+    puts "WARNING: No HCLK has been set"
+}
+
+# Setting all the PIPs for DIN and DOUT
+if { [info exists ::env(XRAY_ROI_DIN_LPIP)] } {
+    set DIN_LPIP "$::env(XRAY_ROI_DIN_LPIP)"
+} else { puts "Warning: No left pip for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DIN_RPIP)] } {
+    set DIN_RPIP "$::env(XRAY_ROI_DIN_RPIP)"
+} else { puts "Warning: No right pip for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_LPIP)] } {
+    set DOUT_LPIP "$::env(XRAY_ROI_DOUT_LPIP)"
+} else { puts "Warning: No left pip for DOUT has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_RPIP)] } {
+    set DOUT_RPIP "$::env(XRAY_ROI_DOUT_RPIP)"
+} else { puts "Warning: No right pip for DOUT has been set"  }
+
+# Setting all INT_L/R tiles for DIN and DOUT X values
+if { [info exists ::env(XRAY_ROI_DIN_INT_L_X)] } {
+    set DIN_INT_L_X "$::env(XRAY_ROI_DIN_INT_L_X)"
+} else { puts "Warning: No INT_L for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DIN_INT_R_X)] } {
+    set DIN_INT_R_X "$::env(XRAY_ROI_DIN_INT_R_X)"
+} else { puts "Warning: No INT_R for DIN has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_INT_L_X)] } {
+    set DOUT_INT_L_X "$::env(XRAY_ROI_DOUT_INT_L_X)"
+} else { puts "Warning: No INT_L for DOUT has been set"  }
+
+if { [info exists ::env(XRAY_ROI_DOUT_INT_R_X)] } {
+    set DOUT_INT_R_X "$::env(XRAY_ROI_DOUT_INT_R_X)"
+} else { puts "Warning: No INT_R for DOUT has been set"  }
+
 # X12 in the ROI, X10 just to the left
 # Start at bottom left of ROI and work up
 # (IOs are to left)
@@ -39,6 +79,9 @@ set Y_DIN_BASE [expr "$Y_CLK_BASE + $PITCH"]
 # At top. This relieves routing pressure by spreading things out
 # Note: can actually go up one more if we want
 set Y_DOUT_BASE [expr "$XRAY_ROI_Y1 - $DIN_N * $PITCH"]
+
+# Y_OFFSET: offset amount to shift the components on the y column to avoid hard blocks
+set Y_OFFSET 24
 
 set part "$::env(XRAY_PART)"
 set pincfg ""
@@ -129,6 +172,7 @@ if {$part eq "xc7a50tfgg484-1"} {
             set pin [lindex $leds $i]
             set net2pin(dout[$i]) $pin
         }
+
         # Arty A7 pmod
         # Disabled per above
     } elseif {$pincfg eq "ARTY-A7-PMOD"} {
@@ -209,6 +253,9 @@ if {$part eq "xc7a50tfgg484-1"} {
             set pin [lindex $outs $i]
             set net2pin(dout[$i]) $pin
         }
+
+        # setting Y_OFFSET to zero only for zynq parts
+        set Y_OFFSET 0
 
     } else {
         error "Unsupported config $pincfg"
@@ -315,7 +362,7 @@ if {$fixed_xdc eq ""} {
     puts "Placing ROI inputs"
     set y_left $Y_DIN_BASE
     # Shift y_right up to avoid PCIe block that makes routing hard.
-    set y_right [expr {$Y_DIN_BASE + 24}]
+    set y_right [expr {$Y_DIN_BASE + $Y_OFFSET}]
     for {set i 0} {$i < $DIN_N} {incr i} {
         if {[net_bank_left "din[$i]"]} {
             loc_lut_in $i $XRAY_ROI_X0 $y_left
@@ -423,7 +470,7 @@ if {$fixed_xdc eq ""} {
     # It will go to high level interconnect that goes everywhere
     # But we still need to record something, so lets force a route
     # FIXME: very ROI specific
-    set node "CLK_HROW_TOP_R_X60Y130/CLK_HROW_CK_BUFHCLK_L0"
+    set node "$XRAY_ROI_HCLK"
     set wire [node2wire $node]
     route_via2 "clk_IBUF_BUFG" "$node"
     set net "clk"
@@ -433,15 +480,15 @@ if {$fixed_xdc eq ""} {
     puts "Routing ROI inputs"
     # Arbitrary offset as observed
     set y_left $Y_DIN_BASE
-    set y_right [expr {$Y_DIN_BASE + 24}]
+    set y_right [expr {$Y_DIN_BASE + $Y_OFFSET}]
     for {set i 0} {$i < $DIN_N} {incr i} {
         # needed to force routes away to avoid looping into ROI
         if {[net_bank_left "din[$i]"]} {
-            set node "INT_L_X0Y${y_left}/EE2BEG2"
+            set node "INT_L_X${DIN_INT_L_X}Y${y_left}/${DIN_LPIP}"
             route_via2 "din_IBUF[$i]" "$node"
             set y_left [expr {$y_left + $PITCH}]
         } else {
-            set node "INT_R_X25Y${y_right}/WW2BEG1"
+            set node "INT_R_X${DIN_INT_R_X}Y${y_right}/${DIN_RPIP}"
             route_via2 "din_IBUF[$i]" "$node"
             set y_right [expr {$y_right + $PITCH}]
         }
@@ -460,25 +507,12 @@ if {$fixed_xdc eq ""} {
     set y_right [expr {$Y_DOUT_BASE + 0}]
     for {set i 0} {$i < $DOUT_N} {incr i} {
         if {[net_bank_left "dout[$i]"]} {
-            # XXX: find a better solution if we need harness long term
-            # works on 50t but not 35t
-            if {$part eq "xc7a50tfgg484-1"} {
-                set node "INT_L_X1Y${y_left}/WW2BEG0"
-                route_via2 "roi/dout[$i]" "$node"
-                # works on 35t but not 50t
-            } elseif {$part eq "xc7a35tcsg324-1"} {
-                set node "INT_L_X2Y${y_left}/SW6BEG0"
-                route_via2 "roi/dout[$i]" "$node"
-            } elseif {$part eq "xc7a35tcpg236-1"} {
-                set node "INT_L_X2Y${y_left}/SW6BEG0"
-                route_via2 "roi/dout[$i]" "$node"
-            } else {
-                error "Routing: unsupported part $part"
-            }
+            set node "INT_L_X${DOUT_INT_L_X}Y${y_left}/${DOUT_LPIP}"
+            route_via2 "roi/dout[$i]" "$node"
             set y_left [expr {$y_left + $PITCH}]
             # XXX: only care about right ports on Arty
         } else {
-            set node "INT_R_X23Y${y_right}/LH12"
+            set node "INT_R_X${DOUT_INT_R_X}Y${y_right}/${DOUT_RPIP}"
             route_via2 "roi/dout[$i]" "$node"
             set y_right [expr {$y_right + $PITCH}]
         }
