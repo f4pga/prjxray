@@ -23,13 +23,25 @@ all: $(1)/run.ok
 # Make the clean target run `make clean` in the fuzzer's directory.
 clean::
 	$$(MAKE) -C $(1) clean
-	rm -f $(1)/*.log
+	rm -rf $(1)/logs
 
 # Describe how to create the fuzzer's run.ok file.
 # This command must start with a + to tell make to pass the jobserver
 # parameters downwards.
+ifeq ($(VERBOSE),Y)
+
+# When verbose we just call make directory
+$(1)/run.ok: $(addsuffix /run.ok,$(2))
+	$(MAKE) $(1)
+
+else
+
+# When not verbose, we use the run_fuzzer wrapper which will save the results
+# to log files.
 $(1)/run.ok: $(addsuffix /run.ok,$(2))
 	+@$(SELF_DIR)/run_fuzzer.py $(1)
+
+endif
 
 endef
 

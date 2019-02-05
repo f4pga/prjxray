@@ -1,11 +1,10 @@
 /env/
 /build/
+/logs/
 /database/
 .Xil
 **/specimen_*
 **/output
 run.ok
-stderr.*.log
-stdout.*.log
 __pycache__
 *.pyc
