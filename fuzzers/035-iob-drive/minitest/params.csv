@@ -1,0 +1,2 @@
+IOB_X0Y111,di[0],input,di_bufs[0].ibuf
+IOB_X0Y107,do[0],output,do_bufs[0].obuf
