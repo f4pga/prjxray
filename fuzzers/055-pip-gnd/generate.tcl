@@ -62,26 +62,7 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     route_via $mynet "$tile/$src_wire $tile/$dst_wire"
 }
 
-proc write_txtdata {filename} {
-    puts "Writing $filename."
-    set fp [open $filename w]
-    set all_pips [lsort -unique [get_pips -of_objects [get_nets -hierarchical]]]
-    if {$all_pips != {}} {
-        puts "Dumping pips."
-        foreach tile [get_tiles [regsub -all {CLBL[LM]} [get_tiles -of_objects [get_sites -of_objects [get_pblocks roi]]] INT]] {
-            foreach pip [filter $all_pips "TILE == $tile"] {
-                set src_wire [get_wires -uphill -of_objects $pip]
-                set dst_wire [get_wires -downhill -of_objects $pip]
-                set num_pips [llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst_wire]]]
-                set dir_prop [get_property IS_DIRECTIONAL $pip]
-                puts $fp "$tile $pip $src_wire $dst_wire $num_pips $dir_prop"
-            }
-        }
-    }
-    close $fp
-}
-
 route_design
 write_checkpoint -force design.dcp
 write_bitstream -force design.bit
-write_txtdata design.txt
+write_pip_txtdata design.txt
