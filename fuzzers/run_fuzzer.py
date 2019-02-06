@@ -124,8 +124,11 @@ class Logger:
         running_for = time_log - self.time_start
         msg = msg.format(*args, **kw)
 
-        log_prefix = "{:s} - {:>5s}: ".format(
-            self.fuzzer, pretty_timedelta_str(running_for))
+        log_prefix = "{:s} - {:s} - {:>5s}: ".format(
+            time_log.isoformat(),
+            self.fuzzer,
+            pretty_timedelta_str(running_for),
+        )
 
         msg = "\n".join(log_prefix + x for x in msg.splitlines())
         print(msg, flush=True)
