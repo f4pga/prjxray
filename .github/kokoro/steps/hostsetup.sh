@@ -36,12 +36,6 @@ echo "----------------------------------------"
 
 (
 	cd /tmp
-	# Download ptyget to enable ptybandage.
-	wget https://storage.googleapis.com/prjxray-deps-debs/ptyget_6_amd64.deb
-	sudo dpkg --install ptyget_6_amd64.deb
-	which ptybandage
-	ptybandage --help || true
-
 	# Upgrade pstree to support the -T flag.
 	wget https://storage.googleapis.com/prjxray-deps-debs/psmisc_23.2-1_amd64.deb
 	sudo dpkg --install psmisc_23.2-1_amd64.deb
