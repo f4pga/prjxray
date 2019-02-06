@@ -1,11 +1,11 @@
 `include "setseed.vh"
 
 module top(input clk, din, stb, output dout);
-	reg [41:0] din_bits;
-	wire [78:0] dout_bits;
+	reg [49:0] din_bits;
+	wire [79:0] dout_bits;
 
-	reg [41:0] din_shr;
-	reg [78:0] dout_shr;
+	reg [49:0] din_shr;
+	reg [79:0] dout_shr;
 
 	always @(posedge clk) begin
 		if (stb) begin
@@ -13,11 +13,11 @@ module top(input clk, din, stb, output dout);
 			dout_shr <= dout_bits;
 		end else begin
 			din_shr <= {din_shr, din};
-			dout_shr <= {dout_shr, din_shr[41]};
+			dout_shr <= {dout_shr, din_shr[49]};
 		end
 	end
 
-	assign dout = dout_shr[78];
+	assign dout = dout_shr[79];
 
 	roi roi (
 		.clk(clk),
@@ -26,7 +26,9 @@ module top(input clk, din, stb, output dout);
 	);
 endmodule
 
-module roi(input clk, input [41:0] din_bits, output [78:0] dout_bits);
+module roi(input clk, input [49:0] din_bits, output [79:0] dout_bits);
+	wire [127:0] lut_out_dsp;
+
 	picorv32 picorv32 (
 		.clk(clk),
 		.resetn(din_bits[0]),
@@ -40,12 +42,27 @@ module roi(input clk, input [41:0] din_bits, output [78:0] dout_bits);
 	);
 
 	randluts randluts (
-		.din(din_bits[41:34]),
+		.din(din_bits[41:35]),
 		.dout(dout_bits[78:71])
+	);
+
+	randluts #(
+		.INCR_OUT_WIDTH(15)
+	) randluts_dsp (
+		.din(din_bits[49:42]),
+		.dout(lut_out_dsp)
+	);
+
+	dsp dsp (
+		.clk(clk),
+		.din(lut_out_dsp),
+		.dout(dout_bits[79])
 	);
 endmodule
 
-module randluts(input [7:0] din, output [7:0] dout);
+module randluts(input [7:0] din, output [(INCR_OUT_WIDTH+1)*8-1:0] dout);
+	parameter INCR_OUT_WIDTH = 0;
+
 	localparam integer N =
 			`SEED % 3 == 2 ? 250 :
 			`SEED % 3 == 1 ? 100 : 10;
@@ -66,14 +83,14 @@ module randluts(input [7:0] din, output [7:0] dout);
 		end
 	endfunction
 
-	wire [(N+1)*8-1:0] nets;
+	wire [(N+INCR_OUT_WIDTH+1)*8-1:0] nets;
 
 	assign nets[7:0] = din;
-	assign dout = nets[(N+1)*8-1:N*8];
+	assign dout = nets[(N+INCR_OUT_WIDTH+1)*8-1:N*8];
 
 	genvar i, j;
 	generate
-		for (i = 0; i < N; i = i+1) begin:is
+		for (i = 0; i < N+INCR_OUT_WIDTH; i = i+1) begin:is
 			for (j = 0; j < 8; j = j+1) begin:js
 				localparam integer k = xorshift32(xorshift32(xorshift32(xorshift32((i << 20) ^ (j << 10) ^ `SEED)))) & 255;
 				LUT6 #(

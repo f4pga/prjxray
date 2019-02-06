@@ -17,7 +17,7 @@ with open("design.txt", "r") as f:
     for line in f:
         tile, pip, src, dst, pnum, pdir = line.split()
 
-        if not tile.startswith('INT_'):
+        if not tile.startswith('INT_') or "INT_INTERFACE" in tile:
             continue
 
         _, pip = pip.split(".")

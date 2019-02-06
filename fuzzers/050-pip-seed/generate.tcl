@@ -4,6 +4,7 @@ create_project -force -part $::env(XRAY_PART) design design
 puts "FUZ([pwd]): Reading verilog"
 read_verilog $::env(FUZDIR)/top.v
 read_verilog $::env(FUZDIR)/picorv32.v
+read_verilog $::env(FUZDIR)/dsp.v
 
 puts "FUZ([pwd]): Synth design"
 synth_design -top top
