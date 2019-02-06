@@ -2,6 +2,8 @@
 
 from datetime import datetime, timedelta
 
+import argparse
+import collections
 import io
 import os
 import os.path
@@ -93,7 +95,7 @@ class Logger:
     def __init__(self, fuzzer, time_start, padding):
         self.fuzzer = fuzzer + ' ' * (padding - len(fuzzer))
         self.time_start = time_start
-        self.queue = []
+        self.queue = collections.deque()
 
     def _now(self):
         return datetime.utcnow()
@@ -115,7 +117,7 @@ class Logger:
 
     def flush(self):
         while len(self.queue) > 0:
-            time_log, msg, args, kw = self.queue.pop(0)
+            time_log, msg, args, kw = self.queue.popleft()
             self._output(time_log, msg, args, kw)
 
     def _output(self, time_log, msg, args, kw):
@@ -126,7 +128,7 @@ class Logger:
             self.fuzzer, pretty_timedelta_str(running_for))
 
         msg = "\n".join(log_prefix + x for x in msg.splitlines())
-        print(msg)
+        print(msg, flush=True)
 
 
 def last_lines(f, num, blocksize=100):
@@ -169,7 +171,7 @@ def last_lines(f, num, blocksize=100):
     ['1', '22', '3333333', '']
 
     """
-    lines = ['']
+    lines = collections.deque([''])
     # Seek to the end of the file
     f.seek(0, os.SEEK_END)
     fpos = f.tell()
@@ -191,7 +193,7 @@ def last_lines(f, num, blocksize=100):
     if fpos == 0:
         lines.insert(0, '')
 
-    return lines[1:]
+    return list(lines)[1:]
 
 
 def get_usage():
@@ -261,7 +263,7 @@ def get_pstree(pid):
     # Special case segfaults.
     if 'Segmentation fault' in stderr:
         stderr = ''
-        stdout = '(result to big, pstree segfaulted.)'
+        stdout = '(result too big, pstree segfaulted.)'
 
     # If no error, just return stdout
     if not stderr:
@@ -270,7 +272,7 @@ def get_pstree(pid):
     return "{}\n{}".format(stdout, stderr)
 
 
-def run_submake(make_flags):
+def should_run_submake(make_flags):
     """Check if make_flags indicate that we should execute things.
 
     See https://www.gnu.org/software/make/manual/html_node/Instead-of-Execution.html#Instead-of-Execution  # noqa
@@ -281,44 +283,44 @@ def run_submake(make_flags):
     The flags end up as single letter versions in the MAKEFLAGS environment
     variable.
 
-    >>> run_submake('')
+    >>> should_run_submake('')
     True
 
     The following flags are important;
 
      -n == --dry-run
 
-    >>> run_submake('n')
+    >>> should_run_submake('n')
     False
-    >>> run_submake('n --blah')
+    >>> should_run_submake('n --blah')
     False
-    >>> run_submake('--blah n')
+    >>> should_run_submake('--blah n')
     False
-    >>> run_submake('--blah')
+    >>> should_run_submake('--blah')
     True
-    >>> run_submake('--random')
+    >>> should_run_submake('--random')
     True
 
      -q == --question
 
-    >>> run_submake('q')
+    >>> should_run_submake('q')
     False
-    >>> run_submake('q --blah')
+    >>> should_run_submake('q --blah')
     False
-    >>> run_submake('--blah q')
+    >>> should_run_submake('--blah q')
     False
-    >>> run_submake('--blah')
+    >>> should_run_submake('--blah')
     True
-    >>> run_submake('--random')
+    >>> should_run_submake('--random')
     True
 
       Both --dry-run and --question
 
-    >>> run_submake('qn')
+    >>> should_run_submake('qn')
     False
-    >>> run_submake('nq')
+    >>> should_run_submake('nq')
     False
-    >>> run_submake('--quiant')
+    >>> should_run_submake('--quiant')
     True
     """
     r = re.search(r'(?:^|\s)[^-]*(n|q)[^\s]*(\s|$)', make_flags)
@@ -330,21 +332,23 @@ def run_submake(make_flags):
 def main(argv):
     fuzzers = os.path.abspath(os.path.dirname(__file__))
 
-    assert len(argv) == 2, argv
-    fuzzer = argv[1]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("fuzzer", help="fuzzer to run")
+    args = parser.parse_args()
 
     make_cmd = os.environ.get('MAKE', 'make')
     make_flags = os.environ.get('MAKEFLAGS', '')
 
     # Should run things?
-    if not run_submake(make_flags):
+    if not should_run_submake(make_flags):
         return 0
 
     time_start = datetime.utcnow()
 
+    # Setup the logger with flush=False, it should be safe to use in a signal
+    # handler.
     fuzzer_length = max(len(f) for f in os.listdir(fuzzers))
-
-    logger = Logger(fuzzer, time_start, fuzzer_length)
+    logger = Logger(args.fuzzer, time_start, fuzzer_length)
 
     def log(msg, *a, **k):
         logger.log(msg, a, k, flush=True)
@@ -353,17 +357,16 @@ def main(argv):
     # anything.
     signal.signal(signal.SIGCHLD, lambda sig, frame: None)
 
-    fuzzer_dir = os.path.join(fuzzers, fuzzer)
+    fuzzer_dir = os.path.join(fuzzers, args.fuzzer)
     assert os.path.exists(fuzzer_dir), fuzzer_dir
     # FIXME: The fuzzer output directory should be different from the top level
     # fuzzer directory.
-    fuzzer_out = fuzzer_dir
-    if not os.path.exists(fuzzer_out):
-        os.makedirs(fuzzer_out)
-    assert os.path.exists(fuzzer_out)
+    fuzzer_logdir = os.path.join(fuzzer_dir, "logs")
+    if not os.path.exists(fuzzer_logdir):
+        os.makedirs(fuzzer_logdir)
+    assert os.path.exists(fuzzer_logdir)
 
-    fuzzer_runok = os.path.join(fuzzer_out, "run.ok")
-
+    fuzzer_runok = os.path.join(fuzzer_logdir, "run.ok")
     if os.path.exists(fuzzer_runok):
         last_modified = datetime.fromtimestamp(os.stat(fuzzer_runok).st_mtime)
 
@@ -373,33 +376,31 @@ def main(argv):
     else:
         log("Starting @ {}", time_start.isoformat())
 
+    running_msg = "Running {} -C {} run (with MAKEFLAGS='{}')".format(
+        make_cmd,
+        fuzzer_dir,
+        make_flags,
+    )
+    log(running_msg)
+
     log_suffix = ".{}.log".format(time_start.isoformat())
-    fuzzer_stdout = os.path.join(fuzzer_out, "stdout" + log_suffix)
-    fuzzer_stderr = os.path.join(fuzzer_out, "stderr" + log_suffix)
+    fuzzer_stdout = os.path.join(fuzzer_logdir, "stdout" + log_suffix)
+    fuzzer_stderr = os.path.join(fuzzer_logdir, "stderr" + log_suffix)
 
-    # Make sure the stdout file exists
-    stdout_fd = open(fuzzer_stdout, "w")
-    stdout_fd.write("Build started {}\n".format(time_start.isoformat()))
-    stdout_fd.write("-" * 75)
-    stdout_fd.write("\n")
-    stdout_fd.flush()
-    os.fsync(stdout_fd)
-    stdout_fd.close()
+    # Write header to stdout/stderr to make sure they match.
+    for fname in [fuzzer_stdout, fuzzer_stderr]:
+        with open(fname, "w") as fd:
+            fd.write("Build starting @ {}\n".format(time_start.isoformat()))
+            fd.write(running_msg)
+            fd.write("\n")
+            fd.write("-" * 75)
+            fd.write("\n")
+            fd.flush()
+            os.fsync(fd)
 
-    stdout_fd = open(fuzzer_stdout, "w+")
-    stdout_fd.seek(0, os.SEEK_END)
-
-    # Make sure the stderr file exists
-    stderr_fd = open(fuzzer_stderr, "w")
-    stderr_fd.write("Build started {}\n".format(time_start.isoformat()))
-    stderr_fd.write("-" * 75)
-    stderr_fd.write("\n")
-    stderr_fd.flush()
-    os.fsync(stderr_fd)
-    stderr_fd.close()
-
-    stderr_fd = open(fuzzer_stderr, "w+")
-    stderr_fd.seek(0, os.SEEK_END)
+    # Open the log files for appending
+    stdout_fd = open(fuzzer_stdout, "a")
+    stderr_fd = open(fuzzer_stderr, "a")
 
     # Play nice with make's jobserver.
     # See https://www.gnu.org/software/make/manual/html_node/POSIX-Jobserver.html#POSIX-Jobserver  # noqa
@@ -422,12 +423,6 @@ def main(argv):
 
     p = None
     try:
-        log(
-            "Running {} -C {} run (with MAKEFLAGS='{}')",
-            make_cmd,
-            fuzzer_dir,
-            make_flags,
-        )
         p = subprocess.Popen(
             [make_cmd, '-C', fuzzer_dir, 'run'],
             stdin=None,
@@ -474,6 +469,7 @@ def main(argv):
                 retcode = -1
                 p.kill()
                 p.wait()
+                log("Warning: Killed program which should have been dead!")
     except Exception:
         tb = io.StringIO()
         traceback.print_exc(file=tb)
@@ -490,8 +486,8 @@ def main(argv):
 
     time_end = datetime.utcnow()
     if retcode != 0:
-        # Log the last 100 lines of stderr on a failure
-        error_log = "\n".join(last_lines(open(fuzzer_stderr), 100))
+        # Log the last 10,000 lines of stderr on a failure
+        error_log = "\n".join(last_lines(open(fuzzer_stderr), 10000))
         log(
             """\
 Failed @ {time_end} with exit code: {retcode}

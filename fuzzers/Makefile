@@ -32,7 +32,7 @@ ifeq ($(VERBOSE),Y)
 
 # When verbose we just call make directory
 $(1)/run.ok: $(addsuffix /run.ok,$(2))
-	$(MAKE) $(1)
+	$$(MAKE) -C $(1) run
 
 else
 
