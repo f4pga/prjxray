@@ -1,22 +1,39 @@
 # PULLTYPE
 
-PULLTYPE    28  29  30
-NONE                X
-KEEPER      X       X
+PULLTYPE    38_98   39_97  39_97
+NONE                  X
+KEEPER       X        X
 PULLDOWN
-PULLUP          X   X
+PULLUP       X        	     X
 
 
 # DRIVE
 
-DRIVE       A00 A02 A08 A10 B09 B01
-0           FIXME
-4           X   X           X
-8               X   X           X
-12          X   X               X
-16          X           X   X
-24          FIXME
+Drive strength depends on current IOSTANDARD, e.g.
 
+LVCMOS18
+DRIVE     38_64    38_66    38_72    38_74    39_65    39_73
+4           X        X                                   X
+8                    X        X                 X
+12                   X        X                 X
+16          X        X                          X
+24                            X        X        X
+
+LVCMOS25
+DRIVE     38_64    38_66    38_72    38_74    39_65    39_73
+4           X        X                                   X
+8                             X                 
+12                                            
+16                                     X        X        X
+
+LVCMOS33
+DRIVE     38_64    38_66    38_72    38_74    39_65    39_73
+4           X        X                                   X
+8                    X        X                 X
+12          X        X                          X
+16          X                          X                 X
+
+The minitest contains a csv target which generates a csv with differences across all LVCMOS and LVTTL standards for all supported DRIVE strengths and both slew rates.
 
 # IOSTANDARD
 
