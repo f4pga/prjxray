@@ -24,6 +24,7 @@ sudo apt-get install -y \
         fontconfig \
         git \
         jq \
+        nodejs \
         psmisc \
         python \
         python3 \
@@ -44,3 +45,11 @@ echo "----------------------------------------"
 )
 
 echo "----------------------------------------"
+
+echo
+echo "========================================"
+echo "Getting diff2html to produce pretty database diffs"
+echo "----------------------------------------"
+(
+	sudo npm install -g diff2html-cli
+)

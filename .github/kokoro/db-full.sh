@@ -84,14 +84,30 @@ echo "----------------------------------------"
 	echo " Database Status"
 	echo "----------------------------------------"
 	git status
+	git add *
 	echo "----------------------------------------"
 	echo
-	echo
+	echo "----------------------------------------"
+	echo " Database Diff Summary"
+	echo "----------------------------------------"
+	git diff --stat --irreversible-delete --find-renames --find-copies --ignore-all-space
 	echo
 	echo "----------------------------------------"
 	echo " Database Diff"
 	echo "----------------------------------------"
-	git diff
+	git diff --color --irreversible-delete --find-renames --find-copies --ignore-all-space
+	echo
+	echo "----------------------------------------"
+	echo " Generating pretty diff"
+	echo "----------------------------------------"
+	diff2html --summary=open --file diff.html --format html \
+		-- \
+		--irreversible-delete --find-renames --find-copies --ignore-all-space \
+		|| true
+	diff2html --file diff.json --format json \
+		-- \
+		--irreversible-delete --find-renames --find-copies --ignore-all-space \
+		|| true
 )
 echo "----------------------------------------"
 

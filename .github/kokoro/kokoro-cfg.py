@@ -9,9 +9,18 @@ timeout_mins: 4320
 
 action {
   define_artifacts {
+    # File types
+    regex: "**/diff.html"
+    regex: "**/diff.json"
     regex: "**/*result*.xml"
-    regex: "**/*.log"
-    regex: "database/%(part)s/**"
+    regex: "**/*sponge_log.xml"
+    # Whole directories
+    # regex: "**/build/**" - Currently kokoro dies on number of artifacts.
+    regex: "**/build/*.log"
+    regex: "**/logs/**"
+    # The database
+    regex: "**/database/%(part)s/**"
+    strip_prefix: "github/symbiflow-prjxray-%(kokoro_type)s-db-%(part)s/"
   }
 }
 
