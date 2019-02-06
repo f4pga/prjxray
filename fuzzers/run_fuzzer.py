@@ -31,11 +31,11 @@ def pretty_timedelta_str(d):
     '2m05s'
 
     >>> pretty_timedelta_str(timedelta(seconds=secs_in_hour * 5))
-    '5h'
+    '5h00m'
 
     Once we get to displaying hours, we don't bother displaying seconds.
     >>> pretty_timedelta_str(timedelta(seconds=secs_in_hour * 5 + 1))
-    '5h'
+    '5h00m'
 
     >>> pretty_timedelta_str(timedelta(
     ...   seconds=secs_in_hour * 5 + secs_in_min * 2 + 1))
@@ -55,7 +55,7 @@ def pretty_timedelta_str(d):
         ts -= hours * secs_in_hour
 
     mins = int(ts / secs_in_min)
-    if mins > 0:
+    if mins > 0 or hours > 0:
         if hours > 0:
             bits.append("{:02d}m".format(mins))
         else:
