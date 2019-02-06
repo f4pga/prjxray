@@ -513,7 +513,8 @@ Succeeded! @ {}
 --------------------------------------------------------------------------
 {}
 --------------------------------------------------------------------------
-""", time_end.isoformat(), success_log)
+Succeeded! @ {}
+""", time_end.isoformat(), success_log, time_end.isoformat())
 
     logger.flush()
     return retcode
