@@ -17,7 +17,7 @@ echo "========================================"
 echo "Downloading current database"
 echo "----------------------------------------"
 (
-	./download-latest-db.sh
+	script --return --flush --command "./download-latest-db.sh" -
 )
 echo "----------------------------------------"
 
