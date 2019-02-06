@@ -76,10 +76,7 @@ def run():
     assign_o(rand_site(), 'do[0]')
     # Now assign the rest randomly
     while len(remain_sites()):
-        if random.randint(0, 1):
-            assign_i(rand_site(), 'di[%u]' % DIN_N)
-        else:
-            assign_o(rand_site(), 'do[%u]' % DOUT_N)
+        assign_o(rand_site(), 'do[%u]' % DOUT_N)
 
     write_pins(ports)
 

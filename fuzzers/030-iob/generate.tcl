@@ -32,7 +32,7 @@ proc loc_pins {} {
     set io_pin_sites [make_io_pin_sites]
 
     set fp [open "design.csv" w]
-    puts $fp "port,site,tile,pin,val"
+    puts $fp "port,site,tile,pin,iostandard,slew,drive,pulltype"
 
     puts "Looping"
     for {set idx 0} {$idx < [llength $pin_lines]} {incr idx} {
@@ -53,20 +53,27 @@ proc loc_pins {} {
         set tile [get_tiles -of_objects $site]
         set pin [dict get $io_pin_sites $site]
 
-        set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" $port
+        set iostandard_val "LVCMOS25"
+        set_property -dict "PACKAGE_PIN $pin IOSTANDARD $iostandard_val" $port
 
-        # list_property isn't working (maybe due to empty?)
-        # set keys [list_property_value PULLTYPE $port]
-        # NONE placeholder for ""
-        set keys "NONE PULLUP PULLDOWN KEEPER"
-        set val [randsample_list 1 $keys]
-        if { $val == "NONE" } {
-            set val ""
+        set pulltype "NONE PULLUP PULLDOWN KEEPER"
+        set pulltype_val [randsample_list 1 $pulltype]
+        if { $pulltype_val == "NONE" } {
+            set pulltype_val ""
         }
+        set_property PULLTYPE $pulltype_val $port
 
-        set_property PULLTYPE $val $port
-        # puts "IOB $port $site $tile $pin $val"
-        puts $fp "$port,$site,$tile,$pin,$val"
+        if {$io == "input"} continue
+
+        set drive "4 8 12 16"
+        set drive_val [lindex $drive [expr {$idx % 4}]]
+        set_property DRIVE $drive_val $port
+
+        set slew "SLOW FAST"
+        set slew_val [lindex $slew [expr {($idx + ($idx / 4)) % 2}]]
+        set_property SLEW $slew_val $port
+
+        puts $fp "$port,$site,$tile,$pin,$iostandard_val,$slew_val,$drive_val,$pulltype_val"
     }
     close $fp
 }
