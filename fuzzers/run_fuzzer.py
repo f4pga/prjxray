@@ -228,51 +228,51 @@ def get_load():
     return a1 / cpus * 100.0, a5 / cpus * 100.0, a15 / cpus * 100.0
 
 
-_pstree_features = None
+class PsTree:
+    _pstree_features = None
 
+    @classmethod
+    def get_features(cls):
+        if cls._pstree_features is None:
+            cls._pstree_features = []
+            for f in ['-T', '-l']:
+                try:
+                    subprocess.check_output(
+                        "pstree {}".format(f),
+                        stderr=subprocess.STDOUT,
+                        shell=True,
+                    )
+                    cls._pstree_features.append(f)
+                except subprocess.CalledProcessError:
+                    continue
+        return cls._pstree_features
 
-def get_pstree_features():
-    global _pstree_features
-    if _pstree_features is None:
-        _pstree_features = []
-        for f in ['-T', '-l']:
-            try:
-                subprocess.check_output(
-                    "pstree {}".format(f),
-                    stderr=subprocess.STDOUT,
-                    shell=True,
-                )
-                _pstree_features.append(f)
-            except subprocess.CalledProcessError:
-                continue
-    return _pstree_features
+    @classmethod
+    def get(cls, pid):
+        """Get processes under current one.
 
+        Requires the pstree until be installed, otherwise returns empty string.
+        """
+        p = subprocess.Popen(
+            "pstree {} {}".format(" ".join(cls.get_features()), pid),
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.DEVNULL,
+            universal_newlines=True,
+        )
+        stdout, stderr = p.communicate()
 
-def get_pstree(pid):
-    """Get processes under current one.
+        # Special case segfaults.
+        if 'Segmentation fault' in stderr:
+            stderr = ''
+            stdout = '(result too big, pstree segfaulted.)'
 
-    Requires the pstree until be installed, otherwise returns empty string.
-    """
-    p = subprocess.Popen(
-        "pstree {} {}".format(" ".join(get_pstree_features()), pid),
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        stdin=subprocess.DEVNULL,
-        universal_newlines=True,
-    )
-    stdout, stderr = p.communicate()
+        # If no error, just return stdout
+        if not stderr:
+            return stdout
 
-    # Special case segfaults.
-    if 'Segmentation fault' in stderr:
-        stderr = ''
-        stdout = '(result too big, pstree segfaulted.)'
-
-    # If no error, just return stdout
-    if not stderr:
-        return stdout
-
-    return "{}\n{}".format(stdout, stderr)
+        return "{}\n{}".format(stdout, stderr)
 
 
 def should_run_submake(make_flags):
@@ -453,7 +453,7 @@ def main(argv):
             log(
                 "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%).\n{}",
                 *get_load(),
-                get_pstree(p.pid),
+                PsTree.get(p.pid),
             )
     except (Exception, KeyboardInterrupt, SystemExit):
         retcode = -1
