@@ -1,7 +1,7 @@
-/env/
-/build/
-/logs/
-/database/
+env
+build
+logs
+database
 .Xil
 **/specimen_*
 **/output
