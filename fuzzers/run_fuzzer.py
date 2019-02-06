@@ -333,51 +333,69 @@ def should_run_submake(make_flags):
 
 
 def main(argv):
-    fuzzers = os.path.abspath(os.path.dirname(__file__))
+    fuzzers_dir = os.path.abspath(os.path.dirname(__file__))
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("fuzzer", help="fuzzer to run")
+    parser.add_argument(
+        "--retries",
+        type=int,
+        default=5,
+        help="Retry a failed fuzzer n times.",
+    )
     args = parser.parse_args()
-
-    make_cmd = os.environ.get('MAKE', 'make')
-    make_flags = os.environ.get('MAKEFLAGS', '')
-
-    # Should run things?
-    if not should_run_submake(make_flags):
-        return 0
-
-    time_start = datetime.utcnow()
 
     # Setup the logger with flush=False, it should be safe to use in a signal
     # handler.
-    fuzzer_length = max(len(f) for f in os.listdir(fuzzers))
-    logger = Logger(args.fuzzer, time_start, fuzzer_length)
-
-    def log(msg, *a, **k):
-        logger.log(msg, a, k, flush=True)
+    fuzzer_length = max(len(f) for f in os.listdir(fuzzers_dir))
+    logger = Logger(args.fuzzer, datetime.utcnow(), fuzzer_length)
 
     # Need a signal handler on SIGCHLD otherwise get_resource doesn't return
     # anything.
     signal.signal(signal.SIGCHLD, lambda sig, frame: None)
 
-    fuzzer_dir = os.path.join(fuzzers, args.fuzzer)
+    fuzzer_dir = os.path.join(fuzzers_dir, args.fuzzer)
     assert os.path.exists(fuzzer_dir), fuzzer_dir
-    # FIXME: The fuzzer output directory should be different from the top level
-    # fuzzer directory.
-    fuzzer_logdir = os.path.join(fuzzer_dir, "logs")
-    if not os.path.exists(fuzzer_logdir):
-        os.makedirs(fuzzer_logdir)
-    assert os.path.exists(fuzzer_logdir)
 
-    fuzzer_runok = os.path.join(fuzzer_logdir, "run.ok")
+    exit_code = -1
+    for retry_count in range(0, args.retries):
+        logger.log('Running fuzzer attempt: {}', [retry_count])
+        exit_code = run_fuzzer(args.fuzzer, fuzzer_dir, logger)
+        if exit_code <= 0:
+            break
+        logger.log('WARNING: Fuzzer failed!')
+    return exit_code
+
+
+def run_fuzzer(fuzzer_name, fuzzer_dir, logger):
+    def log(msg, *a, **k):
+        logger.log(msg, a, k, flush=True)
+
+    make_cmd = os.environ.get('MAKE', 'make')
+    make_flags = os.environ.get('MAKEFLAGS', '')
+    # Should run things?
+    if not should_run_submake(make_flags):
+        return 0
+
+    fuzzer_runok = os.path.join(fuzzer_dir, "run.ok")
     if os.path.exists(fuzzer_runok):
         last_modified = datetime.fromtimestamp(os.stat(fuzzer_runok).st_mtime)
 
         log(
             "Skipping as run.ok exists (updated @ {})",
             last_modified.isoformat())
-    else:
-        log("Starting @ {}", time_start.isoformat())
+
+        return 0
+
+    time_start = datetime.utcnow()
+    log("Starting @ {}", time_start.isoformat())
+
+    # FIXME: The fuzzer output directory should be different from the top level
+    # fuzzer directory.
+    fuzzer_logdir = os.path.join(fuzzer_dir, "logs")
+    if not os.path.exists(fuzzer_logdir):
+        os.makedirs(fuzzer_logdir)
+    assert os.path.exists(fuzzer_logdir)
 
     running_msg = "Running {} -C {} run (with MAKEFLAGS='{}')".format(
         make_cmd,
@@ -462,8 +480,14 @@ def main(argv):
         log(tb.getvalue())
 
     # Prevent Ctrl-C so we exit properly...
-    signal.signal(signal.SIGINT, lambda sig, frame: logger.log("Dieing!"))
+    old_sigint_handler = signal.getsignal(signal.SIGINT)
 
+    def log_die(sig, frame):
+        logger.log("Dieing!")
+
+    signal.signal(signal.SIGINT, log_die)
+
+    # Cleanup child process if they haven't already died.
     try:
         if p is not None:
             try:
@@ -517,6 +541,7 @@ Succeeded! @ {}
 """, time_end.isoformat(), success_log, time_end.isoformat())
 
     logger.flush()
+    signal.signal(signal.SIGINT, old_sigint_handler)
     return retcode
 
 
