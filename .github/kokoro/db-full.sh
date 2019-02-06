@@ -53,6 +53,7 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 
 	# Check there is nothing to do after running...
+	echo
 	if [ $(make --dry-run | grep -v 'Nothing to be done' | wc -l) -gt 0 ]; then
 		echo "The following targets need to still run!"
 		make --dry-run
@@ -60,6 +61,7 @@ echo "----------------------------------------"
 		echo "Debug output on why they still need to run"
 		make --dry-run --debug
 		echo "----------------------------------------"
+		exit 1
 	else
 		echo "All good, nothing more to do!"
 	fi
@@ -94,4 +96,19 @@ echo "----------------------------------------"
 echo "----------------------------------------"
 
 # Check the database and fail if it is broken.
-make checkdb-${XRAY_SETTINGS}
+#make checkdb-${XRAY_SETTINGS}
+
+# If we get here, then all the fuzzers completed fine. Hence we are
+# going to assume we don't want to keep all the build / logs / etc (as
+# they are quite large). Thus do a clean to get rid of them.
+echo
+echo "========================================"
+echo " Cleaning up after success"
+echo "----------------------------------------"
+(
+	cd fuzzers
+	echo
+	echo "Cleaning up so CI doesn't save all the excess data."
+	make clean
+)
+echo "----------------------------------------"
