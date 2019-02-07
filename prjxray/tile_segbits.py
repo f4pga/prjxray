@@ -147,9 +147,9 @@ class TileSegbits(object):
         for block_type in self.segbits:
             if address == 0 and feature in self.segbits[block_type]:
                 for bit in self.segbits[block_type][feature]:
-                    yield bit
+                    yield block_type, bit
                 return
 
         block_type, feature = self.feature_addresses[feature][address]
         for bit in self.segbits[block_type][feature]:
-            yield bit
+            yield block_type, bit
