@@ -6,8 +6,6 @@ env:
 	virtualenv --python=python3 --system-site-packages env
 	$(IN_ENV) pip install -r requirements.txt
 	$(IN_ENV) pip install -r docs/requirements.txt
-	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
-	ln -sf $(PWD)/third_party/fasm/ env/lib/python3.*/site-packages/
 	$(IN_ENV) python -c "import yaml" || (echo "Unable to find python-yaml" && exit 1)
 
 build:
@@ -25,7 +23,7 @@ test: test-py test-cpp
 	@true
 
 test-py:
-	$(IN_ENV) py.test $(TEST_EXCLUDE) --doctest-modules --junitxml=build/py_test_results.xml
+	$(IN_ENV) PYTHONPATH="$(PWD):$(PWD)/third_party/fasm:$PYTHONPATH" py.test $(TEST_EXCLUDE) --doctest-modules --junitxml=build/py_test_results.xml
 
 test-cpp:
 	mkdir -p build
