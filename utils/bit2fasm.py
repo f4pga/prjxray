@@ -50,16 +50,12 @@ def bits_to_fasm(db_root, bits_file, verbose, canonical):
         return not any_bits
 
     model = fasm.output.merge_and_sort(
-            disassembler.find_features_in_bitstream(bitdata, verbose=verbose),
-            zero_function=is_zero_feature,
-            sort_key=grid.tile_key,
-            )
+        disassembler.find_features_in_bitstream(bitdata, verbose=verbose),
+        zero_function=is_zero_feature,
+        sort_key=grid.tile_key,
+    )
 
-    print(
-        fasm.fasm_tuple_to_string(
-            model,
-            canonical=canonical),
-        end='')
+    print(fasm.fasm_tuple_to_string(model, canonical=canonical), end='')
 
 
 def main():
