@@ -465,10 +465,9 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger):
 
         # Make sure the file descriptors exist..
         job_rd_fd = os.fdopen(int(job_rd), 'rb', 0)
+        assert job_rd_fd
         job_wr_fd = os.fdopen(int(job_wr), 'rb', 0)
-    else:
-        job_rd_fd = None
-        job_wr_fd = None
+        assert job_wr_fd
 
     p = None
     try:
@@ -480,12 +479,6 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger):
             # Make sure not to close the fds as make uses fd=(3,4) for process
             # control.
             close_fds=False)
-
-        # Close the jobserver files if they were found.
-        if job_rd_fd:
-            job_rd_fd.close()
-        if job_wr_fd:
-            job_wr_fd.close()
 
         while True:
             try:
