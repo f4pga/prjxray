@@ -11,6 +11,14 @@ echo "----------------------------------------"
 
 echo
 echo "========================================"
+echo "Host remove packages"
+echo "----------------------------------------"
+sudo apt-get remove -y \
+	python-pytest \
+
+echo "----------------------------------------"
+echo
+echo "========================================"
 echo "Host install packages"
 echo "----------------------------------------"
 sudo apt-get install -y \
