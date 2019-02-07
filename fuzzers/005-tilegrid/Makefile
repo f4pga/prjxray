@@ -11,6 +11,8 @@ TILEGRID_TDB_DEPENDENCIES += clb/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += dsp/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += fifo_int/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += cfg_int/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += monitor_int/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
 ifeq (${XRAY_DATABASE}, zynq7)
@@ -66,6 +68,9 @@ ps7_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd monitor && $(MAKE)
 
+monitor_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd monitor_int && $(MAKE)
+
 bram/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd bram && $(MAKE)
 
@@ -83,6 +88,9 @@ dsp_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 
 fifo_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd fifo_int && $(MAKE)
+
+cfg_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd cfg_int && $(MAKE)
 
 build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
@@ -114,6 +122,8 @@ clean:
 	cd dsp_int && $(MAKE) clean
 	cd fifo_int && $(MAKE) clean
 	cd monitor && $(MAKE) clean
+	cd monitor_int && $(MAKE) clean
+	cd cfg_int && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 
