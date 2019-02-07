@@ -1,6 +1,7 @@
 fasm
 futures
 intervaltree
+junit-xml
 numpy
 parse
 progressbar2

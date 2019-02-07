@@ -6,9 +6,16 @@ FUZDIR ?= ${PWD}
 
 all: database
 
+# generate.sh / top_generate.sh call make, hence the command must
+# have a + before it.
 $(SPECIMENS_OK):
 	mkdir -p build
-	if [ -f $(FUZDIR)/generate.sh ]; then export $(ENV_VAR); bash $(FUZDIR)/generate.sh $(subst /OK,,$@); else bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@); fi
+	+if [ -f $(FUZDIR)/generate.sh ]; then \
+		export $(ENV_VAR); \
+		bash $(FUZDIR)/generate.sh $(subst /OK,,$@); \
+	else \
+		bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@); \
+	fi
 
 run:
 	$(MAKE) clean

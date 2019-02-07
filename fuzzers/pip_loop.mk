@@ -55,10 +55,10 @@ build/database/seeded:
 	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
 	touch build/database/seeded
 
-# XXX: conider moving to script
+# FIXME: consider moving to script
 run:
 	$(MAKE) clean
-	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
+	+$(XRAY_DIR)/fuzzers/int_loop.sh --check-args "$(CHECK_ARGS)"
 	touch run.ok
 
 clean:
@@ -72,4 +72,3 @@ cleanpiplist:
 	rm -rf $(XRAY_FUZZERS_DIR)/piplist/build
 
 .PHONY: all database pushdb run clean cleaniter cleanpiplist
-
