@@ -92,6 +92,9 @@ def run(fn_in, fn_out, verbose=False):
         ("ps7_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("cfg_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("monitor_int/build/segbits_tilegrid.tdb", int_frames, int_words),
+        (
+            "orphan_int_column/build/segbits_tilegrid.tdb", int_frames,
+            int_words),
     ]
 
     for (tdb_fn, frames, words) in tdb_fns:

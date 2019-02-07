@@ -25,6 +25,7 @@ TILEGRID_TDB_DEPENDENCIES += mmcm/build/segbits_tilegrid.tdb
 endif
 
 ifeq (${XRAY_DATABASE}, kintex7)
+TILEGRID_TDB_DEPENDENCIES += orphan_int_column/build/segbits_tilegrid.tdb
 else
 # Disable DSP INT fuzzer on kintex7.  It doesn't work, and isn't required.
 TILEGRID_TDB_DEPENDENCIES += dsp_int/build/segbits_tilegrid.tdb
@@ -92,6 +93,9 @@ fifo_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 cfg_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd cfg_int && $(MAKE)
 
+orphan_int_column/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd orphan_int_column && $(MAKE)
+
 build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
 		--fn-in build/basicdb/tilegrid.json \
@@ -124,6 +128,7 @@ clean:
 	cd monitor && $(MAKE) clean
 	cd monitor_int && $(MAKE) clean
 	cd cfg_int && $(MAKE) clean
+	cd orphan_int_column && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 
