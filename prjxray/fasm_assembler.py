@@ -138,7 +138,8 @@ class FasmAssembler(object):
         for block_type in any_bits:
             # Mark all frames used by this tile as in use.
             bits = gridinfo.bits[block_type]
-            for frame in range(bits.base_address, bits.base_address + bits.frames):
+            for frame in range(bits.base_address,
+                               bits.base_address + bits.frames):
                 self.frames_in_use.add(frame)
 
     def parse_fasm_filename(self, filename):
