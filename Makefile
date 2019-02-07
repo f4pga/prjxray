@@ -3,7 +3,7 @@ ALL_EXCLUDE = third_party .git env build
 # Tools + Environment
 IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi;
 env:
-	virtualenv --python=python3 --system-site-packages env
+	virtualenv --python=python3 env
 	# Install prjxray
 	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
 	$(IN_ENV) python -c "import prjxray"
@@ -34,13 +34,14 @@ test: test-py test-cpp
 	@true
 
 test-py:
-	$(IN_ENV) PYTHONPATH="$(PWD):$(PWD)/third_party/fasm:$PYTHONPATH" py.test $(TEST_EXCLUDE) --doctest-modules --junitxml=build/py_test_results.xml
+	$(IN_ENV) which py.test; py.test $(TEST_EXCLUDE) --doctest-modules --junitxml=build/py_test_results.xml
 
 test-cpp:
 	mkdir -p build
 	cd build && cmake -DPRJXRAY_BUILD_TESTING=ON ..
 	cd build && $(MAKE) -s
 	cd build && ctest --no-compress-output -T Test -C RelWithDebInfo --output-on-failure
+	xsltproc .github/kokoro/ctest2junit.xsl build/Testing/*/Test.xml > build/cpp_test_results.xml
 
 .PHONY: test test-py test-cpp
 
@@ -69,28 +70,49 @@ format: format-cpp format-docs format-py format-tcl
 
 .PHONY: format format-cpp format-py format-tcl
 
-# Project X-Ray database
+# Targets related to Project X-Ray databases
 # ------------------------
 
+DATABASES=artix7 kintex7 zynq7
+
+define database
+
+# $(1) - Database name
+
+checkdb-$(1):
+	@echo
+	@echo "Checking $(1) database"
+	@echo "============================"
+	@$(IN_ENV) python3 utils/checkdb.py --db-root database/$(1)
+
+formatdb-$(1):
+	@echo
+	@echo "Formatting $(1) database"
+	@echo "============================"
+	@$(IN_ENV) cd database/$(1); python3 ../../utils/sort_db.py
+	@if [ -e database/Info.md ]; then $(IN_ENV) ./utils/info_md.py --keep; fi
+
+.PHONY: checkdb-$(1) formatdb-$(1)
+.NOTPARALLEL: checkdb-$(1) formatdb-$(1)
+
+checkdb: checkdb-$(1)
+formatdb: formatdb-$(1)
+
+endef
+
+$(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
+
 checkdb:
-	@for DB in database/*; do if [ -d $$DB ]; then \
-		echo ; \
-		echo "Checking $$DB"; \
-		echo "============================"; \
-		$(IN_ENV) python3 utils/checkdb.py --db-root $$DB; \
-	fi; done
+	@true
 
 formatdb:
-	@for DB in database/*; do if [ -d $$DB ]; then \
-		echo ; \
-		echo "Formatting $$DB"; \
-		echo "============================"; \
-		($(IN_ENV) cd $$DB; python3 ../../utils/sort_db.py || exit 1) || exit 1; \
-	fi; done
-	@make checkdb
-	$(IN_ENV) ./utils/info_md.py --keep
+	@true
+
+.PHONY: checkdb formatdb
 
 clean:
 	$(MAKE) -C database clean
 	$(MAKE) -C fuzzers clean
 	rm -rf build
+
+.PHONY: clean

@@ -10,6 +10,7 @@ addons:
     packages:
       - clang-format-5.0
       - g++-6
+      - xsltproc
 
 install:
   - export CC=gcc-6
