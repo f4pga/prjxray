@@ -14,6 +14,8 @@ import subprocess
 import sys
 import traceback
 
+import junit_xml
+
 secs_in_min = 60
 secs_in_hour = 60 * secs_in_min
 
@@ -357,17 +359,50 @@ def main(argv):
     fuzzer_dir = os.path.join(fuzzers_dir, args.fuzzer)
     assert os.path.exists(fuzzer_dir), fuzzer_dir
 
+    fuzzer_logdir = os.path.join(fuzzer_dir, "logs")
+    if not os.path.exists(fuzzer_logdir):
+        os.makedirs(fuzzer_logdir)
+    assert os.path.exists(fuzzer_logdir)
+
     exit_code = -1
+    test_cases = []
     for retry_count in range(0, args.retries):
         logger.log('Running fuzzer attempt: {}', [retry_count])
-        exit_code = run_fuzzer(args.fuzzer, fuzzer_dir, logger)
+        exit_code, test_case = run_fuzzer(
+            args.fuzzer,
+            fuzzer_dir,
+            fuzzer_logdir,
+            logger,
+        )
+        if test_case:
+            test_cases.append(test_case)
         if exit_code <= 0:
             break
         logger.log('WARNING: Fuzzer failed!')
+
+    if test_cases:
+        pretty = True
+        for i, tc in enumerate(test_cases):
+            tc.name = "Run {}".format(i)
+            if tc.stdout.startswith('file://'):
+                pretty = False
+                with open(tc.stdout[7:]) as fd:
+                    tc.stdout = fd.read()
+
+            if tc.stderr.startswith('file://'):
+                pretty = False
+                with open(tc.stderr[7:]) as fd:
+                    tc.stderr = fd.read()
+
+        ts = junit_xml.TestSuite(args.fuzzer, test_cases)
+        tsfilename = os.path.join(fuzzer_logdir, 'sponge_log.xml')
+        with open(tsfilename, 'w') as f:
+            junit_xml.TestSuite.to_file(f, [ts], prettyprint=pretty)
+
     return exit_code
 
 
-def run_fuzzer(fuzzer_name, fuzzer_dir, logger):
+def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger):
     def log(msg, *a, **k):
         logger.log(msg, a, k, flush=True)
 
@@ -375,7 +410,7 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, logger):
     make_flags = os.environ.get('MAKEFLAGS', '')
     # Should run things?
     if not should_run_submake(make_flags):
-        return 0
+        return 0, None
 
     fuzzer_runok = os.path.join(fuzzer_dir, "run.ok")
     if os.path.exists(fuzzer_runok):
@@ -385,17 +420,10 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, logger):
             "Skipping as run.ok exists (updated @ {})",
             last_modified.isoformat())
 
-        return 0
+        return 0, None
 
     time_start = datetime.utcnow()
     log("Starting @ {}", time_start.isoformat())
-
-    # FIXME: The fuzzer output directory should be different from the top level
-    # fuzzer directory.
-    fuzzer_logdir = os.path.join(fuzzer_dir, "logs")
-    if not os.path.exists(fuzzer_logdir):
-        os.makedirs(fuzzer_logdir)
-    assert os.path.exists(fuzzer_logdir)
 
     running_msg = "Running {} -C {} run (with MAKEFLAGS='{}')".format(
         make_cmd,
@@ -512,7 +540,19 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, logger):
     log("Finishing ({}).", get_usage())
 
     time_end = datetime.utcnow()
+
+    test_case = junit_xml.TestCase(
+        name=fuzzer_name,
+        timestamp=time_start.timestamp(),
+        elapsed_sec=(time_end - time_start).total_seconds(),
+        stdout='file://' + fuzzer_stdout,
+        stderr='file://' + fuzzer_stderr,
+    )
+
     if retcode != 0:
+        test_case.add_failure_info(
+            'Fuzzer failed with exit code: {}'.format(retcode), )
+
         # Log the last 10,000 lines of stderr on a failure
         error_log = "\n".join(last_lines(open(fuzzer_stderr), 10000))
         log(
@@ -542,7 +582,7 @@ Succeeded! @ {}
 
     logger.flush()
     signal.signal(signal.SIGINT, old_sigint_handler)
-    return retcode
+    return retcode, test_case
 
 
 if __name__ == "__main__":
