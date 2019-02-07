@@ -5,7 +5,8 @@ Take bitstream .bit files and decode them to FASM.
 
 import os
 import fasm
-from prjxray import db
+import fasm.output
+from prjxray.db import Database
 from prjxray import fasm_disassembler
 from prjxray import bitstream
 import subprocess
@@ -26,15 +27,35 @@ def bit_to_bits(bitread, part_yaml, bit_file, bits_file, frame_range=None):
 
 
 def bits_to_fasm(db_root, bits_file, verbose, canonical):
-    disassembler = fasm_disassembler.FasmDisassembler(db.Database(db_root))
+    db = Database(db_root)
+    grid = db.grid()
+    disassembler = fasm_disassembler.FasmDisassembler(db)
 
     with open(bits_file) as f:
         bitdata = bitstream.load_bitdata(f)
 
-    print(
-        fasm.fasm_tuple_to_string(
-            disassembler.find_features_in_bitstream(bitdata, verbose=verbose),
-            canonical=canonical))
+    def is_zero_feature(feature):
+        parts = feature.split('.')
+        tile = parts[0]
+        gridinfo = grid.gridinfo_at_tilename(tile)
+        feature = '.'.join(parts[1:])
+
+        db_k = '%s.%s' % (gridinfo.tile_type, feature)
+        segbits = db.get_tile_segbits(gridinfo.tile_type)
+        any_bits = False
+        for bit in segbits.feature_to_bits(db_k):
+            if bit.isset:
+                any_bits = True
+
+        return not any_bits
+
+    model = fasm.output.merge_and_sort(
+        disassembler.find_features_in_bitstream(bitdata, verbose=verbose),
+        zero_function=is_zero_feature,
+        sort_key=grid.tile_key,
+    )
+
+    print(fasm.fasm_tuple_to_string(model, canonical=canonical), end='')
 
 
 def main():

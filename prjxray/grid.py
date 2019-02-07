@@ -96,3 +96,10 @@ class Grid(object):
 
     def get_segment_map(self):
         return segment_map.SegmentMap(self)
+
+    def tile_key(self, tilename):
+        gridinfo = self.gridinfo_at_tilename(tilename)
+        loc = self.loc_of_tilename(tilename)
+        tile_type = gridinfo.tile_type
+
+        return (tile_type, loc.grid_x, -loc.grid_y)
