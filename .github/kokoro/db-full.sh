@@ -80,30 +80,53 @@ echo " Database Differences"
 echo "----------------------------------------"
 (
 	cd database
+	# Update the index with any new files
+	git add \
+		--verbose \
+		--all \
+		--ignore-errors \
+		.
+
+	# Output what git status
+	echo
 	echo "----------------------------------------"
 	echo " Database Status"
 	echo "----------------------------------------"
 	git status
-	git add *
 	echo "----------------------------------------"
+
+
+	# Output a summary of how the files have changed
 	echo
 	echo "----------------------------------------"
 	echo " Database Diff Summary"
 	echo "----------------------------------------"
 	git diff --stat --irreversible-delete --find-renames --find-copies --ignore-all-space
+
+	# Output the actually diff
 	echo
 	echo "----------------------------------------"
 	echo " Database Diff"
 	echo "----------------------------------------"
 	git diff --color --irreversible-delete --find-renames --find-copies --ignore-all-space
+
+	# Save the diff to be uploaded as an artifact
 	echo
 	echo "----------------------------------------"
-	echo " Generating pretty diff"
+	echo " Saving diff output"
 	echo "----------------------------------------"
+	# Patch file
+	git diff \
+		--color --irreversible-delete --find-renames --find-copies --ignore-all-space \
+		> diff.patch
+
+	# Pretty HTML file version
 	diff2html --summary=open --file diff.html --format html \
 		-- \
 		--irreversible-delete --find-renames --find-copies --ignore-all-space \
 		|| true
+
+	# Programmatic JSON version
 	diff2html --file diff.json --format json \
 		-- \
 		--irreversible-delete --find-renames --find-copies --ignore-all-space \
