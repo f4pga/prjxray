@@ -3,7 +3,7 @@ ALL_EXCLUDE = third_party .git env build
 # Tools + Environment
 IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi;
 env:
-	virtualenv --python=python3 --system-site-packages env
+	virtualenv --python=python3 env
 	# Install prjxray
 	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
 	$(IN_ENV) python -c "import prjxray"
