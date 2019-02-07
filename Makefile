@@ -7,7 +7,7 @@ env:
 	$(IN_ENV) pip install -r requirements.txt
 	$(IN_ENV) pip install -r docs/requirements.txt
 	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
-	ln -sf $(PWD)/third_party/fasm/fasm.py env/lib/python3.*/site-packages/
+	ln -sf $(PWD)/third_party/fasm/ env/lib/python3.*/site-packages/
 	$(IN_ENV) python -c "import yaml" || (echo "Unable to find python-yaml" && exit 1)
 
 build:
