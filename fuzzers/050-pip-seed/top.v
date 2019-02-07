@@ -42,7 +42,7 @@ module roi(input clk, input [49:0] din_bits, output [79:0] dout_bits);
 	);
 
 	randluts randluts (
-		.din(din_bits[41:35]),
+		.din(din_bits[41:34]),
 		.dout(dout_bits[78:71])
 	);
 
