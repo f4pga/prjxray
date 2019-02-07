@@ -43,7 +43,7 @@ def bits_to_fasm(db_root, bits_file, verbose, canonical):
         db_k = '%s.%s' % (gridinfo.tile_type, feature)
         segbits = db.get_tile_segbits(gridinfo.tile_type)
         any_bits = False
-        for bit in segbits.feature_to_bits(db_k):
+        for block_type, bit in segbits.feature_to_bits(db_k):
             if bit.isset:
                 any_bits = True
 

@@ -99,11 +99,10 @@ class FasmAssembler(object):
     def enable_feature(self, tile, feature, address, line):
         gridinfo = self.grid.gridinfo_at_tilename(tile)
 
-        def update_segbit(bit):
+        def update_segbit(block_type, bit):
             '''Set or clear a single bit in a segment at the given word column and word bit position'''
 
-            # TODO: How to determine if the feature targets BLOCK_RAM segment type?
-            bits = gridinfo.bits[grid.BlockType.CLB_IO_CLK]
+            bits = gridinfo.bits[block_type]
 
             seg_baseaddr = bits.base_address
             seg_word_base = bits.offset
@@ -125,23 +124,23 @@ class FasmAssembler(object):
 
         db_k = '%s.%s' % (gridinfo.tile_type, feature)
 
-        any_bits = False
+        any_bits = set()
 
         try:
-            for bit in segbits.feature_to_bits(db_k, address):
-                any_bits = True
-                update_segbit(bit)
+            for block_type, bit in segbits.feature_to_bits(db_k, address):
+                any_bits.add(block_type)
+                update_segbit(block_type, bit)
         except KeyError:
             raise FasmLookupError(
                 "Segment DB %s, key %s not found from line '%s'" %
                 (gridinfo.tile_type, db_k, line))
 
-        if any_bits:
+        for block_type in any_bits:
             # Mark all frames used by this tile as in use.
-            bits = gridinfo.bits[grid.BlockType.CLB_IO_CLK]
-            if tile not in self.seen_tile:
-                for frame in segbits.frames(bits):
-                    self.frames_in_use.add(frame)
+            bits = gridinfo.bits[block_type]
+            for frame in range(bits.base_address,
+                               bits.base_address + bits.frames):
+                self.frames_in_use.add(frame)
 
     def parse_fasm_filename(self, filename):
         missing_features = []
