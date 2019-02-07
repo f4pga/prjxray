@@ -386,13 +386,13 @@ def main(argv):
             tc.name = "Run {}".format(i)
             if tc.stdout.startswith('file://'):
                 pretty = False
-                with open(tc.stdout[7:]) as fd:
-                    tc.stdout = fd.read()
+                tc.stdout = "\n".join(
+                    last_lines(open(tc.stdout[7:]), 1000))
 
             if tc.stderr.startswith('file://'):
                 pretty = False
-                with open(tc.stderr[7:]) as fd:
-                    tc.stderr = fd.read()
+                tc.stderr = "\n".join(
+                    last_lines(open(tc.stderr[7:]), 1000))
 
         ts = junit_xml.TestSuite(args.fuzzer, test_cases)
         tsfilename = os.path.join(fuzzer_logdir, 'sponge_log.xml')
