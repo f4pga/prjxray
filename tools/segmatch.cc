@@ -235,6 +235,12 @@ int main(int argc, char** argv) {
 			printf("Reading %s.\n", argv[optind]);
 			std::ifstream f;
 			f.open(argv[optind]);
+
+			// Check if input file exists.
+			if (!f.good()) {
+				printf("WARNING: Input file does not exist!\n");
+			}
+
 			assert(!f.fail());
 			read_input(f, argv[optind]);
 		}
