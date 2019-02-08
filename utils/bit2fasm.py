@@ -3,6 +3,7 @@
 Take bitstream .bit files and decode them to FASM.
 '''
 
+import contextlib
 import os
 import fasm
 import fasm.output
@@ -88,6 +89,10 @@ def main():
 
     parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
     parser.add_argument(
+        '--bits-file',
+        help="Output filename for bitread output, default is deleted tempfile.",
+        default=None)
+    parser.add_argument(
         '--part', help="Name of part being targetted.", **part_kwargs)
     parser.add_argument(
         '--bitread',
@@ -104,7 +109,12 @@ def main():
         '--canonical', help='Output canonical bitstream.', action='store_true')
     args = parser.parse_args()
 
-    with tempfile.NamedTemporaryFile() as bits_file:
+    with contextlib.ExitStack() as stack:
+        if args.bits_file:
+            bits_file = stack.enter_context(open(args.bits_file, 'wb'))
+        else:
+            bits_file = stack.enter_context(tempfile.NamedTemporaryFile())
+
         bit_to_bits(
             bitread=args.bitread,
             part_yaml=os.path.join(args.db_root, '{}.yaml'.format(args.part)),
