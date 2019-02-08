@@ -372,7 +372,7 @@ def main(argv):
             fuzzer_dir,
             fuzzer_logdir,
             logger,
-            will_retry=retry_count < (args.retries-1),
+            will_retry=retry_count < (args.retries - 1),
         )
         if exit_code <= 0:
             break
