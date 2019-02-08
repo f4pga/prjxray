@@ -46,9 +46,9 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 
 	# Run the fuzzers
-	export MAX_VIVADO_PROCESS=$CORES
+	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
 	set -x
-	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$CORES" -
+	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS" -
 	set +x
 	echo "----------------------------------------"
 
