@@ -64,6 +64,7 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
     Throw an exception if two tiles share an address
     '''
     mall = dict()
+    tiles_type_done = set()
 
     tiles_checked = 0
 
@@ -73,6 +74,10 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
 
     for tile_name, tilej in db.tilegrid.items():
         # for tile_name, tilej in subtiles(["CLBLL_L_X14Y112", "INT_L_X14Y112"]):
+
+        if tilej['type'] in tiles_type_done or not tilej["bits"]:
+            continue
+        tiles_type_done.add(tilej['type'])
 
         mtile = make_tile_mask(
             db_root, tile_name, tilej, strict=strict, verbose=verbose)

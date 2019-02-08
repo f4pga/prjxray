@@ -189,15 +189,19 @@ def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
     for block_type, blockj in tilej["bits"].items():
         baseaddr = int(blockj["baseaddr"], 0)
         bitbase = 32 * blockj["offset"]
+        frames = tilej["bits"][block_type]["frames"]
 
         if block_type == "CLB_IO_CLK":
             fn = "%s/segbits_%s.db" % (db_root, tilej["type"].lower())
         else:
-            fn = "%s/segbits_%s.db.%s" % (
+            fn = "%s/segbits_%s.%s.db" % (
                 db_root, tilej["type"].lower(), block_type.lower())
         # tilegrid runs a lot earlier than fuzzers
         # may not have been created yet
         verbose and print("Check %s: %s" % (fn, os.path.exists(fn)))
+
+        # FIXME: some segbits files are not present and the strict check produces assertion errors
+        # e.g. segbits_cmt_top_r_lower_b.db
         if strict:
             assert os.path.exists(fn)
         elif not os.path.exists(fn):
@@ -208,6 +212,7 @@ def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
             for bitstr in bits:
                 # 31_06
                 _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
+                assert bit_addroff <= frames, "ERROR: bit out of bound"
                 yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
 
 
