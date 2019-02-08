@@ -372,6 +372,7 @@ def main(argv):
             fuzzer_dir,
             fuzzer_logdir,
             logger,
+            will_retry=retry_count < (args.retries - 1),
         )
         if exit_code <= 0:
             break
@@ -380,7 +381,7 @@ def main(argv):
     return exit_code
 
 
-def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger):
+def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
     def log(msg, *a, **k):
         logger.log(msg, a, k, flush=True)
 
@@ -436,16 +437,21 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger):
         assert job_re, make_flags
         job_rd, job_wr = job_re.groups()
 
+        # Make copies of jobserver FDs in case a retry is needed.
+
         job_rd = int(job_rd)
         job_wr = int(job_wr)
         assert job_rd > 2, (job_rd, job_wr, make_flags)
         assert job_wr > 2, (job_rd, job_wr, make_flags)
 
         # Make sure the file descriptors exist..
-        job_rd_fd = os.fdopen(int(job_rd), 'rb', 0)
+        job_rd_fd = os.fdopen(job_rd, 'rb', 0)
         assert job_rd_fd
-        job_wr_fd = os.fdopen(int(job_wr), 'rb', 0)
+        job_wr_fd = os.fdopen(job_wr, 'rb', 0)
         assert job_wr_fd
+
+        job_rd_copy = os.dup(job_rd)
+        job_wr_copy = os.dup(job_wr)
 
     p = None
     try:
@@ -554,6 +560,13 @@ Failed @ {time_end} with exit code: {retcode}
             error_log=error_log,
             time_end=time_end.isoformat())
 
+        if will_retry:
+            # Restore jobserver FD's
+            os.dup2(job_rd_copy, job_rd)
+            os.dup2(job_wr_copy, job_wr)
+        else:
+            os.close(job_rd_copy)
+            os.close(job_wr_copy)
     else:
 
         # Log the last 100 lines of a successful run
@@ -565,6 +578,9 @@ Succeeded! @ {}
 --------------------------------------------------------------------------
 Succeeded! @ {}
 """, time_end.isoformat(), success_log, time_end.isoformat())
+
+        os.close(job_rd_copy)
+        os.close(job_wr_copy)
 
     logger.flush()
     signal.signal(signal.SIGINT, old_sigint_handler)
