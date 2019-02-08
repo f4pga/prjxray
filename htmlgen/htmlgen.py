@@ -8,11 +8,7 @@ from io import StringIO
 
 def mk_get_setting(settings_filename):
     if settings_filename:
-        settings = {
-            'XRAY_DATABASE_DIR':
-            os.path.abspath(
-                os.path.join(os.path.dirname(settings_filename), '..')),
-        }
+        settings = {}
         with open(settings_filename) as f:
             for line in f:
                 line = line.strip()
@@ -21,6 +17,14 @@ def mk_get_setting(settings_filename):
                 key, value = line[7:].split('=', 1)
                 settings[key] = value[1:-1]
 
+        assert len(settings), (settings_filename, settings)
+        assert settings['XRAY_DATABASE'], pprint.pformat(settings)
+        settings['XRAY_DATABASE_DIR'] = os.path.abspath(
+            os.path.join(
+                os.path.dirname(settings_filename),
+                '..',
+                'database',
+            ), )
         return lambda name: settings[name]
     else:
         return os.getenv
@@ -221,11 +225,12 @@ class Tweaks():
         pass
 
 
-def load_tilegrid(db_dir, verbose=False):
+def load_tilegrid(db_dir, verbose=False, allow_fake=False):
     print("Loading tilegrid.")
     with db_open("tilegrid.json", db_dir) as f:
         data = f.read()
         if not data:
+            assert allow_fake, 'No tilegrid.json found'
             print('WARNING: loading fake tilegrid')
             grid = {
                 "NULL": {
@@ -927,7 +932,7 @@ def mk_segment_pages(dbstate, output, tweaks):
             print("</body></html>", file=f)
 
 
-def run(settings, output, verbose=False):
+def run(settings, output, verbose=False, allow_fake=False):
     global get_setting
 
     get_setting = mk_get_setting(settings)
@@ -945,7 +950,7 @@ def run(settings, output, verbose=False):
 
     # Load source data
     dbstate = DBState()
-    grid = load_tilegrid(db_dir, verbose=verbose)
+    grid = load_tilegrid(db_dir, verbose=verbose, allow_fake=allow_fake)
     db_reads(dbstate, db_dir)
 
     # Create pages
@@ -967,10 +972,22 @@ def main():
     parser.add_argument(
         '--settings',
         default=None,
-        help='Read the settings from file (default to environment).')
+        help='Read the settings from file (default to environment).',
+    )
+    parser.add_argument(
+        '--allow-fake',
+        default=False,
+        action='store_true',
+        help="Continue even if tilegrid.json isn't found.",
+    )
 
     args = parser.parse_args()
-    run(settings=args.settings, output=args.output, verbose=args.verbose)
+    run(
+        settings=args.settings,
+        output=args.output,
+        verbose=args.verbose,
+        allow_fake=args.allow_fake,
+    )
 
 
 if __name__ == '__main__':
