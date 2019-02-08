@@ -84,7 +84,7 @@ run:
 	# Because 056 cannot solve IMUX and LOGIC_OUTS, force zero entries for the
 	# LOGIC_OUTS or IMUX entries.
 	XRAY_DIR=${XRAY_DIR} MAKE="$(MAKE)" QUICK=$(QUICK) $(XRAY_DIR)/fuzzers/int_loop.sh \
-		--check-args "--max-iters 12 --min-progress 5 --zero-entries --zero-entries-filter (IMUX.*GFAN)|(FAN_ALT.\.GFAN)"
+		--check-args "--max-iters 12 --min-progress 50 --zero-entries --zero-entries-filter (IMUX.*GFAN)|(FAN_ALT.*GFAN)"
 	touch run.ok
 
 clean:
