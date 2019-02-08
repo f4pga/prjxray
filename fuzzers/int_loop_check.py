@@ -27,7 +27,7 @@ def check_made_progress(todo_dir, max_iter, min_progress):
     made_progress = prev_iteration - cur_iteration > min_progress
     if not made_progress:
         print(
-            "Between iteration %d and iteration %d only %d pips were solved.  Terminating iteration."
+            "Between iteration {} and iteration {} only {} pips were solved.  Terminating iteration."
             .format(max_iter - 1, max_iter, prev_iteration - cur_iteration))
 
     return made_progress
