@@ -16,16 +16,19 @@ def main():
     for row in params:
         base_name = 'BUFHCE_X{}Y{}'.format(row['x'], row['y'])
 
-
-        segmk.add_site_tag(row['site'], '{}.IN_USE'.format(base_name), row['IN_USE'])
+        segmk.add_site_tag(
+            row['site'], '{}.IN_USE'.format(base_name), row['IN_USE'])
         if not row['IN_USE']:
             continue
 
-        segmk.add_site_tag(row['site'], '{}.INIT_OUT'.format(base_name), row['INIT_OUT'])
+        segmk.add_site_tag(
+            row['site'], '{}.INIT_OUT'.format(base_name), row['INIT_OUT'])
 
         # SYNC is a zero pattern
         for opt in ['ASYNC']:
-            segmk.add_site_tag(row['site'], '{}.CE_TYPE.'.format(base_name) + opt, verilog.unquote(row['CE_TYPE']) == opt)
+            segmk.add_site_tag(
+                row['site'], '{}.CE_TYPE.'.format(base_name) + opt,
+                verilog.unquote(row['CE_TYPE']) == opt)
 
     segmk.compile()
     segmk.write()

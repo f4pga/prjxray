@@ -28,8 +28,7 @@ def write_params(params):
 
 
 def run():
-    print(
-        '''
+    print('''
 module top();
     ''')
 
@@ -37,7 +36,7 @@ module top();
 
     sites = list(gen_sites())
     for (tile_name, sites), isone in zip(sites,
-                                             util.gen_fuzz_states(len(sites))):
+                                         util.gen_fuzz_states(len(sites))):
         site_name = sites[0]
         params[tile_name] = (site_name, isone)
 
@@ -48,9 +47,9 @@ module top();
                 .INIT_OUT({isone})
                 ) buf_{site} ();
 '''.format(
-    site=site_name,
-    isone=isone,
-    ))
+                site=site_name,
+                isone=isone,
+            ))
 
     print("endmodule")
     write_params(params)

@@ -9,6 +9,7 @@ from prjxray.db import Database
 
 XY_RE = re.compile('^BUFHCE_X([0-9]+)Y([0-9]+)$')
 
+
 def gen_sites():
     db = Database(util.get_db_root())
     grid = db.grid()
@@ -54,9 +55,11 @@ module top();
 
             if params['IN_USE']:
                 params['INIT_OUT'] = random.randint(0, 1)
-                params['CE_TYPE'] = verilog.quote(random.choice(('SYNC', 'ASYNC')))
+                params['CE_TYPE'] = verilog.quote(
+                    random.choice(('SYNC', 'ASYNC')))
 
-                print('''
+                print(
+                    '''
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFHCE #(
         .INIT_OUT({INIT_OUT}),
