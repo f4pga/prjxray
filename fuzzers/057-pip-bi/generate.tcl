@@ -28,8 +28,11 @@ for {gets $fp line} {$line != ""} {gets $fp line} {
 }
 close $fp
 
-set int_l_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi] {TYPE == INT_L}]]
-set int_r_tiles [randsample_list [llength $todo_lines] [filter [pblock_tiles roi] {TYPE == INT_R}]]
+# each run can fail up to three times so we need to prepare 3*todo_lines tiles to work on
+set tiles [expr 3 * [llength $todo_lines]]
+
+set int_l_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_L}]]
+set int_r_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_R}]]
 
 set fp [open "design.txt" w]
 
