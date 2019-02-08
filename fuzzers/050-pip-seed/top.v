@@ -2,10 +2,10 @@
 
 module top(input clk, din, stb, output dout);
 	reg [49:0] din_bits;
-	wire [79:0] dout_bits;
+	wire [110:0] dout_bits;
 
 	reg [49:0] din_shr;
-	reg [79:0] dout_shr;
+	reg [110:0] dout_shr;
 
 	always @(posedge clk) begin
 		if (stb) begin
@@ -17,7 +17,7 @@ module top(input clk, din, stb, output dout);
 		end
 	end
 
-	assign dout = dout_shr[79];
+	assign dout = dout_shr[110];
 
 	roi roi (
 		.clk(clk),
@@ -26,8 +26,10 @@ module top(input clk, din, stb, output dout);
 	);
 endmodule
 
-module roi(input clk, input [49:0] din_bits, output [79:0] dout_bits);
-	wire [127:0] lut_out_dsp;
+module roi(input clk, input [49:0] din_bits, output [110:0] dout_bits);
+	localparam integer INCR_LUT_OUT_WIDTH = 22;
+
+	wire [(INCR_LUT_OUT_WIDTH+1)*8-1:0] lut_out_dsp;
 
 	picorv32 picorv32 (
 		.clk(clk),
@@ -53,10 +55,12 @@ module roi(input clk, input [49:0] din_bits, output [79:0] dout_bits);
 		.dout(lut_out_dsp)
 	);
 
-	dsp dsp (
+	dsp #(
+		.INCR_LUT_OUT_WIDTH(INCR_LUT_OUT_WIDTH)
+	) dsp (
 		.clk(clk),
 		.din(lut_out_dsp),
-		.dout(dout_bits[79])
+		.dout(dout_bits[110:79])
 	);
 endmodule
 

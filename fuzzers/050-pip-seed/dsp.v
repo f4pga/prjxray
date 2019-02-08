@@ -1,9 +1,15 @@
-module dsp(input clk, input [127:0] din, output dout);
+`include "setseed.vh"
+
+module dsp(input clk, input [(INCR_LUT_OUT_WIDTH+1)*8-1:0] din, output [31:0] dout);
+    parameter integer INCR_LUT_OUT_WIDTH = 0;
     localparam integer N = 5;
+    localparam integer N_OUT =
+             `SEED % 3 == 2 ? 64 :
+             `SEED % 3 == 1 ? 128 : 256;
 
-    wire [N*3*48-1:0] dsp_out;
+    wire [N*4*48-1:0] dsp_out;
 
-    assign dout = | dsp_out;
+    assign dout = dsp_out[N_OUT-1:N_OUT-32];
 
     genvar i;
     generate
@@ -12,7 +18,7 @@ module dsp(input clk, input [127:0] din, output dout);
             DSP48E1 #(
                 .USE_DPORT("TRUE")
             ) dsp (
-                .P(dsp_out[i*48*3+48-1:i*48*3]),
+                .P(dsp_out[i*48*4+48-1:i*48*4]),
                 .CLK(clk),
                 .A(din[29:0]),
                 .B(din[47:30]),
@@ -24,14 +30,16 @@ module dsp(input clk, input [127:0] din, output dout);
                 .RSTCTRL(din[124]),
                 .RSTD(din[125]),
                 .RSTINMODE(din[126]),
-                .RSTM(din[127])
+                .RSTM(din[127]),
+                .ACIN(din[157:128]),
+                .BCIN(din[175:158])
             );
 
             (* KEEP, DONT_TOUCH *)
             DSP48E1 #(
                 .USE_DPORT("TRUE")
             ) dsp_const (
-                .P(dsp_out[i*48*3+48*2-1:i*48*3+48]),
+                .P(dsp_out[i*48*4+48*2-1:i*48*4+48]),
                 .CLK(clk),
                 .A(din[29:0]),
                 .B(din[47:30]),
@@ -43,12 +51,24 @@ module dsp(input clk, input [127:0] din, output dout);
             DSP48E1 #(
                 .USE_DPORT("TRUE")
             ) dsp_const_0 (
-                .P(dsp_out[i*48*3+48*3-1:i*48*3+48*2]),
+                .P(dsp_out[i*48*4+48*3-1:i*48*4+48*2]),
                 .CLK(clk),
                 .A(din[29:0]),
                 .B(din[47:30]),
                 .C(din[95:48]),
                 .D(0)
+            );
+
+            (* KEEP, DONT_TOUCH *)
+            DSP48E1 #(
+                .USE_DPORT("TRUE")
+            ) dsp_const_1 (
+                .P(dsp_out[i*48*4+48*4-1:i*48*4+48*3]),
+                .CLK(clk),
+                .A(din[29:0]),
+                .B(din[47:30]),
+                .C(din[95:48]),
+                .D(1)
             );
         end
     endgenerate
