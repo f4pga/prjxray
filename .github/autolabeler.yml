@@ -1,10 +1,8 @@
 # Types of things
-fuzzers: ["fuzzers"]
-minitests: ["minitests"]
-experiments: ["experiments"]
-
-docs: ["docs", "*.md", "COPYING"]
-infra: [".travis", ".travis.yml", ".github", "Docker*", ".gcloud*", ".style.yapf", "vagrant", "cloudbuild.*", "download-latest-db.sh"]
-tools: ["tools", "utils", "htmlgen"]
-
-third-party: ["third_party", ".gitmodules"]
+parts-fuzzers: ["fuzzers"]
+parts-minitests: ["minitests"]
+parts-experiments: ["experiments"]
+parts-docs: ["docs", "*.md", "COPYING"]
+parts-infra: [".travis.yml", ".github", ".style.yapf", "vagrant", "download-latest-db.sh"]
+parts-tools: ["tools", "utils", "htmlgen"]
+parts-third-party: ["third_party", ".gitmodules"]
