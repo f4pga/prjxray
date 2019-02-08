@@ -88,7 +88,10 @@ def main():
         default_bitread = os.path.join(os.getenv("XRAY_TOOLS_DIR"), 'bitread')
 
     parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
-    parser.add_argument('--bits-file', help="Output filename for bitread output, default is deleted tempfile.", default=None)
+    parser.add_argument(
+        '--bits-file',
+        help="Output filename for bitread output, default is deleted tempfile.",
+        default=None)
     parser.add_argument(
         '--part', help="Name of part being targetted.", **part_kwargs)
     parser.add_argument(
