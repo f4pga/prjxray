@@ -2,10 +2,10 @@
 
 module top(input clk, din, stb, output dout);
 	reg [49:0] din_bits;
-	wire [110:0] dout_bits;
+	wire [206:0] dout_bits;
 
 	reg [49:0] din_shr;
-	reg [110:0] dout_shr;
+	reg [206:0] dout_shr;
 
 	always @(posedge clk) begin
 		if (stb) begin
@@ -17,7 +17,7 @@ module top(input clk, din, stb, output dout);
 		end
 	end
 
-	assign dout = dout_shr[110];
+	assign dout = dout_shr[206];
 
 	roi roi (
 		.clk(clk),
@@ -26,7 +26,7 @@ module top(input clk, din, stb, output dout);
 	);
 endmodule
 
-module roi(input clk, input [49:0] din_bits, output [110:0] dout_bits);
+module roi(input clk, input [49:0] din_bits, output [206:0] dout_bits);
 	localparam integer INCR_LUT_OUT_WIDTH = 22;
 
 	wire [(INCR_LUT_OUT_WIDTH+1)*8-1:0] lut_out_dsp;
@@ -60,7 +60,7 @@ module roi(input clk, input [49:0] din_bits, output [110:0] dout_bits);
 	) dsp (
 		.clk(clk),
 		.din(lut_out_dsp),
-		.dout(dout_bits[110:79])
+		.dout(dout_bits[206:79])
 	);
 endmodule
 
