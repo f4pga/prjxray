@@ -73,6 +73,11 @@ case "$1" in
 	hclk_r)
 		sed < "$2" > "$tmp1" -e 's/^HCLK\./HCLK_R./' ;;
 
+	clk_hrow_bot_r)
+		sed < "$2" > "$tmp1" -e 's/^CLK_HROW\./CLK_HROW_BOT_R./' ;;
+	clk_hrow_top_r)
+		sed < "$2" > "$tmp1" -e 's/^CLK_HROW\./CLK_HROW_TOP_R./' ;;
+
 	liob33)
 		cp "$2" "$tmp1" ;;
 

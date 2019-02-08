@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys, re
 import os
 from prjxray import util
 
