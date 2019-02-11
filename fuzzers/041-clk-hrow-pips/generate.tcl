@@ -30,6 +30,8 @@ proc run {} {
     set_property CONFIG_VOLTAGE 3.3 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-161}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-123}]
+
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets]
 
     place_design

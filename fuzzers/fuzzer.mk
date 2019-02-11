@@ -2,13 +2,14 @@ N ?= 1
 SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 ENV_VAR ?=
+SPECIMENS_DEPS ?=
 FUZDIR ?= ${PWD}
 
 all: database
 
 # generate.sh / top_generate.sh call make, hence the command must
 # have a + before it.
-$(SPECIMENS_OK):
+$(SPECIMENS_OK): $(SPECIMENS_DEPS)
 	mkdir -p build
 	+if [ -f $(FUZDIR)/generate.sh ]; then \
 		export $(ENV_VAR); \
