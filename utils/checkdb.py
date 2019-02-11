@@ -15,7 +15,7 @@ import os
 import parsedb
 #from prjxray import db as prjxraydb
 import glob
-import json
+
 
 def make_tile_mask(db_file, tile_name, tilej, strict=False, verbose=False):
     '''
@@ -108,22 +108,28 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
             mall[tile_type] = {}
 
         mtile = make_tile_mask(
-            db_files[tile_type], tile_name, tilej, strict=strict, verbose=verbose)
+            db_files[tile_type],
+            tile_name,
+            tilej,
+            strict=strict,
+            verbose=verbose)
         verbose and print(
             "Checking %s, type %s, bits: %s" %
             (tile_name, tilej["type"], len(mtile)))
         if len(mtile) == 0:
             continue
 
-        collisions = set(mall[tile_type].keys()).intersection(set(mtile.keys()))
+        collisions = set(mall[tile_type].keys()).intersection(
+            set(mtile.keys()))
         if collisions:
             print("ERROR: %s collisions" % len(collisions))
             for ck in sorted(collisions):
                 addr, bitaddr = ck
                 word, bit = util.addr_bit2word(bitaddr)
                 print(
-                    "  %s: had %s, got %s" %
-                    (util.addr2str(addr, word, bit), mall[tile_type][ck], mtile[ck]))
+                    "  %s: had %s, got %s" % (
+                        util.addr2str(addr, word, bit), mall[tile_type][ck],
+                        mtile[ck]))
             raise ValueError("%s collisions" % len(collisions))
         mall[tile_type].update(mtile)
         tiles_checked += 1
