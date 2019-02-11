@@ -27,17 +27,21 @@ def main():
             if src in clk_table.CLK_TABLE:
                 row, column = clk_table.CLK_TABLE[src]
 
-                segmk.add_tile_tag(tile, '{}.HCLK_ENABLE_ROW{}'.format(dst, row), 1)
-                segmk.add_tile_tag(tile, '{}.HCLK_ENABLE_COLUMN{}'.format(dst, column), 1)
+                segmk.add_tile_tag(
+                    tile, '{}.HCLK_ENABLE_ROW{}'.format(dst, row), 1)
+                segmk.add_tile_tag(
+                    tile, '{}.HCLK_ENABLE_COLUMN{}'.format(dst, column), 1)
 
                 rows.remove(row)
                 columns.remove(column)
 
                 for row in rows:
-                    segmk.add_tile_tag(tile, '{}.HCLK_ENABLE_ROW{}'.format(dst, row), 0)
+                    segmk.add_tile_tag(
+                        tile, '{}.HCLK_ENABLE_ROW{}'.format(dst, row), 0)
 
                 for column in columns:
-                    segmk.add_tile_tag(tile, '{}.HCLK_ENABLE_COLUMN{}'.format(dst, column), 0)
+                    segmk.add_tile_tag(
+                        tile, '{}.HCLK_ENABLE_COLUMN{}'.format(dst, column), 0)
 
     segmk.compile()
     segmk.write()

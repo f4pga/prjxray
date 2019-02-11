@@ -1,8 +1,10 @@
 import argparse
 import clk_table
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Convert HCLK ROW/COLUMN definitions into HCLK pips.")
+    parser = argparse.ArgumentParser(
+        description="Convert HCLK ROW/COLUMN definitions into HCLK pips.")
     parser.add_argument('in_segbit')
     parser.add_argument('piplist')
     parser.add_argument('out_segbit')
@@ -27,9 +29,9 @@ def main():
 
             if dst not in hrow_outs:
                 hrow_outs[dst] = {
-                        'rows': {},
-                        'columns': {},
-                        }
+                    'rows': {},
+                    'columns': {},
+                }
 
             if src[-4:-1] == 'ROW':
                 hrow_outs[dst]['rows'][n] = bits
@@ -62,12 +64,14 @@ def main():
                 if column not in hrow_outs[dst]['columns']:
                     continue
 
-                print('CLK_HROW.{dst}.{inclk} {row_bits} {column_bits}'.format(
-                    dst=dst,
-                    inclk=src,
-                    row_bits=hrow_outs[dst]['rows'][row],
-                    column_bits=hrow_outs[dst]['columns'][column],
-                    ), file=f)
+                print(
+                    'CLK_HROW.{dst}.{inclk} {row_bits} {column_bits}'.format(
+                        dst=dst,
+                        inclk=src,
+                        row_bits=hrow_outs[dst]['rows'][row],
+                        column_bits=hrow_outs[dst]['columns'][column],
+                    ),
+                    file=f)
 
 
 if __name__ == "__main__":

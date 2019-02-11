@@ -7,7 +7,6 @@ from prjxray.db import Database
 
 XY_RE = re.compile('^BUFHCE_X([0-9]+)Y([0-9]+)$')
 BUFGCTRL_XY_RE = re.compile('^BUFGCTRL_X([0-9]+)Y([0-9]+)$')
-
 """
 BUFHCE's can be driven from:
 
@@ -17,11 +16,13 @@ PLLE2_ADV
 BUFGCTRL
 """
 
+
 def get_xy(s):
     m = BUFGCTRL_XY_RE.match(s)
     x = int(m.group(1))
     y = int(m.group(2))
     return x, y
+
 
 def gen_sites(desired_site_type):
     db = Database(util.get_db_root())
@@ -52,12 +53,15 @@ def gen_bufhce_sites():
 
 
 def read_site_to_cmt():
-    with open(os.path.join(os.getenv('FUZDIR'), 'build', 'cmt_regions.csv')) as f:
+    with open(os.path.join(os.getenv('FUZDIR'), 'build',
+                           'cmt_regions.csv')) as f:
         for l in f:
             site, cmt = l.strip().split(',')
             yield (site, cmt)
 
+
 CMT_RE = re.compile('X([0-9]+)Y([0-9]+)')
+
 
 class ClockSources(object):
     def __init__(self):
@@ -71,7 +75,8 @@ class ClockSources(object):
             self.sources[cmt] = []
 
         self.sources[cmt].append(source)
-        assert source not in self.source_to_cmt or self.source_to_cmt[source] == cmt, source
+        assert source not in self.source_to_cmt or self.source_to_cmt[
+            source] == cmt, source
         self.source_to_cmt[source] = cmt
 
     def get_random_source(self, cmt):
@@ -108,7 +113,8 @@ class ClockSources(object):
 
             self.used_sources_from_cmt[source_cmt].add(source)
 
-            if source_cmt != 'ANY' and len(self.used_sources_from_cmt[source_cmt]) > 14:
+            if source_cmt != 'ANY' and len(
+                    self.used_sources_from_cmt[source_cmt]) > 14:
                 print('//', self.used_sources_from_cmt)
                 self.used_sources_from_cmt[source_cmt].remove(source)
                 return None
@@ -125,6 +131,7 @@ def check_allowed(mmcm_pll_dir, cmt):
         return (int(CMT_RE.match(cmt).group(1)) & 1) == 0
     else:
         assert False, mmcm_pll_dir
+
 
 def main():
     print('''
@@ -150,19 +157,22 @@ module top();
     for idx in range(1):
         wire_name = "lut_wire_{}".format(idx)
         #clock_sources.add_clock_source(wire_name, 'ANY')
-        print("""
+        print(
+            """
     (* KEEP, DONT_TOUCH *)
     wire {wire_name};
     LUT6 lut{idx} (
         .O({wire_name})
         );""".format(
-            idx=idx,
-            wire_name=wire_name,
+                idx=idx,
+                wire_name=wire_name,
             ))
 
     for site in gen_sites('MMCME2_ADV'):
-        mmcm_clocks = ['mmcm_clock_{site}_{idx}'.format(site=site, idx=idx) for
-                idx in range(13)]
+        mmcm_clocks = [
+            'mmcm_clock_{site}_{idx}'.format(site=site, idx=idx)
+            for idx in range(13)
+        ]
 
         if not check_allowed(mmcm_pll_dir, site_to_cmt[site]):
             continue
@@ -170,7 +180,8 @@ module top();
         for clk in mmcm_clocks:
             clock_sources.add_clock_source(clk, site_to_cmt[site])
 
-        print("""
+        print(
+            """
     wire {c0}, {c1}, {c2}, {c3}, {c4}, {c5};
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     MMCME2_ADV pll_{site} (
@@ -189,25 +200,27 @@ module top();
         .CLKFBOUTB({c12})
     );
         """.format(
-            site=site,
-            c0=mmcm_clocks[0],
-            c1=mmcm_clocks[1],
-            c2=mmcm_clocks[2],
-            c3=mmcm_clocks[3],
-            c4=mmcm_clocks[4],
-            c5=mmcm_clocks[5],
-            c6=mmcm_clocks[6],
-            c7=mmcm_clocks[7],
-            c8=mmcm_clocks[8],
-            c9=mmcm_clocks[9],
-            c10=mmcm_clocks[10],
-            c11=mmcm_clocks[11],
-            c12=mmcm_clocks[12],
+                site=site,
+                c0=mmcm_clocks[0],
+                c1=mmcm_clocks[1],
+                c2=mmcm_clocks[2],
+                c3=mmcm_clocks[3],
+                c4=mmcm_clocks[4],
+                c5=mmcm_clocks[5],
+                c6=mmcm_clocks[6],
+                c7=mmcm_clocks[7],
+                c8=mmcm_clocks[8],
+                c9=mmcm_clocks[9],
+                c10=mmcm_clocks[10],
+                c11=mmcm_clocks[11],
+                c12=mmcm_clocks[12],
             ))
 
     for site in gen_sites('PLLE2_ADV'):
-        pll_clocks = ['pll_clock_{site}_{idx}'.format(site=site, idx=idx) for
-                idx in range(6)]
+        pll_clocks = [
+            'pll_clock_{site}_{idx}'.format(site=site, idx=idx)
+            for idx in range(6)
+        ]
 
         if not check_allowed(mmcm_pll_dir, site_to_cmt[site]):
             continue
@@ -215,7 +228,8 @@ module top();
         for clk in pll_clocks:
             clock_sources.add_clock_source(clk, site_to_cmt[site])
 
-        print("""
+        print(
+            """
     wire {c0}, {c1}, {c2}, {c3}, {c4}, {c5};
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     PLLE2_ADV pll_{site} (
@@ -227,13 +241,13 @@ module top();
         .CLKOUT5({c5})
     );
         """.format(
-            site=site,
-            c0=pll_clocks[0],
-            c1=pll_clocks[1],
-            c2=pll_clocks[2],
-            c3=pll_clocks[3],
-            c4=pll_clocks[4],
-            c5=pll_clocks[5],
+                site=site,
+                c0=pll_clocks[0],
+                c1=pll_clocks[1],
+                c2=pll_clocks[2],
+                c3=pll_clocks[3],
+                c4=pll_clocks[4],
+                c5=pll_clocks[5],
             ))
 
     for site in sorted(gen_sites("BUFGCTRL"), key=get_xy):
@@ -242,15 +256,16 @@ module top();
         if not mmcm_pll_only:
             clock_sources.add_clock_source(wire_name, 'ANY')
 
-        print("""
+        print(
+            """
     wire {wire_name};
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFG bufg_{site} (
         .O({wire_name})
         );
         """.format(
-            site=site,
-            wire_name=wire_name,
+                site=site,
+                wire_name=wire_name,
             ))
 
     bufhce_sites = list(gen_bufhce_sites())
@@ -260,17 +275,19 @@ module top();
             if wire_name is None:
                 continue
 
-            print("""
+            print(
+                """
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFHCE buf_{site} (
         .I({wire_name})
     );
                     """.format(
-                        site=site,
-                        wire_name=wire_name,
-                        ))
+                    site=site,
+                    wire_name=wire_name,
+                ))
 
     print("endmodule")
+
 
 if __name__ == '__main__':
     main()
