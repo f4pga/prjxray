@@ -8,13 +8,9 @@ CLK_TABLE_NUM_COLS = 8
 
 for gclk in range(GCLKS):
     gclk_name = 'CLK_HROW_R_CK_GCLK{}'.format(gclk)
-    row = gclk % 8
-    column = int(gclk / 8)
+    row = gclk % CLK_TABLE_NUM_ROWS
+    column = int(gclk / CLK_TABLE_NUM_ROWS)
     CLK_TABLE[gclk_name] = (row, column)
-
-for lr in ['L', 'R']:
-    for side_inputs in range(SIDE_CLK_INPUTS):
-        side_clk_name = 'CLK_HROW_CK_IN_{}{}'.format(lr, side_inputs)
 
 for row in range(8):
     CLK_TABLE['CLK_HROW_CK_IN_L{}'.format(row)]  = (row, 4)

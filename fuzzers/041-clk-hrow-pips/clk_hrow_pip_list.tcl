@@ -18,4 +18,3 @@ open_io_design -name io_1
 
 print_tile_pips CLK_HROW_TOP_R clk_hrow_top_r.txt
 print_tile_pips CLK_HROW_BOT_R clk_hrow_bot_r.txt
-print_tile_pips CLK_BUFG_REBUF clk_bufg_rebuf.txt

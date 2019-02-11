@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os, re
-import sys
 from prjxray import util
 
 
@@ -90,6 +89,7 @@ def run(
         db_dir,
         pip_dir,
         intre,
+        l, r,
         pip_type,
         seg_type,
         not_endswith=None,
@@ -102,18 +102,22 @@ def run(
         pip_dir = "%s/piplist/build" % (os.getenv("XRAY_FUZZERS_DIR"))
 
     assert intre, "RE is required"
-    maketodo(
-        "%s/%s_l.txt" % (pip_dir, pip_type),
-        "%s/segbits_%s_l.db" % (db_dir, seg_type),
-        intre,
-        not_endswith,
-        verbose=verbose)
-    maketodo(
-        "%s/%s_r.txt" % (pip_dir, pip_type),
-        "%s/segbits_%s_r.db" % (db_dir, seg_type),
-        intre,
-        not_endswith,
-        verbose=verbose)
+
+    if l:
+        maketodo(
+            "%s/%s_l.txt" % (pip_dir, pip_type),
+            "%s/segbits_%s_l.db" % (db_dir, seg_type),
+            intre,
+            not_endswith,
+            verbose=verbose)
+
+    if r:
+        maketodo(
+            "%s/%s_r.txt" % (pip_dir, pip_type),
+            "%s/segbits_%s_r.db" % (db_dir, seg_type),
+            intre,
+            not_endswith,
+            verbose=verbose)
 
 
 def main():
@@ -129,6 +133,8 @@ def main():
     parser.add_argument('--re', required=True, help='')
     parser.add_argument('--pip-type', default="pips_int", help='')
     parser.add_argument('--seg-type', default="int", help='')
+    util.add_bool_arg(parser, '--l', default=True, help='')
+    util.add_bool_arg(parser, '--r', default=True, help='')
     parser.add_argument(
         '--not-endswith', help='Drop lines if they end with this')
     args = parser.parse_args()
@@ -138,6 +144,8 @@ def main():
         db_dir=args.db_dir,
         pip_dir=args.pip_dir,
         intre=args.re,
+        l=args.l,
+        r=args.r,
         pip_type=args.pip_type,
         seg_type=args.seg_type,
         not_endswith=args.not_endswith,
