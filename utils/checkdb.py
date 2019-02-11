@@ -15,9 +15,9 @@ import os
 import parsedb
 #from prjxray import db as prjxraydb
 import glob
+import json
 
-
-def make_tile_mask(db_root, tile_name, tilej, strict=False, verbose=False):
+def make_tile_mask(db_file, tile_name, tilej, strict=False, verbose=False):
     '''
     Return dict
     key: (address, bit index)
@@ -30,7 +30,7 @@ def make_tile_mask(db_root, tile_name, tilej, strict=False, verbose=False):
 
     ret = dict()
     for absaddr, bitaddr, tag in util.gen_tile_bits(
-            db_root, tilej, strict=strict, verbose=verbose):
+            db_file, tilej, strict=strict, verbose=verbose):
         name = "%s.%s" % (tile_name, tag)
         ret.setdefault((absaddr, bitaddr), name)
     return ret
@@ -54,6 +54,33 @@ def parsedb_all(db_root, verbose=False):
     print("mask_*.db: %d okay" % files)
 
 
+def parsedb_file(db_root, db_files, tile, strict=False, verbose=False):
+    tile_type = tile["type"]
+    db_files[tile_type] = {}
+
+    for block_type, blockj in tile["bits"].items():
+        db_files[tile_type][block_type] = []
+        if block_type == "CLB_IO_CLK":
+            fn = "%s/segbits_%s.db" % (db_root, tile_type.lower())
+        else:
+            fn = "%s/segbits_%s.%s.db" % (
+                db_root, tile_type.lower(), block_type.lower())
+        # tilegrid runs a lot earlier than fuzzers
+        # may not have been created yet
+        verbose and print("Check %s: %s" % (fn, os.path.exists(fn)))
+
+        # FIXME: some segbits files are not present and the strict check produces assertion errors
+        # e.g. segbits_cmt_top_r_lower_b.db
+        if strict:
+            assert os.path.exists(fn)
+        elif not os.path.exists(fn):
+            continue
+
+        for line in util.parse_db_lines(fn):
+            db_files[tile_type][block_type].append(line)
+    return db_files
+
+
 def check_tile_overlap(db, db_root, strict=False, verbose=False):
     '''
     Verifies that no two tiles use the same bit
@@ -65,29 +92,30 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
     '''
     mall = dict()
     tiles_type_done = set()
+    db_files = dict()
 
     tiles_checked = 0
 
-    def subtiles(tile_names):
-        for tile_name in tile_names:
-            yield tile_name, db.tilegrid[tile_name]
-
     for tile_name, tilej in db.tilegrid.items():
-        # for tile_name, tilej in subtiles(["CLBLL_L_X14Y112", "INT_L_X14Y112"]):
+        tile_type = tilej["type"]
 
-        if tilej['type'] in tiles_type_done or not tilej["bits"]:
-            continue
-        tiles_type_done.add(tilej['type'])
+        if tile_type not in tiles_type_done:
+            db_files = parsedb_file(db_root, db_files, tilej)
+            tiles_type_done.add(tile_type)
+
+        if tile_type not in mall:
+            verbose and print("Adding tile type: %s" % tile_type)
+            mall[tile_type] = {}
 
         mtile = make_tile_mask(
-            db_root, tile_name, tilej, strict=strict, verbose=verbose)
+            db_files[tile_type], tile_name, tilej, strict=strict, verbose=verbose)
         verbose and print(
             "Checking %s, type %s, bits: %s" %
             (tile_name, tilej["type"], len(mtile)))
         if len(mtile) == 0:
             continue
 
-        collisions = set(mall.keys()).intersection(set(mtile.keys()))
+        collisions = set(mall[tile_type].keys()).intersection(set(mtile.keys()))
         if collisions:
             print("ERROR: %s collisions" % len(collisions))
             for ck in sorted(collisions):
@@ -95,9 +123,9 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
                 word, bit = util.addr_bit2word(bitaddr)
                 print(
                     "  %s: had %s, got %s" %
-                    (util.addr2str(addr, word, bit), mall[ck], mtile[ck]))
+                    (util.addr2str(addr, word, bit), mall[tile_type][ck], mtile[ck]))
             raise ValueError("%s collisions" % len(collisions))
-        mall.update(mtile)
+        mall[tile_type].update(mtile)
         tiles_checked += 1
     print("Checked %s tiles, %s bits" % (tiles_checked, len(mall)))
 

@@ -172,42 +172,24 @@ def addr2btype(base_addr):
     return block_type_i2s[block_type_i]
 
 
-def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
+def gen_tile_bits(db_file, tilej, strict=False, verbose=False):
     '''
-    For given tile yield
+    For given tile and corresponding db_file structure yield
     (absolute address, absolute FDRI bit offset, tag)
 
-    For each address space
-    Find applicable files
-    For each tag bit in those files, calculate absolute address and bit offsets
+    db_file:
+    {'<block_type_1>': [<bit lines>], '<block_type_2>': [<bit lines>], ...}
 
-    Sample file names:
-    segbits_clbll_l.db
-    segbits_int_l.db
-    segbits_bram_l.block_ram.db
+    For each tag bit in the corresponding block_type entry, calculate absolute address and bit offsets
     '''
     for block_type, blockj in tilej["bits"].items():
+        assert block_type in db_file, "Block type is not in current tile"
+
         baseaddr = int(blockj["baseaddr"], 0)
         bitbase = 32 * blockj["offset"]
         frames = tilej["bits"][block_type]["frames"]
 
-        if block_type == "CLB_IO_CLK":
-            fn = "%s/segbits_%s.db" % (db_root, tilej["type"].lower())
-        else:
-            fn = "%s/segbits_%s.%s.db" % (
-                db_root, tilej["type"].lower(), block_type.lower())
-        # tilegrid runs a lot earlier than fuzzers
-        # may not have been created yet
-        verbose and print("Check %s: %s" % (fn, os.path.exists(fn)))
-
-        # FIXME: some segbits files are not present and the strict check produces assertion errors
-        # e.g. segbits_cmt_top_r_lower_b.db
-        if strict:
-            assert os.path.exists(fn)
-        elif not os.path.exists(fn):
-            continue
-
-        for line, (tag, bits, mode) in parse_db_lines(fn):
+        for line, (tag, bits, mode) in db_file[block_type]:
             assert mode is None
             for bitstr in bits:
                 # 31_06
