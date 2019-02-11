@@ -57,13 +57,14 @@ module top();
                 params['INIT_OUT'] = random.randint(0, 1)
                 params['CE_TYPE'] = verilog.quote(
                     random.choice(('SYNC', 'ASYNC')))
-
+                params['IS_CE_INVERTED'] = random.randint(0, 1)
                 print(
                     '''
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFHCE #(
         .INIT_OUT({INIT_OUT}),
-        .CE_TYPE({CE_TYPE})
+        .CE_TYPE({CE_TYPE}),
+        .IS_CE_INVERTED({IS_CE_INVERTED})
         ) buf_{site} ();
                     '''.format(**params))
 
