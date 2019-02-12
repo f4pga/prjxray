@@ -87,8 +87,6 @@ module top();
             .S1(s1_{site})
                         """.format(site=site)
 
-
-
                 print(
                     '''
     wire ce0_{site};

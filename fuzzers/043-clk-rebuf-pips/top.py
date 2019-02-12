@@ -52,6 +52,7 @@ def gen_bufhce_sites():
         if sites:
             yield tile_name, set(sites)
 
+
 def main():
     print('''
 module top();
@@ -78,20 +79,21 @@ module top();
 
     opts = []
     for count in range(len(bufhce_sites)):
-        for opt in itertools.combinations(bufhce_sites, count+1):
+        for opt in itertools.combinations(bufhce_sites, count + 1):
             opts.append(opt)
 
     for gclk in gclks:
         for tile_name, sites in random.choice(opts):
             for site in sorted(sites):
-                print("""
+                print(
+                    """
         (* KEEP, DONT_TOUCH, LOC = "{site}" *)
         BUFHCE buf_{site} (
             .I({wire_name})
                 );""".format(
                         site=site,
                         wire_name=gclk,
-                        ))
+                    ))
                 sites.remove(site)
                 break
 
