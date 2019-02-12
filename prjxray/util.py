@@ -172,36 +172,6 @@ def addr2btype(base_addr):
     return block_type_i2s[block_type_i]
 
 
-def gen_tile_bits(tile_segbits, tile, strict=False, verbose=False):
-    '''
-    For given tile and corresponding db_file structure yield
-    (absolute address, absolute FDRI bit offset, tag)
-
-    db_file:
-    {'<block_type_1>': [<bit lines>], '<block_type_2>': [<bit lines>], ...}
-
-    For each tag bit in the corresponding block_type entry, calculate absolute address and bit offsets
-    '''
-
-    for block_type in tile_segbits:
-        assert block_type.value in tile[
-            "bits"], "block type %s is not present in current tile" % block_type.value
-
-        block = tile["bits"][block_type.value]
-
-        baseaddr = int(block["baseaddr"], 0)
-        bitbase = 32 * block["offset"]
-        frames = block["frames"]
-
-        for tag in tile_segbits[block_type]:
-            for bit in tile_segbits[block_type][tag]:
-                # 31_06
-                word_column, word_bit, isset = bit
-                assert word_column <= frames, "ERROR: bit out of bound --> tag: %s; word_column = %s; frames = %s" % (
-                    tag, word_column, frames)
-                yield word_column + baseaddr, word_bit + bitbase, tag
-
-
 def specn():
     # ex: build/specimen_001
     specdir = os.getenv("SPECDIR")

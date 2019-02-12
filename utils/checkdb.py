@@ -17,8 +17,35 @@ import parsedb
 import glob
 
 
+def gen_tile_bits(tile_segbits, tile_bits, strict=False, verbose=False):
+    '''
+    For given tile and corresponding db_file structure yield
+    (absolute address, absolute FDRI bit offset, tag)
+
+    For each tag bit in the corresponding block_type entry, calculate absolute address and bit offsets
+    '''
+
+    for block_type in tile_segbits:
+        assert block_type in tile_bits, "block type %s is not present in current tile" % block_type
+
+        block = tile_bits[block_type]
+
+        baseaddr = block.base_address
+        bitbase = 32 * block.offset
+        frames = block.frames
+
+        for tag in tile_segbits[block_type]:
+            for bit in tile_segbits[block_type][tag]:
+                # 31_06
+                word_column = bit.word_column
+                word_bit = bit.word_bit
+                assert word_column <= frames, "ERROR: bit out of bound --> tag: %s; word_column = %s; frames = %s" % (
+                    tag, word_column, frames)
+                yield word_column + baseaddr, word_bit + bitbase, tag
+
+
 def make_tile_mask(
-        tile_segbits, tile_name, tilej, strict=False, verbose=False):
+        tile_segbits, tile_name, tile_bits, strict=False, verbose=False):
     '''
     Return dict
     key: (address, bit index)
@@ -30,8 +57,8 @@ def make_tile_mask(
     # We may want this to build them anyway
 
     ret = dict()
-    for absaddr, bitaddr, tag in util.gen_tile_bits(
-            tile_segbits, tilej, strict=strict, verbose=verbose):
+    for absaddr, bitaddr, tag in gen_tile_bits(tile_segbits, tile_bits,
+                                               strict=strict, verbose=verbose):
         name = "%s.%s" % (tile_name, tag)
         ret.setdefault((absaddr, bitaddr), name)
     return ret
@@ -67,11 +94,13 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
     mall = dict()
     tiles_type_done = dict()
     tile_segbits = dict()
-
+    grid = db.grid()
     tiles_checked = 0
 
-    for tile_name, tilej in db.tilegrid.items():
-        tile_type = tilej["type"]
+    for tile_name in grid.tiles():
+        tile_info = grid.gridinfo_at_tilename(tile_name)
+        tile_type = tile_info.tile_type
+        tile_bits = tile_info.bits
 
         if tile_type not in tiles_type_done:
             segbits = db.get_tile_segbits(tile_type).segbits
@@ -91,7 +120,7 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
         mtile = make_tile_mask(
             tile_segbits[tile_type],
             tile_name,
-            tilej,
+            tile_bits,
             strict=strict,
             verbose=verbose)
         verbose and print(
