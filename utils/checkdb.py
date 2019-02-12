@@ -131,9 +131,8 @@ def check_tile_overlap(db, verbose=False):
                 addr, bitaddr = ck
                 word, bit = util.addr_bit2word(bitaddr)
                 print(
-                    "  %s: had %s, got %s" % (
-                        util.addr2str(addr, word, bit), mall[ck],
-                        mtile[ck]))
+                    "  %s: had %s, got %s" %
+                    (util.addr2str(addr, word, bit), mall[ck], mtile[ck]))
             raise ValueError("%s collisions" % len(collisions))
         mall.update(mtile)
         tiles_checked += 1
