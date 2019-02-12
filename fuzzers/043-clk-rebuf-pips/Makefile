@@ -1,11 +1,11 @@
-N ?= 50
+N ?= 25
 
 include ../fuzzer.mk
 
 database: build/segbits_clk_bufg_rebuf.db
 
 build/segbits_clk_bufg_rebuf.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_clk_bufg_rebuf.rdb \
+	${XRAY_SEGMATCH} -c 1 -o build/segbits_clk_bufg_rebuf.rdb \
 		$(addsuffix /segdata_clk_bufg_rebuf.txt,$(SPECIMENS))
 
 build/segbits_clk_bufg_rebuf.db: build/segbits_clk_bufg_rebuf.rdb

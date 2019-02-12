@@ -231,12 +231,12 @@ def propagate_rebuf(database, tiles_by_grid):
 
         assert database[tile_name]['bits']['CLB_IO_CLK']['offset'] == 47, database[tile_name]['bits']['CLB_IO_CLK']
         database[rebuf_below]['bits'] = copy.deepcopy(database[tile_name]['bits'])
-        database[rebuf_below]['bits']['CLB_IO_CLK']['offset'] = 71
-        database[rebuf_below]['bits']['CLB_IO_CLK']['words'] = 10
+        database[rebuf_below]['bits']['CLB_IO_CLK']['offset'] = 73
+        database[rebuf_below]['bits']['CLB_IO_CLK']['words'] = 4
 
         database[rebuf_above]['bits'] = copy.deepcopy(database[tile_name]['bits'])
-        database[rebuf_above]['bits']['CLB_IO_CLK']['offset'] = 22
-        database[rebuf_above]['bits']['CLB_IO_CLK']['words'] = 10
+        database[rebuf_above]['bits']['CLB_IO_CLK']['offset'] = 24
+        database[rebuf_above]['bits']['CLB_IO_CLK']['words'] = 4
 
 
 def run(json_in_fn, json_out_fn, verbose=False):

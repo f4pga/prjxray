@@ -81,10 +81,7 @@ module top();
         for opt in itertools.combinations(bufhce_sites, count+1):
             opts.append(opt)
 
-    for gclk in gclks[:2]:
-        #if random.random() < .2:
-        #    continue
-
+    for gclk in gclks:
         for tile_name, sites in random.choice(opts):
             for site in sorted(sites):
                 print("""

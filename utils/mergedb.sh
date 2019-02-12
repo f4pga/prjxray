@@ -83,6 +83,9 @@ case "$1" in
 	clk_bufg_top_r)
 		sed < "$2" > "$tmp1" -e 's/^CLK_BUFG\./CLK_BUFG_TOP_R./' ;;
 
+	clk_bufg_rebuf)
+		cp "$2" "$tmp1" ;;
+
 	liob33)
 		cp "$2" "$tmp1" ;;
 
