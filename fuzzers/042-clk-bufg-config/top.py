@@ -19,7 +19,7 @@ def gen_sites():
         ys = []
         for site, site_type in gridinfo.sites.items():
             if site_type == 'BUFGCTRL':
-                x, y = xy_fun()
+                x, y = xy_fun(site)
                 xs.append(x)
                 ys.append(y)
 
