@@ -110,8 +110,6 @@ def check_tile_overlap(db, verbose=False):
             else:
                 tiles_type_done[tile_type] = False
 
-            mall[tile_type] = {}
-
         if tiles_type_done[tile_type]:
             continue
 
@@ -124,7 +122,7 @@ def check_tile_overlap(db, verbose=False):
 
         collisions = set()
         for bits in mtile.keys():
-            if bits in mall[tile_type].keys():
+            if bits in mall.keys():
                 collisions.add(bits)
 
         if collisions:
@@ -133,11 +131,10 @@ def check_tile_overlap(db, verbose=False):
                 addr, bitaddr = ck
                 word, bit = util.addr_bit2word(bitaddr)
                 print(
-                    "  %s: had %s, got %s" % (
-                        util.addr2str(addr, word, bit), mall[tile_type][ck],
-                        mtile[ck]))
+                    "  %s: had %s, got %s" %
+                    (util.addr2str(addr, word, bit), mall[ck], mtile[ck]))
             raise ValueError("%s collisions" % len(collisions))
-        mall[tile_type].update(mtile)
+        mall.update(mtile)
         tiles_checked += 1
     print("Checked %s tiles, %s bits" % (tiles_checked, len(mall)))
 
