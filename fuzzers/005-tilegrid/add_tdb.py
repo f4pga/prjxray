@@ -85,6 +85,7 @@ def run(fn_in, fn_out, verbose=False):
         ("clb/build/segbits_tilegrid.tdb", 36, 2),
         ("dsp/build/segbits_tilegrid.tdb", 28, 10),
         ("clk_hrow/build/segbits_tilegrid.tdb", 30, 7),
+        ("clk_bufg/build/segbits_tilegrid.tdb", 30, 8),
         ("clb_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("iob_int/build/segbits_tilegrid.tdb", int_frames, int_words),
         ("bram_int/build/segbits_tilegrid.tdb", int_frames, int_words),

@@ -14,6 +14,7 @@ TILEGRID_TDB_DEPENDENCIES += fifo_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += cfg_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += monitor_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clk_hrow/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += clk_bufg/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
 ifeq (${XRAY_DATABASE}, zynq7)
@@ -100,6 +101,9 @@ orphan_int_column/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 clk_hrow/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd clk_hrow && $(MAKE)
 
+clk_bufg/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd clk_bufg && $(MAKE)
+
 build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
 		--fn-in build/basicdb/tilegrid.json \
@@ -134,6 +138,7 @@ clean:
 	cd cfg_int && $(MAKE) clean
 	cd orphan_int_column && $(MAKE) clean
 	cd clk_hrow && $(MAKE) clean
+	cd clk_bufg && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 
