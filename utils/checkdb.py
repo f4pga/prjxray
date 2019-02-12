@@ -17,7 +17,7 @@ import parsedb
 import glob
 
 
-def make_tile_mask(db_file, tile_name, tilej, strict=False, verbose=False):
+def make_tile_mask(tile_segbits, tile_name, tilej, strict=False, verbose=False):
     '''
     Return dict
     key: (address, bit index)
@@ -30,7 +30,7 @@ def make_tile_mask(db_file, tile_name, tilej, strict=False, verbose=False):
 
     ret = dict()
     for absaddr, bitaddr, tag in util.gen_tile_bits(
-            db_file, tilej, strict=strict, verbose=verbose):
+            tile_segbits, tilej, strict=strict, verbose=verbose):
         name = "%s.%s" % (tile_name, tag)
         ret.setdefault((absaddr, bitaddr), name)
     return ret
@@ -54,33 +54,6 @@ def parsedb_all(db_root, verbose=False):
     print("mask_*.db: %d okay" % files)
 
 
-def parsedb_file(db_root, db_files, tile, strict=False, verbose=False):
-    tile_type = tile["type"]
-    db_files[tile_type] = {}
-
-    for block_type, blockj in tile["bits"].items():
-        db_files[tile_type][block_type] = []
-        if block_type == "CLB_IO_CLK":
-            fn = "%s/segbits_%s.db" % (db_root, tile_type.lower())
-        else:
-            fn = "%s/segbits_%s.%s.db" % (
-                db_root, tile_type.lower(), block_type.lower())
-        # tilegrid runs a lot earlier than fuzzers
-        # may not have been created yet
-        verbose and print("Check %s: %s" % (fn, os.path.exists(fn)))
-
-        # FIXME: some segbits files are not present and the strict check produces assertion errors
-        # e.g. segbits_cmt_top_r_lower_b.db
-        if strict:
-            assert os.path.exists(fn)
-        elif not os.path.exists(fn):
-            continue
-
-        for line in util.parse_db_lines(fn):
-            db_files[tile_type][block_type].append(line)
-    return db_files
-
-
 def check_tile_overlap(db, db_root, strict=False, verbose=False):
     '''
     Verifies that no two tiles use the same bit
@@ -91,8 +64,8 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
     Throw an exception if two tiles share an address
     '''
     mall = dict()
-    tiles_type_done = set()
-    db_files = dict()
+    tiles_type_done = dict()
+    tile_segbits = dict()
 
     tiles_checked = 0
 
@@ -100,15 +73,22 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
         tile_type = tilej["type"]
 
         if tile_type not in tiles_type_done:
-            db_files = parsedb_file(db_root, db_files, tilej)
-            tiles_type_done.add(tile_type)
+            segbits = db.get_tile_segbits(tile_type).segbits
+            tile_segbits[tile_type] = segbits
 
-        if tile_type not in mall:
-            verbose and print("Adding tile type: %s" % tile_type)
+            # If segbits has zero length the tile_type is marked True in order to be skipped
+            if len(segbits) == 0:
+                tiles_type_done[tile_type] = True
+            else:
+                tiles_type_done[tile_type] = False
+
             mall[tile_type] = {}
 
+        if tiles_type_done[tile_type]:
+            continue
+
         mtile = make_tile_mask(
-            db_files[tile_type],
+            tile_segbits[tile_type],
             tile_name,
             tilej,
             strict=strict,
@@ -119,8 +99,11 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
         if len(mtile) == 0:
             continue
 
-        collisions = set(mall[tile_type].keys()).intersection(
-            set(mtile.keys()))
+        collisions = set()
+        for bits in mtile.keys():
+            if bits in mall[tile_type].keys():
+                collisions.add(bits)
+
         if collisions:
             print("ERROR: %s collisions" % len(collisions))
             for ck in sorted(collisions):

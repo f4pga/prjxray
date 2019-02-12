@@ -1,7 +1,7 @@
 import os
 import re
 from .roi import Roi
-
+from prjxray.grid import BlockType
 
 def get_db_root():
     # Used during tilegrid db bootstrap
@@ -172,7 +172,7 @@ def addr2btype(base_addr):
     return block_type_i2s[block_type_i]
 
 
-def gen_tile_bits(db_file, tilej, strict=False, verbose=False):
+def gen_tile_bits(tile_segbits, tile, strict=False, verbose=False):
     '''
     For given tile and corresponding db_file structure yield
     (absolute address, absolute FDRI bit offset, tag)
@@ -182,20 +182,22 @@ def gen_tile_bits(db_file, tilej, strict=False, verbose=False):
 
     For each tag bit in the corresponding block_type entry, calculate absolute address and bit offsets
     '''
-    for block_type, blockj in tilej["bits"].items():
-        assert block_type in db_file, "Block type is not in current tile"
 
-        baseaddr = int(blockj["baseaddr"], 0)
-        bitbase = 32 * blockj["offset"]
-        frames = tilej["bits"][block_type]["frames"]
+    for block_type in tile_segbits:
+        assert block_type.value in tile["bits"], "block type %s is not present in current tile" % block_type.value
 
-        for line, (tag, bits, mode) in db_file[block_type]:
-            assert mode is None
-            for bitstr in bits:
+        block = tile["bits"][block_type.value]
+
+        baseaddr = int(block["baseaddr"], 0)
+        bitbase = 32 * block["offset"]
+        frames = block["frames"]
+
+        for tag in tile_segbits[block_type]:
+            for bit in tile_segbits[block_type][tag]:
                 # 31_06
-                _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
-                assert bit_addroff <= frames, "ERROR: bit out of bound"
-                yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
+                word_column, word_bit, isset = bit
+                assert word_column <= frames, "ERROR: bit out of bound --> word_column = %s; frames = %s" % (word_column, frames)
+                yield word_column + baseaddr, word_bit + bitbase, tag
 
 
 def specn():
