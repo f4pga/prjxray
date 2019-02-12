@@ -10,7 +10,7 @@ endif
 # Driven by int_loop.sh
 ITER := 1
 # FAN_ALT.*GFAN pips are left to be solved by a dedicated fuzzer
-MAKETODO_FLAGS=--re ".*" --not-endswith "(.VCC_WIRE)|(FAN_ALT.*GFAN)"
+MAKETODO_FLAGS=--re "^((?!FAN_ALT[0-9].GFAN).)*$$" --not-endswith ".VCC_WIRE"
 PIPLIST_TCL=$(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
 SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
