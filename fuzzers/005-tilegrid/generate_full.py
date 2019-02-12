@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import copy
 import json
 from utils import xjson
 '''
@@ -209,6 +210,34 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
             tile_name = next_tile
             tile = database[tile_name]
 
+def propagate_rebuf(database, tiles_by_grid):
+    """ Writing a fuzzer for the CLK_BUFG_REBUF tiles is hard, so propigate from CLK_HROW tiles.
+
+    In the clock column, there is a CLK_BUFG_REBUF above and below the CLK_HROW
+    tile.  Each clock column appears to use the same offsets, so propigdate
+    the base address and frame count, and update the offset and word count.
+
+    """
+    for tile_name in sorted(database.keys()):
+        tile = database[tile_name]
+
+        if tile['type'] not in ['CLK_HROW_BOT_R', 'CLK_HROW_TOP_R']:
+            continue
+
+        rebuf_below = tiles_by_grid[(tile['grid_x'], tile['grid_y'] - 12)]
+        assert database[rebuf_below]['type'] == 'CLK_BUFG_REBUF', database[rebuf_below]['type']
+        rebuf_above = tiles_by_grid[(tile['grid_x'], tile['grid_y'] + 13)]
+        assert database[rebuf_above]['type'] == 'CLK_BUFG_REBUF', database[rebuf_below]['type']
+
+        assert database[tile_name]['bits']['CLB_IO_CLK']['offset'] == 47, database[tile_name]['bits']['CLB_IO_CLK']
+        database[rebuf_below]['bits'] = copy.deepcopy(database[tile_name]['bits'])
+        database[rebuf_below]['bits']['CLB_IO_CLK']['offset'] = 71
+        database[rebuf_below]['bits']['CLB_IO_CLK']['words'] = 10
+
+        database[rebuf_above]['bits'] = copy.deepcopy(database[tile_name]['bits'])
+        database[rebuf_above]['bits']['CLB_IO_CLK']['offset'] = 22
+        database[rebuf_above]['bits']['CLB_IO_CLK']['words'] = 10
+
 
 def run(json_in_fn, json_out_fn, verbose=False):
     # Load input files
@@ -217,6 +246,7 @@ def run(json_in_fn, json_out_fn, verbose=False):
 
     propagate_INT_lr_bits(database, tiles_by_grid, verbose=verbose)
     propagate_INT_bits_in_column(database, tiles_by_grid)
+    propagate_rebuf(database, tiles_by_grid)
 
     # Save
     xjson.pprint(open(json_out_fn, "w"), database)
