@@ -17,7 +17,7 @@ import parsedb
 import glob
 
 
-def gen_tile_bits(tile_segbits, tile_bits, strict=False, verbose=False):
+def gen_tile_bits(tile_segbits, tile_bits):
     '''
     For given tile and corresponding db_file structure yield
     (absolute address, absolute FDRI bit offset, tag)
@@ -44,8 +44,7 @@ def gen_tile_bits(tile_segbits, tile_bits, strict=False, verbose=False):
                 yield word_column + baseaddr, word_bit + bitbase, tag
 
 
-def make_tile_mask(
-        tile_segbits, tile_name, tile_bits, strict=False, verbose=False):
+def make_tile_mask(tile_segbits, tile_name, tile_bits):
     '''
     Return dict
     key: (address, bit index)
@@ -57,8 +56,7 @@ def make_tile_mask(
     # We may want this to build them anyway
 
     ret = dict()
-    for absaddr, bitaddr, tag in gen_tile_bits(tile_segbits, tile_bits,
-                                               strict=strict, verbose=verbose):
+    for absaddr, bitaddr, tag in gen_tile_bits(tile_segbits, tile_bits):
         name = "%s.%s" % (tile_name, tag)
         ret.setdefault((absaddr, bitaddr), name)
     return ret
@@ -82,7 +80,7 @@ def parsedb_all(db_root, verbose=False):
     print("mask_*.db: %d okay" % files)
 
 
-def check_tile_overlap(db, db_root, strict=False, verbose=False):
+def check_tile_overlap(db, verbose=False):
     '''
     Verifies that no two tiles use the same bit
 
@@ -117,15 +115,10 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
         if tiles_type_done[tile_type]:
             continue
 
-        mtile = make_tile_mask(
-            tile_segbits[tile_type],
-            tile_name,
-            tile_bits,
-            strict=strict,
-            verbose=verbose)
+        mtile = make_tile_mask(tile_segbits[tile_type], tile_name, tile_bits)
         verbose and print(
             "Checking %s, type %s, bits: %s" %
-            (tile_name, tilej["type"], len(mtile)))
+            (tile_name, tile_type, len(mtile)))
         if len(mtile) == 0:
             continue
 
@@ -149,7 +142,7 @@ def check_tile_overlap(db, db_root, strict=False, verbose=False):
     print("Checked %s tiles, %s bits" % (tiles_checked, len(mall)))
 
 
-def run(db_root, strict=False, verbose=False):
+def run(db_root, verbose=False):
     # Start by running a basic check on db files
     print("Checking individual .db...")
     parsedb_all(db_root, verbose=verbose)
@@ -167,7 +160,7 @@ def run(db_root, strict=False, verbose=False):
     verbose and print("")
 
     print("Checking aggregate dir...")
-    check_tile_overlap(db, db_root, strict=strict, verbose=verbose)
+    check_tile_overlap(db, verbose=verbose)
 
 
 def main():
@@ -177,11 +170,10 @@ def main():
         description="Parse a db repository, checking for consistency")
 
     util.db_root_arg(parser)
-    parser.add_argument('--strict', action='store_true', help='')
     parser.add_argument('--verbose', action='store_true', help='')
     args = parser.parse_args()
 
-    run(args.db_root, strict=args.strict, verbose=args.verbose)
+    run(args.db_root, verbose=args.verbose)
 
 
 if __name__ == '__main__':
