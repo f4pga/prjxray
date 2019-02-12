@@ -335,8 +335,9 @@ class Segmaker:
             Simplify names by simplifying like:
             -CLBLM_L => CLB
             -CENTER_INTER_R => CENTER_INTER
+            -CLK_HROW_TOP_R => CLK_HROW
             '''
-            tile_type_norm = re.sub("(LL|LM)?_[LR]$", "", tile_type)
+            tile_type_norm = re.sub("(_TOP|_BOT|LL|LM)?_[LR]$", "", tile_type)
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:

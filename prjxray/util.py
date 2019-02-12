@@ -22,6 +22,41 @@ def roi_xy():
     return (x1, x2), (y1, y2)
 
 
+def create_xy_fun(prefix):
+    """ Create function that extracts X and Y coordinate from a prefixed string
+
+    >>> fun = create_xy_fun(prefix='')
+    >>> fun('X5Y23')
+    (5, 23)
+    >>> fun('X0Y0')
+    (0, 0)
+    >>> fun('X50Y100')
+    (50, 100)
+
+    >>> fun = create_xy_fun(prefix='SITE_')
+    >>> fun('SITE_X5Y23')
+    (5, 23)
+    >>> fun('SITE_X0Y0')
+    (0, 0)
+    >>> fun('SITE_X50Y100')
+    (50, 100)
+
+    """
+    compiled_re = re.compile(
+        '^{prefix}X([0-9]+)Y([0-9]+)$'.format(prefix=prefix))
+
+    def get_xy(s):
+        m = compiled_re.match(s)
+        assert m, (prefix, s)
+
+        x = int(m.group(1))
+        y = int(m.group(2))
+
+        return x, y
+
+    return get_xy
+
+
 def slice_xy():
     '''Return (X1, X2), (Y1, Y2) from XRAY_ROI, exclusive end (for xrange)'''
     # SLICE_X12Y100:SLICE_X27Y149

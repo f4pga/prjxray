@@ -12,10 +12,11 @@ endif
 # Iteration number (each containing N specimens)
 # Driven by int_loop.sh
 ITER ?= 1
-MAKETODO_FLAGS ?=
 PIP_TYPE?=pips_int
-SEG_TYPE?=int
+MAKETODO_FLAGS ?=--pip-type pips_int --seg-type int
+A_PIPLIST?=$(PIP_TYPE)_l.txt
 PIPLIST_TCL?=$(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
+SPECIMENS_DEPS ?=
 
 # See int_loop_check.py
 # rempips took 35 iters once, so set 50 as a good start point
@@ -27,18 +28,20 @@ export FUZDIR=$(shell pwd)
 
 all: database
 
-$(SPECIMENS_OK): build/todo.txt
+$(SPECIMENS_OK): build/todo.txt $(SPECIMENS_DEPS)
 	mkdir -p build/$(ITER)
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
 	touch $@
 
-$(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)_l.txt: $(PIPLIST_TCL)
+$(XRAY_FUZZERS_DIR)/piplist/build/$(A_PIPLIST): $(PIPLIST_TCL)
 	mkdir -p $(XRAY_FUZZERS_DIR)/piplist/build
 	cd $(XRAY_FUZZERS_DIR)/piplist/build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
 
 # Used 1) to see if we are done 2) pips to try in generate.tcl
-build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)_l.txt $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
-	XRAY_DATABASE_DIR=${FUZDIR}/build/database python3 $(XRAY_DIR)/fuzzers/int_maketodo.py --pip-type $(PIP_TYPE) --seg-type $(SEG_TYPE) $(MAKETODO_FLAGS) |sort >build/todo_all.txt
+build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/$(A_PIPLIST) $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
+	XRAY_DATABASE_DIR=${FUZDIR}/build/database \
+		python3 $(XRAY_DIR)/fuzzers/int_maketodo.py \
+		$(MAKETODO_FLAGS) |sort >build/todo_all.txt
 	cat build/todo_all.txt | sort -R | head -n$(TODO_N) > build/todo.txt.tmp
 	mv build/todo.txt.tmp build/todo.txt
 	# Per iter files

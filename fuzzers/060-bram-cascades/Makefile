@@ -1,11 +1,12 @@
-MAKETODO_FLAGS=--re "BRAM_.\.BRAM_(?!LOGIC_OUTS).*"
 export FUZDIR=$(shell pwd)
-PIPLIST_TCL=$(FUZDIR)/bram_pip_list.tcl
 PIP_TYPE?=bram_pips_int
-SEG_TYPE?=bram
+PIPLIST_TCL=$(FUZDIR)/bram_pip_list.tcl
+MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type bram --re "BRAM_.\.BRAM_(?!LOGIC_OUTS).*"
 N = 50
+
 # These PIPs all appear to be either a 0 or 2 bit solution.
 SEGMATCH_FLAGS=-m 20 -M 45 -c 2
+
 include ../pip_loop.mk
 #
 # Specimens from current run must complete, but previous iterations may exist
