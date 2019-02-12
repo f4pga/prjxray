@@ -172,45 +172,6 @@ def addr2btype(base_addr):
     return block_type_i2s[block_type_i]
 
 
-def gen_tile_bits(db_root, tilej, strict=False, verbose=False):
-    '''
-    For given tile yield
-    (absolute address, absolute FDRI bit offset, tag)
-
-    For each address space
-    Find applicable files
-    For each tag bit in those files, calculate absolute address and bit offsets
-
-    Sample file names:
-    segbits_clbll_l.db
-    segbits_int_l.db
-    segbits_bram_l.block_ram.db
-    '''
-    for block_type, blockj in tilej["bits"].items():
-        baseaddr = int(blockj["baseaddr"], 0)
-        bitbase = 32 * blockj["offset"]
-
-        if block_type == "CLB_IO_CLK":
-            fn = "%s/segbits_%s.db" % (db_root, tilej["type"].lower())
-        else:
-            fn = "%s/segbits_%s.db.%s" % (
-                db_root, tilej["type"].lower(), block_type.lower())
-        # tilegrid runs a lot earlier than fuzzers
-        # may not have been created yet
-        verbose and print("Check %s: %s" % (fn, os.path.exists(fn)))
-        if strict:
-            assert os.path.exists(fn)
-        elif not os.path.exists(fn):
-            continue
-
-        for line, (tag, bits, mode) in parse_db_lines(fn):
-            assert mode is None
-            for bitstr in bits:
-                # 31_06
-                _bit_inv, (bit_addroff, bit_bitoff) = parse_tagbit(bitstr)
-                yield (baseaddr + bit_addroff, bitbase + bit_bitoff, tag)
-
-
 def specn():
     # ex: build/specimen_001
     specdir = os.getenv("SPECDIR")
