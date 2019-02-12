@@ -50,13 +50,15 @@ def main():
 
             piplists[dst].append(src)
 
+    table = clk_table.get_clk_table()
+
     with open(args.out_segbit, 'w') as f:
         for dst in sorted(hrow_outs):
             for src in sorted(piplists[dst]):
-                if src not in clk_table.CLK_TABLE:
+                if src not in table:
                     continue
 
-                row, column = clk_table.CLK_TABLE[src]
+                row, column = table[src]
 
                 if row not in hrow_outs[dst]['rows']:
                     continue

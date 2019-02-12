@@ -1,27 +1,11 @@
+""" Emits top.v's for various BUFHCE routing inputs. """
 import os
-import re
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray.db import Database
 
-XY_RE = re.compile('^BUFHCE_X([0-9]+)Y([0-9]+)$')
-BUFGCTRL_XY_RE = re.compile('^BUFGCTRL_X([0-9]+)Y([0-9]+)$')
-"""
-BUFHCE's can be driven from:
-
-MMCME2_ADV
-BUFHCE
-PLLE2_ADV
-BUFGCTRL
-"""
-
-
-def get_xy(s):
-    m = BUFGCTRL_XY_RE.match(s)
-    x = int(m.group(1))
-    y = int(m.group(2))
-    return x, y
+CMT_XY_FUN = util.create_xy_fun(prefix='')
 
 
 def gen_sites(desired_site_type):
@@ -53,6 +37,7 @@ def gen_bufhce_sites():
 
 
 def read_site_to_cmt():
+    """ Yields clock sources and which CMT they route within. """
     with open(os.path.join(os.getenv('FUZDIR'), 'build',
                            'cmt_regions.csv')) as f:
         for l in f:
@@ -60,10 +45,15 @@ def read_site_to_cmt():
             yield (site, cmt)
 
 
-CMT_RE = re.compile('X([0-9]+)Y([0-9]+)')
-
-
 class ClockSources(object):
+    """ Class for tracking clock sources.
+
+    Some clock sources can be routed to any CMT, for these, cmt='ANY'.
+    For clock sources that belong to a CMT, cmt should be set to the CMT of
+    the source.
+
+    """
+
     def __init__(self):
         self.sources = {}
         self.merged_sources = {}
@@ -71,6 +61,10 @@ class ClockSources(object):
         self.used_sources_from_cmt = {}
 
     def add_clock_source(self, source, cmt):
+        """ Adds a source from a specific CMT.
+
+        cmt='ANY' indicates that this source can be routed to any CMT.
+        """
         if cmt not in self.sources:
             self.sources[cmt] = []
 
@@ -80,6 +74,12 @@ class ClockSources(object):
         self.source_to_cmt[source] = cmt
 
     def get_random_source(self, cmt):
+        """ Get a random source that is routable to the specific CMT.
+
+        get_random_source will return a source that is either cmt='ANY',
+        cmt equal to the input CMT, or the adjecent CMT.
+
+        """
         if cmt not in self.merged_sources:
             choices = []
             if 'ANY' in self.sources:
@@ -88,9 +88,7 @@ class ClockSources(object):
             if cmt in self.sources:
                 choices.extend(self.sources[cmt])
 
-            m = CMT_RE.match(cmt)
-            x = int(m.group(1))
-            y = int(m.group(2))
+            x, y = CMT_XY_FUN(cmt)
 
             if x % 2 == 0:
                 x += 1
@@ -123,17 +121,35 @@ class ClockSources(object):
 
 
 def check_allowed(mmcm_pll_dir, cmt):
+    """ Check whether the CMT specified is in the allowed direction.
+
+    This function is designed to bias sources to either the left or right
+    input lines.
+
+    """
     if mmcm_pll_dir == 'BOTH':
         return True
     elif mmcm_pll_dir == 'ODD':
-        return (int(CMT_RE.match(cmt).group(1)) & 1) == 1
+        x, y = CMT_XY_FUN(cmt)
+        return (x & 1) == 1
     elif mmcm_pll_dir == 'EVEN':
-        return (int(CMT_RE.match(cmt).group(1)) & 1) == 0
+        x, y = CMT_XY_FUN(cmt)
+        return (x & 1) == 0
     else:
         assert False, mmcm_pll_dir
 
 
 def main():
+    """
+    BUFHCE's can be driven from:
+
+        MMCME2_ADV
+        PLLE2_ADV
+        BUFGCTRL
+        Local INT connect
+
+    """
+
     print('''
 module top();
     ''')
@@ -142,6 +158,9 @@ module top();
 
     clock_sources = ClockSources()
 
+    # To ensure that all left or right sources are used, sometimes only MMCM/PLL
+    # sources are allowed.  The force of ODD/EVEN/BOTH further biases the
+    # clock sources to the left or right column inputs.
     mmcm_pll_only = random.randint(0, 1)
     mmcm_pll_dir = random.choice(('ODD', 'EVEN', 'BOTH'))
 
@@ -153,20 +172,6 @@ module top();
     print("""
     wire zero = 0;
     wire one = 1;""")
-
-    for idx in range(1):
-        wire_name = "lut_wire_{}".format(idx)
-        #clock_sources.add_clock_source(wire_name, 'ANY')
-        print(
-            """
-    (* KEEP, DONT_TOUCH *)
-    wire {wire_name};
-    LUT6 lut{idx} (
-        .O({wire_name})
-        );""".format(
-                idx=idx,
-                wire_name=wire_name,
-            ))
 
     for site in gen_sites('MMCME2_ADV'):
         mmcm_clocks = [
@@ -250,7 +255,8 @@ module top();
                 c5=pll_clocks[5],
             ))
 
-    for site in sorted(gen_sites("BUFGCTRL"), key=get_xy):
+    for site in sorted(gen_sites("BUFGCTRL"),
+                       key=util.create_xy_fun('BUFGCTRL_')):
         wire_name = 'clk_{}'.format(site)
 
         if not mmcm_pll_only:
@@ -268,8 +274,7 @@ module top();
                 wire_name=wire_name,
             ))
 
-    bufhce_sites = list(gen_bufhce_sites())
-    for tile_name, sites in bufhce_sites:
+    for tile_name, sites in gen_bufhce_sites():
         for site in sites:
             wire_name = clock_sources.get_random_source(site_to_cmt[site])
             if wire_name is None:

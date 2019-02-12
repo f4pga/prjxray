@@ -1,18 +1,14 @@
 import json
 import os
-import re
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
 from prjxray.db import Database
 
-XY_RE = re.compile('^BUFHCE_X([0-9]+)Y([0-9]+)$')
-
 
 def gen_sites():
-    db = Database(util.get_db_root())
-    grid = db.grid()
+    get_xy = util.create_xy_fun('BUFHCE_')
     db = Database(util.get_db_root())
     grid = db.grid()
     for tile_name in sorted(grid.tiles()):
@@ -24,10 +20,7 @@ def gen_sites():
         ys = []
         for site, site_type in gridinfo.sites.items():
             if site_type == 'BUFHCE':
-                m = re.match(XY_RE, site)
-                assert m, site
-                x = int(m.group(1))
-                y = int(m.group(2))
+                x, y = get_xy(site)
                 xs.append(x)
                 ys.append(y)
 

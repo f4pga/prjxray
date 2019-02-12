@@ -25,7 +25,8 @@ def main():
             row['site'], '{}.INIT_OUT'.format(base_name), row['INIT_OUT'])
 
         segmk.add_site_tag(
-            row['site'], '{}.ZINV_CE'.format(base_name), 1 ^ row['IS_CE_INVERTED'])
+            row['site'], '{}.ZINV_CE'.format(base_name),
+            1 ^ row['IS_CE_INVERTED'])
 
         # SYNC is a zero pattern
         for opt in ['ASYNC']:

@@ -6,6 +6,7 @@ import clk_table
 
 def main():
     segmk = Segmaker("design.bits")
+    table = clk_table.get_clk_table()
 
     print("Loading tags from design.txt.")
     with open("design.txt", "r") as f:
@@ -24,8 +25,8 @@ def main():
             rows = set(range(clk_table.CLK_TABLE_NUM_ROWS))
             columns = set(range(clk_table.CLK_TABLE_NUM_COLS))
 
-            if src in clk_table.CLK_TABLE:
-                row, column = clk_table.CLK_TABLE[src]
+            if src in table:
+                row, column = table[src]
 
                 segmk.add_tile_tag(
                     tile, '{}.HCLK_ENABLE_ROW{}'.format(dst, row), 1)
