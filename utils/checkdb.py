@@ -17,7 +17,8 @@ import parsedb
 import glob
 
 
-def make_tile_mask(tile_segbits, tile_name, tilej, strict=False, verbose=False):
+def make_tile_mask(
+        tile_segbits, tile_name, tilej, strict=False, verbose=False):
     '''
     Return dict
     key: (address, bit index)
