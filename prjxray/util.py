@@ -1,7 +1,6 @@
 import os
 import re
 from .roi import Roi
-from prjxray.grid import BlockType
 
 
 def get_db_root():
@@ -198,8 +197,8 @@ def gen_tile_bits(tile_segbits, tile, strict=False, verbose=False):
             for bit in tile_segbits[block_type][tag]:
                 # 31_06
                 word_column, word_bit, isset = bit
-                assert word_column <= frames, "ERROR: bit out of bound --> word_column = %s; frames = %s" % (
-                    word_column, frames)
+                assert word_column <= frames, "ERROR: bit out of bound --> tag: %s; word_column = %s; frames = %s" % (
+                    tag, word_column, frames)
                 yield word_column + baseaddr, word_bit + bitbase, tag
 
 
