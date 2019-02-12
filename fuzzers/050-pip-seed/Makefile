@@ -9,7 +9,8 @@ SEGMATCH_FLAGS=-m 15 -M 45
 endif
 # Driven by int_loop.sh
 ITER := 1
-MAKETODO_FLAGS=--re ".*" --not-endswith ".VCC_WIRE"
+# FAN_ALT.*GFAN pips are left to be solved by a dedicated fuzzer
+MAKETODO_FLAGS=--re ".*" --not-endswith "(.VCC_WIRE)|(FAN_ALT.*GFAN)"
 PIPLIST_TCL=$(XRAY_FUZZERS_DIR)/piplist/piplist.tcl
 SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
