@@ -2,12 +2,15 @@
 
 from __future__ import print_function
 
+import fasm
 import argparse
+import json
 import os
 import os.path
 
 from prjxray import fasm_assembler
-from prjxray import db
+from prjxray.db import Database
+from prjxray.roi import Roi
 
 
 class FASMSyntaxError(SyntaxError):
@@ -51,9 +54,26 @@ def dump_frm(f, frames):
             '0x%08X ' % addr + ','.join(['0x%08X' % w for w in words]) + '\n')
 
 
-def run(db_root, filename_in, f_out, sparse=False, debug=False):
-    assembler = fasm_assembler.FasmAssembler(db.Database(db_root))
-    assembler.parse_fasm_filename(filename_in)
+def run(db_root, filename_in, f_out, sparse=False, roi=None, debug=False):
+    db = Database(db_root)
+    assembler = fasm_assembler.FasmAssembler(db)
+
+    if roi:
+        with open(roi) as f:
+            roi_j = json.load(f)
+        x1 = roi_j['info']['GRID_X_MIN']
+        x2 = roi_j['info']['GRID_X_MAX']
+        y1 = roi_j['info']['GRID_Y_MIN']
+        y2 = roi_j['info']['GRID_Y_MAX']
+
+        assembler.mark_roi_frames(Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2))
+
+    if 'required_features' in roi_j:
+        extra_features = fasm.parse_fasm_string(roi_j['required_features'])
+    else:
+        extra_features = []
+
+    assembler.parse_fasm_filename(filename_in, extra_features=extra_features)
     frames = assembler.get_frames(sparse=sparse)
 
     if debug:
@@ -81,6 +101,9 @@ def main():
     parser.add_argument(
         '--sparse', action='store_true', help="Don't zero fill all frames")
     parser.add_argument(
+        '--roi',
+        help="ROI design.json file defining which tiles are within the ROI.")
+    parser.add_argument(
         '--debug', action='store_true', help="Print debug dump")
     parser.add_argument('fn_in', help='Input FPGA assembly (.fasm) file')
     parser.add_argument(
@@ -95,6 +118,7 @@ def main():
         filename_in=args.fn_in,
         f_out=open(args.fn_out, 'w'),
         sparse=args.sparse,
+        roi=args.roi,
         debug=args.debug)
 
 

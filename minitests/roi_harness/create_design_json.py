@@ -53,7 +53,6 @@ def main():
         y2=j['info']['GRID_Y_MAX'],
     )
 
-
     with open(args.pad_wires) as f:
         for l in f:
             parts = l.strip().split(' ')
@@ -89,7 +88,8 @@ def main():
 
                 unknown_base_address = int(annotation.value, 0)
 
-                assert unknown_base_address not in frames_in_use, "Found unknown bit in base address 0x{:08x}".format(unknown_base_address)
+                assert unknown_base_address not in frames_in_use, "Found unknown bit in base address 0x{:08x}".format(
+                    unknown_base_address)
 
         if not fasm_line.set_feature:
             continue
@@ -109,7 +109,8 @@ def main():
         if not_in_roi and base_address_in_roi:
             required_features.append(fasm_line)
 
-    j['required_features'] = fasm.fasm_tuple_to_string(required_features, canonical=True)
+    j['required_features'] = fasm.fasm_tuple_to_string(
+        required_features, canonical=True)
 
     json.dump(j, sys.stdout, indent=2, sort_keys=True)
 
