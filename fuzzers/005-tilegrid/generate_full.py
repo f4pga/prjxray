@@ -215,7 +215,7 @@ def propagate_rebuf(database, tiles_by_grid):
     """ Writing a fuzzer for the CLK_BUFG_REBUF tiles is hard, so propigate from CLK_HROW tiles.
 
     In the clock column, there is a CLK_BUFG_REBUF above and below the CLK_HROW
-    tile.  Each clock column appears to use the same offsets, so propigdate
+    tile.  Each clock column appears to use the same offsets, so propigate
     the base address and frame count, and update the offset and word count.
 
     """

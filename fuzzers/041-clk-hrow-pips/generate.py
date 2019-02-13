@@ -9,6 +9,9 @@ def main():
     table = clk_table.get_clk_table()
 
     print("Loading tags from design.txt.")
+
+    active_gclks = {}
+    active_clks = {}
     with open("design.txt", "r") as f:
         for line in f:
             tile, pip, src, dst, pnum, pdir = line.split()
@@ -43,6 +46,30 @@ def main():
                 for column in columns:
                     segmk.add_tile_tag(
                         tile, '{}.HCLK_ENABLE_COLUMN{}'.format(dst, column), 0)
+
+                if tile not in active_clks:
+                    active_clks[tile] = set()
+
+                active_clks[tile].add(src)
+
+                if 'GCLK' in src:
+                    if src not in active_gclks:
+                        active_gclks[src] = set()
+
+                    active_gclks[src].add(tile)
+
+    tiles = sorted(active_clks.keys())
+
+    for tile in active_clks:
+        for src in table:
+            if 'GCLK' not in src:
+                active = src in active_clks[tile]
+                segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), active)
+            else:
+                if src not in active_gclks:
+                    segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 0)
+                elif tile in active_gclks[src]:
+                    segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 1)
 
     segmk.compile()
     segmk.write()

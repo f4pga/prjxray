@@ -11,6 +11,7 @@ def main():
 
     args = parser.parse_args()
 
+    output_features = []
     hrow_outs = {}
     tile = None
     with open(args.in_segbit) as f:
@@ -18,6 +19,11 @@ def main():
             parts = l.strip().split(' ')
             feature = parts[0]
             bits = ' '.join(parts[1:])
+
+            # No post-processing on _ACTIVE bits.
+            if feature.endswith('_ACTIVE'):
+                output_features.append(l.strip())
+                continue
 
             tile1, dst, src = feature.split('.')
             if tile is None:
@@ -53,6 +59,9 @@ def main():
     table = clk_table.get_clk_table()
 
     with open(args.out_segbit, 'w') as f:
+        for l in output_features:
+            print(l, file=f)
+
         for dst in sorted(hrow_outs):
             for src in sorted(piplists[dst]):
                 if src not in table:
