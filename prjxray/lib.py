@@ -183,17 +183,30 @@ def get_site_coordinate_from_name(name):
     )
 
 
-def find_origin_coordinate(site_names):
-    """ Find the coordinates of each site within the tile, and then subtract the
-      smallest coordinate to re-origin them all to be relative to the tile.
-  """
+def get_site_prefix_from_name(name):
+    """
+    Returns the prefix of a site from its name
+    """
+    coordinate = SITE_COORDINATE_PATTERN.match(name)
+    assert coordinate is not None, name
+
+    return coordinate.group(1)
+
+
+def find_origin_coordinate(site_name, site_names):
+    """
+    Find the coordinates of each site within the tile, and then subtract the
+    smallest coordinate to re-origin them all to be relative to the tile.
+    """
 
     x_coords = []
     y_coords = []
     for site in site_names:
         coordinate = get_site_coordinate_from_name(site)
-        x_coords.append(coordinate.x_coord)
-        y_coords.append(coordinate.y_coord)
+        site_name_prefix = get_site_prefix_from_name(site_name)
+        if coordinate.prefix == site_name_prefix:
+            x_coords.append(coordinate.x_coord)
+            y_coords.append(coordinate.y_coord)
 
     if len(x_coords) == 0 or len(y_coords) == 0:
         return 0, 0
