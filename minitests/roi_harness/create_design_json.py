@@ -2,6 +2,7 @@ import json
 import csv
 import argparse
 import sys
+import fasm
 from prjxray.db import Database
 from prjxray.roi import Roi
 from prjxray.util import get_db_root
@@ -24,6 +25,7 @@ def main():
     parser.add_argument('--design_txt', required=True)
     parser.add_argument('--design_info_txt', required=True)
     parser.add_argument('--pad_wires', required=True)
+    parser.add_argument('--design_fasm', required=True)
 
     args = parser.parse_args()
 
@@ -51,6 +53,7 @@ def main():
         y2=j['info']['GRID_Y_MAX'],
     )
 
+
     with open(args.pad_wires) as f:
         for l in f:
             parts = l.strip().split(' ')
@@ -69,6 +72,44 @@ def main():
                     wires_outside_roi.append(wire)
 
             set_port_wires(j['ports'], name, pin, wires_outside_roi)
+
+    frames_in_use = set()
+    for tile in roi.gen_tiles():
+        gridinfo = grid.gridinfo_at_tilename(tile)
+
+        for bit in gridinfo.bits.values():
+            frames_in_use.add(bit.base_address)
+
+    required_features = []
+    for fasm_line in fasm.parse_fasm_filename(args.design_fasm):
+        if fasm_line.annotations:
+            for annotation in fasm_line.annotations:
+                if annotation.name != 'unknown_segment':
+                    continue
+
+                unknown_base_address = int(annotation.value, 0)
+
+                assert unknown_base_address not in frames_in_use, "Found unknown bit in base address 0x{:08x}".format(unknown_base_address)
+
+        if not fasm_line.set_feature:
+            continue
+
+        tile = fasm_line.set_feature.feature.split('.')[0]
+
+        loc = grid.loc_of_tilename(tile)
+        gridinfo = grid.gridinfo_at_tilename(tile)
+
+        base_address_in_roi = False
+        for bit in gridinfo.bits.values():
+            if bit.base_address in frames_in_use:
+                base_address_in_roi = True
+
+        not_in_roi = not roi.tile_in_roi(loc)
+
+        if not_in_roi and base_address_in_roi:
+            required_features.append(fasm_line)
+
+    j['required_features'] = fasm.fasm_tuple_to_string(required_features, canonical=True)
 
     json.dump(j, sys.stdout, indent=2, sort_keys=True)
 
