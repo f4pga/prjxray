@@ -160,26 +160,26 @@ def check_wires(wires, sites, pips):
 
 
 def get_sites(tile, site_pin_node_to_wires):
-    min_x_coord, min_y_coord = prjxray.lib.find_origin_coordinate(
-        site['site'] for site in tile['sites'])
-
     for site in tile['sites']:
+        min_x_coord, min_y_coord = prjxray.lib.find_origin_coordinate(
+            site['site'], (site['site'] for site in tile['sites']))
+
         orig_site_name = site['site']
         coordinate = prjxray.lib.get_site_coordinate_from_name(orig_site_name)
 
-        x_coord = coordinate.x_coord
-        y_coord = coordinate.y_coord
+        x_coord = coordinate.x_coord - min_x_coord
+        y_coord = coordinate.y_coord - min_y_coord
 
         yield (
             {
                 'name':
-                'X{}Y{}'.format(x_coord - min_x_coord, y_coord - min_y_coord),
+                'X{}Y{}'.format(x_coord, y_coord),
                 'prefix':
                 coordinate.prefix,
                 'x_coord':
-                x_coord - min_x_coord,
+                x_coord,
                 'y_coord':
-                y_coord - min_y_coord,
+                y_coord,
                 'type':
                 site['type'],
                 'site_pins':
