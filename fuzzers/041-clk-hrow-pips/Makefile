@@ -4,8 +4,8 @@ PIPLIST_TCL=$(FUZDIR)/clk_hrow_pip_list.tcl
 MAKETODO_FLAGS=--no-l --pip-type clk_hrow_bot --seg-type clk_hrow_bot --re "[^\.]+\.CLK_HROW_CK_MUX_OUT_"
 N = 50
 
-# These PIPs all appear to be either a 0 or 2 bit solution.
-SEGMATCH_FLAGS=-m 20 -M 45 -c 1
+# These PIPs all appear to be either a 1 bit solutions.
+SEGMATCH_FLAGS=-c 1
 SPECIMENS_DEPS=build/cmt_regions.csv
 A_PIPLIST=clk_hrow_bot_r.txt
 
