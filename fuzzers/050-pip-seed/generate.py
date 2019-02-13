@@ -42,12 +42,16 @@ with open("design.txt", "r") as f:
             tiledata[tile]["srcs"].add(dst)
             tiledata[tile]["dsts"].add(src)
 
+        fan_alt_dst = re.match('^FAN_ALT[0-9]$', dst) is not None
+        gfan_src = re.match('^GFAN', src) is not None
+
         # Okay: BYP_ALT0.VCC_WIRE
         # Skip: INT.IMUX13.VCC_WIRE, INT.IMUX_L43.VCC_WIRE
         if pnum == 1 or pdir == 0 or \
                 src == "VCC_WIRE" or \
                 re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", src) or \
                 re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", dst) or \
+                (fan_alt_dst and gfan_src) or \
                 re.match(r"^(CTRL|GFAN)(_L)?[0-9]", dst):
             ignpip.add(pip)
 
