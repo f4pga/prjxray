@@ -133,7 +133,8 @@ class Tile(object):
 
         for site in self.sites:
             site_name = '{}_X{}Y{}'.format(site.prefix, site.x, site.y)
-            origin_x, origin_y = lib.find_origin_coordinate(site_name, grid_info.sites.keys())
+            origin_x, origin_y = lib.find_origin_coordinate(
+                site_name, grid_info.sites.keys())
 
             x = site.x + origin_x
             y = site.y + origin_y
