@@ -2,13 +2,17 @@ import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
-from prjxray import verilog
+from prjxray.db import Database
 
 
 def gen_sites():
-    for tile_name, site_name, _site_type in util.get_roi().gen_sites(
-        ['MMCME2_ADV']):
-        yield tile_name, site_name
+    db = Database(util.get_db_root())
+    grid = db.grid()
+    for tile_name in sorted(grid.tiles()):
+        gridinfo = grid.gridinfo_at_tilename(tile_name)
+        for site_name, site_type in gridinfo.sites.items():
+            if site_type in ['MMCME2_ADV']:
+                yield tile_name, site_name
 
 
 def write_params(params):
@@ -47,7 +51,6 @@ module top(input clk, stb, di, output do);
     # FIXME: can't LOC?
     # only one for now, worry about later
     sites = list(gen_sites())
-    assert len(sites) == 1, len(sites)
     for (tile_name, site_name), isone in zip(sites,
                                              util.gen_fuzz_states(len(sites))):
         # 0 is invalid
