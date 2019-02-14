@@ -277,6 +277,10 @@ class PsTree:
         return "{}\n{}".format(stdout, stderr)
 
 
+def get_memory():
+    return subprocess.check_output('free -mh', shell=True).decode("utf-8")
+
+
 def should_run_submake(make_flags):
     """Check if make_flags indicate that we should execute things.
 
@@ -474,8 +478,9 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
             if retcode is not None:
                 break
             log(
-                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%).\n{}",
+                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%). {}\n{}",
                 *get_load(),
+                get_memory(),
                 PsTree.get(p.pid),
             )
     except (Exception, KeyboardInterrupt, SystemExit):
