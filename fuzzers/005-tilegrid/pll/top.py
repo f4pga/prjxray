@@ -24,8 +24,7 @@ def write_params(params):
 
 
 def run():
-    print(
-        '''
+    print('''
 module top();
     ''')
 
@@ -42,9 +41,9 @@ module top();
     (* KEEP, DONT_TOUCH,  LOC = "{site_name}" *)
     PLLE2_ADV #( .STARTUP_WAIT({isone}) ) dut_{site_name} ();
 '''.format(
-        site_name=site_name,
-        isone=verilog.quote('TRUE' if isone else 'FALSE'),
-        ))
+                site_name=site_name,
+                isone=verilog.quote('TRUE' if isone else 'FALSE'),
+            ))
 
     print("endmodule")
     write_params(params)

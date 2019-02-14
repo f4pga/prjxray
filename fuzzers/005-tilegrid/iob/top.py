@@ -49,25 +49,23 @@ module top(input wire [`N_DI-1:0] di);
     for idx, ((tile_name, site_name), isone) in enumerate(zip(
             sites, util.gen_fuzz_states(len(sites)))):
         params[tile_name] = (site_name, isone, "di[%u]" % idx)
-        print('''
+        print(
+            '''
     (* KEEP, DONT_TOUCH *)
     IBUF #(
     ) ibuf_{site_name} (
         .I(di[{idx}]),
         .O(di_buf[{idx}])
-        );'''.format(
-            site_name=site_name,
-            idx=idx))
+        );'''.format(site_name=site_name, idx=idx))
 
         if isone:
-            print('''
+            print(
+                '''
     (* KEEP, DONT_TOUCH *)
     PULLUP #(
     ) pullup_{site_name} (
         .O(di[{idx}])
-        );'''.format(
-            site_name=site_name,
-            idx=idx))
+        );'''.format(site_name=site_name, idx=idx))
 
     print("endmodule")
     write_params(params)

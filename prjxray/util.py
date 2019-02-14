@@ -238,19 +238,19 @@ def gen_fuzz_states(nvals):
     next_p2_states = 2**math.ceil(math.log(nvals, 2))
     n = next_p2_states
 
-    full_mask = 2**next_p2_states-1
+    full_mask = 2**next_p2_states - 1
 
     choices = []
     invert_choices = []
 
     num_or = 1
     while n > 0:
-        mask = 2**n-1
+        mask = 2**n - 1
 
         val = 0
 
         for offset in range(0, num_or, 2):
-            shift = offset*next_p2_states//num_or
+            shift = offset * next_p2_states // num_or
             val |= mask << shift
 
         choices.append(full_mask ^ val)
