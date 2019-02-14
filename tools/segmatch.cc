@@ -238,7 +238,8 @@ int main(int argc, char** argv) {
 
 			// Check if input file exists.
 			if (!f.good()) {
-				printf("WARNING: Input file does not exist!\n");
+				printf("ERROR: Input file does not exist!\n");
+				return -1;
 			}
 
 			assert(!f.fail());
