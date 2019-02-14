@@ -40,15 +40,6 @@ def quick_test(db_root):
 
         tile = db.get_tile_type(gridinfo.tile_type)
 
-        # FIXME: The way sites are named in Tile.get_instance_sites is broken
-        # for thes tile types, skip them until the underlying data is fixed.
-        BROKEN_TILE_TYPES = [
-            'BRAM_L', 'BRAM_R', 'HCLK_IOI3', 'CMT_TOP_L_UPPER_B',
-            'CMT_TOP_R_UPPER_B'
-        ]
-        if gridinfo.tile_type in BROKEN_TILE_TYPES:
-            continue
-
         instance_sites = list(tile.get_instance_sites(gridinfo))
         assert len(instance_sites) == len(tile.get_sites())
 
