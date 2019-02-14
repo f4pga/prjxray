@@ -47,7 +47,7 @@ def get_database(db, tile_type, bit_only=False, verbose=False):
         parts = l.split()
         name = parts[0]
 
-        if parts[1] == 'always' or parts[1] == 'hint':
+        if parts[1] == 'always' or parts[1] == 'hint' or parts[1] == 'default':
             if bit_only:
                 return
             tagbits = []

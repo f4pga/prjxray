@@ -29,28 +29,28 @@ def main():
 
     args = parser.parse_args()
 
-    j = {}
-    j['ports'] = []
-    j['info'] = {}
+    design_json = {}
+    design_json['ports'] = []
+    design_json['info'] = {}
     with open(args.design_txt) as f:
         for d in csv.DictReader(f, delimiter=' '):
-            j['ports'].append(d)
+            design_json['ports'].append(d)
 
     with open(args.design_info_txt) as f:
         for l in f:
             name, value = l.strip().split(' = ')
 
-            j['info'][name] = int(value)
+            design_json['info'][name] = int(value)
 
     db = Database(get_db_root())
     grid = db.grid()
 
     roi = Roi(
         db=db,
-        x1=j['info']['GRID_X_MIN'],
-        y1=j['info']['GRID_Y_MIN'],
-        x2=j['info']['GRID_X_MAX'],
-        y2=j['info']['GRID_Y_MAX'],
+        x1=design_json['info']['GRID_X_MIN'],
+        y1=design_json['info']['GRID_Y_MIN'],
+        x2=design_json['info']['GRID_X_MAX'],
+        y2=design_json['info']['GRID_Y_MAX'],
     )
 
     with open(args.pad_wires) as f:
@@ -70,7 +70,7 @@ def main():
                 if not roi.tile_in_roi(loc):
                     wires_outside_roi.append(wire)
 
-            set_port_wires(j['ports'], name, pin, wires_outside_roi)
+            set_port_wires(design_json['ports'], name, pin, wires_outside_roi)
 
     frames_in_use = set()
     for tile in roi.gen_tiles():
@@ -109,10 +109,10 @@ def main():
         if not_in_roi and base_address_in_roi:
             required_features.append(fasm_line)
 
-    j['required_features'] = fasm.fasm_tuple_to_string(
+    design_json['required_features'] = fasm.fasm_tuple_to_string(
         required_features, canonical=True)
 
-    json.dump(j, sys.stdout, indent=2, sort_keys=True)
+    json.dump(design_json, sys.stdout, indent=2, sort_keys=True)
 
 
 if __name__ == '__main__':
