@@ -19,6 +19,8 @@ proc load_pin_lines {} {
     # IOB_X0Y129 do[0] output
 
     set fp [open "params.csv" r]
+    gets $fp line
+
     set pin_lines {}
     for {gets $fp line} {$line != ""} {gets $fp line} {
         lappend pin_lines [split $line ","]
