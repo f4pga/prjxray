@@ -8,7 +8,7 @@ from prjxray.db import Database
 def gen_sites():
     db = Database(util.get_db_root())
     grid = db.grid()
-    for tile_name in grid.tiles():
+    for tile_name in sorted(grid.tiles()):
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
 

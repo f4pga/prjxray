@@ -1,3 +1,3 @@
-N ?= 35
-GENERATE_ARGS?="--oneval KEEPER --dframe 27 --dword 3 --dbit 3"
+N ?= 15
+GENERATE_ARGS?="--oneval 1 --design params.csv --dframe 26 --dword 1"
 include ../fuzzaddr/common.mk

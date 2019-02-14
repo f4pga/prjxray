@@ -1,4 +1,6 @@
+import math
 import os
+import random
 import re
 from .roi import Roi
 
@@ -233,17 +235,37 @@ def gen_fuzz_states(nvals):
     0101
     1010
     '''
-    bits = 0
-    # First pass all 0's
-    for speci in range(2, specn() + 1):
-        # First pass do nothing
-        # Second pass invert every other bit (mod 2)
-        # Third pass invert blocks of two (mod 4)
-        block_size = 2**(speci - 1)
-        for maski in range(nvals):
-            mask = (1 << maski)
-            if maski % block_size < block_size / 2:
-                bits ^= mask
+    next_p2_states = 2**math.ceil(math.log(nvals, 2))
+    n = next_p2_states
+
+    full_mask = 2**next_p2_states-1
+
+    choices = []
+    invert_choices = []
+
+    num_or = 1
+    while n > 0:
+        mask = 2**n-1
+
+        val = 0
+
+        for offset in range(0, num_or, 2):
+            shift = offset*next_p2_states//num_or
+            val |= mask << shift
+
+        choices.append(full_mask ^ val)
+        invert_choices.append(val)
+
+        n //= 2
+        num_or *= 2
+
+    choices.extend(invert_choices)
+
+    spec_idx = specn() - 1
+    if spec_idx < len(choices):
+        bits = choices[spec_idx]
+    else:
+        bits = random.randint(0, 2**next_p2_states)
 
     for i in range(nvals):
         mask = (1 << i)
