@@ -478,7 +478,7 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
             if retcode is not None:
                 break
             log(
-                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%). {}\n{}",
+                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%).\n{}\n{}",
                 *get_load(),
                 get_memory(),
                 PsTree.get(p.pid),
