@@ -478,10 +478,10 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
             if retcode is not None:
                 break
             log(
-                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%).\n{}\n{}",
+                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%). {}\n{}",
                 *get_load(),
-                PsTree.get(p.pid),
                 get_memory(),
+                PsTree.get(p.pid),
             )
     except (Exception, KeyboardInterrupt, SystemExit):
         retcode = -1
