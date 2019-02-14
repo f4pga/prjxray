@@ -2,7 +2,6 @@ import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
-from prjxray import verilog
 from prjxray.db import Database
 
 
@@ -25,7 +24,7 @@ def gen_sites():
 
 
 def write_params(params):
-    pinstr = ''
+    pinstr = 'tile,val,site,pin\n'
     for tile, (site, val, pin) in sorted(params.items()):
         pinstr += '%s,%s,%s,%s\n' % (tile, val, site, pin)
     open('params.csv', 'w').write(pinstr)
