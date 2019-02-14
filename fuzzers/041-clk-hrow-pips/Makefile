@@ -19,8 +19,8 @@ build/cmt_regions.csv: output_cmt.tcl
 
 build/segbits_clk_hrow.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o build/segbits_clk_hrow.rdb \
-		$(addsuffix /segdata_clk_hrow_top_r.txt,$(SPECIMENS)) \
-		$(addsuffix /segdata_clk_hrow_bot_r.txt,$(SPECIMENS))
+		$(shell find build -name segdata_clk_hrow_top_r.txt) \
+		$(shell find build -name segdata_clk_hrow_bot_r.txt)
 
 build/segbits_clk_hrow.db: build/segbits_clk_hrow.rdb $(XRAY_FUZZERS_DIR)/piplist/build/clk_hrow_bot_r.txt
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
@@ -39,8 +39,8 @@ build/segbits_clk_hrow.db: build/segbits_clk_hrow.rdb $(XRAY_FUZZERS_DIR)/piplis
 
 
 	${XRAY_MASKMERGE} build/mask_clk_hrow.db \
-		$(addsuffix /segdata_clk_hrow_top_r.txt,$(SPECIMENS)) \
-		$(addsuffix /segdata_clk_hrow_bot_r.txt,$(SPECIMENS))
+		$(shell find build -name segdata_clk_hrow_top_r.txt) \
+		$(shell find build -name segdata_clk_hrow_bot_r.txt)
 
 	# Clobber existing .db to eliminate potential conflicts
 	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
