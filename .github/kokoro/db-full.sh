@@ -141,7 +141,7 @@ echo "----------------------------------------"
 echo "----------------------------------------"
 
 # Check the database and fail if it is broken.
-#make checkdb-${XRAY_SETTINGS}
+make checkdb-${XRAY_SETTINGS}
 
 # If we get here, then all the fuzzers completed fine. Hence we are
 # going to assume we don't want to keep all the build / logs / etc (as
