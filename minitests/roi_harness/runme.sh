@@ -60,10 +60,13 @@ ${XRAY_VIVADO} -mode batch -source ../runme.tcl
 test -z "$(fgrep CRITICAL vivado.log)"
 
 ${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit
-${XRAY_SEGPRINT} -zd design.bits >design.segp
 python3 ${XRAY_DIR}/utils/bit2fasm.py --verbose design.bit > design.fasm
 python3 ${XRAY_DIR}/utils/fasm2frames.py design.fasm design.frm
-python3 ../create_design_json.py --design_info_txt design_info.txt --design_txt design.txt --pad_wires design_pad_wires.txt > design.json
+python3 ../create_design_json.py \
+    --design_info_txt design_info.txt \
+    --design_txt design.txt \
+    --pad_wires design_pad_wires.txt \
+    --design_fasm design.fasm > design.json
 
 # Hack to get around weird clock error related to clk net not found
 # Remove following lines:

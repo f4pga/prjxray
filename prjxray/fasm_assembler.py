@@ -1,6 +1,5 @@
 import fasm
 from prjxray import bitstream
-from prjxray import grid
 
 
 class FasmLookupError(Exception):
@@ -142,34 +141,50 @@ class FasmAssembler(object):
                                bits.base_address + bits.frames):
                 self.frames_in_use.add(frame)
 
-    def parse_fasm_filename(self, filename):
+    def add_fasm_line(self, line, missing_features):
+        if not line.set_feature:
+            return
+
+        line_strs = tuple(fasm.fasm_line_to_string(line))
+        assert len(line_strs) == 1
+        line_str = line_strs[0]
+
+        parts = line.set_feature.feature.split('.')
+        tile = parts[0]
+        feature = '.'.join(parts[1:])
+
+        # canonical_features flattens multibit feature enables to only
+        # single bit features, which is what enable_feature expects.
+        #
+        # canonical_features also filters out features that are not enabled,
+        # which are no-ops.
+        for flat_set_feature in fasm.canonical_features(line.set_feature):
+            address = 0
+            if flat_set_feature.start is not None:
+                address = flat_set_feature.start
+
+            try:
+                self.enable_feature(tile, feature, address, line_str)
+            except FasmLookupError as e:
+                missing_features.append(str(e))
+
+    def parse_fasm_filename(self, filename, extra_features=[]):
         missing_features = []
         for line in fasm.parse_fasm_filename(filename):
-            if not line.set_feature:
-                continue
+            self.add_fasm_line(line, missing_features)
 
-            line_strs = tuple(fasm.fasm_line_to_string(line))
-            assert len(line_strs) == 1
-            line_str = line_strs[0]
-
-            parts = line.set_feature.feature.split('.')
-            tile = parts[0]
-            feature = '.'.join(parts[1:])
-
-            # canonical_features flattens multibit feature enables to only
-            # single bit features, which is what enable_feature expects.
-            #
-            # canonical_features also filters out features that are not enabled,
-            # which are no-ops.
-            for flat_set_feature in fasm.canonical_features(line.set_feature):
-                address = 0
-                if flat_set_feature.start is not None:
-                    address = flat_set_feature.start
-
-                try:
-                    self.enable_feature(tile, feature, address, line_str)
-                except FasmLookupError as e:
-                    missing_features.append(str(e))
+        for line in extra_features:
+            self.add_fasm_line(line, missing_features)
 
         if missing_features:
             raise FasmLookupError('\n'.join(missing_features))
+
+    def mark_roi_frames(self, roi):
+        for tile in roi.gen_tiles():
+            gridinfo = self.grid.gridinfo_at_tilename(tile)
+
+            for block_type in gridinfo.bits:
+                bits = gridinfo.bits[block_type]
+                for frame in range(bits.base_address,
+                                   bits.base_address + bits.frames):
+                    self.frames_in_use.add(frame)
