@@ -255,9 +255,11 @@ module top();
                 c5=pll_clocks[5],
             ))
 
+    gclks = []
     for site in sorted(gen_sites("BUFGCTRL"),
                        key=util.create_xy_fun('BUFGCTRL_')):
         wire_name = 'clk_{}'.format(site)
+        gclks.append(wire_name)
 
         if not mmcm_pll_only:
             clock_sources.add_clock_source(wire_name, 'ANY')
@@ -274,12 +276,14 @@ module top();
                 wire_name=wire_name,
             ))
 
+    any_bufhce = False
     for tile_name, sites in gen_bufhce_sites():
         for site in sites:
             wire_name = clock_sources.get_random_source(site_to_cmt[site])
             if wire_name is None:
                 continue
 
+            any_bufhce = True
             print(
                 """
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
@@ -290,6 +294,22 @@ module top();
                     site=site,
                     wire_name=wire_name,
                 ))
+
+    if not any_bufhce:
+        for tile_name, sites in gen_bufhce_sites():
+            for site in sites:
+                print(
+                    """
+    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+    BUFHCE buf_{site} (
+        .I({wire_name})
+    );
+              """.format(
+                        site=site,
+                        wire_name=gclks[0],
+                    ))
+                break
+            break
 
     print("endmodule")
 

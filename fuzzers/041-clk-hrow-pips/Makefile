@@ -1,7 +1,15 @@
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=clk_hrow
 PIPLIST_TCL=$(FUZDIR)/clk_hrow_pip_list.tcl
-MAKETODO_FLAGS=--no-l --pip-type clk_hrow_bot --seg-type clk_hrow_bot --re "[^\.]+\.CLK_HROW_CK_MUX_OUT_"
+ifeq (${XRAY_PART}, xc7z010clg400-1)
+# xc7z010clg400-1 is missing some side clock connections, so these bits cannot
+# be documented.
+TODO_RE="[^\.]+\.CLK_HROW_CK_MUX_OUT_[LR][0-9]+\.CLK_HROW_.*[KR_][0-9]+"
+else
+TODO_RE="[^\.]+\.CLK_HROW_CK_MUX_OUT_"
+endif
+
+MAKETODO_FLAGS=--no-l --pip-type clk_hrow_bot --seg-type clk_hrow_bot --re $(TODO_RE)
 N = 50
 
 # These PIPs all appear to be either a 0 or 2 bit solution.
