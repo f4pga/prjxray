@@ -5,7 +5,7 @@ include ../fuzzer.mk
 database: build/segbits_bramx.db
 
 build/segbits_bramx.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_bramx.rdb $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS)) -c 1
+	${XRAY_SEGMATCH} -o build/segbits_bramx.rdb $(addsuffix /segdata_bram_[lr].txt,$(SPECIMENS))
 
 build/segbits_bramx.db: build/segbits_bramx.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
