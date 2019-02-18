@@ -2,8 +2,9 @@ import json
 import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
-from prjxray import util
 from prjxray.db import Database
+from prjxray import util
+from prjxray.state_gen import StateGen
 
 
 def gen_sites():
@@ -28,50 +29,6 @@ def gen_sites():
         if sites:
             yield tile_name, min(xs), min(ys), sorted(sites)
 
-class StateGen(object):
-    def __init__(self, sites, states_per_site):
-        self.sites = sites
-        self.states_per_site = states_per_site
-        self.curr_site_idx = 0
-        self.curr_state = None
-        self.states = None
-        self.curr_site = None
-
-    def __iter__(self):
-        assert self.curr_state is None
-        assert self.states is None
-        assert self.curr_state is None
-
-        self.curr_site_idx = 0
-        self.curr_state = None
-        self.states = util.gen_fuzz_states(len(self.sites)*self.states_per_site)
-        self.curr_site = iter(self.sites)
-        return self
-
-    def __next__(self):
-        next_site = next(self.curr_site)
-        self.curr_site_idx += 1
-
-        if self.curr_state is not None:
-            while self.curr_state < self.states_per_site:
-                self.next_state()
-
-            assert self.curr_state == self.states_per_site, self.curr_state
-
-        self.curr_state = 0
-
-        return next_site
-
-    def next_state(self):
-        self.curr_state += 1
-
-        try:
-            state = next(self.states)
-        except StopIteration:
-            assert False, "Insufficent states, at state {} for site {}".format(self.curr_state, self.curr_site_idx)
-
-        return state
-
 
 def main():
     print('''
@@ -79,7 +36,7 @@ module top();
     ''')
 
     params_list = []
-    state_gen = StateGen(list(gen_sites()), states_per_site=12*16)
+    state_gen = StateGen(list(gen_sites()), states_per_site=12 * 16)
     for tile_name, x_min, y_min, sites in state_gen:
         for site, x, y in sites:
             params = {}

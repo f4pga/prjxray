@@ -31,20 +31,18 @@ def main():
 
         for param in ('PRESELECT_I0', ):
             segmk.add_site_tag(
-                row['site'], '{}.Z{}'.format(base_name, param),
-                1 ^ row[param])
+                row['site'], '{}.Z{}'.format(base_name, param), 1 ^ row[param])
 
         for param in ('PRESELECT_I1', ):
             segmk.add_site_tag(
                 row['site'], '{}.{}'.format(base_name, param), row[param])
 
-        for param, tag in (('IS_CE0_INVERTED', 'ZINV_CE0'),
-                            ('IS_S0_INVERTED', 'ZINV_S0'),
-                            ('IS_CE1_INVERTED', 'ZINV_CE1'),
-                            ('IS_S1_INVERTED', 'ZINV_S1')):
+        for param, tag in (('IS_CE0_INVERTED', 'ZINV_CE0'), ('IS_S0_INVERTED',
+                                                             'ZINV_S0'),
+                           ('IS_CE1_INVERTED', 'ZINV_CE1'), ('IS_S1_INVERTED',
+                                                             'ZINV_S1')):
             segmk.add_site_tag(
-                row['site'], '{}.{}'.format(base_name, tag),
-                1 ^ row[param])
+                row['site'], '{}.{}'.format(base_name, tag), 1 ^ row[param])
 
     segmk.compile()
     segmk.write()
