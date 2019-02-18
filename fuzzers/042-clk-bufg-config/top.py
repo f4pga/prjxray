@@ -2,8 +2,9 @@ import json
 import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
-from prjxray import util
 from prjxray.db import Database
+from prjxray import util
+from prjxray.state_gen import StateGen
 
 
 def gen_sites():
@@ -35,57 +36,35 @@ module top();
     ''')
 
     params_list = []
-    for tile_name, x_min, y_min, sites in gen_sites():
-
+    state_gen = StateGen(list(gen_sites()), states_per_site=12 * 16)
+    for tile_name, x_min, y_min, sites in state_gen:
         for site, x, y in sites:
             params = {}
             params['tile'] = tile_name
             params['site'] = site
             params['x'] = x - x_min
             params['y'] = y - y_min
-            params['IN_USE'] = random.random() > .1
+            params['IN_USE'] = state_gen.next_state()
 
             if params['IN_USE']:
-                params['INIT_OUT'] = random.randint(0, 1)
-                params['IS_CE0_INVERTED'] = random.randint(0, 1)
-                params['IS_CE1_INVERTED'] = random.randint(0, 1)
-                params['IS_S0_INVERTED'] = random.randint(0, 1)
-                params['IS_S1_INVERTED'] = random.randint(0, 1)
-                params['IS_IGNORE0_INVERTED'] = random.randint(0, 1)
-                params['IS_IGNORE1_INVERTED'] = random.randint(0, 1)
-                params['PRESELECT_I0'] = 0
-                params['PRESELECT_I1'] = 0
+                params['INIT_OUT'] = state_gen.next_state()
+                params['IS_CE0_INVERTED'] = state_gen.next_state()
+                params['IS_CE1_INVERTED'] = state_gen.next_state()
+                params['IS_S0_INVERTED'] = state_gen.next_state()
+                params['IS_S1_INVERTED'] = state_gen.next_state()
+                params['IS_IGNORE0_INVERTED'] = state_gen.next_state()
+                params['IS_IGNORE1_INVERTED'] = state_gen.next_state()
 
-                params['connect0'] = random.randint(0, 1)
-
-                if params['connect0']:
-                    params['connect1'] = random.randint(0, 1)
+                params['PRESELECT_I0'] = state_gen.next_state()
+                if not params['PRESELECT_I0']:
+                    params['PRESELECT_I1'] = state_gen.next_state()
                 else:
-                    params['connect1'] = 1
+                    params['PRESELECT_I1'] = 0
 
-                if params['connect0'] and params['connect1']:
-                    params['PRESELECT_I0'] = random.randint(0, 1)
-                    if not params['PRESELECT_I0']:
-                        params['PRESELECT_I1'] = random.randint(0, 1)
-                    else:
-                        params['PRESELECT_I1'] = 0
-
-                    params['connections'] = """
-            .CE0(ce0_{site}),
-            .S0(s0_{site}),
-            .CE1(ce1_{site}),
-            .S1(s1_{site})
-                        """.format(site=site)
-                elif params['connect0']:
-                    params['connections'] = """
-            .CE0(ce0_{site}),
-            .S0(s0_{site})
-                        """.format(site=site)
-                elif params['connect1']:
-                    params['connections'] = """
-            .CE1(ce1_{site}),
-            .S1(s1_{site})
-                        """.format(site=site)
+                params['force_0_high'] = state_gen.next_state()
+                params['force_1_high'] = state_gen.next_state()
+                if params['force_0_high']:
+                    params['force_1_high'] = 0
 
                 print(
                     '''
@@ -110,6 +89,7 @@ module top();
     LUT6 l3_{site} (
         .O(s1_{site})
         );
+
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFGCTRL #(
         .INIT_OUT({INIT_OUT}),
@@ -122,11 +102,19 @@ module top();
         .IS_IGNORE0_INVERTED({IS_IGNORE0_INVERTED}),
         .IS_IGNORE1_INVERTED({IS_IGNORE1_INVERTED})
         ) buf_{site} (
-            {connections}
+            .CE0(ce0_{site} | {force_0_high}),
+            .S0(s0_{site} | {force_0_high}),
+            .CE1(ce1_{site} | {force_1_high}),
+            .S1(s1_{site} | {force_1_high})
         );
                     '''.format(**params))
 
             params_list.append(params)
+
+    print("""
+    (* KEEP, DONT_TOUCH *)
+    LUT6 dummy (
+        );""")
 
     print("endmodule")
 
