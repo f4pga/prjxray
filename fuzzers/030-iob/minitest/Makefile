@@ -3,7 +3,6 @@ all:  build/env build/roi_roi_io.diff \
     build/SLEW/run.ok \
     build/DRIVE/run.ok \
     build/IOSTANDARD/run.ok \
-    
 
 clean:
 	rm -rf build
@@ -34,4 +33,7 @@ build/DRIVE/run.ok:
 
 build/IOSTANDARD/run.ok:
 	PROJECT=IOSTANDARD bash runme_tcl.sh
+
+csv:
+	PROJECT=$@ bash runme.sh
 

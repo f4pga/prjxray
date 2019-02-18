@@ -5,10 +5,10 @@ Unlike CLB tests, the LFSR for this is inside the ROI, not driving it
 
 import os
 import random
-random.seed(int(os.getenv("SEED"), 16))
+import sys
+#random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
-from prjxray.db import Database
 
 
 def gen_iobs():
@@ -18,15 +18,10 @@ def gen_iobs():
     IOB33: not a diff pair. Relatively rare (at least in ROI...2 of them?)
     Focus on IOB33S to start
     '''
-    db = Database(util.get_db_root())
-    grid = db.grid()
-    for tile_name in sorted(grid.tiles()):
-        loc = grid.loc_of_tilename(tile_name)
-        gridinfo = grid.gridinfo_at_loc(loc)
-
-        for site_name, site_type in gridinfo.sites.items():
-            if site_type in ['IOB33S', 'IOB33M']:
-                yield site_name, site_type
+    for _tile_name, site_name, site_type in util.get_roi().gen_sites(
+            #['IOB33', 'IOB33S', 'IOB33M']):
+        ['IOB33S']):
+        yield site_name, site_type
 
 
 def write_pins(ports):
@@ -55,6 +50,9 @@ def run():
         '''Get a random, unused site'''
         return random.choice(list(remain_sites()))
 
+    def get_site():
+        return next(iter(remain_sites()))
+
     def assign_i(site, name):
         nonlocal DIN_N
 
@@ -72,13 +70,13 @@ def run():
         ports[site] = (name, 'output', cell)
 
     # Assign at least one di and one do
-    assign_i(rand_site(), 'di[0]')
-    assign_o(rand_site(), 'do[0]')
+    assign_i(get_site(), 'di[0]')
+    assign_o(get_site(), 'do[0]')
     # Now assign the rest randomly
-    while len(remain_sites()):
-        assign_o(rand_site(), 'do[%u]' % DOUT_N)
+    #while len(remain_sites()):
+    #        assign_o(rand_site(), 'do[%u]' % DOUT_N)
 
-    write_pins(ports)
+    #write_pins(ports)
 
     print(
         '''
@@ -93,14 +91,16 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do);
     wire [`N_DI-1:0] di_buf;
     generate
         for (i = 0; i < `N_DI; i = i+1) begin:di_bufs
-            IBUF ibuf(.I(di[i]), .O(di_buf[i]));
+            IBUF #(
+            ) ibuf(.I(di[i]), .O(di_buf[i]));
         end
     endgenerate
 
     wire [`N_DO-1:0] do_unbuf;
     generate
         for (i = 0; i < `N_DO; i = i+1) begin:do_bufs
-            OBUF obuf(.I(do_unbuf[i]), .O(do[i]));
+            OBUF #(
+            ) obuf(.I(do_unbuf[i]), .O(do[i]));
         end
     endgenerate
 
