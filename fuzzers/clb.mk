@@ -17,6 +17,8 @@ ITER ?= 0
 MAX_ITER ?= 10
 FUZDIR = ${PWD}
 
+SEGMATCH_ARGS ?=-m 2 -M 2
+
 include $(SELF_DIR)/fuzzer.mk
 
 database: build/segbits_clbx.db
@@ -29,7 +31,7 @@ endif
 
 
 build/segbits_clbx.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -m 2 -M 2 -o build/segbits_clbx.rdb $(SEGDATAS)
+	${XRAY_SEGMATCH} $(SEGMATCH_ARGS) -o build/segbits_clbx.rdb $(SEGDATAS)
 
 build/segbits_clbx.db: build/segbits_clbx.rdb
 ifeq ($(CLB_DBFIXUP),Y)
