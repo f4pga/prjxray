@@ -244,6 +244,7 @@ def gen_fuzz_choices(nvals):
 
     return choices
 
+
 def gen_fuzz_states(nvals):
     '''
     Generates an optimal encoding to solve single bits as quickly as possible

@@ -17,7 +17,6 @@ def gen_sites(lr):
         if gridinfo.tile_type[-1] != lr:
             continue
 
-
         sites = []
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['SLICEL', 'SLICEM']:
@@ -30,28 +29,32 @@ def gen_sites(lr):
 
         yield sorted(sites)
 
+
 def yield_bits(bits, nvals):
     for i in range(nvals):
         mask = (1 << i)
         yield int(bool(bits & mask))
 
-NUM_IMUX_INPUTS = 2*6*4
+
+NUM_IMUX_INPUTS = 2 * 6 * 4
 NUM_TILES = 20
+
 
 def emit_luts(choices, spec_idx, lr):
     for idx, sites in enumerate(itertools.islice(gen_sites(lr), 0, NUM_TILES)):
 
-        cidx = idx+spec_idx*NUM_TILES
+        cidx = idx + spec_idx * NUM_TILES
         if cidx < len(choices):
             bits = choices[cidx]
         else:
-            bits = random.randint(0, 2**NUM_IMUX_INPUTS-1)
+            bits = random.randint(0, 2**NUM_IMUX_INPUTS - 1)
 
         itr = yield_bits(bits, nvals=NUM_IMUX_INPUTS)
 
         for site in sites:
             for lut in range(4):
-                print('''
+                print(
+                    '''
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     LUT6 {site}_lut{lut} (
         .I0({I0}),
@@ -61,15 +64,15 @@ def emit_luts(choices, spec_idx, lr):
         .I4({I4}),
         .I5({I5})
         );'''.format(
-            site=site,
-            lut=lut,
-            I0=next(itr),
-            I1=next(itr),
-            I2=next(itr),
-            I3=next(itr),
-            I4=next(itr),
-            I5=next(itr),
-            ))
+                        site=site,
+                        lut=lut,
+                        I0=next(itr),
+                        I1=next(itr),
+                        I2=next(itr),
+                        I3=next(itr),
+                        I4=next(itr),
+                        I5=next(itr),
+                    ))
 
 
 def run():
@@ -79,7 +82,7 @@ module top();
 ''')
 
     choices = util.gen_fuzz_choices(nvals=NUM_IMUX_INPUTS)
-    spec_idx = util.specn()-1
+    spec_idx = util.specn() - 1
 
     emit_luts(choices, spec_idx, 'L')
     emit_luts(choices, spec_idx, 'R')
