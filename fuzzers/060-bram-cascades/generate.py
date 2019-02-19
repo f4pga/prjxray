@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from prjxray.segmaker import Segmaker
+import re
 
 segmk = Segmaker("design.bits")
 
@@ -52,12 +53,15 @@ with open("design.txt", "r") as f:
         if pnum == 1 or pdir == 0:
             ignpip.add(pip)
 
+CASCOUT_RE = re.compile('^BRAM_CASCOUT_ADDR((?:BWR)|(?:ARD))ADDRU([0-9]+)$')
+
 for tile, pips_srcs_dsts in tiledata.items():
     tile_type = pips_srcs_dsts["type"]
     pips = pips_srcs_dsts["pips"]
     srcs = pips_srcs_dsts["srcs"]
     dsts = pips_srcs_dsts["dsts"]
 
+    active_cascout = set()
     for pip, src_dst in pipdata[tile_type].items():
         src, dst = src_dst
 
@@ -74,11 +78,20 @@ for tile, pips_srcs_dsts in tiledata.items():
 
         if pip in ignpip:
             pass
-
         elif pip in pips:
             segmk.add_tile_tag(tile, "%s.%s" % (dst, src_no_r), 1)
         elif src_dst[1] not in dsts:
             segmk.add_tile_tag(tile, "%s.%s" % (dst, src_no_r), 0)
+
+        m = CASCOUT_RE.match(dst)
+        if m and pip in pips:
+                active_cascout.add(m.group(1))
+
+    for group in ['BWR', 'ARD']:
+        segmk.add_tile_tag(tile, 'CASCOUT_{}_ACTIVE'.format(group),
+                group in active_cascout)
+
+
 
 segmk.compile()
 segmk.write()
