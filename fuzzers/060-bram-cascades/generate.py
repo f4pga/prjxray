@@ -85,13 +85,11 @@ for tile, pips_srcs_dsts in tiledata.items():
 
         m = CASCOUT_RE.match(dst)
         if m and pip in pips:
-                active_cascout.add(m.group(1))
+            active_cascout.add(m.group(1))
 
     for group in ['BWR', 'ARD']:
-        segmk.add_tile_tag(tile, 'CASCOUT_{}_ACTIVE'.format(group),
-                group in active_cascout)
-
-
+        segmk.add_tile_tag(
+            tile, 'CASCOUT_{}_ACTIVE'.format(group), group in active_cascout)
 
 segmk.compile()
 segmk.write()
