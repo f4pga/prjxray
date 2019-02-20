@@ -215,26 +215,7 @@ def specn():
     return int(re.match(".*specimen_([0-9]*)", specdir).group(1), 10)
 
 
-def gen_fuzz_states(nvals):
-    '''
-    Generates an optimal encoding to solve single bits as quickly as possible
-
-    tilegrid's initial solve for 4 bits works like this:
-    Initial reference value of all 0s:
-    0000
-    Then one-hot for each:
-    0001
-    0010
-    0100
-    1000
-    Which requires 5 samples total to diff these
-
-    However, using correlation instead its possible to resolve n bits using ceil(log(n, 2)) + 1 samples
-    With 4 positions it takes only 3 samples:
-    0000
-    0101
-    1010
-    '''
+def gen_fuzz_choices(nvals):
     next_p2_states = 2**math.ceil(math.log(nvals, 2))
     n = next_p2_states
 
@@ -261,10 +242,36 @@ def gen_fuzz_states(nvals):
 
     choices.extend(invert_choices)
 
+    return choices
+
+
+def gen_fuzz_states(nvals):
+    '''
+    Generates an optimal encoding to solve single bits as quickly as possible
+
+    tilegrid's initial solve for 4 bits works like this:
+    Initial reference value of all 0s:
+    0000
+    Then one-hot for each:
+    0001
+    0010
+    0100
+    1000
+    Which requires 5 samples total to diff these
+
+    However, using correlation instead its possible to resolve n bits using ceil(log(n, 2)) + 1 samples
+    With 4 positions it takes only 3 samples:
+    0000
+    0101
+    1010
+    '''
+
+    choices = gen_fuzz_choices(nvals)
     spec_idx = specn() - 1
     if spec_idx < len(choices):
         bits = choices[spec_idx]
     else:
+        next_p2_states = 2**math.ceil(math.log(nvals, 2))
         bits = random.randint(0, 2**next_p2_states)
 
     for i in range(nvals):

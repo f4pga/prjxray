@@ -42,16 +42,9 @@ with open("design.txt", "r") as f:
             tiledata[tile]["srcs"].add(dst)
             tiledata[tile]["dsts"].add(src)
 
-        gfan_src = re.match('^GFAN', src) is not None
+        imux = re.match('^IMUX(_L)?[0-9]+$', dst) is not None
 
-        # Okay: BYP_ALT0.VCC_WIRE
-        # Skip: INT.IMUX13.VCC_WIRE, INT.IMUX_L43.VCC_WIRE
-        if pnum == 1 or pdir == 0 or \
-                src == "VCC_WIRE" or \
-                re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", src) or \
-                re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", dst) or \
-                gfan_src or \
-                re.match(r"^(CTRL|GFAN)(_L)?[0-9]", dst):
+        if not imux:
             ignpip.add(pip)
 
 for tile, pips_srcs_dsts in tiledata.items():
@@ -63,10 +56,10 @@ for tile, pips_srcs_dsts in tiledata.items():
         src, dst = src_dst
         if pip in ignpip:
             pass
-        elif pip in pips:
-            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
-        elif src_dst[1] not in dsts:
-            segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
+        else:
+            if re.match('^GFAN[01]', src):
+                print(tile, src, dst, pip in pips)
+                segmk.add_tile_tag(tile, "%s.%s" % (dst, src), pip in pips)
 
 segmk.compile(bitfilter=get_bitfilter(os.getenv('XRAY_DATABASE'), 'INT'))
 segmk.write()
