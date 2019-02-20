@@ -154,6 +154,6 @@ echo "----------------------------------------"
 	cd fuzzers
 	echo
 	echo "Cleaning up so CI doesn't save all the excess data."
-	make clean
+	make clean_fuzzers
 )
 echo "----------------------------------------"

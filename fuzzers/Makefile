@@ -11,6 +11,7 @@ FUZZONLY=N
 BITONLY=N
 
 all:
+clean: clean_fuzzers clean_logs
 
 define fuzzer
 
@@ -21,8 +22,10 @@ define fuzzer
 all: $(1)/run.ok
 
 # Make the clean target run `make clean` in the fuzzer's directory.
-clean::
+clean_fuzzers::
 	$$(MAKE) -C $(1) clean
+
+clean_logs::
 	rm -rf $(1)/logs
 
 # Describe how to create the fuzzer's run.ok file.
@@ -99,3 +102,5 @@ endif
 
 quick:
 	$(MAKE) QUICK=Y
+
+.PHONY: all clean clean_fuzzers clean_logs quick
