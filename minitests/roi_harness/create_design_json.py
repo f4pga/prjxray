@@ -1,4 +1,4 @@
-import json
+import xjson
 import csv
 import argparse
 import sys
@@ -112,7 +112,7 @@ def main():
     design_json['required_features'] = fasm.fasm_tuple_to_string(
         required_features, canonical=True)
 
-    json.dump(design_json, sys.stdout, indent=2, sort_keys=True)
+    xjson.pprint(sys.stdout, design_json)
 
 
 if __name__ == '__main__':
