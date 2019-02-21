@@ -110,7 +110,7 @@ def main():
             required_features.append(fasm_line)
 
     design_json['required_features'] = fasm.fasm_tuple_to_string(
-        required_features, canonical=True)
+        required_features, canonical=True).split('\n')
 
     xjson.pprint(sys.stdout, design_json)
 
