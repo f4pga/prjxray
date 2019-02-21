@@ -1,29 +1,49 @@
 #!/usr/bin/env python3
 
-import sys, re, os
-
+import json
 from prjxray.segmaker import Segmaker
 
-c2i = {'0': 0, '1': 1}
+BITS_PER_PARAM = 256
+NUM_INITP_PARAMS = 8
+NUM_INIT_PARAMS = 0x40
+BITS_PER_SITE = BITS_PER_PARAM * (NUM_INITP_PARAMS + NUM_INIT_PARAMS)
 
-segmk = Segmaker("design.bits")
-segmk.set_def_bt('BLOCK_RAM')
 
-print("Loading tags")
-'''
-'''
-f = open('params.csv', 'r')
-f.readline()
-for l in f:
-    l = l.strip()
-    module, loc, pdata, data = l.split(',')
+def main():
+    segmk = Segmaker("design.bits")
+    segmk.set_def_bt('BLOCK_RAM')
 
-    for i, d in enumerate(pdata):
-        # Keep dec convention used on LUT?
-        segmk.add_site_tag(loc, "INITP[%04d]" % i, c2i[d])
-    for i, d in enumerate(data):
-        # Keep dec convention used on LUT?
-        segmk.add_site_tag(loc, "INIT[%04d]" % i, c2i[d])
+    print("Loading tags")
+    '''
+    '''
 
-segmk.compile()
-segmk.write()
+    with open('params.json') as f:
+        params = json.load(f)
+
+    for param in params:
+        for initp in range(NUM_INITP_PARAMS):
+            p = 'INITP_{:02X}'.format(initp)
+            val = param[p]
+            for bit in range(BITS_PER_PARAM):
+                segmk.add_site_tag(
+                    param['site'], "{p}[{bit:03d}]".format(
+                        p=p,
+                        bit=bit,
+                    ), val & (1 << bit) != 0)
+
+        for init in range(NUM_INIT_PARAMS):
+            p = 'INIT_{:02X}'.format(init)
+            val = param[p]
+            for bit in range(BITS_PER_PARAM):
+                segmk.add_site_tag(
+                    param['site'], "{p}[{bit:03d}]".format(
+                        p=p,
+                        bit=bit,
+                    ), val & (1 << bit) != 0)
+
+    segmk.compile()
+    segmk.write()
+
+
+if __name__ == "__main__":
+    main()
