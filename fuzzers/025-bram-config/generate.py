@@ -65,7 +65,8 @@ def bus_tags(segmk, ps, site):
             # Magic bit positions from experimentation
             # we could just only solve when parity, but this check documents the fine points a bit better
             if hasparity or i not in (1, 9):
-                segmk.add_site_tag(site, '%s[%u]' % (tagname, i), 1 ^ bitstr[i])
+                segmk.add_site_tag(
+                    site, '%s[%u]' % (tagname, i), 1 ^ bitstr[i])
 
 
 def rw_width_tags(segmk, ps, site):

@@ -70,7 +70,8 @@ def run(db_root, filename_in, f_out, sparse=False, roi=None, debug=False):
         assembler.mark_roi_frames(Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2))
 
         if 'required_features' in roi_j:
-            extra_features = fasm.parse_fasm_string(roi_j['required_features'])
+            extra_features = fasm.parse_fasm_string(
+                '\n'.join(roi_j['required_features']))
 
     assembler.parse_fasm_filename(filename_in, extra_features=extra_features)
     frames = assembler.get_frames(sparse=sparse)
