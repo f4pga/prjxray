@@ -79,9 +79,16 @@ def rw_width_tags(segmk, ps, site):
     9       1       1       0
     18      0       0       1
     '''
-    for param in ["READ_WIDTH_A", "READ_WIDTH_B", "WRITE_WIDTH_A",
-                  "WRITE_WIDTH_B"]:
+    params = ["READ_WIDTH_A", "READ_WIDTH_B", "WRITE_WIDTH_A", "WRITE_WIDTH_B"]
+
+    for param in params:
         set_val = int(ps[param])
+
+        if set_val == 0:
+            set_val = 1
+
+        if set_val >= 36:
+            continue
 
         def mk(x):
             return '%s_%u' % (param, x)
@@ -136,7 +143,14 @@ def run():
 
         isinv_tags(segmk, ps, site, clk_inverts[site])
         bus_tags(segmk, ps, site)
-        rw_width_tags(segmk, ps, site)
+        if ps['RAM_MODE'] == '"TDP"':
+            rw_width_tags(segmk, ps, site)
+        segmk.add_site_tag(
+            site, 'SDP_READ_WIDTH_36', ps['RAM_MODE'] == '"SDP"'
+            and int(ps['READ_WIDTH_A']) == 36)
+        segmk.add_site_tag(
+            site, 'SDP_WRITE_WIDTH_36', ps['RAM_MODE'] == '"SDP"'
+            and int(ps['WRITE_WIDTH_B']) == 36)
         write_mode_tags(segmk, ps, site)
         write_rstreg_priority(segmk, ps, site)
         write_rdaddr_collision(segmk, ps, site)

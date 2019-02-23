@@ -50,7 +50,28 @@ def place_bram18(site, loci):
     # Datasheet says 72 is legal in some cases, but think its a copy paste error from BRAM36
     # also 0 and 36 aren't real sizes
     # Bias choice to 18 as its needed to solve certain bits quickly
-    widths = [1, 2, 4, 9, 18, 18, 18, 18]
+    widths = [1, 2, 4, 9, 18, 18, 36]
+    mode = '"TDP"'
+
+    read_width_a = random.choice(widths)
+    write_width_b = random.choice(widths)
+    if read_width_a >= 36 or write_width_b >= 36:
+        read_width_b = 0
+        write_width_a = 0
+        mode = '"SDP"'
+        doa_reg = vrandbit()
+        dob_reg = doa_reg
+        write_modes = ["WRITE_FIRST", "READ_FIRST"]
+        rstreg_priority_a = verilog.quote(random.choice(priorities))
+        rstreg_priority_b = rstreg_priority_a
+    else:
+        read_width_b = random.choice(widths)
+        write_width_a = random.choice(widths)
+        doa_reg = vrandbit()
+        dob_reg = vrandbit()
+        rstreg_priority_a = verilog.quote(random.choice(priorities))
+        rstreg_priority_b = verilog.quote(random.choice(priorities))
+
     params = {
         'LOC': verilog.quote(site),
         'IS_CLKARDCLK_INVERTED': vrandbit(),
@@ -61,22 +82,22 @@ def place_bram18(site, loci):
         'IS_RSTRAMB_INVERTED': vrandbit(),
         'IS_RSTREGARSTREG_INVERTED': vrandbit(),
         'IS_RSTREGB_INVERTED': vrandbit(),
-        'RAM_MODE': '"TDP"',
+        'RAM_MODE': mode,
         'WRITE_MODE_A': verilog.quote(random.choice(write_modes)),
         'WRITE_MODE_B': verilog.quote(random.choice(write_modes)),
-        "DOA_REG": vrandbit(),
-        "DOB_REG": vrandbit(),
+        "DOA_REG": doa_reg,
+        "DOB_REG": dob_reg,
         "SRVAL_A": vrandbits(18),
         "SRVAL_B": vrandbits(18),
         "INIT_A": vrandbits(18),
         "INIT_B": vrandbits(18),
-        "READ_WIDTH_A": random.choice(widths),
-        "READ_WIDTH_B": random.choice(widths),
-        "WRITE_WIDTH_A": random.choice(widths),
-        "WRITE_WIDTH_B": random.choice(widths),
+        "READ_WIDTH_A": read_width_a,
+        "READ_WIDTH_B": read_width_b,
+        "WRITE_WIDTH_A": write_width_a,
+        "WRITE_WIDTH_B": write_width_b,
         "RDADDR_COLLISION_HWCONFIG": verilog.quote(random.choice(collisions)),
-        "RSTREG_PRIORITY_A": verilog.quote(random.choice(priorities)),
-        "RSTREG_PRIORITY_B": verilog.quote(random.choice(priorities)),
+        "RSTREG_PRIORITY_A": rstreg_priority_a,
+        "RSTREG_PRIORITY_B": rstreg_priority_b,
     }
 
     return ('my_RAMB18E1', ports, params)
@@ -204,7 +225,7 @@ def main():
                 .DIBDI(din[5]),
                 .DIPADIP(din[6]),
                 .DIPBDIP(din[7]),
-                .WEA(din[0]),
+                .WEA(1'b0),
                 .WEBWE(din[1]),
                 .DOADO(dout[0]),
                 .DOBDO(dout[1]),
