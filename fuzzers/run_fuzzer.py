@@ -81,17 +81,17 @@ class Logger:
     >>> l = Logger("fuzz", datetime(2001, 11, 1), 6)
     >>> l._now = lambda: datetime(2001, 11, 1, second=10)
     >>> l.log("Test!")
-    fuzz   -   10s: Test!
+    2001-11-01T00:00:10 - fuzz   -   10s: Test!
     >>> l.log("Format {} {t}", [1,], {'t': 2})
-    fuzz   -   10s: Format 1 2
+    2001-11-01T00:00:10 - fuzz   -   10s: Format 1 2
     >>> l.log('''\\
     ... Line 1
     ... Line 2
     ... Line 3
     ... ''')
-    fuzz   -   10s: Line 1
-    fuzz   -   10s: Line 2
-    fuzz   -   10s: Line 3
+    2001-11-01T00:00:10 - fuzz   -   10s: Line 1
+    2001-11-01T00:00:10 - fuzz   -   10s: Line 2
+    2001-11-01T00:00:10 - fuzz   -   10s: Line 3
     """
 
     def __init__(self, fuzzer, time_start, padding):
