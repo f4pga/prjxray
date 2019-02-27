@@ -110,7 +110,7 @@ def db_read(dbstate, tiletype, db_dir):
                 add_pip_bits(tag, bits)
 
             elif tiletype in ["clbll_l", "clbll_r", "clblm_l", "clblm_r"] and \
-                    re.search(r"(\.[ABCD]MUX\.)|(\.PRECYINIT\.)", tag):
+                    re.search(r"(\.[ABCD].*MUX\.)|(\.PRECYINIT\.)", tag):
                 add_pip_bits(tag, bits)
 
             else:
