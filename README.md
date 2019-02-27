@@ -195,7 +195,8 @@ All contributions should be sent as
 
 ### License
 
-All code in the Project X-Ray repository is licensed under the very permissive
+All software (code, associated documentation, support files, etc) in the
+Project X-Ray repository are licensed under the very permissive
 [ISC Licence](COPYING). A copy can be found in the [`COPYING`](COPYING) file.
 
 All new contributions must also be released under this license.
