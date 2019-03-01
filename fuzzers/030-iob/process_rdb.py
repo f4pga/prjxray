@@ -27,6 +27,34 @@ def parse_bits(l):
         return frozenset(parts[1:])
 
 
+def filter_bits(site, bits):
+    """ Seperate top and bottom bits.
+
+    Some IOSTANDARD bits are tile wide, but really only apply to a half.
+    It is hard to write a fuzzer for this, but it is easy to filter by site,
+    and all bits appear to have a nice hard halve seperatation in the bitidx.
+    """
+    if site == 'IOB_Y0':
+        min_bitidx = 64
+        max_bitidx = 127
+    elif site == 'IOB_Y1':
+        min_bitidx = 0
+        max_bitidx = 63
+    else:
+        assert False, site
+
+    def inner():
+        for bit in bits:
+            bitidx = int(bit.split('_')[1])
+
+            if bitidx < min_bitidx or bitidx > max_bitidx:
+                continue
+
+            yield bit
+
+    return frozenset(inner())
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Convert IOB rdb into good rdb."
@@ -43,16 +71,18 @@ def main():
             else:
                 print(l.strip())
 
-    common_in_bits = {
+    common_in_only_bits = {
         'IOB_Y0': set(),
         'IOB_Y1': set(),
     }
     for l in iostandard_lines:
         if 'IN_OUT_COMMON' in l:
-            common_in_bits[get_site(l)] |= parse_bits(l)
+            common_in_only_bits[get_site(l)] |= parse_bits(l)
 
-    for site in sorted(common_in_bits):
-        print('IOB33.{}.IN_ONLY'.format(site), ' '.join(common_in_bits[site]))
+    for site in sorted(common_in_only_bits):
+        print(
+            'IOB33.{}.IN_ONLY'.format(site), ' '.join(
+                common_in_only_bits[site]))
 
     iostandard_in = {}
     outs = {}
@@ -92,7 +122,13 @@ def main():
             if drive not in drives[(site, iostandard)]:
                 drives[(site, iostandard)][drive] = {}
 
-            drives[(site, iostandard)][drive] = parse_bits(l)
+            drives[(site, iostandard)][drive] = filter_bits(
+                site, parse_bits(l))
+
+    common_in_bits = {
+        'IOB_Y0': set(),
+        'IOB_Y1': set(),
+    }
 
     for bits in sorted(iostandard_in.keys()):
         sites, standards = zip(*iostandard_in[bits])
@@ -102,8 +138,21 @@ def main():
         assert len(site) == 1, site
         site = site.pop()
 
+        common_in_bits[site] |= bits
+
+    for bits in sorted(iostandard_in.keys()):
+        sites, standards = zip(*iostandard_in[bits])
+
+        site = set(sites)
+
+        assert len(site) == 1, site
+        site = site.pop()
+
+        neg_bits = set('!' + bit for bit in (common_in_bits[site] - bits))
+
         print(
-            'IOB33.{}.{}.IN'.format(site, '_'.join(standards)), ' '.join(bits))
+            'IOB33.{}.{}.IN'.format(site, '_'.join(standards)),
+            ' '.join(bits | neg_bits))
 
     iodrives = {}
 
@@ -115,7 +164,7 @@ def main():
                 site, iostandard)]
 
             if site not in common_bits:
-                common_bits[site] = set(common_in_bits[site])
+                common_bits[site] = set(common_in_only_bits[site])
 
             common_bits[site] |= combined_bits
 

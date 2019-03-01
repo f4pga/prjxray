@@ -64,8 +64,7 @@ def main():
             iostandard = verilog.unquote(d['IOSTANDARD'])
 
             stepdown = iostandard in STEPDOWN_IOSTANDARDS
-            segmk.add_tile_tag(
-                d['tile'], '_'.join(STEPDOWN_IOSTANDARDS), stepdown)
+            segmk.add_site_tag(site, '_'.join(STEPDOWN_IOSTANDARDS), stepdown)
 
             if d['type'] is None:
                 segmk.add_site_tag(site, 'INOUT', 0)
