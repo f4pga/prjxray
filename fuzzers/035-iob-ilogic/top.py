@@ -129,10 +129,10 @@ def use_iserdese2(p, luts, connects):
         p['ODATA_WIDTH'] = random.choice(data_widths)
         p['OSERDES_MODE'] = verilog.quote(random.choice(('MASTER', 'SLAVE')))
 
-        if p['ODATA_WIDTH'] > 4 or verilog.unquote(p['ODATA_RATE']) == 'SDR':
-            p['TRISTATE_WIDTH'] = 1
-        else:
+        if p['ODATA_WIDTH'] == 4 and verilog.unquote(p['ODATA_RATE']) == 'DDR':
             p['TRISTATE_WIDTH'] = 4
+        else:
+            p['TRISTATE_WIDTH'] = 1
 
         print(
             """

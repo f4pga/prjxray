@@ -65,6 +65,7 @@ def run():
 
     tile_params = []
     params = []
+    any_idelay = False
     for tile, site in gen_sites():
         p = {}
         p['tile'] = tile
@@ -81,6 +82,7 @@ def run():
             if not p['IDELAY_ONLY']:
                 p['owire'] = luts.get_next_input_net()
             else:
+                any_idelay = True
                 p['owire'] = 'idelay_{site}'.format(**p)
 
             p['DRIVE'] = None
@@ -127,9 +129,12 @@ def run():
 `define N_DIO {n_dio}
 
 module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
-        (* KEEP, DONT_TOUCH *)
-        IDELAYCTRL();
     '''.format(n_di=i_idx, n_do=o_idx, n_dio=io_idx))
+
+    if any_idelay:
+        print('''
+        (* KEEP, DONT_TOUCH *)
+        IDELAYCTRL();''')
 
     # Always output a LUT6 to make placer happy.
     print('''
