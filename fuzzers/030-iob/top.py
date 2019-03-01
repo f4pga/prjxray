@@ -1,17 +1,15 @@
-'''
-Generate a primitive to place at every I/O
-Unlike CLB tests, the LFSR for this is inside the ROI, not driving it
-'''
-
+import json
+import io
 import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
+from prjxray import lut_maker
 from prjxray import verilog
 from prjxray.db import Database
 
 
-def gen_iobs():
+def gen_sites():
     '''
     IOB33S: main IOB of a diff pair
     IOB33M: secondary IOB of a diff pair
@@ -26,125 +24,175 @@ def gen_iobs():
 
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['IOB33S', 'IOB33M']:
-                yield site_name, site_type
+                yield tile_name, site_name
 
+def write_params(params):
+    pinstr = 'tile,site,pin,iostandard,drive,slew\n'
+    for vals in params:
+        pinstr += ','.join(map(str, vals)) + '\n'
 
-def write_pins(ports):
-    pinstr = ''
-    for site, (name, dir_, cell) in sorted(ports.items(), key=lambda x: x[1]):
-        # pinstr += 'set_property -dict "PACKAGE_PIN %s IOSTANDARD LVCMOS33" [get_ports %s]' % (packpin, port)
-        pinstr += '%s,%s,%s,%s\n' % (site, name, dir_, cell)
     open('params.csv', 'w').write(pinstr)
 
 
 def run():
-    # All possible values
-    iosites = {}
-    for site_name, site_type in gen_iobs():
-        iosites[site_name] = site_type
+    tile_types = ['IBUF', 'OBUF', 'IOBUF_INTERMDISABLE', None, None, None, None, None]
 
-    # Assigned in this design
-    ports = {}
-    DIN_N = 0
-    DOUT_N = 0
+    i_idx = 0
+    o_idx = 0
+    io_idx = 0
 
-    def remain_sites():
-        return set(iosites.keys()) - set(ports.keys())
+    iostandards = ['LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'LVCMOS25', 'LVCMOS33', 'LVTTL']
+    iostandard = random.choice(iostandards)
 
-    def rand_site():
-        '''Get a random, unused site'''
-        return random.choice(list(remain_sites()))
+    if iostandard in ['LVTTL', 'LVCMOS18']:
+        drives = [4, 8, 12, 16, 24]
+    elif iostandard == 'LVCMOS12':
+        drives = [4, 8, 12]
+    else:
+        drives = [4, 8, 12, 16]
 
-    def assign_i(site, name):
-        nonlocal DIN_N
+    slews = ['FAST', 'SLOW']
+    pulls = ["NONE", "KEEPER", "PULLDOWN", "PULLUP"]
 
-        assert site not in ports
-        cell = "di_bufs[%u].ibuf" % DIN_N
-        DIN_N += 1
-        ports[site] = (name, 'input', cell)
+    luts = lut_maker.LutMaker()
 
-    def assign_o(site, name):
-        nonlocal DOUT_N
+    connects = io.StringIO()
 
-        assert site not in ports
-        cell = "do_bufs[%u].obuf" % DOUT_N
-        DOUT_N += 1
-        ports[site] = (name, 'output', cell)
+    tile_params = []
+    params = []
+    for tile, site in gen_sites():
+        p = {}
+        p['tile'] = tile
+        p['site'] = site
+        p['type'] = random.choice(tile_types)
+        p['IOSTANDARD'] = verilog.quote(iostandard)
+        p['PULLTYPE'] = verilog.quote(random.choice(pulls))
 
-    # Assign at least one di and one do
-    assign_i(rand_site(), 'di[0]')
-    assign_o(rand_site(), 'do[0]')
-    # Now assign the rest randomly
-    while len(remain_sites()):
-        assign_o(rand_site(), 'do[%u]' % DOUT_N)
+        if p['type'] is None:
+            p['pad_wire'] = None
+        elif p['type'] == 'IBUF':
+            p['pad_wire'] = 'di[{}]'.format(i_idx)
+            p['IDELAY_ONLY'] = random.randint(0, 1)
+            if not p['IDELAY_ONLY']:
+                p['owire'] = luts.get_next_input_net()
+            else:
+                p['owire'] = 'idelay_{site}'.format(**p)
 
-    write_pins(ports)
+            p['DRIVE'] = None
+            p['SLEW'] = None
+            p['IBUF_LOW_PWR'] = random.randint(0, 1)
+
+            i_idx += 1
+        elif p['type'] == 'OBUF':
+            p['pad_wire'] = 'do[{}]'.format(o_idx)
+            p['iwire'] = luts.get_next_output_net()
+            p['DRIVE'] = random.choice(drives)
+            p['SLEW'] = verilog.quote(random.choice(slews))
+
+            o_idx += 1
+        elif p['type'] == 'IOBUF_INTERMDISABLE':
+            p['pad_wire'] = 'dio[{}]'.format(io_idx)
+            p['iwire'] = luts.get_next_output_net()
+            p['owire'] = luts.get_next_input_net()
+            p['DRIVE'] = random.choice(drives)
+            p['SLEW'] = verilog.quote(random.choice(slews))
+            p['tristate_wire'] = random.choice(('0', luts.get_next_output_net()))
+            p['ibufdisable_wire'] = random.choice(('0', luts.get_next_output_net()))
+            p['intermdisable_wire'] = random.choice(('0', luts.get_next_output_net()))
+            io_idx += 1
+
+        params.append(p)
+
+        if p['type'] is not None:
+            tile_params.append((tile, site, p['pad_wire'], iostandard,
+                p['DRIVE'],
+                verilog.unquote(p['SLEW']) if p['SLEW'] else None,
+                verilog.unquote(p['PULLTYPE'])))
+
+    write_params(tile_params)
 
     print(
         '''
-`define N_DI %u
-`define N_DO %u
+`define N_DI {n_di}
+`define N_DO {n_do}
+`define N_DIO {n_dio}
 
-module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do);
-    genvar i;
+module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
+        (* KEEP, DONT_TOUCH *)
+        IDELAYCTRL();
+    '''.format(
+        n_di=i_idx,
+        n_do=o_idx,
+        n_dio=io_idx))
 
-    //Instantiate BUFs so we can LOC them
+    # Always output a LUT6 to make placer happy.
+    print('''
+        (* KEEP, DONT_TOUCH *)
+        LUT6 dummy_lut();''')
 
-    wire [`N_DI-1:0] di_buf;
-    generate
-        for (i = 0; i < `N_DI; i = i+1) begin:di_bufs
-            IBUF ibuf(.I(di[i]), .O(di_buf[i]));
-        end
-    endgenerate
+    for p in params:
+        if p['type'] is None:
+            continue
+        elif p['type'] == 'IBUF':
+            print(
+                '''
+        wire idelay_{site};
 
-    wire [`N_DO-1:0] do_unbuf;
-    generate
-        for (i = 0; i < `N_DO; i = i+1) begin:do_bufs
-            OBUF obuf(.I(do_unbuf[i]), .O(do[i]));
-        end
-    endgenerate
+        (* KEEP, DONT_TOUCH *)
+        IBUF #(
+            .IBUF_LOW_PWR({IBUF_LOW_PWR}),
+            .IOSTANDARD({IOSTANDARD})
+        ) ibuf_{site} (
+            .I({pad_wire}),
+            .O({owire})
+            );'''.format(**p), file=connects)
+            if p['IDELAY_ONLY']:
+                print("""
+        (* KEEP, DONT_TOUCH *)
+        IDELAYE2 idelay_site_{site} (
+            .IDATAIN(idelay_{site})
+            );""".format(**p), file=connects)
 
-    roi roi(.di(di_buf), .do(do_unbuf));
-endmodule
+        elif p['type'] == 'OBUF':
+            print(
+                '''
+        (* KEEP, DONT_TOUCH *)
+        OBUF #(
+            .IOSTANDARD({IOSTANDARD}),
+            .DRIVE({DRIVE}),
+            .SLEW({SLEW})
+        ) ibuf_{site} (
+            .O({pad_wire}),
+            .I({iwire})
+            );'''.format(**p), file=connects)
+        elif p['type'] == 'IOBUF_INTERMDISABLE':
+            print(
+                '''
+        (* KEEP, DONT_TOUCH *)
+        IOBUF_INTERMDISABLE #(
+            .IOSTANDARD({IOSTANDARD}),
+            .DRIVE({DRIVE}),
+            .SLEW({SLEW})
+        ) ibuf_{site} (
+            .IO({pad_wire}),
+            .I({iwire}),
+            .O({owire}),
+            .T({tristate_wire}),
+            .IBUFDISABLE({ibufdisable_wire}),
+            .INTERMDISABLE({intermdisable_wire})
+            );'''.format(**p), file=connects)
 
-//Arbitrary terminate into LUTs
-module roi(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do);
-    genvar i;
+    for l in luts.create_wires_and_luts():
+        print(l)
 
-    generate
-        for (i = 0; i < `N_DI; i = i+1) begin:dis
-            (* KEEP, DONT_TOUCH *)
-            LUT6 #(
-                    .INIT(64'h8000_0000_0000_0001)
-            ) lut (
-                    .I0(di[i]),
-                    .I1(di[i]),
-                    .I2(di[i]),
-                    .I3(di[i]),
-                    .I4(di[i]),
-                    .I5(di[i]),
-                    .O());
-        end
-    endgenerate
+    print(connects.getvalue())
 
-    generate
-        for (i = 0; i < `N_DO; i = i+1) begin:dos
-            (* KEEP, DONT_TOUCH *)
-            LUT6 #(
-                    .INIT(64'h8000_0000_0000_0001)
-            ) lut (
-                    .I0(),
-                    .I1(),
-                    .I2(),
-                    .I3(),
-                    .I4(),
-                    .I5(),
-                    .O(do[i]));
-        end
-    endgenerate
-endmodule
-    ''' % (DIN_N, DOUT_N))
+    print("endmodule")
+
+    with open('params.jl', 'w') as f:
+        json.dump(params, f, indent=2)
 
 
 if __name__ == '__main__':
     run()
+
