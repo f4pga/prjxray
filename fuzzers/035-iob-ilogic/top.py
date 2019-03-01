@@ -26,6 +26,7 @@ def gen_sites():
             if site_type in ['IOB33S', 'IOB33M']:
                 yield tile_name, site_name
 
+
 def write_params(params):
     pinstr = 'tile,site,pin,iostandard,drive,slew\n'
     for vals in params:
@@ -33,13 +34,14 @@ def write_params(params):
 
     open('params.csv', 'w').write(pinstr)
 
+
 def use_iserdese2(p, luts, connects):
     iobdelay = random.choice((
         'NONE',
         'BOTH',
         'IBUF',
         'IFD',
-        ))
+    ))
 
     p['IOBDELAY'] = verilog.quote(iobdelay)
     p['INIT_Q1'] = random.randint(0, 1)
@@ -57,17 +59,19 @@ def use_iserdese2(p, luts, connects):
     p['IS_CLKB_INVERTED'] = random.randint(0, 1)
     p['IS_OCLK_INVERTED'] = random.randint(0, 1)
     p['IS_D_INVERTED'] = random.randint(0, 1)
-    p['INTERFACE_TYPE'] = verilog.quote(random.choice((
-        'MEMORY',
-        'MEMORY_DDR3',
-        'MEMORY_QDR',
-        'NETWORKING',
-        'OVERSAMPLE',
-        )))
+    p['INTERFACE_TYPE'] = verilog.quote(
+        random.choice(
+            (
+                'MEMORY',
+                'MEMORY_DDR3',
+                'MEMORY_QDR',
+                'NETWORKING',
+                'OVERSAMPLE',
+            )))
     p['DATA_RATE'] = verilog.quote(random.choice((
         'SDR',
         'DDR',
-        )))
+    )))
     if verilog.unquote(p['DATA_RATE']) == 'SDR':
         data_widths = [2, 3, 4, 5, 6, 7, 8]
     else:
@@ -96,7 +100,8 @@ def use_iserdese2(p, luts, connects):
     p['DYN_CLK_INV_EN'] = verilog.quote(random.choice(('TRUE', 'FALSE')))
 
     if use_delay:
-        print("""
+        print(
+            """
     wire idelay_{site};
 
     (* KEEP, DONT_TOUCH, LOC = "{idelay_loc}" *)
@@ -104,8 +109,8 @@ def use_iserdese2(p, luts, connects):
     ) idelay_site_{site} (
         .IDATAIN({iwire}),
         .DATAOUT(idelay_{site})
-        );""".format(
-            **p), file=connects)
+        );""".format(**p),
+            file=connects)
 
         p['ddly_connection'] = '.DDLY(idelay_{site}),'.format(**p)
     else:
@@ -115,7 +120,7 @@ def use_iserdese2(p, luts, connects):
         p['ODATA_RATE'] = verilog.quote(random.choice((
             'SDR',
             'DDR',
-            )))
+        )))
         if verilog.unquote(p['ODATA_RATE']) == 'SDR':
             data_widths = [2, 3, 4, 5, 6, 7, 8]
         else:
@@ -129,8 +134,8 @@ def use_iserdese2(p, luts, connects):
         else:
             p['TRISTATE_WIDTH'] = 4
 
-
-        print("""
+        print(
+            """
     wire tfb_{site};
     wire ofb_{site};
 
@@ -149,8 +154,8 @@ def use_iserdese2(p, luts, connects):
         .OQ({owire}),
         .TQ({twire}),
         .OFB(ofb_{site})
-        );""".format(
-            **p), file=connects)
+        );""".format(**p),
+            file=connects)
 
         p['ofb_connections'] = """
         .OFB(ofb_{site}),
@@ -158,8 +163,8 @@ def use_iserdese2(p, luts, connects):
     else:
         p['ofb_connections'] = ''
 
-
-    print('''
+    print(
+        '''
     (* KEEP, DONT_TOUCH, LOC = "{ilogic_loc}" *)
     ISERDESE2 #(
         .SERDES_MODE({SERDES_MODE}),
@@ -193,14 +198,15 @@ def use_iserdese2(p, luts, connects):
         .Q1({q1net}),
         .CLKDIV(0)
     );'''.format(
-        clknet=luts.get_next_output_net(),
-        clkbnet=luts.get_next_output_net(),
-        oclknet=luts.get_next_output_net(),
-        onet=luts.get_next_input_net(),
-        q1net=luts.get_next_input_net(),
-        shiftout1net=luts.get_next_input_net(),
-        shiftout2net=luts.get_next_input_net(),
-        **p), file=connects)
+            clknet=luts.get_next_output_net(),
+            clkbnet=luts.get_next_output_net(),
+            oclknet=luts.get_next_output_net(),
+            onet=luts.get_next_input_net(),
+            q1net=luts.get_next_input_net(),
+            shiftout1net=luts.get_next_input_net(),
+            shiftout2net=luts.get_next_input_net(),
+            **p),
+        file=connects)
 
 
 def use_direct_and_iddr(p, luts, connects):
@@ -208,13 +214,13 @@ def use_direct_and_iddr(p, luts, connects):
         'direct',
         'idelay',
         'none',
-        ))
+    ))
 
     p['iddr_mux_config'] = random.choice((
         'direct',
         'idelay',
         'none',
-        ))
+    ))
 
     if p['iddr_mux_config'] != 'none':
         p['INIT_Q1'] = random.randint(0, 1)
@@ -222,13 +228,16 @@ def use_direct_and_iddr(p, luts, connects):
         p['IS_C_INVERTED'] = random.randint(0, 1)
         p['IS_D_INVERTED'] = random.randint(0, 1)
         p['SRTYPE'] = verilog.quote(random.choice(('SYNC', 'ASYNC')))
-        p['DDR_CLK_EDGE'] = verilog.quote(random.choice((
-            'OPPOSITE_EDGE',
-            'SAME_EDGE',
-            'SAME_EDGE_PIPELINED',
-            )))
+        p['DDR_CLK_EDGE'] = verilog.quote(
+            random.choice(
+                (
+                    'OPPOSITE_EDGE',
+                    'SAME_EDGE',
+                    'SAME_EDGE_PIPELINED',
+                )))
 
-        print('''
+        print(
+            '''
     (* KEEP, DONT_TOUCH, LOC = "{ilogic_loc}" *)
     IDDR #(
         .IS_D_INVERTED({IS_D_INVERTED}),
@@ -244,13 +253,16 @@ def use_direct_and_iddr(p, luts, connects):
         .Q2({q2})
         );
         '''.format(
-            cnet=luts.get_next_output_net(),
-            q1=luts.get_next_input_net(),
-            q2=luts.get_next_input_net(),
-            **p), file=connects)
+                cnet=luts.get_next_output_net(),
+                q1=luts.get_next_input_net(),
+                q2=luts.get_next_input_net(),
+                **p),
+            file=connects)
 
-    if p['iddr_mux_config'] == 'idelay' or p['mux_config'] == 'idelay' or p['iddr_mux_config'] == 'tristate_feedback':
-        print("""
+    if p['iddr_mux_config'] == 'idelay' or p['mux_config'] == 'idelay' or p[
+            'iddr_mux_config'] == 'tristate_feedback':
+        print(
+            """
     wire idelay_{site};
 
     (* KEEP, DONT_TOUCH, LOC = "{idelay_loc}" *)
@@ -258,56 +270,66 @@ def use_direct_and_iddr(p, luts, connects):
     ) idelay_site_{site} (
         .IDATAIN({iwire}),
         .DATAOUT(idelay_{site})
-        );""".format(
-            **p), file=connects)
+        );""".format(**p),
+            file=connects)
 
-    print("""
+    print(
+        """
     assign {owire} = {onet};
     assign {twire} = {tnet};
         """.format(
             onet=luts.get_next_output_net(),
             tnet=luts.get_next_output_net(),
-            **p), file=connects)
+            **p),
+        file=connects)
 
     if p['iddr_mux_config'] == 'direct':
-        print('''
-    assign iddr_d_{site} = {iwire};'''.format(
-        **p,
-        ), file=connects)
+        print(
+            '''
+    assign iddr_d_{site} = {iwire};'''.format(**p, ),
+            file=connects)
     elif p['iddr_mux_config'] == 'idelay':
-        print('''
-    assign iddr_d_{site} = idelay_{site};'''.format(
-        **p,
-        ), file=connects)
+        print(
+            '''
+    assign iddr_d_{site} = idelay_{site};'''.format(**p, ),
+            file=connects)
     elif p['iddr_mux_config'] == 'tristate_feedback':
-        print('''
+        print(
+            '''
     assign iddr_d_{site} = tfb_{site} ? ofb_{site} : idelay_{site};'''.format(
-        **p,
-        ), file=connects)
+                **p, ),
+            file=connects)
     elif p['iddr_mux_config'] == 'none':
         pass
     else:
         assert False, p['mux_config']
 
     if p['mux_config'] == 'direct':
-        print('''
+        print(
+            '''
     assign {net} = {iwire};'''.format(
-        net=luts.get_next_input_net(),
-        **p,
-        ), file=connects)
+                net=luts.get_next_input_net(),
+                **p,
+            ),
+            file=connects)
     elif p['mux_config'] == 'idelay':
-        print('''
+        print(
+            '''
     assign {net} = idelay_{site};'''.format(
-        net=luts.get_next_input_net(),
-        **p,
-        ), file=connects)
+                net=luts.get_next_input_net(),
+                **p,
+            ),
+            file=connects)
     elif p['mux_config'] == 'none':
         pass
     else:
         assert False, p['mux_config']
 
+
 def run():
-    iostandards = ['LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'LVCMOS25', 'LVCMOS33', 'LVTTL']
+    iostandards = [
+        'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'LVCMOS25', 'LVCMOS33', 'LVTTL'
+    ]
     iostandard = random.choice(iostandards)
 
     if iostandard in ['LVTTL', 'LVCMOS18']:
@@ -330,7 +352,6 @@ def run():
         if idx == 0:
             continue
 
-
         p = {}
         p['tile'] = tile
         p['site'] = site
@@ -342,16 +363,17 @@ def run():
         p['DRIVE'] = random.choice(drives)
         p['SLEW'] = verilog.quote(random.choice(slews))
 
-        p['pad_wire'] = 'dio[{}]'.format(idx-1)
-        p['owire'] = 'do_buf[{}]'.format(idx-1)
-        p['iwire'] = 'di_buf[{}]'.format(idx-1)
-        p['twire'] = 't[{}]'.format(idx-1)
+        p['pad_wire'] = 'dio[{}]'.format(idx - 1)
+        p['owire'] = 'do_buf[{}]'.format(idx - 1)
+        p['iwire'] = 'di_buf[{}]'.format(idx - 1)
+        p['twire'] = 't[{}]'.format(idx - 1)
 
         params.append(p)
-        tile_params.append((tile, site, p['pad_wire'], iostandard,
-            p['DRIVE'],
-            verilog.unquote(p['SLEW']) if p['SLEW'] else None,
-            verilog.unquote(p['PULLTYPE'])))
+        tile_params.append(
+            (
+                tile, site, p['pad_wire'], iostandard, p['DRIVE'],
+                verilog.unquote(p['SLEW']) if p['SLEW'] else None,
+                verilog.unquote(p['PULLTYPE'])))
 
     write_params(tile_params)
 
@@ -363,11 +385,11 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
     wire [`N_DI-1:0] di_buf;
     wire [`N_DI-1:0] do_buf;
     wire [`N_DI-1:0] t;
-    '''.format(
-        n_di=idx))
+    '''.format(n_di=idx))
 
     # Always output a LUT6 to make placer happy.
-    print('''
+    print(
+        '''
         (* KEEP, DONT_TOUCH *)
         LUT6 dummy_lut();
         ''')
@@ -375,7 +397,8 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
     any_idelay = False
 
     for p in params:
-        print('''
+        print(
+            '''
         wire iddr_d_{site};
 
         (* KEEP, DONT_TOUCH, LOC = "{site}" *)
@@ -387,8 +410,8 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
             .O({iwire}),
             .T({twire})
             );
-            '''.format(
-                **p), file=connects)
+            '''.format(**p),
+            file=connects)
 
         p['use_iserdese2'] = random.randint(0, 1)
         if p['use_iserdese2']:
@@ -417,4 +440,3 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
 
 if __name__ == '__main__':
     run()
-

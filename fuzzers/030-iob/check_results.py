@@ -19,6 +19,7 @@ from prjxray import verilog
 import json
 import generate
 
+
 def process_parts(parts):
     if parts[0] == 'INOUT':
         yield 'type', 'IOBUF_INTERMDISABLE'
@@ -39,6 +40,7 @@ def process_parts(parts):
         yield 'IOSTANDARDS', parts[0].split('_')
         yield 'DRIVES', parts[2].split('_')
 
+
 def create_sites_from_fasm(root):
     sites = {}
 
@@ -52,9 +54,9 @@ def create_sites_from_fasm(root):
             site = parts[1]
             if (tile, site) not in sites:
                 sites[(tile, site)] = {
-                        'tile': tile,
-                        'site_key': site,
-                        }
+                    'tile': tile,
+                    'site_key': site,
+                }
 
             for key, value in process_parts(parts[2:]):
                 sites[(tile, site)][key] = value
@@ -80,7 +82,7 @@ def process_specimen(root):
     for p in params:
         tile = p['tile']
         site = p['site']
-        site_y = int(site[site.find('Y')+1:]) % 2
+        site_y = int(site[site.find('Y') + 1:]) % 2
 
         if generate.skip_broken_tiles(p):
             continue
@@ -94,20 +96,21 @@ def process_specimen(root):
         site_from_fasm = sites[(tile, site_key)]
 
         assert p['type'] == site_from_fasm['type'], (
-                tile, site_key, p, site_from_fasm)
+            tile, site_key, p, site_from_fasm)
 
         if p['type'] is None:
             continue
 
         assert p['PULLTYPE'] == site_from_fasm['PULLTYPE'], (
-                tile, site_key, p, site_from_fasm)
+            tile, site_key, p, site_from_fasm)
 
-        assert verilog.unquote(p['IOSTANDARD']) in site_from_fasm['IOSTANDARDS'], (
+        assert verilog.unquote(
+            p['IOSTANDARD']) in site_from_fasm['IOSTANDARDS'], (
                 tile, site_key, p, site_from_fasm)
 
         if p['type'] != 'IBUF':
             assert p['SLEW'] == site_from_fasm['SLEW'], (
-                    tile, site_key, p, site_from_fasm)
+                tile, site_key, p, site_from_fasm)
 
             assert 'I{}'.format(p['DRIVE']) in site_from_fasm['DRIVES'], (
                 tile, site_key, p, site_from_fasm)
@@ -120,6 +123,7 @@ def main():
             process_specimen(root)
 
     print('No errors found!')
+
 
 if __name__ == "__main__":
     main()

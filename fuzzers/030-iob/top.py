@@ -26,6 +26,7 @@ def gen_sites():
             if site_type in ['IOB33S', 'IOB33M']:
                 yield tile_name, site_name
 
+
 def write_params(params):
     pinstr = 'tile,site,pin,iostandard,drive,slew\n'
     for vals in params:
@@ -35,13 +36,17 @@ def write_params(params):
 
 
 def run():
-    tile_types = ['IBUF', 'OBUF', 'IOBUF_INTERMDISABLE', None, None, None, None, None]
+    tile_types = [
+        'IBUF', 'OBUF', 'IOBUF_INTERMDISABLE', None, None, None, None, None
+    ]
 
     i_idx = 0
     o_idx = 0
     io_idx = 0
 
-    iostandards = ['LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'LVCMOS25', 'LVCMOS33', 'LVTTL']
+    iostandards = [
+        'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'LVCMOS25', 'LVCMOS33', 'LVTTL'
+    ]
     iostandard = random.choice(iostandards)
 
     if iostandard in ['LVTTL', 'LVCMOS18']:
@@ -96,18 +101,22 @@ def run():
             p['owire'] = luts.get_next_input_net()
             p['DRIVE'] = random.choice(drives)
             p['SLEW'] = verilog.quote(random.choice(slews))
-            p['tristate_wire'] = random.choice(('0', luts.get_next_output_net()))
-            p['ibufdisable_wire'] = random.choice(('0', luts.get_next_output_net()))
-            p['intermdisable_wire'] = random.choice(('0', luts.get_next_output_net()))
+            p['tristate_wire'] = random.choice(
+                ('0', luts.get_next_output_net()))
+            p['ibufdisable_wire'] = random.choice(
+                ('0', luts.get_next_output_net()))
+            p['intermdisable_wire'] = random.choice(
+                ('0', luts.get_next_output_net()))
             io_idx += 1
 
         params.append(p)
 
         if p['type'] is not None:
-            tile_params.append((tile, site, p['pad_wire'], iostandard,
-                p['DRIVE'],
-                verilog.unquote(p['SLEW']) if p['SLEW'] else None,
-                verilog.unquote(p['PULLTYPE'])))
+            tile_params.append(
+                (
+                    tile, site, p['pad_wire'], iostandard, p['DRIVE'],
+                    verilog.unquote(p['SLEW']) if p['SLEW'] else None,
+                    verilog.unquote(p['PULLTYPE'])))
 
     write_params(tile_params)
 
@@ -120,10 +129,7 @@ def run():
 module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
         (* KEEP, DONT_TOUCH *)
         IDELAYCTRL();
-    '''.format(
-        n_di=i_idx,
-        n_do=o_idx,
-        n_dio=io_idx))
+    '''.format(n_di=i_idx, n_do=o_idx, n_dio=io_idx))
 
     # Always output a LUT6 to make placer happy.
     print('''
@@ -145,13 +151,16 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
         ) ibuf_{site} (
             .I({pad_wire}),
             .O({owire})
-            );'''.format(**p), file=connects)
+            );'''.format(**p),
+                file=connects)
             if p['IDELAY_ONLY']:
-                print("""
+                print(
+                    """
         (* KEEP, DONT_TOUCH *)
         IDELAYE2 idelay_site_{site} (
             .IDATAIN(idelay_{site})
-            );""".format(**p), file=connects)
+            );""".format(**p),
+                    file=connects)
 
         elif p['type'] == 'OBUF':
             print(
@@ -164,7 +173,8 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
         ) ibuf_{site} (
             .O({pad_wire}),
             .I({iwire})
-            );'''.format(**p), file=connects)
+            );'''.format(**p),
+                file=connects)
         elif p['type'] == 'IOBUF_INTERMDISABLE':
             print(
                 '''
@@ -180,7 +190,8 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
             .T({tristate_wire}),
             .IBUFDISABLE({ibufdisable_wire}),
             .INTERMDISABLE({intermdisable_wire})
-            );'''.format(**p), file=connects)
+            );'''.format(**p),
+                file=connects)
 
     for l in luts.create_wires_and_luts():
         print(l)
@@ -195,4 +206,3 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
 
 if __name__ == '__main__':
     run()
-
