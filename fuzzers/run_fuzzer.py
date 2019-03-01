@@ -436,6 +436,7 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
 
     # Play nice with make's jobserver.
     # See https://www.gnu.org/software/make/manual/html_node/POSIX-Jobserver.html#POSIX-Jobserver  # noqa
+    job_fds = []
     if '--jobserver-fds' in make_flags:
         job_re = re.search('--jobserver-fds=([0-9]+),([0-9]+)', make_flags)
         assert job_re, make_flags
@@ -447,15 +448,8 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
         job_wr = int(job_wr)
         assert job_rd > 2, (job_rd, job_wr, make_flags)
         assert job_wr > 2, (job_rd, job_wr, make_flags)
-
-        # Make sure the file descriptors exist..
-        job_rd_fd = os.fdopen(job_rd, 'rb', 0)
-        assert job_rd_fd
-        job_wr_fd = os.fdopen(job_wr, 'rb', 0)
-        assert job_wr_fd
-
-        job_rd_copy = os.dup(job_rd)
-        job_wr_copy = os.dup(job_wr)
+        job_fds.append(job_rd)
+        job_fds.append(job_wr)
 
     p = None
     try:
@@ -464,10 +458,8 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
             stdin=None,
             stdout=stdout_fd,
             stderr=stderr_fd,
-            # Make sure not to close the fds as make uses fd=(3,4) for process
-            # control.
-            close_fds=False)
-
+            pass_fds=job_fds,
+        )
         while True:
             try:
                 retcode = p.wait(timeout=10)
@@ -564,16 +556,7 @@ Failed @ {time_end} with exit code: {retcode}
             retcode=retcode,
             error_log=error_log,
             time_end=time_end.isoformat())
-
-        if will_retry:
-            # Restore jobserver FD's
-            os.dup2(job_rd_copy, job_rd)
-            os.dup2(job_wr_copy, job_wr)
-        else:
-            os.close(job_rd_copy)
-            os.close(job_wr_copy)
     else:
-
         # Log the last 100 lines of a successful run
         log(
             """\
@@ -583,9 +566,6 @@ Succeeded! @ {}
 --------------------------------------------------------------------------
 Succeeded! @ {}
 """, time_end.isoformat(), success_log, time_end.isoformat())
-
-        os.close(job_rd_copy)
-        os.close(job_wr_copy)
 
     logger.flush()
     signal.signal(signal.SIGINT, old_sigint_handler)
