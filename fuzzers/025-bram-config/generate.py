@@ -141,7 +141,6 @@ def run():
         assert j['module'] == 'my_RAMB18E1'
         site = verilog.unquote(ps['LOC'])
 
-        isinv_tags(segmk, ps, site, clk_inverts[site])
         bus_tags(segmk, ps, site)
         if ps['RAM_MODE'] == '"TDP"':
             rw_width_tags(segmk, ps, site)
@@ -151,9 +150,12 @@ def run():
         segmk.add_site_tag(
             site, 'SDP_WRITE_WIDTH_36', ps['RAM_MODE'] == '"SDP"'
             and int(ps['WRITE_WIDTH_B']) == 36)
-        write_mode_tags(segmk, ps, site)
-        write_rstreg_priority(segmk, ps, site)
-        write_rdaddr_collision(segmk, ps, site)
+
+        if ps['READ_WIDTH_A'] < 36 and ps['WRITE_WIDTH_B'] < 36:
+            isinv_tags(segmk, ps, site, clk_inverts[site])
+            write_mode_tags(segmk, ps, site)
+            write_rstreg_priority(segmk, ps, site)
+            write_rdaddr_collision(segmk, ps, site)
 
     def bitfilter(frame, bit):
         # rw_width_tags() aliasing interconnect on large widths
