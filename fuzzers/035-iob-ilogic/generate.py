@@ -105,7 +105,7 @@ def main():
                     segmk.add_site_tag(
                         site, 'IFF.ZINV_C', not d['IS_C_INVERTED'])
 
-                segmk.add_site_tag(site, 'IFF.ZINV_D', not d['IS_D_INVERTED'])
+                segmk.add_site_tag(site, 'ZINV_D', not d['IS_D_INVERTED'])
 
                 if 'SRTYPE' in d:
                     for opt in ['ASYNC', 'SYNC']:
