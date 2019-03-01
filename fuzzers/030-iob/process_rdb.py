@@ -38,7 +38,7 @@ def main():
     iostandard_lines = []
     with open(args.input_rdb) as f:
         for l in f:
-            if '.LVCMOS' in l or '.LVTTL' in l:
+            if ('.LVCMOS' in l or '.LVTTL' in l) and 'IOB_' in l:
                 iostandard_lines.append(l)
             else:
                 print(l.strip())

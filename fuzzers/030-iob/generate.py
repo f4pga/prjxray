@@ -41,6 +41,9 @@ def drives_for_iostandard(iostandard):
     return drives
 
 
+STEPDOWN_IOSTANDARDS = ['LVCMOS12', 'LVCMOS15', 'LVCMOS18']
+
+
 def main():
     print("Loading tags")
     segmk = Segmaker("design.bits")
@@ -59,6 +62,10 @@ def main():
                 continue
 
             iostandard = verilog.unquote(d['IOSTANDARD'])
+
+            stepdown = iostandard in STEPDOWN_IOSTANDARDS
+            segmk.add_tile_tag(
+                d['tile'], '_'.join(STEPDOWN_IOSTANDARDS), stepdown)
 
             if d['type'] is None:
                 segmk.add_site_tag(site, 'INOUT', 0)
