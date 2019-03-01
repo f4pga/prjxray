@@ -100,7 +100,8 @@ def run(
             os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"))
 
     if pip_dir is None:
-        pip_dir = "%s/piplist/build" % (os.getenv("XRAY_FUZZERS_DIR"))
+        pip_dir = "%s/piplist/build/%s" % (
+            os.getenv("XRAY_FUZZERS_DIR"), pip_type)
 
     assert intre, "RE is required"
 
