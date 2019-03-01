@@ -1,20 +1,6 @@
-from collections import namedtuple
-import enum
 from prjxray import segment_map
-
-
-class BlockType(enum.Enum):
-    # Frames describing CLB features, interconnect, clocks and IOs.
-    CLB_IO_CLK = 'CLB_IO_CLK'
-
-    # Frames describing block RAM initialization.
-    BLOCK_RAM = 'BLOCK_RAM'
-
-
-GridLoc = namedtuple('GridLoc', 'grid_x grid_y')
-GridInfo = namedtuple('GridInfo', 'bits sites tile_type')
-Bits = namedtuple('Bits', 'base_address frames offset words')
-BitsInfo = namedtuple('BitsInfo', 'block_type tile bits')
+from prjxray.grid_types import BlockType, GridLoc, GridInfo, BitAlias, Bits, BitsInfo
+from prjxray.tile_segbits_alias import TileSegbitsAlias
 
 
 class Grid(object):
@@ -24,7 +10,8 @@ class Grid(object):
   of segment offsets for particular grid locations and their tile types.
   """
 
-    def __init__(self, tilegrid):
+    def __init__(self, db, tilegrid):
+        self.db = db
         self.tilegrid = tilegrid
         self.loc = {}
         self.tileinfo = {}
@@ -41,11 +28,22 @@ class Grid(object):
                 for k in tileinfo['bits']:
                     segment_type = BlockType(k)
                     base_address = int(tileinfo['bits'][k]['baseaddr'], 0)
+
+                    alias = None
+                    if 'alias' in tileinfo['bits'][k]:
+                        alias = BitAlias(
+                            tile_type=tileinfo['bits'][k]['alias']['type'],
+                            start_offset=tileinfo['bits'][k]['alias']
+                            ['start_offset'],
+                            sites=tileinfo['bits'][k]['alias']['sites'],
+                        )
+
                     bits[segment_type] = Bits(
                         base_address=base_address,
                         frames=tileinfo['bits'][k]['frames'],
                         offset=tileinfo['bits'][k]['offset'],
                         words=tileinfo['bits'][k]['words'],
+                        alias=alias,
                     )
 
             self.tileinfo[tile] = GridInfo(
@@ -103,3 +101,17 @@ class Grid(object):
         tile_type = gridinfo.tile_type
 
         return (tile_type, loc.grid_x, -loc.grid_y)
+
+    def get_tile_segbits_at_tilename(self, tilename):
+        gridinfo = self.gridinfo_at_tilename(tilename)
+
+        # Check to see if alias is present
+        any_alias = False
+        for block_type, bits in gridinfo.bits.items():
+            if bits.alias is not None:
+                any_alias = True
+
+        if any_alias:
+            return TileSegbitsAlias(self.db, gridinfo.tile_type, gridinfo.bits)
+        else:
+            return self.db.get_tile_segbits(gridinfo.tile_type)

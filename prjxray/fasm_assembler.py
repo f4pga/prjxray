@@ -98,26 +98,18 @@ class FasmAssembler(object):
     def enable_feature(self, tile, feature, address, line):
         gridinfo = self.grid.gridinfo_at_tilename(tile)
 
-        def update_segbit(block_type, bit):
+        def update_segbit(bit):
             '''Set or clear a single bit in a segment at the given word column and word bit position'''
 
-            bits = gridinfo.bits[block_type]
-
-            seg_baseaddr = bits.base_address
-            seg_word_base = bits.offset
-
-            # Now we have the word column and word bit index
-            # Combine with the segments relative frame position to fully get the position
-            frame_addr = seg_baseaddr + bit.word_column
-            # 2 words per segment
-            word_addr = seg_word_base + bit.word_bit // bitstream.WORD_SIZE_BITS
+            frame_addr = bit.word_column
+            word_addr = bit.word_bit // bitstream.WORD_SIZE_BITS
             bit_index = bit.word_bit % bitstream.WORD_SIZE_BITS
             if bit.isset:
                 self.frame_set(frame_addr, word_addr, bit_index, line)
             else:
                 self.frame_clear(frame_addr, word_addr, bit_index, line)
 
-        segbits = self.db.get_tile_segbits(gridinfo.tile_type)
+        segbits = self.grid.get_tile_segbits_at_tilename(tile)
 
         self.seen_tile.add(tile)
 
@@ -126,9 +118,10 @@ class FasmAssembler(object):
         any_bits = set()
 
         try:
-            for block_type, bit in segbits.feature_to_bits(db_k, address):
+            for block_type, bit in segbits.feature_to_bits(gridinfo.bits, db_k,
+                                                           address):
                 any_bits.add(block_type)
-                update_segbit(block_type, bit)
+                update_segbit(bit)
         except KeyError:
             raise FasmLookupError(
                 "Segment DB %s, key %s not found from line '%s'" %

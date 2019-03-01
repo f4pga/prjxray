@@ -245,6 +245,78 @@ def propagate_rebuf(database, tiles_by_grid):
         database[rebuf_above]['bits']['CLB_IO_CLK']['words'] = 4
 
 
+def propagate_IOB_SING(database, tiles_by_grid):
+    """ The IOB_SING are half tiles at top and bottom of every IO column.
+
+    Unlike most tiles, they do not behave consistently.  The tile at the top
+    of the column is the bottom half of a full IOB, and the tile at the bottom
+    of the column is the top half of a full IOB.  For this reason, explicit
+    bit aliasing is used to map the full IOB bits into the two halves, and a
+    mapping is provided for the site naming.
+
+    """
+
+    seen_iobs = set()
+    for tile in database:
+        if tile in seen_iobs:
+            continue
+
+        if database[tile]["type"] not in ["LIOB33", "RIOB33"]:
+            continue
+
+        while True:
+            prev_tile = tile
+            tile = tiles_by_grid[(
+                database[tile]['grid_x'], database[tile]['grid_y'] + 1)]
+            if '_SING' in database[tile]['type']:
+                break
+
+        bottom_tile = tile
+        seen_iobs.add(bottom_tile)
+
+        bits = database[prev_tile]['bits']['CLB_IO_CLK']
+
+        while True:
+            tile = tiles_by_grid[(
+                database[tile]['grid_x'], database[tile]['grid_y'] - 1)]
+            seen_iobs.add(tile)
+
+            if '_SING' in database[tile]['type']:
+                break
+
+            if 'CLB_IO_CLK' in database[tile]['bits']:
+                assert bits['baseaddr'] == database[tile]['bits'][
+                    'CLB_IO_CLK']['baseaddr']
+                assert bits['frames'] == database[tile]['bits']['CLB_IO_CLK'][
+                    'frames']
+                assert bits['words'] == database[tile]['bits']['CLB_IO_CLK'][
+                    'words']
+
+        top_tile = tile
+
+        database[top_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+        database[top_tile]['bits']['CLB_IO_CLK']['words'] = 2
+        database[top_tile]['bits']['CLB_IO_CLK']['offset'] = 99
+        database[top_tile]['bits']['CLB_IO_CLK']['alias'] = {
+            'type': database[prev_tile]['type'],
+            'start_offset': 0,
+            'sites': {
+                'IOB33_Y0': 'IOB33_Y1',
+            }
+        }
+
+        database[bottom_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+        database[bottom_tile]['bits']['CLB_IO_CLK']['words'] = 2
+        database[bottom_tile]['bits']['CLB_IO_CLK']['offset'] = 0
+        database[bottom_tile]['bits']['CLB_IO_CLK']['alias'] = {
+            'type': database[prev_tile]['type'],
+            'start_offset': 2,
+            'sites': {
+                'IOB33_Y0': 'IOB33_Y0',
+            }
+        }
+
+
 def run(json_in_fn, json_out_fn, verbose=False):
     # Load input files
     database = json.load(open(json_in_fn, "r"))
@@ -253,6 +325,7 @@ def run(json_in_fn, json_out_fn, verbose=False):
     propagate_INT_lr_bits(database, tiles_by_grid, verbose=verbose)
     propagate_INT_bits_in_column(database, tiles_by_grid)
     propagate_rebuf(database, tiles_by_grid)
+    propagate_IOB_SING(database, tiles_by_grid)
 
     # Save
     xjson.pprint(open(json_out_fn, "w"), database)

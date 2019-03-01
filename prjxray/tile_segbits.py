@@ -99,7 +99,7 @@ class TileSegbits(object):
                     self.feature_addresses[base_feature][int(
                         feature[sidx + 1:eidx])] = (block_type, feature)
 
-    def match_bitdata(self, block_type, bits, bitdata):
+    def match_bitdata(self, block_type, bits, bitdata, match_filter=None):
         """ Return matching features for tile bits data (grid.Bits) and bitdata.
 
         See bitstream.load_bitdata for details on bitdata structure.
@@ -111,7 +111,13 @@ class TileSegbits(object):
 
         for feature, segbit in self.segbits[block_type].items():
             match = True
+            skip = False
             for query_bit in segbit:
+                if match_filter is not None and not match_filter(block_type,
+                                                                 query_bit):
+                    skip = True
+                    break
+
                 frame = bits.base_address + query_bit.word_column
                 bitidx = bits.offset * bitstream.WORD_SIZE_BITS + query_bit.word_bit
 
@@ -128,7 +134,7 @@ class TileSegbits(object):
                 if not match:
                     break
 
-            if not match:
+            if not match or skip:
                 continue
 
             def inner():
@@ -140,16 +146,26 @@ class TileSegbits(object):
 
             yield (tuple(inner()), feature)
 
-    def feature_to_bits(self, feature, address=0):
+    def map_bit_to_frame(self, block_type, bits, bit):
+        """ Convert bit from segbit to frame data. """
+        return Bit(
+            word_column=bits.base_address + bit.word_column,
+            word_bit=bits.offset * bitstream.WORD_SIZE_BITS + bit.word_bit,
+            isset=bit.isset,
+        )
+
+    def feature_to_bits(self, bits_map, feature, address=0):
         if feature in self.ppips:
             return
 
         for block_type in self.segbits:
             if address == 0 and feature in self.segbits[block_type]:
                 for bit in self.segbits[block_type][feature]:
-                    yield block_type, bit
+                    yield block_type, self.map_bit_to_frame(
+                        block_type, bits_map[block_type], bit)
                 return
 
         block_type, feature = self.feature_addresses[feature][address]
         for bit in self.segbits[block_type][feature]:
-            yield block_type, bit
+            yield block_type, self.map_bit_to_frame(
+                block_type, bits_map[block_type], bit)
