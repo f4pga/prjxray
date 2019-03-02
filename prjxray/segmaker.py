@@ -336,8 +336,12 @@ class Segmaker:
             -CLBLM_L => CLB
             -CENTER_INTER_R => CENTER_INTER
             -CLK_HROW_TOP_R => CLK_HROW
+            -LIOB33 => IOB33
             '''
             tile_type_norm = re.sub("(_TOP|_BOT|LL|LM)?_[LR]$", "", tile_type)
+
+            if tile_type_norm in ['LIOB33', 'RIOB33']:
+                tile_type_norm = 'IOB33'
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:
