@@ -75,6 +75,7 @@ $(eval $(call fuzzer,028-fifo-config,005-tilegrid))
 $(eval $(call fuzzer,029-bram-fifo-config,005-tilegrid))
 $(eval $(call fuzzer,030-iob,005-tilegrid))
 $(eval $(call fuzzer,035-iob-ilogic,005-tilegrid))
+$(eval $(call fuzzer,036-iob-ologic,005-tilegrid))
 $(eval $(call fuzzer,040-clk-hrow-config,005-tilegrid))
 $(eval $(call fuzzer,041-clk-hrow-pips,005-tilegrid))
 # 042 fuzzer is unstable, issue #657
