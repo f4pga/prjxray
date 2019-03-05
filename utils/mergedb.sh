@@ -9,6 +9,9 @@ test -e "$2"
 
 tmp1=`mktemp -p .`
 tmp2=`mktemp -p .`
+LOCKFILE="/tmp/segbits_$1.db.lock"
+LOCKTIMEOUT=30 # 30s timeout
+LOCKID=222
 
 function finish {
     echo "Cleaning up temp files"
@@ -18,10 +21,24 @@ function finish {
 trap finish EXIT
 
 db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/segbits_$1.db
+
+# if the DB exists acquire a lock
+if [ -f $db ]; then
+	eval "exec $LOCKID>$LOCKFILE"
+	# the lock is automatically released on script exit
+	flock --timeout $LOCKTIMEOUT $LOCKID
+	if [ ! $? -eq 0 ]; then
+		echo "Timeout while waiting for lock"
+		finish
+		exit 1
+	fi
+fi
+
 # Check existing DB
 if [ -f $db ] ; then
     ${XRAY_PARSEDB} --strict "$db"
 fi
+
 # Check new DB
 ${XRAY_PARSEDB} --strict "$2"
 
@@ -112,4 +129,3 @@ else
 fi
 # Check aggregate db for consistency and make canonical
 ${XRAY_PARSEDB} --strict "$tmp2" "$db"
-
