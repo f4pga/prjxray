@@ -20,7 +20,7 @@ SPECIMENS_DEPS ?=
 
 # See int_loop_check.py
 # rempips took 35 iters once, so set 50 as a good start point
-CHECK_ARGS := --zero-entries --timeout-iters 50
+CHECK_ARGS ?= --zero-entries --timeout-iters 50
 SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit

@@ -9,7 +9,7 @@ N ?= 48
 SEGMATCH_FLAGS=-m 15 -M 45
 endif
 
-CHECK_ARGS="--max-iters 12 --min-progress 50"
+CHECK_ARGS=--max-iters 12 --min-progress 50
 
 include ../pip_loop.mk
 
