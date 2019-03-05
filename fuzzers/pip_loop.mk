@@ -30,7 +30,11 @@ all: database
 
 $(SPECIMENS_OK): build/todo.txt $(SPECIMENS_DEPS)
 	mkdir -p build/$(ITER)
-	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
+	if [ -f ${FUZDIR}/generate.sh ] ; then \
+			bash ${FUZDIR}/generate.sh $(subst /OK,,$@) ; \
+		else \
+			bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@) ; \
+		fi
 	touch $@
 
 $(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)/$(A_PIPLIST): $(PIPLIST_TCL)
