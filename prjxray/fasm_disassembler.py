@@ -48,7 +48,7 @@ class FasmDisassembler(object):
         gridinfo = self.grid.gridinfo_at_tilename(tile_name)
 
         try:
-            tile_segbits = self.db.get_tile_segbits(gridinfo.tile_type)
+            tile_segbits = self.grid.get_tile_segbits_at_tilename(tile_name)
         except KeyError as e:
             if not verbose:
                 return
@@ -163,3 +163,19 @@ class FasmDisassembler(object):
                         annotations=tuple(annotations),
                         comment=None,
                     )
+
+    def is_zero_feature(self, feature):
+        parts = feature.split('.')
+        tile = parts[0]
+        gridinfo = self.grid.gridinfo_at_tilename(tile)
+        feature = '.'.join(parts[1:])
+
+        db_k = '%s.%s' % (gridinfo.tile_type, feature)
+        segbits = self.grid.get_tile_segbits_at_tilename(tile)
+        any_bits = False
+        for block_type, bit in segbits.feature_to_bits(gridinfo.bits, db_k):
+            if bit.isset:
+                any_bits = True
+                break
+
+        return not any_bits

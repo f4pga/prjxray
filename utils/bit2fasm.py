@@ -35,24 +35,9 @@ def bits_to_fasm(db_root, bits_file, verbose, canonical):
     with open(bits_file) as f:
         bitdata = bitstream.load_bitdata(f)
 
-    def is_zero_feature(feature):
-        parts = feature.split('.')
-        tile = parts[0]
-        gridinfo = grid.gridinfo_at_tilename(tile)
-        feature = '.'.join(parts[1:])
-
-        db_k = '%s.%s' % (gridinfo.tile_type, feature)
-        segbits = db.get_tile_segbits(gridinfo.tile_type)
-        any_bits = False
-        for block_type, bit in segbits.feature_to_bits(db_k):
-            if bit.isset:
-                any_bits = True
-
-        return not any_bits
-
     model = fasm.output.merge_and_sort(
         disassembler.find_features_in_bitstream(bitdata, verbose=verbose),
-        zero_function=is_zero_feature,
+        zero_function=disassembler.is_zero_feature,
         sort_key=grid.tile_key,
     )
 

@@ -114,7 +114,7 @@ class Database(object):
     def grid(self):
         """ Return Grid object for database. """
         self._read_tilegrid()
-        return grid.Grid(self.tilegrid)
+        return grid.Grid(self, self.tilegrid)
 
     def _read_tile_types(self):
         for tile_type, db in self.tile_types.items():
