@@ -8,7 +8,7 @@ progressbar2
 pyjson5
 pytest
 pyyaml
-scipy
+scipy==1.2.1
 simplejson
 sympy
 textx
