@@ -13,7 +13,7 @@ export XRAY_ROI_GRID_X1="10"
 export XRAY_ROI_GRID_X2="58"
 # Include VBRK / VTERM
 export XRAY_ROI_GRID_Y1="0"
-export XRAY_ROI_GRID_Y2="52"
+export XRAY_ROI_GRID_Y2="51"
 
 export XRAY_PIN_00="E22"
 export XRAY_PIN_01="D22"
