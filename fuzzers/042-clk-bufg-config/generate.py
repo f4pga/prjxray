@@ -5,6 +5,13 @@ import json
 from prjxray.segmaker import Segmaker
 
 
+#Decouple interconnect bits from PRESELECT property bits
+def bitfilter(frame, bit):
+    if frame == 7 or frame == 21:
+        return False
+    return True
+
+
 def main():
     segmk = Segmaker("design.bits")
 
@@ -44,7 +51,7 @@ def main():
             segmk.add_site_tag(
                 row['site'], '{}.{}'.format(base_name, tag), 1 ^ row[param])
 
-    segmk.compile()
+    segmk.compile(bitfilter=bitfilter)
     segmk.write()
 
 
