@@ -346,7 +346,7 @@ def main(argv):
     parser.add_argument(
         "--retries",
         type=int,
-        default=5,
+        default=2,
         help="Retry a failed fuzzer n times.",
     )
     args = parser.parse_args()
