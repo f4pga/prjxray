@@ -20,7 +20,7 @@ SPECIMENS_DEPS ?=
 
 # See int_loop_check.py
 # rempips took 35 iters once, so set 50 as a good start point
-CHECK_ARGS := --zero-entries --timeout-iters 50
+CHECK_ARGS ?= --zero-entries --timeout-iters 50
 SPECIMENS := $(addprefix build/$(ITER)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 # Individual fuzzer directory, such as ~/prjxray/fuzzers/010-lutinit
@@ -30,15 +30,19 @@ all: database
 
 $(SPECIMENS_OK): build/todo.txt $(SPECIMENS_DEPS)
 	mkdir -p build/$(ITER)
-	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
+	if [ -f ${FUZDIR}/generate.sh ] ; then \
+			bash ${FUZDIR}/generate.sh $(subst /OK,,$@) ; \
+		else \
+			bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@) ; \
+		fi
 	touch $@
 
-$(XRAY_FUZZERS_DIR)/piplist/build/$(A_PIPLIST): $(PIPLIST_TCL)
-	mkdir -p $(XRAY_FUZZERS_DIR)/piplist/build
-	cd $(XRAY_FUZZERS_DIR)/piplist/build && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
+$(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)/$(A_PIPLIST): $(PIPLIST_TCL)
+	mkdir -p $(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)
+	cd $(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE) && ${XRAY_VIVADO} -mode batch -source $(PIPLIST_TCL)
 
 # Used 1) to see if we are done 2) pips to try in generate.tcl
-build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/$(A_PIPLIST) $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
+build/todo.txt: $(XRAY_FUZZERS_DIR)/piplist/build/$(PIP_TYPE)/$(A_PIPLIST) $(XRAY_DIR)/fuzzers/int_maketodo.py build/database/seeded
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database \
 		python3 $(XRAY_DIR)/fuzzers/int_maketodo.py \
 		$(MAKETODO_FLAGS) |sort >build/todo_all.txt

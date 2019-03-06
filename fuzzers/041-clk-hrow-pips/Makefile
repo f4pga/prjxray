@@ -30,7 +30,7 @@ build/segbits_clk_hrow.rdb: $(SPECIMENS_OK)
 		$(shell find build -name segdata_clk_hrow_top_r.txt) \
 		$(shell find build -name segdata_clk_hrow_bot_r.txt)
 
-build/segbits_clk_hrow.db: build/segbits_clk_hrow.rdb $(XRAY_FUZZERS_DIR)/piplist/build/clk_hrow_bot_r.txt
+build/segbits_clk_hrow.db: build/segbits_clk_hrow.rdb $(XRAY_FUZZERS_DIR)/piplist/build/clk_hrow/clk_hrow_bot_r.txt
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
 		--seg-fn-in build/segbits_clk_hrow.rdb \
 		--seg-fn-out build/segbits_clk_hrow_rc.db
@@ -38,7 +38,7 @@ build/segbits_clk_hrow.db: build/segbits_clk_hrow.rdb $(XRAY_FUZZERS_DIR)/piplis
 	# Convert row/column into PIP definition.
 	python3 merge_clk_entries.py \
 		build/segbits_clk_hrow_rc.db \
-		$(XRAY_FUZZERS_DIR)/piplist/build/clk_hrow_bot_r.txt \
+		$(XRAY_FUZZERS_DIR)/piplist/build/clk_hrow/clk_hrow_bot_r.txt \
 		build/segbits_clk_hrow.db
 
 	# Keep a copy to track iter progress
