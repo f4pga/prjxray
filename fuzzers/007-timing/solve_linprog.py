@@ -100,9 +100,9 @@ def run_corner(
     printn = [0]
 
     def callback(xk, **kwargs):
-        iters[0] = kwargs['nit']
+        iters[0] = xk['nit']
         if time.time() - tlast[0] > 1.0:
-            sys.stdout.write('I:%d ' % kwargs['nit'])
+            sys.stdout.write('I:%d ' % xk['nit'])
             tlast[0] = time.time()
             printn[0] += 1
             if printn[0] % 10 == 0:
