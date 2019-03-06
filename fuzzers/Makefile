@@ -11,7 +11,10 @@ FUZZONLY=N
 BITONLY=N
 
 all:
-clean: clean_fuzzers clean_logs
+clean: clean_fuzzers clean_logs clean_locks
+
+clean_locks:
+	rm -rf /tmp/segbits_*.db.lock
 
 define fuzzer
 
