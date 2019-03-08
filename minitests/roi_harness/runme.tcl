@@ -78,7 +78,7 @@ set Y_DIN_BASE [expr "$Y_CLK_BASE + $PITCH"]
 # set Y_DOUT_BASE [expr "$Y_DIN_BASE + $DIN_N"]
 # At top. This relieves routing pressure by spreading things out
 # Note: can actually go up one more if we want
-set Y_DOUT_BASE [expr "$XRAY_ROI_Y1 - $DIN_N * $PITCH"]
+set Y_DOUT_BASE [expr "$XRAY_ROI_Y1 - $DOUT_N * $PITCH"]
 
 # Y_OFFSET: offset amount to shift the components on the y column to avoid hard blocks
 set Y_OFFSET 24
@@ -234,9 +234,23 @@ if {$part eq "xc7a50tfgg484-1"} {
     if {$pincfg eq "ZYBOZ7-SWBUT"} {
         # https://github.com/Digilent/digilent-xdc/blob/master/Zybo-Z7-Master.xdc
 
-        # Slide switches and buttons
-        set ins "G15 P15 W13 T16"
-        set outs "M14 M15 G14 D18"
+        #
+        # J15 - UART_RX - JE3
+        # G15 - SW0
+        # K18 - BTN0
+        # K19 - BTN1
+        #
+        set ins  "J15  G15  K18 K19"
+
+        #
+        # H15 - UART_TX - JE4
+        # E17 - ETH PHY reset (active low, keep high for 125 MHz clock)
+        # M14 - LD0
+        # G14 - LD2
+        # M15 - LD1
+        # D18 - LD3
+        #
+        set outs "H15  E17  M14 M15 D18 G14"
 
         # 125 MHz CLK onboard
         set pin "K17"

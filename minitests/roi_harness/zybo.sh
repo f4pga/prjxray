@@ -2,7 +2,7 @@
 export XRAY_PART=xc7z010clg400-1
 export XRAY_PINCFG=ZYBOZ7-SWBUT
 export XRAY_DIN_N_LARGE=4
-export XRAY_DOUT_N_LARGE=4
+export XRAY_DOUT_N_LARGE=6
 
 # For generating DB
 export XRAY_PIN_00="G15"
