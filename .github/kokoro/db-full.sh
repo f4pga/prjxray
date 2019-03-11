@@ -107,14 +107,14 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 	echo " Database Diff Summary"
 	echo "----------------------------------------"
-	git diff --stat --irreversible-delete --find-renames --find-copies --ignore-all-space
+	git diff --stat --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
 
 	# Output the actually diff
 	echo
 	echo "----------------------------------------"
 	echo " Database Diff"
 	echo "----------------------------------------"
-	git diff --color --irreversible-delete --find-renames --find-copies --ignore-all-space
+	git diff --color --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
 
 	# Save the diff to be uploaded as an artifact
 	echo
@@ -123,20 +123,18 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 	# Patch file
 	git diff \
-		--color --irreversible-delete --find-renames --find-copies --ignore-all-space \
+		--color --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master \
 		> diff.patch
 
 	# Pretty HTML file version
 	diff2html --summary=open --file diff.html --format html \
 		-- \
-		--irreversible-delete --find-renames --find-copies --ignore-all-space \
-		|| true
+		--irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
 
 	# Programmatic JSON version
 	diff2html --file diff.json --format json \
 		-- \
-		--irreversible-delete --find-renames --find-copies --ignore-all-space \
-		|| true
+		--irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
 )
 echo "----------------------------------------"
 
