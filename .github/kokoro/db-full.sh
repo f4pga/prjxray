@@ -123,7 +123,7 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 	# Patch file
 	git diff \
-		--color --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master \
+		--patch-with-stat --no-color --irreversible-delete --find-renames --find-copies origin/master \
 		> diff.patch
 
 	# Pretty HTML file version
