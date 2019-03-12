@@ -95,7 +95,6 @@ class ClockSources(object):
                 return source
 
 
-
 def main():
     """
     BUFG's can be driven from:
@@ -105,7 +104,8 @@ def main():
 
     """
 
-    print('''
+    print(
+        '''
 module top();
     (* KEEP, DONT_TOUCH *)
     LUT6 dummy();
@@ -128,7 +128,6 @@ module top();
             for site, site_type in gridinfo.sites.items():
                 if site_type == desired_site_type:
                     yield tile_name, site
-
 
     for _, site in gen_sites('MMCME2_ADV'):
         mmcm_clocks = [
@@ -176,7 +175,7 @@ module top();
             ))
 
     for _, site in sorted(gen_sites("BUFGCTRL"),
-            key=lambda x: BUFGCTRL_XY_FUN(x[1])):
+                          key=lambda x: BUFGCTRL_XY_FUN(x[1])):
         print(
             """
     wire O_{site};
@@ -188,9 +187,11 @@ module top();
     wire I0_{site};
     wire CE1_{site};
     wire CE0_{site};
-    """.format(site=site), file=wires)
+    """.format(site=site),
+            file=wires)
 
-        print("""
+        print(
+            """
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFGCTRL bufg_{site} (
         .O(O_{site}),
@@ -203,8 +204,8 @@ module top();
         .CE1(CE1_{site}),
         .CE0(CE0_{site})
         );
-        """.format(site=site), file=bufgs)
-
+        """.format(site=site),
+            file=bufgs)
     """ BUFG clock sources:
 
     2 from interconnect
@@ -214,11 +215,11 @@ module top();
     """
 
     CLOCK_CHOICES = (
-            'LUT',
-            'BUFG_+1',
-            'BUFG_-1',
-            'CASCADE',
-            )
+        'LUT',
+        'BUFG_+1',
+        'BUFG_-1',
+        'CASCADE',
+    )
 
     def find_bufg_cmt(tile):
         if '_BOT_' in tile:
@@ -231,7 +232,8 @@ module top();
         offset = 1
 
         while True:
-            gridinfo = grid.gridinfo_at_loc((loc.grid_x, loc.grid_y+offset*inc))
+            gridinfo = grid.gridinfo_at_loc(
+                (loc.grid_x, loc.grid_y + offset * inc))
             if gridinfo.tile_type.startswith('CLK_HROW_'):
                 return site_to_cmt[list(gridinfo.sites.keys())[0]]
 
@@ -244,7 +246,7 @@ module top();
             x, y = BUFGCTRL_XY_FUN(site)
 
             target_y = y + 1
-            max_y = ((y // 16) + 1)*16
+            max_y = ((y // 16) + 1) * 16
 
             if target_y >= max_y:
                 target_y -= 16
@@ -254,7 +256,7 @@ module top();
             x, y = BUFGCTRL_XY_FUN(site)
 
             target_y = y - 1
-            min_y = (y // 16)*16
+            min_y = (y // 16) * 16
 
             if target_y < min_y:
                 target_y += 16
@@ -267,20 +269,27 @@ module top();
             assert False, source_type
 
     for tile, site in sorted(gen_sites("BUFGCTRL"),
-            key=lambda x: BUFGCTRL_XY_FUN(x[1])):
+                             key=lambda x: BUFGCTRL_XY_FUN(x[1])):
         if random.randint(0, 1):
-            print("""
+            print(
+                """
     assign I0_{site} = {i0_net};""".format(
-        site=site,
-        i0_net=get_clock_net(tile, site, random.choice(CLOCK_CHOICES))), file=bufgs)
+                    site=site,
+                    i0_net=get_clock_net(
+                        tile, site, random.choice(CLOCK_CHOICES))),
+                file=bufgs)
 
         if random.randint(0, 1):
-            print("""
+            print(
+                """
     assign I1_{site} = {i1_net};""".format(
-        site=site,
-        i1_net = get_clock_net(tile, site, random.choice(CLOCK_CHOICES))), file=bufgs)
+                    site=site,
+                    i1_net=get_clock_net(
+                        tile, site, random.choice(CLOCK_CHOICES))),
+                file=bufgs)
 
-        print("""
+        print(
+            """
     assign S0_{site} = {s0_net};
     assign S1_{site} = {s1_net};
     assign IGNORE0_{site} = {ignore0_net};
@@ -288,14 +297,15 @@ module top();
     assign CE0_{site} = {ce0_net};
     assign CE1_{site} = {ce1_net};
         """.format(
-            site=site,
-            s0_net=luts.get_next_output_net(),
-            s1_net=luts.get_next_output_net(),
-            ignore0_net=luts.get_next_output_net(),
-            ignore1_net=luts.get_next_output_net(),
-            ce0_net=luts.get_next_output_net(),
-            ce1_net=luts.get_next_output_net(),
-            ), file=bufgs)
+                site=site,
+                s0_net=luts.get_next_output_net(),
+                s1_net=luts.get_next_output_net(),
+                ignore0_net=luts.get_next_output_net(),
+                ignore1_net=luts.get_next_output_net(),
+                ce0_net=luts.get_next_output_net(),
+                ce1_net=luts.get_next_output_net(),
+            ),
+            file=bufgs)
 
     for l in luts.create_wires_and_luts():
         print(l)
@@ -306,18 +316,19 @@ module top();
     itr = iter(gen_sites('BUFHCE'))
 
     for tile, site in sorted(gen_sites("BUFGCTRL"),
-            key=lambda x: BUFGCTRL_XY_FUN(x[1])):
+                             key=lambda x: BUFGCTRL_XY_FUN(x[1])):
         if random.randint(0, 1):
             _, bufhce_site = next(itr)
 
-            print("""
+            print(
+                """
     (* KEEP, DONT_TOUCH, LOC = "{bufhce_site}" *)
     BUFHCE bufhce_{bufhce_site} (
         .I(O_{site})
         );""".format(
-            site=site,
-            bufhce_site=bufhce_site,
-            ))
+                    site=site,
+                    bufhce_site=bufhce_site,
+                ))
 
     print("endmodule")
 

@@ -17,6 +17,7 @@ process.
 """
 import argparse
 
+
 def main():
     parser = argparse.ArgumentParser("Form ZDB groups for BUFG.")
 
@@ -56,11 +57,13 @@ def main():
 
         assert zero_feature is not None, dst
 
-        print('{bits},{type}.{dst}.{src}'.format(
-            bits=' '.join(sorted(bits)),
-            type='CLK_BUFG',
-            dst=dst,
-            src=zero_feature))
+        print(
+            '{bits},{type}.{dst}.{src}'.format(
+                bits=' '.join(sorted(bits)),
+                type='CLK_BUFG',
+                dst=dst,
+                src=zero_feature))
+
 
 if __name__ == "__main__":
     main()

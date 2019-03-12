@@ -4,11 +4,13 @@ from prjxray.segmaker import Segmaker
 import os
 import os.path
 
+
 def bitfilter(frame, word):
     if frame < 26:
         return False
 
     return True
+
 
 def main():
     segmk = Segmaker("design.bits")
@@ -17,7 +19,8 @@ def main():
     pipdata = {}
     ignpip = set()
 
-    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build', 'clk_bufg', 'clk_bufg_bot_r.txt')) as f:
+    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
+                           'clk_bufg', 'clk_bufg_bot_r.txt')) as f:
         for l in f:
             tile_type, dst, src = l.strip().split('.')
             if tile_type not in pipdata:
@@ -25,7 +28,8 @@ def main():
 
             pipdata[tile_type].append((src, dst))
 
-    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build', 'clk_bufg', 'clk_bufg_top_r.txt')) as f:
+    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
+                           'clk_bufg', 'clk_bufg_top_r.txt')) as f:
         for l in f:
             tile_type, dst, src = l.strip().split('.')
             if tile_type not in pipdata:
@@ -85,6 +89,7 @@ def main():
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()
+
 
 if __name__ == "__main__":
     main()
