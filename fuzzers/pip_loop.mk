@@ -30,7 +30,7 @@ include $(SELF_DIR)/pip_list.mk
 
 $(SPECIMENS_OK): build/todo.txt $(SPECIMENS_DEPS)
 	mkdir -p build/$(ITER)
-	if [ -f ${FUZDIR}/generate.sh ] ; then \
+	+if [ -f ${FUZDIR}/generate.sh ] ; then \
 			bash ${FUZDIR}/generate.sh $(subst /OK,,$@) ; \
 		else \
 			bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@) ; \

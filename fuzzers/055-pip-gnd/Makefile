@@ -21,7 +21,7 @@ pushdb:
 
 $(SPECIMENS_OK): build/todo.txt
 	mkdir -p build
-	bash generate.sh $(subst /OK,,$@)
+	+bash generate.sh $(subst /OK,,$@)
 	touch $@
 
 build/todo.txt:
