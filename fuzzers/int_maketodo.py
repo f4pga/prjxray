@@ -89,6 +89,7 @@ def run(
         db_dir,
         pip_dir,
         intre,
+        sides,
         l,
         r,
         pip_type,
@@ -105,18 +106,16 @@ def run(
 
     assert intre, "RE is required"
 
-    if l:
-        maketodo(
-            "%s/%s_l.txt" % (pip_dir, pip_type),
-            "%s/segbits_%s_l.db" % (db_dir, seg_type),
-            intre,
-            not_endswith,
-            verbose=verbose)
+    for side in sides:
+        if side == "l" and not l:
+            continue
 
-    if r:
+        if side == "r" and not r:
+            continue
+
         maketodo(
-            "%s/%s_r.txt" % (pip_dir, pip_type),
-            "%s/segbits_%s_r.db" % (db_dir, seg_type),
+            "%s/%s_%s.txt" % (pip_dir, pip_type, side),
+            "%s/segbits_%s_%s.db" % (db_dir, seg_type, side),
             intre,
             not_endswith,
             verbose=verbose)
@@ -135,6 +134,7 @@ def main():
     parser.add_argument('--re', required=True, help='')
     parser.add_argument('--pip-type', default="pips_int", help='')
     parser.add_argument('--seg-type', default="int", help='')
+    parser.add_argument('--sides', default="l,r", help='')
     util.add_bool_arg(parser, '--l', default=True, help='')
     util.add_bool_arg(parser, '--r', default=True, help='')
     parser.add_argument(
@@ -146,6 +146,7 @@ def main():
         db_dir=args.db_dir,
         pip_dir=args.pip_dir,
         intre=args.re,
+        sides=args.sides.split(','),
         l=args.l,
         r=args.r,
         pip_type=args.pip_type,
