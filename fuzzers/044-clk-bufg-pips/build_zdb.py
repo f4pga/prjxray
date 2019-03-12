@@ -1,8 +1,25 @@
+""" Tool for building ZDB for BUFG pips.
+
+This requires that the rdb files be good enough to identify all the 0 candidate
+features, which may take multiple manual iterations.  Manual iterations can
+be running like:
+
+make ITER=<N> -j<J> database
+
+And then invoking:
+python3 build_zdb.py build/segbits_clk_bufg_bot_r.rdb build/segbits_clk_bufg_top_r.rdb > bits.dbf
+
+will successed if and only if the rdb is complete enough.
+
+bits.dbf is committed, so this utility should only be needed to document the
+process.
+
+"""
 import argparse
 
 def main():
     parser = argparse.ArgumentParser("Form ZDB groups for BUFG.")
-    
+
     parser.add_argument('bot_r')
     parser.add_argument('top_r')
 
