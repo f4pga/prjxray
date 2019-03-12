@@ -5,7 +5,7 @@ PIPLIST_TCL=$(FUZDIR)/clk_hrow_pip_list.tcl
 ifeq (${XRAY_PART}, xc7z010clg400-1)
 # xc7z010clg400-1 is missing some side clock connections, so these bits cannot
 # be documented.
-TODO_RE="[^\.]+\.CLK_HROW_CK_MUX_OUT_[LR][0-9]+\.CLK_HROW_.*[KR_][0-9]+"
+TODO_RE='[^\.]+\.CLK_HROW_CK_MUX_OUT_[^.]+\.CLK_HROW[RCK_]+(?:(?:IN_R[0-9]+)|(?:GCLK[0-9]+)|(?:INT_._.))$$'
 else
 TODO_RE="[^\.]+\.CLK_HROW_CK_MUX_OUT_"
 endif
