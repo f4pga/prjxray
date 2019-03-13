@@ -135,6 +135,8 @@ def check_allowed(mmcm_pll_dir, cmt):
     elif mmcm_pll_dir == 'EVEN':
         x, y = CMT_XY_FUN(cmt)
         return (x & 1) == 0
+    elif mmcm_pll_dir == 'NONE':
+        return False
     else:
         assert False, mmcm_pll_dir
 
@@ -162,7 +164,7 @@ module top();
     # sources are allowed.  The force of ODD/EVEN/BOTH further biases the
     # clock sources to the left or right column inputs.
     mmcm_pll_only = random.randint(0, 1)
-    mmcm_pll_dir = random.choice(('ODD', 'EVEN', 'BOTH'))
+    mmcm_pll_dir = random.choice(('ODD', 'EVEN', 'BOTH', 'NONE'))
 
     if not mmcm_pll_only:
         for _ in range(2):
@@ -279,21 +281,29 @@ module top();
     any_bufhce = False
     for tile_name, sites in gen_bufhce_sites():
         for site in sites:
-            wire_name = clock_sources.get_random_source(site_to_cmt[site])
-            if wire_name is None:
-                continue
-
             any_bufhce = True
             print(
                 """
+    wire I_{site};
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFHCE buf_{site} (
-        .I({wire_name})
+        .I(I_{site})
     );
                     """.format(
                     site=site,
-                    wire_name=wire_name,
                 ))
+
+            if random.random() > .05:
+                wire_name = clock_sources.get_random_source(site_to_cmt[site])
+                if wire_name is None:
+                    continue
+
+                print("""
+    assign I_{site} = {wire_name};""".format(
+        site=site,
+        wire_name=wire_name,
+        ))
+
 
     if not any_bufhce:
         for tile_name, sites in gen_bufhce_sites():

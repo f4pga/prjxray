@@ -1,17 +1,46 @@
 #!/usr/bin/env python3
 
+import os
+import os.path
 from prjxray.segmaker import Segmaker
-import clk_table
+import pprint
 
 
 def main():
     segmk = Segmaker("design.bits")
-    table = clk_table.get_clk_table()
+
+    tiledata = {}
+    pipdata = {}
+    clk_list = {}
+    ignpip = set()
+
+    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
+                           'clk_hrow', 'clk_hrow_bot_r.txt')) as f:
+        for l in f:
+            tile_type, dst, src = l.strip().split('.')
+            if tile_type not in pipdata:
+                pipdata[tile_type] = []
+                clk_list[tile_type] = set()
+
+            pipdata[tile_type].append((src, dst))
+
+            if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
+                clk_list[tile_type].add(src)
+
+    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
+                           'clk_hrow', 'clk_hrow_top_r.txt')) as f:
+        for l in f:
+            tile_type, dst, src = l.strip().split('.')
+            if tile_type not in pipdata:
+                pipdata[tile_type] = []
+                clk_list[tile_type] = set()
+
+            pipdata[tile_type].append((src, dst))
+
+            if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
+                clk_list[tile_type].add(src)
 
     print("Loading tags from design.txt.")
-
-    active_gclks = {}
-    active_clks = {}
     with open("design.txt", "r") as f:
         for line in f:
             tile, pip, src, dst, pnum, pdir = line.split()
@@ -19,36 +48,46 @@ def main():
             if not tile.startswith('CLK_HROW'):
                 continue
 
-            pip_prefix, pip = pip.split(".")
+            pip_prefix, _ = pip.split(".")
             tile_from_pip, tile_type = pip_prefix.split('/')
             assert tile == tile_from_pip
             _, src = src.split("/")
             _, dst = dst.split("/")
+            pnum = int(pnum)
+            pdir = int(pdir)
 
-            rows = set(range(clk_table.CLK_TABLE_NUM_ROWS))
-            columns = set(range(clk_table.CLK_TABLE_NUM_COLS))
+            if tile not in tiledata:
+                tiledata[tile] = {
+                    "type": tile_type,
+                    "pips": set(),
+                    "srcs": set(),
+                    "dsts": set()
+                }
 
-            if src in table:
-                row, column = table[src]
+            tiledata[tile]["pips"].add((src, dst))
+            tiledata[tile]["srcs"].add(src)
+            tiledata[tile]["dsts"].add(dst)
 
-                segmk.add_tile_tag(
-                    tile, '{}.HCLK_ENABLE_ROW{}'.format(dst, row), 1)
-                segmk.add_tile_tag(
-                    tile, '{}.HCLK_ENABLE_COLUMN{}'.format(dst, column), 1)
+            if pdir == 0:
+                tiledata[tile]["srcs"].add(dst)
+                tiledata[tile]["dsts"].add(src)
 
-                rows.remove(row)
-                columns.remove(column)
+            if pnum == 1 or pdir == 0:
+                ignpip.add((src, dst))
 
-                for row in rows:
-                    segmk.add_tile_tag(
-                        tile, '{}.HCLK_ENABLE_ROW{}'.format(dst, row), 0)
+    active_gclks = {}
+    active_clks = {}
 
-                for column in columns:
-                    segmk.add_tile_tag(
-                        tile, '{}.HCLK_ENABLE_COLUMN{}'.format(dst, column), 0)
 
-                if tile not in active_clks:
-                    active_clks[tile] = set()
+    for tile, pips_srcs_dsts in tiledata.items():
+        tile_type = pips_srcs_dsts["type"]
+        pips = pips_srcs_dsts["pips"]
+
+        if tile not in active_clks:
+            active_clks[tile] = set()
+
+        for src, dst in pips_srcs_dsts["pips"]:
+            if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
 
                 active_clks[tile].add(src)
 
@@ -58,18 +97,26 @@ def main():
 
                     active_gclks[src].add(tile)
 
-    tiles = sorted(active_clks.keys())
+        for src, dst in pipdata[tile_type]:
+            if (src, dst) in ignpip:
+                pass
+            elif (src, dst) in pips:
+                segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
+            elif dst not in tiledata[tile]["dsts"]:
+                segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
-    for tile in active_clks:
-        for src in table:
-            if 'GCLK' not in src:
-                active = src in active_clks[tile]
-                segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), active)
-            else:
-                if src not in active_gclks:
-                    segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 0)
-                elif tile in active_gclks[src]:
-                    segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 1)
+    for tile_type, srcs in clk_list.items():
+        for tile, pips_srcs_dsts in tiledata.items():
+            for src in srcs:
+                if 'GCLK' not in src:
+                    active = src in active_clks[tile]
+                    segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), active)
+                else:
+                    if src not in active_gclks:
+                        segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 0)
+                    elif tile in active_gclks[src]:
+                        segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 1)
+
 
     segmk.compile()
     segmk.write()
