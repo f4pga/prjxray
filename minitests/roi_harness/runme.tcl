@@ -196,6 +196,28 @@ if {$part eq "xc7a50tfgg484-1"} {
             set pin [lindex $pmod_jc $i]
             set net2pin(dout[$i]) $pin
         }
+    } elseif {$pincfg eq "ARTY-A7-UART"} {
+        # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
+        # RST button and UART_RX
+        set arty_in  "C2 A9"
+        # LD7 and UART_TX
+        set arty_out "T10 D10"
+
+        # 100 MHz CLK onboard
+        set pin "E3"
+        set net2pin(clk) $pin
+
+        # DIN
+        for {set i 0} {$i < $DIN_N} {incr i} {
+            set pin [lindex $arty_in $i]
+            set net2pin(din[$i]) $pin
+        }
+
+        # DOUT
+        for {set i 0} {$i < $DOUT_N} {incr i} {
+            set pin [lindex $arty_out $i]
+            set net2pin(dout[$i]) $pin
+        }
     } else {
         error "Unsupported config $pincfg"
     }
