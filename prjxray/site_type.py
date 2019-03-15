@@ -7,6 +7,7 @@ import enum
 class SitePinDirection(enum.Enum):
     IN = "IN"
     OUT = "OUT"
+    INOUT = "INOUT"
 
 
 SiteTypePin = namedtuple('SiteTypePin', 'name direction')
