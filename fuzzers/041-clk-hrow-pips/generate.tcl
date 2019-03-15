@@ -121,7 +121,7 @@ proc route_todo {} {
                 }
 
                 set origin_node [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
-                set destination_nodes [get_nodes -of_objects [get_site_pins -filter {DIRECTION == IN} -of_objects $net]]
+                set destination_nodes [filter [get_nodes -of_objects [get_site_pins -filter {DIRECTION == IN} -of_objects $net]] {NAME =~ *CLK_HROW*}]
                 route_design -unroute -nets $net
                 set new_route [find_routing_path -to $target_node -from $origin_node]
                 puts "Origin node: $origin_node"
@@ -151,6 +151,7 @@ proc run {} {
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-161}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-123}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-13}]
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets]
 

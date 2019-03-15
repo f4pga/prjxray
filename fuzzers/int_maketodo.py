@@ -33,7 +33,7 @@ def load_pipfile(pipfile, verbose=False):
     return todos, tile_type
 
 
-def maketodo(pipfile, dbfile, intre, not_endswith=None, verbose=False):
+def maketodo(pipfile, dbfile, intre, exclude_re=None, not_endswith=None, verbose=False):
     '''
     db files start with INT., but pipfile lines start with INT_L
     Normalize by removing before the first dot
@@ -75,8 +75,15 @@ def maketodo(pipfile, dbfile, intre, not_endswith=None, verbose=False):
     drops = 0
     lines = 0
     for line in todos:
-        if re.match(intre, line) and (not_endswith is None
-                                      or not line.endswith(not_endswith)):
+        include = re.match(intre, line) is not None
+
+        if include and not_endswith is not None:
+            include = not line.endswith(not_endswith)
+
+        if include and exclude_re is not None:
+            include = re.match(exclude_re, line) is None
+
+        if include:
             print(line)
         else:
             drops += 1
@@ -94,6 +101,7 @@ def run(
         r,
         pip_type,
         seg_type,
+        exclude_re=None,
         not_endswith=None,
         verbose=False):
     if db_dir is None:
@@ -117,7 +125,8 @@ def run(
             "%s/%s_%s.txt" % (pip_dir, pip_type, side),
             "%s/segbits_%s_%s.db" % (db_dir, seg_type, side),
             intre,
-            not_endswith,
+            exclude_re=exclude_re,
+            not_endswith=not_endswith,
             verbose=verbose)
 
 
@@ -132,6 +141,7 @@ def main():
     parser.add_argument('--db-dir', default=None, help='')
     parser.add_argument('--pip-dir', default=None, help='')
     parser.add_argument('--re', required=True, help='')
+    parser.add_argument('--exclude-re', required=False, default=None, help='')
     parser.add_argument('--pip-type', default="pips_int", help='')
     parser.add_argument('--seg-type', default="int", help='')
     parser.add_argument('--sides', default="l,r", help='')
@@ -146,6 +156,7 @@ def main():
         db_dir=args.db_dir,
         pip_dir=args.pip_dir,
         intre=args.re,
+        exclude_re=args.exclude_re,
         sides=args.sides.split(','),
         l=args.l,
         r=args.r,

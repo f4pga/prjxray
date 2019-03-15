@@ -3,7 +3,6 @@
 import os
 import os.path
 from prjxray.segmaker import Segmaker
-import pprint
 
 
 def main():
@@ -12,6 +11,7 @@ def main():
     tiledata = {}
     pipdata = {}
     clk_list = {}
+    casco_list = {}
     ignpip = set()
 
     with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
@@ -21,8 +21,12 @@ def main():
             if tile_type not in pipdata:
                 pipdata[tile_type] = []
                 clk_list[tile_type] = set()
+                casco_list[tile_type] = set()
 
             pipdata[tile_type].append((src, dst))
+
+            if 'CASCO' in dst:
+                casco_list[tile_type].add(dst)
 
             if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
                 clk_list[tile_type].add(src)
@@ -34,8 +38,12 @@ def main():
             if tile_type not in pipdata:
                 pipdata[tile_type] = []
                 clk_list[tile_type] = set()
+                casco_list[tile_type] = set()
 
             pipdata[tile_type].append((src, dst))
+
+            if 'CASCO' in dst:
+                casco_list[tile_type].add(dst)
 
             if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
                 clk_list[tile_type].add(src)
@@ -78,7 +86,6 @@ def main():
     active_gclks = {}
     active_clks = {}
 
-
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]
         pips = pips_srcs_dsts["pips"]
@@ -87,15 +94,13 @@ def main():
             active_clks[tile] = set()
 
         for src, dst in pips_srcs_dsts["pips"]:
-            if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
+            active_clks[tile].add(src)
 
-                active_clks[tile].add(src)
+            if 'GCLK' in src:
+                if src not in active_gclks:
+                    active_gclks[src] = set()
 
-                if 'GCLK' in src:
-                    if src not in active_gclks:
-                        active_gclks[src] = set()
-
-                    active_gclks[src].add(tile)
+                active_gclks[src].add(tile)
 
         for src, dst in pipdata[tile_type]:
             if (src, dst) in ignpip:
