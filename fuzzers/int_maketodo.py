@@ -123,9 +123,12 @@ def run(
         if side == "r" and not r:
             continue
 
+        if side != "":
+            side = "_" + side
+
         maketodo(
-            "%s/%s_%s.txt" % (pip_dir, pip_type, side),
-            "%s/segbits_%s_%s.db" % (db_dir, seg_type, side),
+            "%s/%s%s.txt" % (pip_dir, pip_type, side),
+            "%s/segbits_%s%s.db" % (db_dir, seg_type, side),
             intre,
             exclude_re=exclude_re,
             not_endswith=not_endswith,

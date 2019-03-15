@@ -100,6 +100,11 @@ case "$1" in
 	clk_bufg_top_r)
 		sed < "$2" > "$tmp1" -e 's/^CLK_BUFG\./CLK_BUFG_TOP_R./' ;;
 
+	hclk_cmt)
+		cp "$2" "$tmp1" ;;
+	hclk_cmt_l)
+		sed < "$2" > "$tmp1" -e 's/^HCLK_CMT\./HCLK_CMT_L./' ;;
+
 	clk_bufg_rebuf)
 		cp "$2" "$tmp1" ;;
 
