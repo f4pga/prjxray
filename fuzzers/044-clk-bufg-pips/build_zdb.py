@@ -1,4 +1,4 @@
-""" Tool for building ZDB for BUFG pips.
+""" Tool for building zero db file for BUFG pips.
 
 This requires that the rdb files be good enough to identify all the 0 candidate
 features, which may take multiple manual iterations.  Manual iterations can
@@ -41,6 +41,8 @@ def main():
                 groups[dst] = {}
 
             groups[dst][src] = bits
+
+    print('# Generated from build_zdb.py')
 
     for dst in groups:
         if len(groups[dst]) == 1:
