@@ -122,7 +122,6 @@ def main():
                     elif tile in active_gclks[src]:
                         segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 1)
 
-
     segmk.compile()
     segmk.write()
 

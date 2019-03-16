@@ -164,12 +164,11 @@ class ClockSources(object):
         assert x == 0
         y = y % 16
 
-
         assert i_wire in [0, 1], i_wire
 
         casco_wire = '{tile_type}_CK_BUFG_CASCO{casco_idx}'.format(
-                tile_type=tile_type.replace('BUFG', 'HROW'),
-                casco_idx=(y*2+i_wire))
+            tile_type=tile_type.replace('BUFG', 'HROW'),
+            casco_idx=(y * 2 + i_wire))
 
         if casco_wire not in todos:
             return None
@@ -213,8 +212,6 @@ class ClockSources(object):
         return None
 
 
-
-
 def check_allowed(mmcm_pll_dir, cmt):
     """ Check whether the CMT specified is in the allowed direction.
 
@@ -235,6 +232,7 @@ def check_allowed(mmcm_pll_dir, cmt):
     else:
         assert False, mmcm_pll_dir
 
+
 def read_todo():
     dsts = {}
 
@@ -249,6 +247,7 @@ def read_todo():
 
     return dsts
 
+
 def need_int_connections(todos):
     for srcs in todos.values():
         for src in srcs:
@@ -256,6 +255,7 @@ def need_int_connections(todos):
                 return True
 
     return False
+
 
 def bufhce_in_todo(todos, site):
     if 'BUFHCE' in site:
@@ -274,6 +274,7 @@ def bufhce_in_todo(todos, site):
         return 'CLK_HROW_CK_MUX_OUT_{lr}{y}'.format(lr=lr, y=y) in todos
     else:
         return True
+
 
 def main():
     """
@@ -366,7 +367,7 @@ module top();
 
         if check_allowed(mmcm_pll_dir, site_to_cmt[site]):
             for clk in pll_clocks:
-                    clock_sources.add_clock_source(clk, site_to_cmt[site], loc)
+                clock_sources.add_clock_source(clk, site_to_cmt[site], loc)
 
         print(
             """
@@ -391,8 +392,10 @@ module top();
             ))
 
     for loc, _, site in gen_sites('BUFR'):
-        clock_sources.add_bufg_clock_source('O_{site}'.format(site=site), site_to_cmt[site], loc)
-        print("""
+        clock_sources.add_bufg_clock_source(
+            'O_{site}'.format(site=site), site_to_cmt[site], loc)
+        print(
+            """
     wire O_{site};
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFR bufr_{site} (
@@ -405,7 +408,7 @@ module top();
 
     gclks = []
     for _, _, site in sorted(gen_sites("BUFGCTRL"),
-            key=lambda x: BUFGCTRL_XY_FUN(x[2])):
+                             key=lambda x: BUFGCTRL_XY_FUN(x[2])):
         wire_name = 'gclk_{}'.format(site)
         gclks.append(wire_name)
 
@@ -440,8 +443,8 @@ module top();
                 ignore0net=luts.get_next_output_net(),
                 ce1net=luts.get_next_output_net(),
                 ce0net=luts.get_next_output_net(),
-            ), file=bufgs)
-
+            ),
+            file=bufgs)
 
     any_bufhce = False
     for tile_name, sites in gen_bufhce_sites():
@@ -457,9 +460,8 @@ module top();
     BUFHCE buf_{site} (
         .I(I_{site})
     );
-                    """.format(
-                    site=site,
-                ), file=bufhs)
+                    """.format(site=site, ),
+                file=bufhs)
 
             if random.random() > .05:
                 wire_name = clock_sources.get_random_source(site_to_cmt[site])
@@ -467,12 +469,13 @@ module top();
                 if wire_name is None:
                     continue
 
-                print("""
+                print(
+                    """
     assign I_{site} = {wire_name};""".format(
-        site=site,
-        wire_name=wire_name,
-        ), file=bufhs)
-
+                        site=site,
+                        wire_name=wire_name,
+                    ),
+                    file=bufhs)
 
     if not any_bufhce:
         for tile_name, sites in gen_bufhce_sites():
@@ -491,7 +494,7 @@ module top();
                         INIT_OUT=random.randint(0, 1),
                         CE_TYPE=verilog.quote(
                             random.choice(('SYNC', 'ASYNC'))),
-                        IS_CE_INVERTED = random.randint(0, 1),
+                        IS_CE_INVERTED=random.randint(0, 1),
                         site=site,
                         wire_name=gclks[0],
                     ))
@@ -507,24 +510,28 @@ module top();
     used_only = random.random() < .25
 
     for loc, tile_type, site in sorted(gen_sites("BUFGCTRL"),
-            key=lambda x: BUFGCTRL_XY_FUN(x[2])):
+                                       key=lambda x: BUFGCTRL_XY_FUN(x[2])):
         if random.randint(0, 1):
-            wire_name = clock_sources.get_bufg_source(loc, tile_type, site, todos, 1, used_only)
+            wire_name = clock_sources.get_bufg_source(
+                loc, tile_type, site, todos, 1, used_only)
             if wire_name is not None:
-                print("""
+                print(
+                    """
     assign I1_{site} = {wire_name};""".format(
-                site=site,
-                wire_name=wire_name,
-                ))
+                        site=site,
+                        wire_name=wire_name,
+                    ))
 
         if random.randint(0, 1):
-            wire_name = clock_sources.get_bufg_source(loc, tile_type, site, todos, 0, used_only)
+            wire_name = clock_sources.get_bufg_source(
+                loc, tile_type, site, todos, 0, used_only)
             if wire_name is not None:
-                print("""
+                print(
+                    """
     assign I0_{site} = {wire_name};""".format(
-                site=site,
-                wire_name=wire_name,
-                ))
+                        site=site,
+                        wire_name=wire_name,
+                    ))
 
     print("endmodule")
 

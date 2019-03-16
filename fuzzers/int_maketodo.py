@@ -33,7 +33,9 @@ def load_pipfile(pipfile, verbose=False):
     return todos, tile_type
 
 
-def maketodo(pipfile, dbfile, intre, exclude_re=None, not_endswith=None, verbose=False):
+def maketodo(
+        pipfile, dbfile, intre, exclude_re=None, not_endswith=None,
+        verbose=False):
     '''
     db files start with INT., but pipfile lines start with INT_L
     Normalize by removing before the first dot
