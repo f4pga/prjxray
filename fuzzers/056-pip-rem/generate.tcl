@@ -1,5 +1,17 @@
 source "$::env(XRAY_DIR)/utils/utils.tcl"
 
+# This fuzzer occasionally fails on the PDIL-1 DRC
+# PDIL-1 stands for Invalid site configuration which according to UG912
+# happens when the route connects to a site pin on a site where the
+# programming of the site is in an invalid state.
+# Since in case of this fuzzer the routing path is random due to
+# non-deterministic choice of source and destination pins
+# we can lower the severity of the PDIL-1 DRC in order to
+# prevent the termination of the execution of the script.
+proc disable_drc_errors {} {
+    set_property SEVERITY {Warning} [get_drc_checks PDIL-1]
+}
+
 proc build_basic {} {
     create_project -force -part $::env(XRAY_PART) design design
 
@@ -107,6 +119,7 @@ proc route_todo {} {
 
 proc run {} {
     build_basic
+    disable_drc_errors
     route_todo
     route_design
 
