@@ -275,6 +275,25 @@ def bufhce_in_todo(todos, site):
     else:
         return True
 
+def need_gclk_connection(todos, site):
+    x, y = BUFGCTRL_XY_FUN(site)
+    assert x == 0
+
+    src_wire = 'CLK_HROW_R_CK_GCLK{}'.format(y)
+    for srcs in todos.values():
+        if src_wire in srcs:
+            return True
+
+    return False
+
+def only_gclk_left(todos):
+    for srcs in todos.values():
+        for src in srcs:
+            if 'GCLK' not in src:
+                return False
+
+    return True
+
 
 def main():
     """
@@ -302,6 +321,9 @@ module top();
     mmcm_pll_dir = random.choice(('ODD', 'EVEN', 'BOTH', 'NONE'))
 
     todos = read_todo()
+
+    if only_gclk_left(todos):
+        mmcm_pll_dir = 'NONE'
 
     if not mmcm_pll_only:
         if need_int_connections(todos):

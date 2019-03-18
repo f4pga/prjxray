@@ -3,12 +3,11 @@ PIP_TYPE?=hclk_cmt
 PIPLIST_TCL=$(FUZDIR)/hclk_cmt_pip_list.tcl
 TODO_RE=".*"
 # Skipped pips:
-# - LEAF wires are disconnected
 # - FREQ_REF is only used by interconnect clocks, so low likelyhood of usage.
 #   A BUFR can be used to clock divide if needed
 # - PHSR PIPs are connected to PHASER sites, which are undocumented, so avoid
 #   for now.
-EXCLUDE_RE="(^.*LEAF)|(HCLK_CMT_L\.[^.]+\.HCLK_CMT_MUX_CLK_[0-9]+)|(HCLK_CMT\.[^.]+\.HCLK_CMT_CK_IN[0-9]+)|(^.*BUFMR)|(^.*FREQ_REF)|(^.*PHSR)|(^.*CLK_PLL7)|(^.*CLK_MMCM13)"
+EXCLUDE_RE="(^.*BUFMR)|(^.*FREQ_REF)|(^.*PHSR)|(^.*CLK_PLL7)|(^.*CLK_MMCM13)"
 
 MAKETODO_FLAGS=--sides ",l" --pip-type ${PIP_TYPE} --seg-type ${PIP_TYPE} --re $(TODO_RE) --exclude-re $(EXCLUDE_RE)
 N = 50

@@ -2,18 +2,9 @@ export FUZDIR=$(shell pwd)
 PIP_TYPE?=clk_hrow
 PIPLIST_TCL=$(FUZDIR)/clk_hrow_pip_list.tcl
 
-ifeq (${XRAY_PART}, xc7z010clg400-1)
-# xc7z010clg400-1 is missing some side clock connections, so these bits cannot
-# be documented.
-# FIXME: Use EXCLUDE_RE rather than complicated include RE.
-TODO_RE="[^\.]+\.CLK_HROW_CK_MUX_OUT_[LR][0-9]+\.CLK_HROW_.*[KR_][0-9]+"
-TODO_EXCLUDE_RE="^CLK_HROW_BOT_R.*CASCIN[0-9]+$$"
-else
 TODO_RE=".*"
-TODO_EXCLUDE_RE="^CLK_HROW_BOT_R.*CASCIN[0-9]+$$"
-endif
 
-MAKETODO_FLAGS=--sides "bot_r,top_r" --pip-type ${PIP_TYPE} --seg-type clk_hrow --re $(TODO_RE) --exclude-re $(TODO_EXCLUDE_RE)
+MAKETODO_FLAGS=--sides "bot_r,top_r" --pip-type ${PIP_TYPE} --seg-type clk_hrow --re $(TODO_RE)
 N = 50
 
 # These PIPs all appear to be either a 2 bit solutions.

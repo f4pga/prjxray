@@ -1,12 +1,30 @@
 proc print_tile_pips {tile_type filename} {
-    set tile [lindex [get_tiles -filter "TYPE == $tile_type"] 0]
-    puts "Dumping PIPs for tile $tile ($tile_type) to $filename."
     set fp [open $filename w]
-    foreach pip [lsort [get_pips -of_objects [get_tiles $tile]]] {
-        set src [get_wires -uphill -of_objects $pip]
-        set dst [get_wires -downhill -of_objects $pip]
-        if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1} {
-            puts $fp "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
+    set pips [dict create]
+    foreach tile [get_tiles -filter "TYPE == $tile_type"] {
+        puts "Dumping PIPs for tile $tile ($tile_type) to $filename."
+        foreach pip [lsort [get_pips -of_objects  $tile]] {
+            set src [get_wires -uphill -of_objects $pip]
+            set dst [get_wires -downhill -of_objects $pip]
+
+            # Skip pips with disconnected nodes
+            set src_node [get_nodes -of_objects $src]
+            if { $src_node == {} } {
+                continue
+            }
+
+            set dst_node [get_nodes -of_objects $src]
+            if { $dst_node == {} } {
+                continue
+            }
+
+            if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1} {
+                set pip_string "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
+                if ![dict exists $pips $pip_string] {
+                    puts $fp $pip_string
+                    dict set pips $pip_string 1
+                }
+            }
         }
     }
     close $fp

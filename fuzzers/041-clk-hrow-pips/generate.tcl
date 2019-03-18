@@ -24,119 +24,209 @@ proc write_pip_txtdata {filename} {
 }
 
 proc load_todo {} {
-    set fp [open "../../todo.txt" r]
-    set todo_lines {}
+    set fp [open "../../todo_all.txt" r]
+
+    # Create map of pip destinations to remaining sources for that pip
+    set todo_map [dict create]
     for {gets $fp line} {$line != ""} {gets $fp line} {
-        lappend todo_lines [split $line .]
+        set parts [split $line .]
+        if ![string match "*CLK_HROW_CK_IN_*" [lindex $parts 2]] {
+            continue
+        }
+        dict lappend todo_map [lindex $parts 1] [list [lindex $parts 0] [lindex $parts 2]]
     }
     close $fp
-    return $todo_lines
+    return $todo_map
 }
 
 proc route_todo {} {
     puts "Checking TODO's"
-    set todo_lines [load_todo]
-    set srcs {}
-    foreach todo $todo_lines {
-        set src [lindex $todo 2]
+    set todo_map [load_todo]
 
-        if [string match "*CLK_HROW_CK_IN_*" $src] {
-            lappend srcs $src
-        }
-    }
+    set nets [get_nets]
 
-    set srcs [lsort -unique $srcs]
+    set todo_nets [dict create]
+    set used_destinations [dict create]
 
-    set nets [get_nets -hierarchical "*clock*"]
-    set found_wires {}
-    set remaining_nets {}
     foreach net $nets {
-        set wires [get_wires -of_objects $net]
+        # Check to see if this net is one we are interested in
+        set wires [get_wires -of_objects $net -filter {TILE_NAME =~ *CLK_HROW*}]
 
+        set is_gclk_net 0
         foreach wire $wires {
-            if [regexp "CLK_HROW_CK_IN_\[LR\]\[0-9\]+" $wire] {
-                # Route already going where we want it, continue
-                puts "Checking wire $wire."
-                set wire [lindex [split $wire "/"] 1]
-                if {[lsearch -regexp $srcs "$wire$"] != -1} {
-                    puts "Found in TODO list, removing from list."
-                    lappend found_wires $wire
-                    # Fix route that is using target net.
-                    set_property is_route_fixed 1 $net
-                } else {
-                    puts "Wire not in TODO list, adding to reroute list."
-                    lappend remaining_nets $net
-                }
-                break
-            }
-        }
-    }
-
-    set found_wires [lsort -unique $found_wires]
-    foreach wire $found_wires {
-        puts "Removing $wire"
-        set srcs [lsearch -regexp -all -inline -not $srcs "$wire$"]
-    }
-
-    puts "Remaining TODOs:"
-    foreach src $srcs {
-        puts $src
-    }
-
-    set remaining_nets [lsort -unique $remaining_nets]
-    set completed_todos {}
-
-    foreach net $remaining_nets {
-        set wires [get_wires -of_objects $net]
-
-        set clk_in_wire ""
-        foreach wire $wires {
-            if [regexp "CLK_HROW_CK_IN_(\[LR\])\[0-9\]+" $wire match lr] {
-                set clk_in_wire $wire
+            puts "Check wire $wire in $net"
+            if [string match "*CLK_HROW_CK_IN_*" $wire] {
+                set gclk_tile [lindex [split $wire /] 0]
+                set gclk_wire [lindex [split $wire /] 1]
+                set is_gclk_net 1
                 break
             }
         }
 
-        if {$clk_in_wire == ""} {
-            error "$net does not appear to be correct net for rerouting?"
+        if {$is_gclk_net == 0} {
+            puts "$net not going to a HCLK port, skipping."
+            continue
         }
 
-        puts ""
-        puts "Rerouting net $net at $clk_in_wire ($lr)"
+        puts "Net $net wires:"
+        foreach wire [get_wires -of_objects $net] {
+            puts " - $wire"
+        }
 
-        # Find an input in the todo list that this can can drive.
-        foreach src $srcs {
-            if {[lsearch -exact $completed_todos $src] != -1} {
+        foreach wire $wires {
+            set tile [lindex [split $wire /] 0]
+            set wire [lindex [split $wire /] 1]
+            if { $tile != $gclk_tile } {
                 continue
             }
 
-            if [regexp "CLK_HROW_CK_IN_$lr\[0-9\]+" $src] {
-                puts "Found target pip $src for net $net."
-                set tile [get_tiles -of_objects $clk_in_wire]
+            set tile_type [get_property TILE_TYPE [get_tiles $tile]]
 
-                set target_wire [get_wires "$tile/$src"]
-                set target_node [get_nodes -of_objects $target_wire]
-                if {[llength $target_node] == 0} {
-                    error "Failed to find node for $tile/$src."
+            if { ![dict exists $todo_map $wire] } {
+                continue
+            }
+
+            set srcs [dict get $todo_map $wire]
+
+            # This net is interesting, see if it is already going somewhere we
+            # want.
+            set found_target 0
+            foreach other_wire $wires {
+                if { $found_target == 1 } {
+                    break
                 }
 
-                set origin_node [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
-                set destination_nodes [filter [get_nodes -of_objects [get_site_pins -filter {DIRECTION == IN} -of_objects $net]] {NAME =~ *CLK_HROW*}]
-                route_design -unroute -nets $net
-                set new_route [find_routing_path -to $target_node -from $origin_node]
-                puts "Origin node: $origin_node"
-                puts "Target wire: $target_wire"
-                puts "Target node: $target_node"
-                puts "Destination nodes: $destination_nodes"
+                set other_wire [lindex [split $other_wire /] 1]
 
-                # Only need to set route to one of the destinations.
-                # Router will handle the rest.
-                set_property FIXED_ROUTE [concat $new_route [lindex $destination_nodes 0]] $net
+                if { $wire == $other_wire } {
+                    continue
+                }
 
-                # Remove wire, as we've found a clock to set
-                lappend completed_todos $src
-                break
+                foreach src $srcs {
+                    set src_tile_type [lindex $src 0]
+
+                    if {$src_tile_type != $tile_type} {
+                        continue
+                    }
+
+                    set src_wire [lindex $src 1]
+
+                    if { $other_wire == $src_wire } {
+                        set found_target 1
+                        puts "Interesting net $net already going from $wire to $other_wire."
+                        set_property IS_ROUTE_FIXED 1 $net
+                        dict set used_destinations "$tile/$src_wire" 1
+                        break
+                    }
+                }
             }
+
+            if { $found_target == 1 } {
+                # Net has an interesting
+                continue
+            }
+
+            dict set todo_nets $net [list $tile $wire $gclk_wire]
+            puts "Interesting net $net (including $wire and $gclk_wire) is being rerouted."
+        }
+    }
+
+    set routed_sources [dict create]
+
+    dict for {net tile_wire} $todo_nets {
+
+        if { [get_property IS_ROUTE_FIXED $net] == 1 } {
+            puts "Net $net is already routed, skipping."
+            continue
+        }
+
+        set tile [lindex $tile_wire 0]
+        set wire [lindex $tile_wire 1]
+        set gclk_wire [lindex $tile_wire 2]
+        set srcs [dict get $todo_map $wire]
+
+        puts ""
+        puts "Rerouting net $net at $tile / $gclk_wire (type $tile_type)"
+
+        set tile_type [get_property TILE_TYPE [get_tiles $tile]]
+        regexp "CLK_HROW_CK_IN_(\[LR\])\[0-9\]+" $gclk_wire match lr
+
+        set todos {}
+        foreach src $srcs {
+            set src_tile_type [lindex $src 0]
+            if {$src_tile_type != $tile_type} {
+                continue
+            }
+
+            set src_wire [lindex $src 1]
+
+            if [regexp "CLK_HROW_CK_IN_$lr\[0-9\]+" $src_wire] {
+                lappend todos $src_wire
+            }
+        }
+
+        if {[llength $todos] == 0} {
+            puts "No inputs for net $net."
+            dict set used_destinations "$tile/$gclk_wire" 1
+            continue
+        }
+
+        puts "All todos for $tile_type / $wire"
+        foreach src_wire $todos {
+            puts "  - $src_wire"
+        }
+
+
+        # Find an input in the todo list that this can can drive.
+        set set_new_route 0
+        foreach src_wire $todos {
+            if { [dict exists $used_destinations "$tile/$src_wire"] } {
+                puts "Not routing to $tile / $src_wire, in use."
+                continue
+            }
+
+            puts "Attempting to route to $src_wire for net $net."
+
+            set target_wire [get_wires "$tile/$src_wire"]
+            set target_node [get_nodes -of_objects $target_wire]
+            if {[llength $target_node] == 0} {
+                continue
+            }
+
+            set origin_node [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
+
+            if [dict exists $routed_sources $origin_node] {
+                puts "Skip net $net, already routed."
+                continue
+            }
+
+            route_design -unroute -nets $net
+
+            set old_nets [get_nets -of_objects $target_node]
+            if { $old_nets != {} } {
+                puts "Unrouting $old_nets"
+                route_design -unroute -nets $old_nets
+            }
+
+            set old_nets [get_nets -of_objects $origin_node]
+            if { $old_nets != {} } {
+                puts "Unrouting $old_nets"
+                route_design -unroute -nets $old_nets
+            }
+
+            set new_route [find_routing_path -to $target_node -from $origin_node]
+            puts "Origin node: $origin_node"
+            puts "Target wire: $target_wire"
+            puts "Target node: $target_node"
+
+            # Only need to set route to one of the destinations.
+            # Router will handle the rest.
+            set_property FIXED_ROUTE $new_route $net
+
+            dict set used_destinations "$tile/$src_wire" 1
+            dict set routed_sources "$origin_node" 1
+            set set_new_route 1
+            break
         }
     }
 }
