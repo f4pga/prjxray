@@ -1,5 +1,9 @@
 source "$::env(XRAY_DIR)/utils/utils.tcl"
 
+proc waive_drc_errors {} {
+    set_property SEVERITY {Warning} [get_drc_checks PDIL-1]
+}
+
 proc build_basic {} {
     create_project -force -part $::env(XRAY_PART) design design
 
@@ -107,6 +111,7 @@ proc route_todo {} {
 
 proc run {} {
     build_basic
+    waive_drc_errors
     route_todo
     route_design
 
