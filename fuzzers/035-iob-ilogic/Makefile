@@ -4,7 +4,7 @@ include ../fuzzer.mk
 database: build/segbits_xiob33.db
 
 build/segbits_xiob33.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 6 -o build/segbits_xiob33.rdb $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
+	${XRAY_SEGMATCH} -c 30 -o build/segbits_xiob33.rdb $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
 
 build/segbits_xiob33.db: build/segbits_xiob33.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@

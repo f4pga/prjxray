@@ -196,6 +196,12 @@ def use_iserdese2(p, luts, connects):
         .OCLK({oclknet}),
         .O({onet}),
         .Q1({q1net}),
+        .Q2({q2net}),
+        .Q3({q3net}),
+        .Q4({q4net}),
+        .Q5({q5net}),
+        .Q6({q6net}),
+        .Q7({q7net}),
         .CLKDIV(0)
     );'''.format(
             clknet=luts.get_next_output_net(),
@@ -203,6 +209,12 @@ def use_iserdese2(p, luts, connects):
             oclknet=luts.get_next_output_net(),
             onet=luts.get_next_input_net(),
             q1net=luts.get_next_input_net(),
+            q2net=luts.get_next_input_net(),
+            q3net=luts.get_next_input_net(),
+            q4net=luts.get_next_input_net(),
+            q5net=luts.get_next_input_net(),
+            q6net=luts.get_next_input_net(),
+            q7net=luts.get_next_input_net(),
             shiftout1net=luts.get_next_input_net(),
             shiftout2net=luts.get_next_input_net(),
             **p),
@@ -236,6 +248,18 @@ def use_direct_and_iddr(p, luts, connects):
                     'SAME_EDGE_PIPELINED',
                 )))
 
+        p['s'] = '0'
+        p['r'] = '0'
+        if random.randint(0, 1):
+            p['s'] = luts.get_next_output_net()
+        elif random.randint(0, 1):
+            p['r'] = luts.get_next_output_net()
+
+        if random.randint(0, 1):
+            p['ce'] = '1'
+        else:
+            p['ce'] = luts.get_next_output_net()
+
         print(
             '''
     (* KEEP, DONT_TOUCH, LOC = "{ilogic_loc}" *)
@@ -250,7 +274,10 @@ def use_direct_and_iddr(p, luts, connects):
         .C({cnet}),
         .D(iddr_d_{site}),
         .Q1({q1}),
-        .Q2({q2})
+        .Q2({q2}),
+        .S({s}),
+        .R({r}),
+        .CE({ce})
         );
         '''.format(
                 cnet=luts.get_next_output_net(),

@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 
 from prjxray.segmaker import Segmaker
+from prjxray import segmaker
 from prjxray import verilog
 import json
 
+
+def bitfilter(frame, word):
+    if frame < 26:
+        return False
+
+    return True
 
 def handle_data_width(segmk, d):
     if 'DATA_WIDTH' not in d:
         return
 
-    if d['DATA_RATE'] == 'DDR':
+    if verilog.unquote(d['DATA_RATE']) != 'SDR':
         return
 
     for opt in [2, 3, 4, 5, 6, 7, 8, 10, 14]:
@@ -42,18 +49,19 @@ def main():
             handle_data_rate(segmk, d)
 
             if 'INTERFACE_TYPE' in d:
-                for opt in (
-                        'MEMORY',
+                segmaker.add_site_group_zero(segmk, site, 'ISERDES.INTERFACE_TYPE.',
+                        ('MEMORY',
                         'MEMORY_DDR3',
                         'MEMORY_QDR',
                         'NETWORKING',
                         'OVERSAMPLE',
-                ):
-                    segmk.add_site_tag(
-                        site, 'ISERDES.INTERFACE_TYPE.{}'.format(opt),
-                        opt == verilog.unquote(d['INTERFACE_TYPE']))
+                ), 'MEMORY', verilog.unquote(d['INTERFACE_TYPE']))
 
             if d['iddr_mux_config'] != 'none':
+                if d['use_iserdese2']:
+                    segmk.add_site_tag(site, 'ISERDES_ACTIVE', 1)
+                else:
+                    segmk.add_site_tag(site, 'IFF_ACTIVE', 1)
                 segmk.add_site_tag(site, 'IFF.ZINIT_Q1', not d['INIT_Q1'])
                 segmk.add_site_tag(site, 'IFF.ZINIT_Q2', not d['INIT_Q2'])
 
@@ -75,27 +83,6 @@ def main():
                             site, 'IFF.ZINV_CLK', not d['IS_CLK_INVERTED'])
                         segmk.add_site_tag(
                             site, 'IFF.ZINV_CLKB', not d['IS_CLKB_INVERTED'])
-
-                        segmk.add_site_tag(
-                            site, 'IFF.ZINV_CLK_XOR',
-                            d['IS_CLK_INVERTED'] ^ d['IS_CLKB_INVERTED'])
-                        segmk.add_site_tag(
-                            site, 'IFF.ZINV_CLK_NXOR',
-                            not (d['IS_CLK_INVERTED'] ^ d['IS_CLKB_INVERTED']))
-
-                        segmk.add_site_tag(
-                            site, 'IFF.ZINV_CLK_OR', d['IS_CLK_INVERTED']
-                            or d['IS_CLKB_INVERTED'])
-                        segmk.add_site_tag(
-                            site, 'IFF.ZINV_CLK_NOR', not (
-                                d['IS_CLK_INVERTED'] or d['IS_CLKB_INVERTED']))
-                        segmk.add_site_tag(
-                            site, 'IFF.ZINV_CLK_AND', d['IS_CLK_INVERTED']
-                            and d['IS_CLKB_INVERTED'])
-                        segmk.add_site_tag(
-                            site, 'IFF.ZINV_CLK_NAND', not (
-                                d['IS_CLK_INVERTED']
-                                and d['IS_CLKB_INVERTED']))
 
                 if 'IS_OCLK_INVERTED' in d:
                     segmk.add_site_tag(
@@ -147,13 +134,18 @@ def main():
                     segmk.add_site_tag(site, 'IFFMUX.1', 0)
                     segmk.add_site_tag(site, 'IFFMUX.0', 1)
             elif d['iddr_mux_config'] == 'none':
+                segmk.add_site_tag(site, 'IFF_ACTIVE', 0)
+                segmk.add_site_tag(site, 'ISERDES_ACTIVE', 0)
                 segmk.add_site_tag(site, 'IFFDELMUXE3.0', 0)
                 segmk.add_site_tag(site, 'IFFDELMUXE3.1', 0)
                 segmk.add_site_tag(site, 'IFFDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IFFMUX.0', 0)
+                segmk.add_site_tag(site, 'IFFMUX.1', 0)
             else:
                 assert False, d['mux_config']
 
             if d['mux_config'] == 'direct':
+                segmk.add_site_tag(site, 'O_ACTIVE', 1)
                 segmk.add_site_tag(site, 'IDELMUXE3.0', 0)
                 segmk.add_site_tag(site, 'IDELMUXE3.1', 1)
                 segmk.add_site_tag(site, 'IDELMUXE3.2', 0)
@@ -165,6 +157,7 @@ def main():
                     segmk.add_site_tag(site, 'IMUX.1', 0)
                     segmk.add_site_tag(site, 'IMUX.0', 1)
             elif d['mux_config'] == 'idelay':
+                segmk.add_site_tag(site, 'O_ACTIVE', 1)
                 segmk.add_site_tag(site, 'IDELMUXE3.0', 1)
                 segmk.add_site_tag(site, 'IDELMUXE3.1', 0)
                 segmk.add_site_tag(site, 'IDELMUXE3.2', 0)
@@ -176,13 +169,16 @@ def main():
                     segmk.add_site_tag(site, 'IMUX.1', 0)
                     segmk.add_site_tag(site, 'IMUX.0', 1)
             elif d['mux_config'] == 'none':
+                segmk.add_site_tag(site, 'O_ACTIVE', 0)
                 segmk.add_site_tag(site, 'IDELMUXE3.0', 0)
                 segmk.add_site_tag(site, 'IDELMUXE3.1', 0)
                 segmk.add_site_tag(site, 'IDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IMUX.0', 0)
+                segmk.add_site_tag(site, 'IMUX.1', 0)
             else:
                 assert False, d['mux_config']
 
-    segmk.compile()
+    segmk.compile(bitfilter=bitfilter)
     segmk.write(allow_empty=True)
 
 
