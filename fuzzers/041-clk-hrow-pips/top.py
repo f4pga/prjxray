@@ -275,6 +275,7 @@ def bufhce_in_todo(todos, site):
     else:
         return True
 
+
 def need_gclk_connection(todos, site):
     x, y = BUFGCTRL_XY_FUN(site)
     assert x == 0
@@ -285,6 +286,7 @@ def need_gclk_connection(todos, site):
             return True
 
     return False
+
 
 def only_gclk_left(todos):
     for srcs in todos.values():
