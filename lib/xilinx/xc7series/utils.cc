@@ -42,8 +42,6 @@ PacketData createType2ConfigurationPacketData(const Frames::Frames2Data& frames,
 void createConfigurationPackage(ConfigurationPackage& out_packets,
                                 const PacketData& packet_data,
                                 absl::optional<Part>& part) {
-	// The programming sequence is taken from
-	// https://www.kc8apf.net/2018/05/unpacking-xilinx-7-series-bitstreams-part-2/
 	// Initialization sequence
 	out_packets.emplace_back(new NopPacket());
 	out_packets.emplace_back(new ConfigurationPacketWithPayload<1>(
@@ -169,7 +167,6 @@ void createConfigurationPackage(ConfigurationPackage& out_packets,
 	}
 }
 
-// Xilinx BIT header
 BitstreamHeader createBitstreamHeader(const std::string& part_name,
                                       const std::string& frames_file_name,
                                       const std::string& generator_name) {
