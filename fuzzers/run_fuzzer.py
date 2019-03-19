@@ -519,6 +519,14 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
     error_log = "\n".join(last_lines(open(fuzzer_stderr), 10000))
     success_log = "\n".join(last_lines(open(fuzzer_stdout), 100))
 
+    failog_path = os.path.join(fuzzer_dir, "vivado.failog")
+    print(fuzzer_dir)
+    if os.path.exists(failog_path):
+        failog = "\n".join(last_lines(open(failog_path), 100))
+        failog_len = len(failog)
+        print("Length is %d" % failog_len)
+        if (failog_len > 0):
+            error_log += failog
     # Find the next X_sponge_log.xml file name...
     for i in range(0, 100):
         tsfilename = os.path.join(fuzzer_logdir, '{}_sponge_log.xml'.format(i))
@@ -557,6 +565,7 @@ Failed @ {time_end} with exit code: {retcode}
             retcode=retcode,
             error_log=error_log,
             time_end=time_end.isoformat())
+
     else:
         # Log the last 100 lines of a successful run
         log(
