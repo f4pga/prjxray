@@ -14,9 +14,11 @@ add_library(libprjxray
 	xilinx/xc7series/global_clock_region.cc
 	xilinx/xc7series/part.cc
 	xilinx/xc7series/row.cc
+	xilinx/xc7series/frames.cc
+	xilinx/xc7series/utils.cc
 )
 target_include_directories(libprjxray PUBLIC "include")
-target_link_libraries(libprjxray absl::optional absl::strings absl::span yaml-cpp)
+target_link_libraries(libprjxray absl::optional absl::strings absl::span absl::time yaml-cpp)
 
 if (PRJXRAY_BUILD_TESTING)
 	add_executable(big_endian_span_test big_endian_span_test.cc)
