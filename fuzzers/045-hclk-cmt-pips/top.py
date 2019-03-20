@@ -107,14 +107,16 @@ def get_paired_iobs(db, grid, tile_name):
 
     if gridinfo.tile_type.endswith('_L'):
         inc = 1
+        lr = 'R'
     else:
         inc = -1
+        lr = 'L'
 
     idx = 1
     while True:
         gridinfo = grid.gridinfo_at_loc((loc.grid_x + inc * idx, loc.grid_y))
 
-        if gridinfo.tile_type == 'HCLK_IOI3':
+        if gridinfo.tile_type.startswith('HCLK_IOI'):
             break
 
         idx += 1
@@ -127,7 +129,8 @@ def get_paired_iobs(db, grid, tile_name):
         gridinfo = grid.gridinfo_at_loc(iob_loc)
         tile_name = grid.tilename_at_loc(iob_loc)
 
-        assert gridinfo.tile_type.endswith('IOB33')
+        assert gridinfo.tile_type.startswith(lr + 'IOB'), (
+            gridinfo, lr + 'IOB')
 
         for site, site_type in gridinfo.sites.items():
             if site_type == 'IOB33M':

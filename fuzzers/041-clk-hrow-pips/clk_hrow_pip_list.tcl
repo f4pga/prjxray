@@ -18,6 +18,11 @@ proc print_tile_pips {tile_type filename} {
                 continue
             }
 
+            # TODO: Support CLK sources from GTX hardblocks.
+            if [string match *GTX* $src_node] {
+                continue
+            }
+
             if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1} {
                 set pip_string "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
                 if ![dict exists $pips $pip_string] {
