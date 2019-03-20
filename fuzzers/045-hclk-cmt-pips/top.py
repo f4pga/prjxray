@@ -133,8 +133,8 @@ def get_paired_iobs(db, grid, tile_name):
             gridinfo, lr + 'IOB')
 
         for site, site_type in gridinfo.sites.items():
-            if site_type == 'IOB33M':
-                yield tile_name, site
+            if site_type in ['IOB33M', 'IOB18M']:
+                yield tile_name, site, site_type[-3:-1]
 
 
 def check_allowed(mmcm_pll_dir, cmt):
@@ -207,7 +207,7 @@ def main():
             mmcm_pll_only, mmcm_pll_dir))
 
     for tile_name in sorted(hclk_cmt_tiles):
-        for _, site in get_paired_iobs(db, grid, tile_name):
+        for _, site, volt in get_paired_iobs(db, grid, tile_name):
 
             ins.append('input clk_{site}'.format(site=site))
             if check_allowed(mmcm_pll_dir, site_to_cmt[site]):
@@ -220,11 +220,11 @@ def main():
                 """
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     wire clock_IBUF_{site};
-    IBUF #( .IOSTANDARD("LVCMOS33") ) ibuf_{site} (
+    IBUF #( .IOSTANDARD("LVCMOS{volt}") ) ibuf_{site} (
         .I(clk_{site}),
         .O(clock_IBUF_{site})
         );
-                    """.format(site=site),
+                    """.format(volt=volt, site=site),
                 file=iobs)
 
     print(
