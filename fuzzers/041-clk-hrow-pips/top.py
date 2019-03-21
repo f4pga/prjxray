@@ -436,7 +436,6 @@ module top();
         wire_name = 'gclk_{}'.format(site)
         gclks.append(wire_name)
 
-
         include_source = True
         if mmcm_pll_only:
             include_source = False
