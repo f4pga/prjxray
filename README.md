@@ -1,5 +1,9 @@
 # Project X-Ray
 
+![Build Status](https://travis-ci.org/SymbiFlow/prjxray.svg?branch=master)
+![Documentation Status](https://readthedocs.org/projects/pyxray/badge/?version=latest)
+![License](https://img.shields.io/github/license/SymbiFlow/prjxray.svg)
+
 Documenting the Xilinx 7-series bit-stream format.
 
 This repository contains both tools and scripts which allow you to document the
