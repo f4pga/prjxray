@@ -436,7 +436,14 @@ module top();
         wire_name = 'gclk_{}'.format(site)
         gclks.append(wire_name)
 
-        if not mmcm_pll_only:
+
+        include_source = True
+        if mmcm_pll_only:
+            include_source = False
+        elif only_gclk_left(todos):
+            include_source = need_gclk_connection(todos, site)
+
+        if include_source:
             clock_sources.add_clock_source(wire_name, 'ANY')
 
         print("""
