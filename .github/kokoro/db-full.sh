@@ -78,6 +78,8 @@ echo "----------------------------------------"
 #make checkdb-${XRAY_SETTINGS} || true
 # Format the database
 make db-format-${XRAY_SETTINGS}
+# Update the database/Info.md file
+make db-info
 
 # Output if the database has differences
 echo

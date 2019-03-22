@@ -108,6 +108,9 @@ db-check:
 db-format:
 	@true
 
+db-info:
+	$(IN_ENV) ./utils/info_md.py
+
 .PHONY: db-check db-format
 
 clean:
