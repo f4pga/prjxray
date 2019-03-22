@@ -83,8 +83,10 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
         route_design -unroute -nets $mynet
 
         # sometimes it gets stuck in specific src -> dst locations
+        # FIXME check why it gets stuck and whether we can fix it
         if {$tries >= 3} {
-            error "WARNING: failed to route net after $tries tries"
+            puts "WARNING: failed to route net after $tries tries"
+            break
         }
     }
 
