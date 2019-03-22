@@ -18,21 +18,6 @@ proc print_tile_pips {tile_type filename} {
                 continue
             }
 
-            # TODO: Support CLK sources from GTX hardblocks.
-            if [string match *GTX* $src_node] {
-                continue
-            }
-
-            # Some ports appear to be just test signals, ignore these.
-            if [string match *TESTPLL* $src_node] {
-                continue
-            }
-
-            # TODO: Support CLK sources from PS7 hardblock
-            if [string match *PSS_HCLK* $src_node] {
-                continue
-            }
-
             if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1} {
                 set pip_string "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
                 if ![dict exists $pips $pip_string] {
@@ -49,5 +34,5 @@ create_project -force -part $::env(XRAY_PART) design design
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
-print_tile_pips CLK_HROW_TOP_R clk_hrow_top_r.txt
-print_tile_pips CLK_HROW_BOT_R clk_hrow_bot_r.txt
+print_tile_pips HCLK_CMT_L hclk_cmt_l.txt
+print_tile_pips HCLK_CMT hclk_cmt.txt

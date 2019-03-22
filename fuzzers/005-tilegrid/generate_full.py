@@ -233,7 +233,7 @@ def propagate_rebuf(database, tiles_by_grid):
             rebuf_below]['type']
 
         assert database[tile_name]['bits']['CLB_IO_CLK'][
-            'offset'] == 47, database[tile_name]['bits']['CLB_IO_CLK']
+            'offset'] == 42, database[tile_name]['bits']['CLB_IO_CLK']
         database[rebuf_below]['bits'] = copy.deepcopy(
             database[tile_name]['bits'])
         database[rebuf_below]['bits']['CLB_IO_CLK']['offset'] = 73

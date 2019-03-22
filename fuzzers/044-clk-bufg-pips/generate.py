@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 
+from prjxray.segmaker import Segmaker
 import os
 import os.path
-from prjxray.segmaker import Segmaker
+
+
+def bitfilter(frame, word):
+    if frame < 26:
+        return False
+
+    return True
 
 
 def main():
@@ -10,50 +17,35 @@ def main():
 
     tiledata = {}
     pipdata = {}
-    clk_list = {}
-    casco_list = {}
     ignpip = set()
 
     with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
-                           'clk_hrow', 'clk_hrow_bot_r.txt')) as f:
+                           'clk_bufg', 'clk_bufg_bot_r.txt')) as f:
         for l in f:
             tile_type, dst, src = l.strip().split('.')
             if tile_type not in pipdata:
                 pipdata[tile_type] = []
-                clk_list[tile_type] = set()
-                casco_list[tile_type] = set()
 
             pipdata[tile_type].append((src, dst))
-
-            if 'CASCO' in dst:
-                casco_list[tile_type].add(dst)
-
-            if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
-                clk_list[tile_type].add(src)
 
     with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
-                           'clk_hrow', 'clk_hrow_top_r.txt')) as f:
+                           'clk_bufg', 'clk_bufg_top_r.txt')) as f:
         for l in f:
             tile_type, dst, src = l.strip().split('.')
             if tile_type not in pipdata:
                 pipdata[tile_type] = []
-                clk_list[tile_type] = set()
-                casco_list[tile_type] = set()
 
             pipdata[tile_type].append((src, dst))
-
-            if 'CASCO' in dst:
-                casco_list[tile_type].add(dst)
-
-            if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
-                clk_list[tile_type].add(src)
 
     print("Loading tags from design.txt.")
     with open("design.txt", "r") as f:
         for line in f:
             tile, pip, src, dst, pnum, pdir = line.split()
 
-            if not tile.startswith('CLK_HROW'):
+            if not tile.startswith('CLK_BUFG'):
+                continue
+
+            if tile.startswith('CLK_BUFG_REBUF'):
                 continue
 
             pip_prefix, _ = pip.split(".")
@@ -83,24 +75,9 @@ def main():
             if pnum == 1 or pdir == 0:
                 ignpip.add((src, dst))
 
-    active_gclks = {}
-    active_clks = {}
-
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]
         pips = pips_srcs_dsts["pips"]
-
-        if tile not in active_clks:
-            active_clks[tile] = set()
-
-        for src, dst in pips_srcs_dsts["pips"]:
-            active_clks[tile].add(src)
-
-            if 'GCLK' in src:
-                if src not in active_gclks:
-                    active_gclks[src] = set()
-
-                active_gclks[src].add(tile)
 
         for src, dst in pipdata[tile_type]:
             if (src, dst) in ignpip:
@@ -110,21 +87,9 @@ def main():
             elif dst not in tiledata[tile]["dsts"]:
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
-    for tile_type, srcs in clk_list.items():
-        for tile, pips_srcs_dsts in tiledata.items():
-            for src in srcs:
-                if 'GCLK' not in src:
-                    active = src in active_clks[tile]
-                    segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), active)
-                else:
-                    if src not in active_gclks:
-                        segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 0)
-                    elif tile in active_gclks[src]:
-                        segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), 1)
-
-    segmk.compile()
+    segmk.compile(bitfilter=bitfilter)
     segmk.write()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

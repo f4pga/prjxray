@@ -26,14 +26,11 @@ proc write_pip_txtdata {filename} {
 proc load_todo {} {
     set fp [open "../../todo_all.txt" r]
 
-    # Create map of pip destinations to remaining sources for that pip
+    # Create map of pip source to remaining destinations for that pip
     set todo_map [dict create]
     for {gets $fp line} {$line != ""} {gets $fp line} {
         set parts [split $line .]
-        if ![string match "*CLK_HROW_CK_IN_*" [lindex $parts 2]] {
-            continue
-        }
-        dict lappend todo_map [lindex $parts 1] [list [lindex $parts 0] [lindex $parts 2]]
+        dict lappend todo_map [lindex $parts 2] [list [lindex $parts 0] [lindex $parts 1]]
     }
     close $fp
     return $todo_map
@@ -50,14 +47,15 @@ proc route_todo {} {
 
     foreach net $nets {
         # Check to see if this net is one we are interested in
-        set wires [get_wires -of_objects $net -filter {TILE_NAME =~ *CLK_HROW*}]
+        set wires [get_wires -of_objects $net -filter {TILE_NAME =~ *HCLK_CMT*}]
 
         set is_gclk_net 0
         foreach wire $wires {
-            puts "Check wire $wire in $net"
-            if [string match "*CLK_HROW_CK_IN_*" $wire] {
-                set gclk_tile [lindex [split $wire /] 0]
-                set gclk_wire [lindex [split $wire /] 1]
+            if [regexp "HCLK_CMT_MUX_CLK_\[0-9\]+" $wire] {
+                set is_gclk_net 1
+                break
+            }
+            if [regexp "HCLK_CMT_CK_IN\[0-9\]+" $wire] {
                 set is_gclk_net 1
                 break
             }
@@ -68,25 +66,16 @@ proc route_todo {} {
             continue
         }
 
-        puts "Net $net wires:"
-        foreach wire [get_wires -of_objects $net] {
-            puts " - $wire"
-        }
-
         foreach wire $wires {
             set tile [lindex [split $wire /] 0]
             set wire [lindex [split $wire /] 1]
-            if { $tile != $gclk_tile } {
-                continue
-            }
-
             set tile_type [get_property TILE_TYPE [get_tiles $tile]]
 
             if { ![dict exists $todo_map $wire] } {
                 continue
             }
 
-            set srcs [dict get $todo_map $wire]
+            set dsts [dict get $todo_map $wire]
 
             # This net is interesting, see if it is already going somewhere we
             # want.
@@ -102,20 +91,20 @@ proc route_todo {} {
                     continue
                 }
 
-                foreach src $srcs {
-                    set src_tile_type [lindex $src 0]
+                foreach dst $dsts {
+                    set dst_tile_type [lindex $dst 0]
 
-                    if {$src_tile_type != $tile_type} {
+                    if {$dst_tile_type != $tile_type} {
                         continue
                     }
 
-                    set src_wire [lindex $src 1]
+                    set dst_wire [lindex $dst 1]
 
-                    if { $other_wire == $src_wire } {
+                    if { $other_wire == $dst } {
                         set found_target 1
                         puts "Interesting net $net already going from $wire to $other_wire."
                         set_property IS_ROUTE_FIXED 1 $net
-                        dict set used_destinations "$tile/$src_wire" 1
+                        dict set used_destinations "$tile/$dst_wire" 1
                         break
                     }
                 }
@@ -126,94 +115,73 @@ proc route_todo {} {
                 continue
             }
 
-            dict set todo_nets $net [list $tile $wire $gclk_wire]
-            puts "Interesting net $net (including $wire and $gclk_wire) is being rerouted."
+            dict set todo_nets $net [list $tile $wire]
+            puts "Interesting net $net (including $wire) is being rerouted."
         }
     }
 
-    set routed_sources [dict create]
-
     dict for {net tile_wire} $todo_nets {
-
-        if { [get_property IS_ROUTE_FIXED $net] == 1 } {
-            puts "Net $net is already routed, skipping."
-            continue
-        }
-
         set tile [lindex $tile_wire 0]
         set wire [lindex $tile_wire 1]
-        set gclk_wire [lindex $tile_wire 2]
-        set srcs [dict get $todo_map $wire]
+        set dsts [dict get $todo_map $wire]
 
-        puts ""
-        puts "Rerouting net $net at $tile / $gclk_wire (type $tile_type)"
+        puts "Rerouting net $net at $tile / $wire (type $tile_type)"
 
         set tile_type [get_property TILE_TYPE [get_tiles $tile]]
-        regexp "CLK_HROW_CK_IN_(\[LR\])\[0-9\]+" $gclk_wire match lr
 
         set todos {}
-        foreach src $srcs {
-            set src_tile_type [lindex $src 0]
-            if {$src_tile_type != $tile_type} {
+        foreach dst $dsts {
+            set dst_tile_type [lindex $dst 0]
+            if {$dst_tile_type != $tile_type} {
                 continue
             }
 
-            set src_wire [lindex $src 1]
+            set dst_wire [lindex $dst 1]
 
-            if [regexp "CLK_HROW_CK_IN_$lr\[0-9\]+" $src_wire] {
-                lappend todos $src_wire
+            set is_gclk_net 0
+            if [regexp "HCLK_CMT_MUX_CLK_\[0-9\]+" $dst_wire] {
+                set is_gclk_net 1
             }
-        }
+            if [regexp "HCLK_CMT_CK_IN\[0-9\]+" $dst_wire] {
+                set is_gclk_net 1
+            }
 
-        if {[llength $todos] == 0} {
-            puts "No inputs for net $net."
-            dict set used_destinations "$tile/$gclk_wire" 1
-            continue
+            if {$is_gclk_net == 0} {
+                continue
+            }
+
+            lappend todos $dst_wire
         }
 
         puts "All todos for $tile_type / $wire"
-        foreach src_wire $todos {
-            puts "  - $src_wire"
+        foreach dst_wire $todos {
+            puts "  - $dst_wire"
         }
 
+        route_design -unroute -nets $net
 
         # Find an input in the todo list that this can can drive.
-        set set_new_route 0
-        foreach src_wire $todos {
-            if { [dict exists $used_destinations "$tile/$src_wire"] } {
-                puts "Not routing to $tile / $src_wire, in use."
+        foreach dst_wire $todos {
+            if { [dict exists $used_destinations "$tile/$dst_wire"] } {
+                puts "Not routing to $tile / $dst_wire, in use."
                 continue
             }
 
-            puts "Attempting to route to $src_wire for net $net."
+            puts "Attempting to route to $dst_wire for net $net."
 
-            set target_wire [get_wires "$tile/$src_wire"]
+            set target_wire [get_wires "$tile/$dst_wire"]
             set target_node [get_nodes -of_objects $target_wire]
             if {[llength $target_node] == 0} {
-                continue
+                error "Failed to find node for $tile/$dst_wire."
+            }
+
+            set old_nets [get_nets -of_objects $target_node]
+
+            if { $old_nets != {} } {
+                route_design -unroute -nets $old_nets
             }
 
             set origin_node [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
-
-            if [dict exists $routed_sources $origin_node] {
-                puts "Skip net $net, already routed."
-                continue
-            }
-
-            route_design -unroute -nets $net
-
-            set old_nets [get_nets -of_objects $target_node]
-            if { $old_nets != {} } {
-                puts "Unrouting $old_nets"
-                route_design -unroute -nets $old_nets
-            }
-
-            set old_nets [get_nets -of_objects $origin_node]
-            if { $old_nets != {} } {
-                puts "Unrouting $old_nets"
-                route_design -unroute -nets $old_nets
-            }
-
             set new_route [find_routing_path -to $target_node -from $origin_node]
             puts "Origin node: $origin_node"
             puts "Target wire: $target_wire"
@@ -223,9 +191,7 @@ proc route_todo {} {
             # Router will handle the rest.
             set_property FIXED_ROUTE $new_route $net
 
-            dict set used_destinations "$tile/$src_wire" 1
-            dict set routed_sources "$origin_node" 1
-            set set_new_route 1
+            dict set used_destinations "$tile/$dst_wire" 1
             break
         }
     }
@@ -239,9 +205,18 @@ proc run {} {
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-161}]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-123}]
+    set_property IS_ENABLED 0 [get_drc_checks {PDRC-29}]
+    set_property IS_ENABLED 0 [get_drc_checks {PDRC-38}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-13}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-123}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-161}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-1575}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-1684}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-1712}]
+    set_property IS_ENABLED 0 [get_drc_checks {AVAL-50}]
+    set_property IS_ENABLED 0 [get_drc_checks {AVAL-78}]
+    set_property IS_ENABLED 0 [get_drc_checks {AVAL-81}]
+
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets]
 
