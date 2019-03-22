@@ -88,7 +88,7 @@ def main():
 
                 unknown_base_address = int(annotation.value, 0)
 
-                assert unknown_base_address not in frames_in_use, "Found unknown bit in base address 0x{:08x}".format(
+                assert False, "Found unknown bit in base address 0x{:08x}".format(
                     unknown_base_address)
 
         if not fasm_line.set_feature:
@@ -99,14 +99,9 @@ def main():
         loc = grid.loc_of_tilename(tile)
         gridinfo = grid.gridinfo_at_tilename(tile)
 
-        base_address_in_roi = False
-        for bit in gridinfo.bits.values():
-            if bit.base_address in frames_in_use:
-                base_address_in_roi = True
-
         not_in_roi = not roi.tile_in_roi(loc)
 
-        if not_in_roi and base_address_in_roi:
+        if not_in_roi:
             required_features.append(fasm_line)
 
     design_json['required_features'] = fasm.fasm_tuple_to_string(
