@@ -83,7 +83,7 @@ db-check-$(1):
 	@echo
 	@echo "Checking $(1) database"
 	@echo "============================"
-	@$(IN_ENV) python3 utils/db-check.py --db-root database/$(1)
+	@$(IN_ENV) python3 utils/checkdb.py --db-root database/$(1)
 
 db-format-$(1):
 	@echo
