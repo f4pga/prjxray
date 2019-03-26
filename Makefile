@@ -79,36 +79,39 @@ define database
 
 # $(1) - Database name
 
-checkdb-$(1):
+db-check-$(1):
 	@echo
 	@echo "Checking $(1) database"
 	@echo "============================"
-	@$(IN_ENV) python3 utils/checkdb.py --db-root database/$(1)
+	@$(IN_ENV) python3 utils/db-check.py --db-root database/$(1)
 
-formatdb-$(1):
+db-format-$(1):
 	@echo
 	@echo "Formatting $(1) database"
 	@echo "============================"
 	@$(IN_ENV) cd database/$(1); python3 ../../utils/sort_db.py
 	@if [ -e database/Info.md ]; then $(IN_ENV) ./utils/info_md.py --keep; fi
 
-.PHONY: checkdb-$(1) formatdb-$(1)
-.NOTPARALLEL: checkdb-$(1) formatdb-$(1)
+.PHONY: db-check-$(1) db-format-$(1)
+.NOTPARALLEL: db-check-$(1) db-format-$(1)
 
-checkdb: checkdb-$(1)
-formatdb: formatdb-$(1)
+db-check: db-check-$(1)
+db-format: db-format-$(1)
 
 endef
 
 $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 
-checkdb:
+db-check:
 	@true
 
-formatdb:
+db-format:
 	@true
 
-.PHONY: checkdb formatdb
+db-info:
+	$(IN_ENV) ./utils/info_md.py
+
+.PHONY: db-check db-format
 
 clean:
 	$(MAKE) -C database clean
