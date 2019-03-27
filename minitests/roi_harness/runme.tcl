@@ -149,8 +149,8 @@ if {$part eq "xc7a50tfgg484-1"} {
         set net2pin(dout[$i]) $pin
     }
 } elseif {$part eq "xc7a35tcsg324-1"} {
-    # Arty A7 switch, button, and LED
     if {$pincfg eq "ARTY-A7-SWBUT"} {
+        # Arty A7 switch, button, and LED
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         # 4 switches then 4 buttons
         set sw_but "A8 C11 C10 A10  D9 C9 B9 B8"
@@ -173,9 +173,9 @@ if {$part eq "xc7a50tfgg484-1"} {
             set net2pin(dout[$i]) $pin
         }
 
-    # Arty A7 pmod
-    # Disabled per above
     } elseif {$pincfg eq "ARTY-A7-PMOD"} {
+        # Arty A7 pmod
+        # Disabled per above
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
         set pmod_jb "E15 E16 D15 C15  J17 J18 K15 J15"
