@@ -1,8 +1,18 @@
 # XC7010-1CLG400C
 export XRAY_PART=xc7z010clg400-1
-export XRAY_PINCFG=ZYBOZ7-SWBUT
-export XRAY_DIN_N_LARGE=4
-export XRAY_DOUT_N_LARGE=6
+
+if [ -z "$XRAY_PINCFG" ]; then
+	echo "XRAY_PINCFG not set"
+	return 1
+fi
+if [ -z "$XRAY_DIN_N_LARGE" ]; then
+	echo "XRAY_DIN_N_LARGE not set"
+	return 1
+fi
+if [ -z "$XRAY_DOUT_N_LARGE" ]; then
+	echo "XRAY_DOUT_N_LARGE not set"
+	return 1
+fi
 
 # For generating DB
 export XRAY_PIN_00="G15"

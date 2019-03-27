@@ -1,8 +1,17 @@
 # XC7A35T-1CPG236C
 export XRAY_PART=xc7a35tcpg236-1
-export XRAY_PINCFG=BASYS3-SWBUT
-export XRAY_DIN_N_LARGE=17
-export XRAY_DOUT_N_LARGE=17
+if [ -z "$XRAY_PINCFG" ]; then
+	echo "XRAY_PINCFG not set"
+	return 1
+fi
+if [ -z "$XRAY_DIN_N_LARGE" ]; then
+	echo "XRAY_DIN_N_LARGE not set"
+	return 1
+fi
+if [ -z "$XRAY_DOUT_N_LARGE" ]; then
+	echo "XRAY_DOUT_N_LARGE not set"
+	return 1
+fi
 
 # For generating DB
 export XRAY_PIN_00="V17"

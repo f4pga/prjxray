@@ -1,8 +1,18 @@
 # XC7A35TICSG324-1L
 export XRAY_PART=xc7a35tcsg324-1
-export XRAY_PINCFG=ARTY-A7-UART
-export XRAY_DIN_N_LARGE=2
-export XRAY_DOUT_N_LARGE=2
+
+if [ -z "$XRAY_PINCFG" ]; then
+	echo "XRAY_PINCFG not set"
+	return 1
+fi
+if [ -z "$XRAY_DIN_N_LARGE" ]; then
+	echo "XRAY_DIN_N_LARGE not set"
+	return 1
+fi
+if [ -z "$XRAY_DOUT_N_LARGE" ]; then
+	echo "XRAY_DOUT_N_LARGE not set"
+	return 1
+fi
 
 # For generating DB
 export XRAY_PIN_00="G13"
