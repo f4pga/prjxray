@@ -173,8 +173,8 @@ if {$part eq "xc7a50tfgg484-1"} {
             set net2pin(dout[$i]) $pin
         }
 
-        # Arty A7 pmod
-        # Disabled per above
+    # Arty A7 pmod
+    # Disabled per above
     } elseif {$pincfg eq "ARTY-A7-PMOD"} {
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         set pmod_ja "G13 B11 A11 D12  D13 B18 A18 K16"
