@@ -285,21 +285,40 @@ def place_tiles(grid):
 
 
 def tile_bgcolor(tiledata):
-    bgcolor = "#aaaaaa"
-    if tiledata["type"] in ["INT_L", "INT_R"]: bgcolor = "#aaaaff"
-    if tiledata["type"] in ["CLBLL_L", "CLBLL_R"]: bgcolor = "#ffffaa"
-    if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]: bgcolor = "#ffaaaa"
-    if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor = "#aaffaa"
+    bgcolor = "#eeeeee"
 
+    # INT - Blue
+    if tiledata["type"] in ["INT_L", "INT_R"]: bgcolor = "#aaaaff"
+    elif "INT_FEEDTHRU" in tiledata["type"]: bgcolor = "#ddddff"
+
+    # CLBL - Yellow
+    if tiledata["type"] in ["CLBLL_L", "CLBLL_R"]: bgcolor = "#ffffaa"
+    # CLBM - Red
+    if tiledata["type"] in ["CLBLM_L", "CLBLM_R"]: bgcolor = "#ffaaaa"
+
+    # CLK - Green
+    if tiledata["type"] in ["HCLK_L", "HCLK_R"]: bgcolor = "#aaffaa"
+    elif "CLK" in tiledata["type"]: bgcolor = "#66ff66"
+    elif "CMT" in tiledata["type"]: bgcolor = "#22ff22"
+
+    # BRAM - Cyan
     if tiledata["type"] in ["BRAM_INT_INTERFACE_L", "BRAM_L"]:
         bgcolor = "#aaffff"
     if tiledata["type"] in ["BRAM_INT_INTERFACE_R", "BRAM_R"]:
         bgcolor = "#aaffff"
 
+    # DSP - Purple
     if tiledata["type"] in ["INT_INTERFACE_L", "DSP_L"]:
         bgcolor = "#ffaaff"
     if tiledata["type"] in ["INT_INTERFACE_R", "DSP_R"]:
         bgcolor = "#ffaaff"
+
+    if "IO" in tiledata["type"]:
+        bgcolor = "#dddddd"
+
+    # Unused - grey
+    if tiledata["type"] in ["NULL", "VBRK"] or "BRK" in tiledata["type"]:
+        bgcolor = "#aaaaaa"
 
     return bgcolor
 
