@@ -78,7 +78,7 @@ def produce_sdf(timings, outdir):
                             continue
                         timingcheck = \
 """
-            ({prop} {input} (posedge {clock}) ({FAST_MIN}::{SLOW_MIN})({FAST_MAX}::{SLOW_MAX}))""".format(
+            ({prop} {input} (posedge {clock}) ({SLOW_MIN}::{SLOW_MAX}))""".format(
                         prop=timings[slice][site][bel_type][delay]['sequential'].upper(),
                         **timings[slice][site][bel_type][delay])
 
