@@ -50,7 +50,7 @@ def produce_sdf(timings, outdir):
                             continue
                         dly = \
 """
-                (IOPATH {input} {output} ({FAST_MIN}::{SLOW_MIN}) ({FAST_MAX}::{SLOW_MAX}))""".format(**timings[slice][site][bel_type][delay])
+                (IOPATH {input} {output} ({FAST_MIN}::{SLOW_MIN})({FAST_MAX}::{SLOW_MAX}))""".format(**timings[slice][site][bel_type][delay])
                         if 'extra_ports' in timings[slice][site][bel_type][
                                 delay] is not None:
                             dly += \
@@ -78,7 +78,7 @@ def produce_sdf(timings, outdir):
                             continue
                         timingcheck = \
 """
-            ({prop} {input} (posedge {clock}) ({FAST_MIN}::{SLOW_MIN}) ({FAST_MAX}::{SLOW_MAX}))""".format(
+            ({prop} {input} (posedge {clock}) ({FAST_MIN}::{SLOW_MIN})({FAST_MAX}::{SLOW_MAX}))""".format(
                         prop=timings[slice][site][bel_type][delay]['sequential'].upper(),
                         **timings[slice][site][bel_type][delay])
 
@@ -99,8 +99,8 @@ def produce_sdf(timings, outdir):
 """
     )"""
                 sdf += endcell
-            # end of SDF
-            sdf += \
+        # end of SDF
+        sdf += \
 """
 )"""
 
