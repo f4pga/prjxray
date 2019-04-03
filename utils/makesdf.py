@@ -44,7 +44,7 @@ def produce_sdf(timings, outdir):
             (ABSOLUTE"""
                     sdf += delay_hdr
                     # add all delays definitions
-                    for delay in timings[slice][site][bel_type]:
+                    for delay in sorted(timings[slice][site][bel_type]):
                         if 'sequential' in timings[slice][site][bel_type][
                                 delay]:
                             continue
@@ -72,7 +72,7 @@ def produce_sdf(timings, outdir):
         (TIMINGCHECK"""
                     sdf += timingcheck_hdr
 
-                    for delay in timings[slice][site][bel_type]:
+                    for delay in sorted(timings[slice][site][bel_type]):
                         if 'sequential' not in timings[slice][site][bel_type][
                                 delay]:
                             continue
