@@ -4,7 +4,7 @@
 
 Configures whether clock enable (CE) is used or clock always on
 
-| CEUSEDMUX  | CE               | 
+| CEUSEDMUX  | CE               |
 |------------|------------------|
 | 0          | Always on        |
 | 1          | Controlled       |
@@ -14,7 +14,7 @@ Configures whether clock enable (CE) is used or clock always on
 
 Configures whether FF can be reset or simply uses D value
 
-| SRUSEDMUX  | Resettable?      | 
+| SRUSEDMUX  | Resettable?      |
 |------------|------------------|
 | 0          | No               |
 | 1          | Controlled       |

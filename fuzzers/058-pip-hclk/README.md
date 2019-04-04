@@ -1,6 +1,4 @@
-
-Fuzzer for PIPs in HCLK titles
-------------------------------
+# Fuzzer for PIPs in HCLK titles
 
 Run this fuzzer once.
 

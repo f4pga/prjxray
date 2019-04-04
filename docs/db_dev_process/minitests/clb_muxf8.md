@@ -1,1 +1,0 @@
-../../../minitests/clb_muxf8/README.md

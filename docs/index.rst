@@ -20,6 +20,7 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    architecture/overview
    architecture/configuration
    architecture/bitstream_format
+   architecture/dram_configuration
    architecture/glossary
 
 .. toctree::
