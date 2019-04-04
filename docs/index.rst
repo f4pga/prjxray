@@ -24,10 +24,11 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    architecture/glossary
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Database Development Process
 
-   db_dev_process/overview
+   db_dev_process/readme
+   db_dev_process/parts
 
 .. toctree::
    :maxdepth: 2

@@ -23,17 +23,18 @@ fuzzers-links:
 	@cd db_dev_process/fuzzers; rm -f *.md
 	@cd db_dev_process/fuzzers; \
 		for i in ../../../fuzzers/*; do \
+			n=$$(basename $$i | sed -e's/^[0-9][0-9][0-9]-//'); \
 			if [ ! -d $$i ]; then \
 				continue; \
 			fi; \
 			if [ -e $$i/README.md ]; then \
 				echo "Linking $$i/README.md"; \
-				ln -s $$i/README.md $$(basename $$i).md; \
+				ln -s $$i/README.md $${n}.md; \
 			else \
 				echo "Missing $$i/README.md"; \
-				echo "# $$(basename $$i)" 	> $$(basename $$i).md; \
-				echo "" 			>> $$(basename $$i).md; \
-				echo "Missing README.md!" 	>> $$(basename $$i).md; \
+				echo "# $$n Fuzzer"		>  $${n}.md; \
+				echo "" 			>> $${n}.md; \
+				echo "Missing README.md!" 	>> $${n}.md; \
 			fi; \
 		done
 
@@ -41,17 +42,18 @@ minitests-links:
 	@cd db_dev_process/minitests; rm -f *.md
 	@cd db_dev_process/minitests; \
 		for i in ../../../minitests/*; do \
+			n=$$(basename $$i | sed -e's/^[0-9][0-9][0-9]-//'); \
 			if [ ! -d $$i ]; then \
 				continue; \
 			fi; \
 			if [ -e $$i/README.md ]; then \
 				echo "Linking $$i/README.md"; \
-				ln -s $$i/README.md $$(basename $$i).md; \
+				ln -s $$i/README.md $${n}.md; \
 			else \
 				echo "Missing $$i/README.md"; \
-				echo "# $$(basename $$i)" 	> $$(basename $$i).md; \
-				echo "" 			>> $$(basename $$i).md; \
-				echo "Missing README.md!" 	>> $$(basename $$i).md; \
+				echo "# $$n Minitest"		>  $${n}.md; \
+				echo "" 			>> $${n}.md; \
+				echo "Missing README.md!" 	>> $${n}.md; \
 			fi; \
 		done
 
