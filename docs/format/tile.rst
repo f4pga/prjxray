@@ -16,6 +16,15 @@ General notes:
 tilegrid.json
 -------------
 
+The file `tilegrid.json` contains lists of all tiles in the ROI and the configuration segments formed by those tiles. It also documents the membership relationship of tiles and segments.
+
+For each segment this contains the configuration frame base address, and the word offset within the frames, as well as the number of frames for the segment and number of occupied words in each frame.
+
+For each tile this file contains the tile type, grid X/Y coordinates for the tile, and sites (slices) within the tile.
+
+Note that pairs of INT-tiles and non-INT-tiles form a segment. The same type-name (e.g. `CLBLL_R` is used for the non-INT tile within the segment, and the segment itself). So for example, a `CLBLL_R` segment contains a `CLBLL_R` tile and an `INT_R` tile.
+
+
 This section assumes you are already familiar with the 7 series bitstream format.
 
 This file contains two elements:
@@ -100,6 +109,8 @@ Interpreted as:
 
 tileconn.json
 -------------
+
+The file `tileconn.json` contains the information how the wires of neighboring tiles are connected to each other. It contains one entry for each pair of tile types, each containing a list of pairs of wires that belong to the same node.
 
 This file documents how adjacent tile pairs are connected.
 No directionality is given.
