@@ -1,10 +1,13 @@
-DRAM configuration
-==================
+Distributed RAMs (DRAM / SLICEM)
+================================
 
 The SLICEM site can turn the 4 LUT6s into distributed RAMs.  There are a number of modes, each element is either a 64x1 or a 32x2 distributed RAM (DRAM).  The individual elements can be combined into either a 128x1 or 256x1 DRAM.
 
+Functions
+---------
+
 Modes
------
+~~~~~
 Some modes can be enabled at the single LUT level.  The following modes are:
 
 - 32x2 Single port (32x2S)
@@ -19,7 +22,7 @@ Some modes are SLICEM wide:
 - 256x1
 
 Ports
------
+~~~~~
 
 Each LUT element when operating in RAM mode is a DPRAM64.
 
@@ -42,7 +45,7 @@ Each LUT element when operating in RAM mode is a DPRAM64.
 +------------+------------+-----------+--------------+
 
 Configuration
-=============
+-------------
 
 The configuration for the DRAM is found in the following segbits:
 
@@ -64,7 +67,7 @@ In order to use DRAM in a SLICEM, the DLUT in the SLICEM must be a RAM (e.g. DLU
 In addition the DLUT can never be a dual port RAM because the write address lines for the DLUT are also the read address lines.
 
 Segbits for modes
------------------
+~~~~~~~~~~~~~~~~~
 
 The following table shows the features required for each mode type for each LUT.
 
@@ -95,7 +98,7 @@ The following table shows the features required for each mode type for each LUT.
 +------+------------+------------+------------+----------+
 
 Ports for modes
----------------
+~~~~~~~~~~~~~~~
 
 In each mode, how the ports are used vary.  The following table show the relationship between the LUT mode and ports.
 
@@ -127,7 +130,7 @@ In each mode, how the ports are used vary.  The following table show the relatio
 
 
 Techlib macros
---------------
+~~~~~~~~~~~~~~
 
 The tech library exposes the following aggregate modes, which are accomplished with the following combinations.
 
