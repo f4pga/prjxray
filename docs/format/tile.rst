@@ -1,5 +1,8 @@
+.json Files
+===========
+
 Introduction
-================
+------------
 
 This section documents how prjxray represents FPGA fabric. Its primarily composed of two files:
  * tilegrid.json: list of tiles and how they appear in the bitstream
@@ -11,23 +14,23 @@ General notes:
 
 
 tilegrid.json
-================
+-------------
 
 This section assumes you are already familiar with the 7 series bitstream format.
 
 This file contains two elements:
  * segments: each entry lists sections of the bitstream that encode part of one or more tiles
- * tiles: corres
+ * tiles: cores
 
-segments  
-################
+segments
+########
 
 Segments are a prjxray concept.
 
 Each entry has the following fields:
  * baseaddr: a tuple of (base address, inter-frame offset)
  * frames: how many frames are required to make a complete segment
- * words: number of inter-frame words requird for a complete segment
+ * words: number of inter-frame words required for a complete segment
  * tiles: which tiles reference this segment
  * type: prjxray given segment type
 
@@ -56,7 +59,7 @@ Interpreted as:
   * Since its 2 FDRI words out of possible 101, its the last 2 words
   * It spans across 36 different frame loads
   * The data in this segment is used by two different tiles: CLBLL_L_X16Y149, INT_L_X16Y149
-  
+
 Historical note:
 In the original encoding, a segment was a collection of tiles that were encoded together.
 For example, a CLB is encoded along with a nearby switch.
@@ -65,7 +68,7 @@ the configuration and data are stored in seperate parts of the bitstream.
 The BRAM itself also spans multiple tiles and has multiple switchboxes.
 
 tiles
-################
+#####
 
 Each entry has the following fields:
  * grid_x: tile column, increasing right
@@ -73,8 +76,6 @@ Each entry has the following fields:
  * segment: the primary segment providing bitstream configuration
  * sites: dictionary of sites name: site type contained within tile
  * type: Vivado given tile type
-
-
 
 Sample entry:
 
@@ -97,9 +98,8 @@ Interpreted as:
  * Contains two sites, both of which are SLICEL
  * A CLBLL_L type tile
 
-
 tileconn.json
-================
+-------------
 
 This file documents how adjacent tile pairs are connected.
 No directionality is given.

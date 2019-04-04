@@ -1,17 +1,20 @@
+.db Files
+=========
+
 Introduction
-================
+------------
 
 This section documents how prjxray represents the bitstream database
 
 These ".db" files come in two common flavors:
- * segbits_*.db: encodes bitstream bits
- * mask_*.db: which bits are used by a segment? Probably needs to be converted to tile
+ * `segbits_*.db`_: encodes bitstream bits
+ * `mask_*.db`_: which bits are used by a segment? Probably needs to be converted to tile
 
 Also note: .rdb (raw db) is a convention for a non-expanded .db file (see below)
 
 
-segbits
-================
+segbits_*.db
+------------
 
 These are created by segmatch to describe bitstream IP encoding.
 
@@ -55,8 +58,8 @@ Related tools:
    * Ex: CLB is solved by first solving LUT bits, and then solving FF bits
 
 
-mask
-================
+mask_*.db
+---------
 
 These are just simple bit lists
 
