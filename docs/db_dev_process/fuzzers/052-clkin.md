@@ -1,1 +1,0 @@
-../../../fuzzers/052-clkin/README.md
