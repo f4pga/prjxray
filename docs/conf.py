@@ -63,6 +63,31 @@ project = u'Project X-Ray'
 copyright = u'2018, SymbiFlow Team'
 author = u'SymbiFlow Team'
 
+# Enable github links when not on readthedocs
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if not on_rtd:
+    html_context = {
+        "display_github": True,  # Integrate GitHub
+        "github_user": "symbiflow",  # Username
+        "github_repo": "prjxray",  # Repo name
+        "github_version": "master",  # Version
+        "conf_py_path": "/doc/",
+    }
+else:
+    import subprocess
+    subprocess.call(
+        'git fetch origin --unshallow',
+        cwd=os.path.abspath(os.path.dirname(__file__)),
+        shell=True)
+    subprocess.check_call(
+        'git fetch origin --tags',
+        cwd=os.path.abspath(os.path.dirname(__file__)),
+        shell=True)
+    subprocess.check_call(
+        'make links',
+        cwd=os.path.abspath(os.path.dirname(__file__)),
+        shell=True)
+
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
@@ -102,23 +127,6 @@ html_theme = 'sphinx_rtd_theme'
 # documentation.
 #
 # html_theme_options = {}
-
-# Enable github links when not on readthedocs
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-if not on_rtd:
-    html_context = {
-        "display_github": True,  # Integrate GitHub
-        "github_user": "symbiflow",  # Username
-        "github_repo": "prjxray",  # Repo name
-        "github_version": "master",  # Version
-        "conf_py_path": "/doc/",
-    }
-else:
-    import subprocess
-    subprocess.check_call(
-        'make links',
-        cwd=os.path.abspath(os.path.dirname(__file__)),
-        shell=True)
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
