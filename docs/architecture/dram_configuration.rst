@@ -30,7 +30,7 @@ Each LUT element when operating in RAM mode is a DPRAM64.
 | Port name  | Direction  | Width     | Description  |
 +============+============+===========+==============+
 | WA         | IN         | 8         | Write address|
-+------------+------------+-----------+--------------+ 
++------------+------------+-----------+--------------+
 | A          | IN         | 6         | Read address |
 +------------+------------+-----------+--------------+
 | DI         | IN         | 2         | Data input   |

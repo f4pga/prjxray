@@ -8,7 +8,7 @@ This is where we describe the logical components in a device to VPR.
 * VtR stands for `Verilog to Routing <https://verilogtorouting.org/>`_,
 * VPR stands for VtR Place and Route.
 * VtR also has its own synthesis tool called ODIN-II, but we are using `Yosys <https://github.com/YosysHQ/yosys>`_ instead of that.
-  
+
 
 Fuzzers
 ^^^^^^^
