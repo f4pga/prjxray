@@ -43,7 +43,7 @@ Set to 1 to propagate CLB's BX input to WA8
 
 ## WEMUX.CE
 
-| WEMUX.CE  | CLB RAM write enable | 
+| WEMUX.CE  | CLB RAM write enable |
 |-----------|----------------------|
 | 0         | CLB WE input         |
 | 1         | CLB CE input         |
