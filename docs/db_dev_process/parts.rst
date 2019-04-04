@@ -1,17 +1,6 @@
-Overview
-=========
-
-SymbiFlow/symbiflow-arch-defs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This is where we describe the logical components in a device to VPR.
-
-* VtR stands for `Verilog to Routing <https://verilogtorouting.org/>`_,
-* VPR stands for VtR Place and Route.
-* VtR also has its own synthesis tool called ODIN-II, but we are using `Yosys <https://github.com/YosysHQ/yosys>`_ instead of that.
-  
 
 Fuzzers
-^^^^^^^
+=======
 Fuzzers are things that generate a design, feed it to Vivado, and look at the resulting bitstream to make some conclusion.
 This is how the contents of the database are generated.
 
@@ -25,15 +14,95 @@ By looking at all the resulting specimens, you can correlate which bits in which
 
 Looking at the implemented design in Vivado with "Show Routing Resources" turned on is quite helpful in understanding what all choices exist.
 
+Configurable Logic Blocks (CLB)
+-------------------------------
+
 .. toctree::
    :maxdepth: 1
-   :caption: Current Fuzzers
+   :glob:
+
+   fuzzers/*clb*
+
+Block RAM (BRAM)
+----------------
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   fuzzers/*bram*
+
+Input / Output (IOB)
+--------------------
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   fuzzers/*iob*
+
+Clocking (CMT, PLL, BUFG, etc)
+------------------------------
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   fuzzers/*clk*
+   fuzzers/*cmt*
+
+Programmable Interconnect Points (PIPs)
+---------------------------------------
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   fuzzers/*int*
+   fuzzers/*pip*
+
+Hard Block Fuzzers
+------------------
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   fuzzers/*xadc
+
+Grid and Wire
+-------------
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   fuzzers/tilegrid
+   fuzzers/tileconn
+   fuzzers/ordered_wires
+   fuzzers/get_counts
+   fuzzers/dump_all
+
+Timing
+------
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   fuzzers/timing
+
+All Fuzzers
+-----------
+
+.. toctree::
+   :maxdepth: 1
    :glob:
 
    fuzzers/*
 
 Minitests
-^^^^^^^^^
+=========
 
 Minitests are experiments to figure out how things work. They allow us to understand how to better write new fuzzers.
 
@@ -45,12 +114,8 @@ Minitests are experiments to figure out how things work. They allow us to unders
    minitests/*
 
 Tools
-^^^^^
+=====
 
 `SymbiFlow/prjxray/tools/`
 
 Here, you can find various programs to work with bitstreams, mainly to assist building fuzzers.
-
-SymbiFlow/prjxray/minitests/roi_harness
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Shows how to use a bunch of tools together to patch an existing bitstream with hand-crafted FASM (FPGA assembler).

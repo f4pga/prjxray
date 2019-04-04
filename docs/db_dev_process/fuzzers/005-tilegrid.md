@@ -1,1 +1,0 @@
-../../../fuzzers/005-tilegrid/README.md
