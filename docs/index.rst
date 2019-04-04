@@ -24,7 +24,7 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    architecture/glossary
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Database Development Process
 
    db_dev_process/readme
