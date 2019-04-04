@@ -4,5 +4,6 @@ sphinx-autobuild
 
 breathe
 recommonmark
+sphinx-markdown-tables
 sphinx_rtd_theme
 sphinxcontrib-napoleon

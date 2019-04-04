@@ -36,8 +36,13 @@ from markdown_code_symlinks import MarkdownCodeSymlinks
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.imgmath', 'sphinx.ext.autodoc', 'sphinx.ext.doctest',
-    'sphinx.ext.autosummary', 'sphinx.ext.napoleon', 'sphinx.ext.todo'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.doctest',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.todo',
+    'sphinx_markdown_tables',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
