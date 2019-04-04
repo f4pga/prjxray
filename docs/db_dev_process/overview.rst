@@ -1,8 +1,8 @@
 Overview
 =========
 
-SymbiFlow/symbiflow-arch-defs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`SymbiFlow Architecture Definitions <https://github.com/SymbiFlow/symbiflow-arch-defs>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is where we describe the logical components in a device to VPR.
 
 * VtR stands for `Verilog to Routing <https://verilogtorouting.org/>`_,
