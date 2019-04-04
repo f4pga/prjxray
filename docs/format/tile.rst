@@ -36,7 +36,7 @@ Each entry has the following fields:
 
 Sample entry:
 
-.. code-block:: json
+.. code-block:: javascript
 
 	"SEG_CLBLL_L_X16Y149": {
 		"baseaddr": [
@@ -79,7 +79,7 @@ Each entry has the following fields:
 
 Sample entry:
 
-.. code-block:: json
+.. code-block:: javascript
 
 	"CLBLL_L_X16Y149": {
 		"grid_x": 43,
@@ -111,7 +111,7 @@ The file contains one large list. Each entry has the following fields:
 
 Sample entry:
 
-.. code-block:: json
+.. code-block:: javascript
 
 	{
 		"grid_deltas": [
