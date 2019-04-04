@@ -113,6 +113,13 @@ if not on_rtd:
         "github_version": "master",  # Version
         "conf_py_path": "/doc/",
     }
+else:
+    import subprocess
+    subprocess.check_call(
+        'make links',
+        cwd=os.path.abspath(os.path.dirname(__file__)),
+        shell=True)
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
