@@ -22,6 +22,13 @@ XRAY_VIVADO_SETTINGS to point to the settings64.sh file of the installed vivado 
 
     export XRAY_VIVADO_SETTINGS=/opt/Xilinx/Vivado/2017.2/settings64.sh
 
+Do not source the settings64.sh in your shell, since this adds directories of
+the Vivado installation at the beginning of your PATH and LD_LIBRARY_PATH
+variables, which will likely interfere with or break non-Vivado applications in
+that shell. The Vivado wrapper utils/vivado.sh makes sure that the environment
+variables from XRAY_VIVADO_SETTINGS are automatically sourced in a separate
+shell that is then only used to run Vivado to avoid these problems.
+
 ### Step 2: ###
 Pull submodules:
 
