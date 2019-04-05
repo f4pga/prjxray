@@ -1,6 +1,8 @@
 # Minimal makefile for Sphinx documentation
 #
 
+MAKEDIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
@@ -20,8 +22,8 @@ livehtml:
 
 # Update fuzzer / minitest markdown links.
 fuzzers-links:
-	@cd db_dev_process/fuzzers; rm -f *.md
-	@cd db_dev_process/fuzzers; \
+	@cd $(MAKEDIR)/db_dev_process/fuzzers && rm -f *.md
+	@cd $(MAKEDIR)/db_dev_process/fuzzers && \
 		for i in ../../../fuzzers/*; do \
 			n=$$(basename $$i | sed -e's/^[0-9][0-9][0-9]-//'); \
 			if [ ! -d $$i ]; then \
@@ -39,8 +41,8 @@ fuzzers-links:
 		done
 
 minitests-links:
-	@cd db_dev_process/minitests; rm -f *.md
-	@cd db_dev_process/minitests; \
+	@cd  $(MAKEDIR)/db_dev_process/minitests && rm -f *.md
+	@cd  $(MAKEDIR)/db_dev_process/minitests && \
 		for i in ../../../minitests/*; do \
 			n=$$(basename $$i | sed -e's/^[0-9][0-9][0-9]-//'); \
 			if [ ! -d $$i ]; then \
