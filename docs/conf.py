@@ -74,19 +74,12 @@ if not on_rtd:
         "conf_py_path": "/doc/",
     }
 else:
+    docs_dir = os.path.abspath(os.path.dirname(__file__))
+    print("Docs dir is:", docs_dir)
     import subprocess
-    subprocess.call(
-        'git fetch origin --unshallow',
-        cwd=os.path.abspath(os.path.dirname(__file__)),
-        shell=True)
-    subprocess.check_call(
-        'git fetch origin --tags',
-        cwd=os.path.abspath(os.path.dirname(__file__)),
-        shell=True)
-    subprocess.check_call(
-        'make links',
-        cwd=os.path.abspath(os.path.dirname(__file__)),
-        shell=True)
+    subprocess.call('git fetch origin --unshallow', cwd=docs_dir, shell=True)
+    subprocess.check_call('git fetch origin --tags', cwd=docs_dir, shell=True)
+    subprocess.check_call('make links', cwd=docs_dir, shell=True)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
