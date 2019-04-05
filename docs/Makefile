@@ -22,6 +22,7 @@ livehtml:
 
 # Update fuzzer / minitest markdown links.
 fuzzers-links:
+	@mkdir -p $(MAKEDIR)/db_dev_process/fuzzers
 	@cd $(MAKEDIR)/db_dev_process/fuzzers && rm -f *.md
 	@cd $(MAKEDIR)/db_dev_process/fuzzers && \
 		for i in ../../../fuzzers/*; do \
@@ -41,6 +42,7 @@ fuzzers-links:
 		done
 
 minitests-links:
+	@mkdir -p $(MAKEDIR)/db_dev_process/minitests
 	@cd  $(MAKEDIR)/db_dev_process/minitests && rm -f *.md
 	@cd  $(MAKEDIR)/db_dev_process/minitests && \
 		for i in ../../../minitests/*; do \
