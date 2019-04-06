@@ -76,7 +76,7 @@ def run(fn_in, fn_out, verbose=False):
     # FIXME: generate words from pitch
     int_frames, int_words = localutil.get_int_params()
     tdb_fns = [
-        ("iob/build/segbits_tilegrid.tdb", 42, 4),
+        ("iob/build/segbits_tilegrid.tdb", 40, 4),
         ("mmcm/build/segbits_tilegrid.tdb", 30, 101),
         ("pll/build/segbits_tilegrid.tdb", 30, 101),
         ("monitor/build/segbits_tilegrid.tdb", 30, 101),
