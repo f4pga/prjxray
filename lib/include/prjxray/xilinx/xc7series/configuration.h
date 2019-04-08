@@ -147,8 +147,16 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 
 					// Bitstreams appear to have 2 frames of
 					// padding between rows.
-					if (next_address->row() !=
-					    current_frame_address.row()) {
+					if (next_address &&
+					    (next_address->block_type() !=
+					         current_frame_address
+					             .block_type() ||
+					     next_address
+					             ->is_bottom_half_rows() !=
+					         current_frame_address
+					             .is_bottom_half_rows() ||
+					     next_address->row() !=
+					         current_frame_address.row())) {
 						ii += 2 * kWordsPerFrame;
 					}
 					current_frame_address = *next_address;
