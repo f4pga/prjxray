@@ -63,22 +63,20 @@ int Frames::readFrames(const std::string& frm_file_str) {
 }
 
 void Frames::addMissingFrames(const absl::optional<Part>& part) {
-	auto current_frame_address = frames_data_.begin()->first;
-	auto next_frame_address =
-	    part->GetNextFrameAddress(current_frame_address);
-	while (next_frame_address) {
-		current_frame_address = *next_frame_address;
-		auto iter = frames_data_.find(current_frame_address);
+	auto current_frame_address =
+	    absl::optional<FrameAddress>(FrameAddress(0));
+	do {
+		auto iter = frames_data_.find(*current_frame_address);
 		if (iter == frames_data_.end()) {
 			FrameData frame_data(101, 0);
 			// TODO make sure if this is needed
 			updateECC(frame_data);
 			frames_data_.insert(std::pair<FrameAddress, FrameData>(
-			    current_frame_address, frame_data));
+			    *current_frame_address, frame_data));
 		}
-		next_frame_address =
-		    part->GetNextFrameAddress(current_frame_address);
-	}
+		current_frame_address =
+		    part->GetNextFrameAddress(*current_frame_address);
+	} while (current_frame_address);
 }
 
 void Frames::updateECC(FrameData& data) {
