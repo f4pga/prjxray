@@ -16,6 +16,7 @@ add_library(libprjxray
 	xilinx/xc7series/row.cc
 	xilinx/xc7series/frames.cc
 	xilinx/xc7series/utils.cc
+	xilinx/xc7series/ecc.cc
 )
 target_include_directories(libprjxray PUBLIC "include")
 target_link_libraries(libprjxray absl::optional absl::strings absl::span absl::time yaml-cpp)
