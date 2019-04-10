@@ -3,13 +3,17 @@
 PRJ?=oneblinkw
 PRJN?=1
 
-all: build/timgrid-v.json
+all: build/timgrid-v.json bel/build/sdf
 
 clean:
 	rm -rf build
 	cd speed && $(MAKE) clean
 	cd timgrid && $(MAKE) clean
+	cd bel && $(MAKE) clean
 	cd projects/$(PRJ) && $(MAKE) clean
+
+bel/build/sdf:
+	cd bel && $(MAKE)
 
 speed/build/speed.json:
 	cd speed && $(MAKE)
