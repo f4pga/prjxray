@@ -50,7 +50,7 @@ def produce_sdf(timings, outdir):
                             continue
                         dly = \
 """
-                (IOPATH {input} {output} ({FAST_MIN}::{SLOW_MIN})({FAST_MAX}::{SLOW_MAX}))""".format(**timings[slice][site][bel_type][delay])
+                (IOPATH {input} {output} ({FAST_MIN}::{FAST_MAX})({SLOW_MIN}::{SLOW_MAX}))""".format(**timings[slice][site][bel_type][delay])
                         if 'extra_ports' in timings[slice][site][bel_type][
                                 delay] is not None:
                             dly += \
