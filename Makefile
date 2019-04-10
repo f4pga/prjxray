@@ -102,6 +102,35 @@ endef
 
 $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 
+.PHONY: db-extras-artix7 db-extras-kintex7 db-extras-zynq7
+
+db-extras-artix7:
+	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers part_only
+	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers part_only
+	+source minitests/roi_harness/basys3-swbut.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=database/artix7/harness/basys3/swbut run
+	+source minitests/roi_harness/arty-uart.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=database/artix7/harness/arty-a7/uart run
+	+source minitests/roi_harness/arty-pmod.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=database/artix7/harness/arty-a7/pmod run
+	+source minitests/roi_harness/arty-swbut.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=database/artix7/harness/arty-a7/swbut run
+
+db-extras-kintex7:
+	@true
+
+db-extras-zynq7:
+	+source minitests/roi_harness/zybo-swbut.sh && $(MAKE) -C fuzzers part_only
+	# TODO(#746): Zybo harness is missing some bits, disable automatic harness
+	# generation.
+	#+source minitests/roi_harness/zybo-swbut.sh && \
+	#	$(MAKE) -C minitests/roi_harness \
+	#		HARNESS_DIR=database/artix7/harness/zybo/swbut run
+
 db-check:
 	@true
 

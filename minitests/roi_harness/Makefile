@@ -20,5 +20,9 @@ copy: $(HARNESS_FILES)
 clean:
 	rm -rf $(BUILD_DIR) $(HARNESS_DIR)
 
-.PHONY: all clean copy
+run:
+	make clean
+	make copy
+
+.PHONY: all clean copy run
 

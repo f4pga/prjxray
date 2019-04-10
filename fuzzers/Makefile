@@ -111,4 +111,11 @@ $(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid))
 quick:
 	$(MAKE) QUICK=Y
 
-.PHONY: all clean clean_fuzzers clean_logs quick
+# part_only runs the fuzzers required for supporting additional parts.
+# Note: In theory this includes 005-tilegrid, but there isn't support for
+# multiple tilegrid's per family at this time.
+part_only:
+	+$(MAKE) -C 001-part-yaml run
+	+$(MAKE) -C 075-pins run
+
+.PHONY: all clean clean_fuzzers clean_logs quick part_only
