@@ -58,7 +58,8 @@ if (PRJXRAY_BUILD_TESTING)
 		xilinx/xc7series/frame_address_test.cc
 		xilinx/xc7series/global_clock_region_test.cc
 		xilinx/xc7series/part_test.cc
-		xilinx/xc7series/row_test.cc)
+		xilinx/xc7series/row_test.cc
+		xilinx/xc7series/frames_test.cc)
 	target_link_libraries(xilinx_xc7series_test libprjxray gtest_main)
 	add_test(NAME xilinx_xc7series_test
 		 COMMAND xilinx_xc7series_test
