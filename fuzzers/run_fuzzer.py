@@ -346,7 +346,7 @@ def main(argv):
     parser.add_argument(
         "--retries",
         type=int,
-        default=2,
+        default=0,
         help="Retry a failed fuzzer n times.",
     )
     args = parser.parse_args()
@@ -369,6 +369,7 @@ def main(argv):
     assert os.path.exists(fuzzer_logdir)
 
     exit_code = -1
+    args.retries += 1
     for retry_count in range(0, args.retries):
         logger.log('Running fuzzer attempt: {}', [retry_count])
         exit_code = run_fuzzer(
