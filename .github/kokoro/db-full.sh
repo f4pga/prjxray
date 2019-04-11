@@ -76,6 +76,12 @@ echo "----------------------------------------"
 
 # Check the database
 #make checkdb-${XRAY_SETTINGS} || true
+# Generate extra files (additional part yaml's, harness, etc).
+set +e
+# Attempt to generate extras here, but don't check until after diff reporting.
+make db-extras-${XRAY_SETTINGS}
+EXTRAS_RET=$?
+set -e
 # Format the database
 make db-format-${XRAY_SETTINGS}
 # Update the database/Info.md file
@@ -142,6 +148,10 @@ echo "----------------------------------------"
 
 # Check the database and fail if it is broken.
 make db-check-${XRAY_SETTINGS}
+if [[ $EXTRAS_RET != 0 ]] ; then
+    echo "A failure occurred during extras generation."
+    exit $EXTRAS_RET
+fi
 
 # If we get here, then all the fuzzers completed fine. Hence we are
 # going to assume we don't want to keep all the build / logs / etc (as
