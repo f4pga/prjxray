@@ -10,11 +10,12 @@
 #include <prjxray/xilinx/xc7series/configuration_packet.h>
 #include <prjxray/xilinx/xc7series/configuration_register.h>
 #include <prjxray/xilinx/xc7series/frame_address.h>
+#include <prjxray/xilinx/xc7series/frames.h>
 #include <prjxray/xilinx/xc7series/part.h>
+#include <prjxray/xilinx/xc7series/utils.h>
 #include <yaml-cpp/yaml.h>
 
 namespace xc7series = prjxray::xilinx::xc7series;
-
 TEST(ConfigurationTest, ConstructFromPacketsWithSingleFrame) {
 	std::vector<xc7series::FrameAddress> test_part_addresses;
 	test_part_addresses.push_back(0x4567);
@@ -230,5 +231,83 @@ TEST(ConfigurationTest, DebugAndNormalBitstreamsProduceEqualConfigurations) {
 			    << normal_frame.first
 			    << ": unexpectedly present in normal bitstream";
 		}
+	}
+}
+
+TEST(ConfigurationTest, CheckForPaddingFrames) {
+	std::vector<xc7series::FrameAddress> test_part_addresses = {
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            0, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, true, 0,
+	                            0, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, true, 1,
+	                            0, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM, false, 0,
+	                            0, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM, false, 1,
+	                            0, 0)};
+
+	auto test_part = absl::optional<xc7series::Part>(
+	    xc7series::Part(0x1234, test_part_addresses));
+
+	xc7series::Frames frames;
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(0), std::vector<uint32_t>(101, 0xAA)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(1), std::vector<uint32_t>(101, 0xBB)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(2), std::vector<uint32_t>(101, 0xCC)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(3), std::vector<uint32_t>(101, 0xDD)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(4), std::vector<uint32_t>(101, 0xEE)));
+	ASSERT_EQ(frames.getFrames().size(), 5);
+
+	xc7series::PacketData packet_data =
+	    xc7series::createType2ConfigurationPacketData(frames.getFrames(),
+	                                                  test_part);
+	// createType2ConfigurationPacketData should detect 4
+	// row/half/block_type switches thus add 4*2 padding frames  moreover 2
+	// extra padding frames are added at the end of the creation of the data
+	// overall this gives us: 5(real frames) + 4*2 + 2 = 15 frames, which is
+	// 15 * 101 = 1515 words
+	EXPECT_EQ(packet_data.size(), 15 * 101);
+
+	std::vector<uint32_t> idcode{0x1234};
+	std::vector<uint32_t> cmd{0x0001};
+	std::vector<uint32_t> frame_address{0x0};
+
+	std::vector<xc7series::ConfigurationPacket> packets{
+	    {
+	        static_cast<unsigned int>(0x1),
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::IDCODE,
+	        absl::MakeSpan(idcode),
+	    },
+	    {
+	        static_cast<unsigned int>(0x1),
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::FAR,
+	        absl::MakeSpan(frame_address),
+	    },
+	    {
+	        static_cast<unsigned int>(0x1),
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::CMD,
+	        absl::MakeSpan(cmd),
+	    },
+	    {
+	        static_cast<unsigned int>(0x1),
+	        xc7series::ConfigurationPacket::Opcode::Write,
+	        xc7series::ConfigurationRegister::FDRI,
+	        absl::MakeSpan(packet_data),
+	    },
+	};
+
+	auto test_config =
+	    xc7series::Configuration::InitWithPackets(*test_part, packets);
+	ASSERT_EQ(test_config->frames().size(), 5);
+	for (auto& frame : test_config->frames()) {
+		EXPECT_EQ(frame.second, frames.getFrames().at(frame.first));
 	}
 }
