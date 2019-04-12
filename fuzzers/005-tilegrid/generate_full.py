@@ -317,6 +317,65 @@ def propagate_IOB_SING(database, tiles_by_grid):
         }
 
 
+def propagate_IOI_SING(database, tiles_by_grid):
+    """ The IOI_SING are half tiles at top and bottom of every IO column.
+
+    Unlike most tiles, they do not behave consistently.  The tile at the top
+    of the column is the bottom half of a full IOB, and the tile at the bottom
+    of the column is the top half of a full IOB. The tile contains half of the sites
+    that are present in the full IOI, namely one ILOGIC, OLOGIC and IDELAY.
+    For this reason, explicit bit aliasing is used to map the full IOI bits into the two halves, and a
+    mapping is provided for the site naming.
+
+    """
+
+    seen_iois = set()
+    for tile in database:
+        if tile in seen_iois:
+            continue
+
+        if database[tile]["type"] not in ["LIOI3", "RIOI3"]:
+            continue
+
+        while True:
+            prev_tile = tile
+            tile = tiles_by_grid[(
+                database[tile]['grid_x'], database[tile]['grid_y'] + 1)]
+            if '_SING' in database[tile]['type']:
+                break
+
+        bottom_tile = tile
+        seen_iois.add(bottom_tile)
+
+        bits = database[prev_tile]['bits']['CLB_IO_CLK']
+
+        while True:
+            tile = tiles_by_grid[(
+                database[tile]['grid_x'], database[tile]['grid_y'] - 1)]
+            seen_iois.add(tile)
+
+            if '_SING' in database[tile]['type']:
+                break
+
+            if 'CLB_IO_CLK' in database[tile]['bits']:
+                assert bits['baseaddr'] == database[tile]['bits'][
+                    'CLB_IO_CLK']['baseaddr']
+                assert bits['frames'] == database[tile]['bits']['CLB_IO_CLK'][
+                    'frames']
+                assert bits['words'] == database[tile]['bits']['CLB_IO_CLK'][
+                    'words']
+
+        top_tile = tile
+
+        database[top_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+        database[top_tile]['bits']['CLB_IO_CLK']['words'] = 2
+        database[top_tile]['bits']['CLB_IO_CLK']['offset'] = 99
+
+        database[bottom_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+        database[bottom_tile]['bits']['CLB_IO_CLK']['words'] = 2
+        database[bottom_tile]['bits']['CLB_IO_CLK']['offset'] = 0
+
+
 def run(json_in_fn, json_out_fn, verbose=False):
     # Load input files
     database = json.load(open(json_in_fn, "r"))
@@ -326,6 +385,7 @@ def run(json_in_fn, json_out_fn, verbose=False):
     propagate_INT_bits_in_column(database, tiles_by_grid)
     propagate_rebuf(database, tiles_by_grid)
     propagate_IOB_SING(database, tiles_by_grid)
+    propagate_IOI_SING(database, tiles_by_grid)
 
     # Save
     xjson.pprint(open(json_out_fn, "w"), database)
