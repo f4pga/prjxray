@@ -80,7 +80,8 @@ def main():
                 tiledata[tile]["srcs"].add(dst)
                 tiledata[tile]["dsts"].add(src)
 
-            if pnum == 1 or pdir == 0:
+            if pnum == 1 or pdir == 0 or dst.startswith(
+                    'CLK_HROW_CK_MUX_OUT_'):
                 ignpip.add((src, dst))
 
     active_gclks = {}
