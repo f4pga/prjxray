@@ -308,7 +308,8 @@ def handle_segment(
         segtags = set()
 
     # Found something to print?
-    keep = not omit_empty_segs or len(segbits) > 0 or len(segtags) > 0
+    keep = not omit_empty_segs or len(segbits) > 0 or (
+        len(segtags) > 0 and not decode_omit)
     if not keep:
         return
 
