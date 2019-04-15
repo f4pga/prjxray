@@ -91,7 +91,7 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
         # sometimes it gets stuck in specific src -> dst locations
         if {$tries >= 3} {
             puts "WARNING: failed to route net after $tries tries"
-            error
+            break
         }
     }
 }
