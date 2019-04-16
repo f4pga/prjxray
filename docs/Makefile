@@ -18,7 +18,7 @@ help:
 livehtml:
 	@$(SPHINXAUTOBUILD) -b html --ignore \*.swp --ignore \*~ $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
-.PHONY: help livereload Makefile
+.PHONY: help livehtml Makefile
 
 # Update fuzzer / minitest markdown links.
 fuzzers-links:
