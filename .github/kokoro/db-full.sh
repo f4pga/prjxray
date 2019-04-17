@@ -58,6 +58,11 @@ echo "----------------------------------------"
 	set +x
 	echo "----------------------------------------"
 
+	# Collect the Vivado logs into one tgz archive
+	echo "Collecting Vivado logs"
+	find . -name vivado.log | xargs tar -czvf vivado.tgz
+	echo "----------------------------------------"
+
 	# Check there is nothing to do after running...
 	echo
 	if [ $(make --dry-run | grep -v 'Nothing to be done' | wc -l) -gt 0 ]; then
