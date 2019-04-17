@@ -3,6 +3,7 @@
 PRJ?=oneblinkw
 PRJN?=1
 
+run: all
 all: build/timgrid-v.json bel/build/sdf
 
 clean:
