@@ -16,3 +16,6 @@
 [submodule "third_party/fasm"]
 	path = third_party/fasm
 	url = https://github.com/SymbiFlow/fasm.git
+[submodule "third_party/python-sdf-timing"]
+	path = third_party/python-sdf-timing
+	url = https://github.com/SymbiFlow/python-sdf-timing.git
