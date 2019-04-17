@@ -10,6 +10,8 @@ env:
 	$(IN_ENV) python -c "import prjxray"
 	# Install fasm from third_party
 	$(IN_ENV) pip install --upgrade -e third_party/fasm
+	# Install sdfparse form third party
+	$(IN_ENV) pip install --upgrade -e third_party/python-sdf-timing
 	# Install project dependencies
 	$(IN_ENV) pip install -r requirements.txt
 	# Install project's documentation dependencies
@@ -17,6 +19,9 @@ env:
 	# Check fasm library was installed
 	$(IN_ENV) python -c "import fasm"
 	$(IN_ENV) python -c "import fasm.output"
+	# Check sdfparse lib was installed
+	$(IN_ENV) python -c "import sdf_timing"
+	$(IN_ENV) python -c "import sdf_timing.sdfparse"
 	# Check YAML is installed
 	$(IN_ENV) python -c "import yaml" || (echo "Unable to find python-yaml" && exit 1)
 
