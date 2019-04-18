@@ -1,3 +1,4 @@
+SHELL = bash
 ALL_EXCLUDE = third_party .git env build
 
 # Tools + Environment
