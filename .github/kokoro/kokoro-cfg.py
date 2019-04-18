@@ -15,6 +15,7 @@ action {
     regex: "**/diff.patch"
     regex: "**/*result*.xml"
     regex: "**/*sponge_log.xml"
+    regex: "**/fuzzers/vivado.tgz"
     # Whole directories
     # regex: "**/build/**" - Currently kokoro dies on number of artifacts.
     regex: "**/build/*.log"

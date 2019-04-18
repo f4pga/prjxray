@@ -53,10 +53,21 @@ echo "----------------------------------------"
 	# - 074 completes in ~60 minutes
 	# which is well before the 05x INT fuzzers complete.
 	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
-	set -x
+	set -x +e
 	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS" -
-	set +x
+	DATABASE_RET=$?
+	set +x -e
 	echo "----------------------------------------"
+
+	# Collect the Vivado logs into one tgz archive
+	echo "Collecting Vivado logs"
+	find . -name vivado.log | xargs tar -czvf vivado.tgz
+	echo "----------------------------------------"
+
+	if [[ $DATABASE_RET != 0 ]] ; then
+		echo "A failure occurred during Database build."
+		exit $DATABASE_RET
+	fi
 
 	# Check there is nothing to do after running...
 	echo
