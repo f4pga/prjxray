@@ -37,6 +37,7 @@ def main():
         '--sdfs', nargs='+', type=str, help="List of sdf files to merge")
     parser.add_argument('--site', type=str, help="Site we want to merge")
     parser.add_argument('--json', type=str, help="Debug JSON")
+    parser.add_argument('--out', type=str, help="Merged sdf name")
 
     args = parser.parse_args()
 
@@ -48,6 +49,7 @@ def main():
             timings_list.append(timing)
 
     merged_sdf = merge(timings_list, args.site)
+    open(args.out, 'w').write(sdfparse.emit(merged_sdf))
 
     if args.json is not None:
         with open(args.json, 'w') as fp:
