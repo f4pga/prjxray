@@ -48,7 +48,7 @@ proc find_dst_pin {tile dst_wire} {
             return $clb_dst_pin
         }
     }
-    error
+    error "ERROR: Unable to find destination pin for wire $tile/$dst_wire (iterations: $iterations)"
 }
 
 proc find_src_pin {tile src_wire} {
@@ -72,7 +72,7 @@ proc find_src_pin {tile src_wire} {
             return $clb_src_pin
         }
     }
-    error
+    error "ERROR: Unable to find source pin for $tile/$src_wire (iterations: $iterations)"
 }
 
 set fp [open "../../todo.txt" r]
