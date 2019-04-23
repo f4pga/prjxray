@@ -5,6 +5,7 @@ PRJN?=1
 
 run: all
 all: build/timgrid-v.json bel/build/sdf
+	touch run.ok
 
 clean:
 	rm -rf build
