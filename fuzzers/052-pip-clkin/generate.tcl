@@ -65,6 +65,8 @@ set tiles [llength $todo_lines]
 set int_l_tiles [randsample_list_unique $tiles [filter [pblock_tiles roi] {TYPE == INT_L}] "X"]
 set int_r_tiles [randsample_list_unique $tiles [filter [pblock_tiles roi] {TYPE == INT_R}] "X"]
 set to_nodes {}
+set src_wires {}
+set dst_wires {}
 
 for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set line [lindex $todo_lines $idx]
@@ -72,7 +74,18 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
 
     set tile_type [lindex $line 0]
     set dst_wire [lindex $line 1]
+    if {[lsearch $dst_wires $dst_wire] >= 0} {
+        puts "DESTINATION WIRE ALREADY USED - SKIPPING"
+	continue
+    }
+    lappend dst_wires $dst_wire
+
     set src_wire [lindex $line 2]
+    if {[lsearch $src_wires $src_wire] >= 0} {
+        puts "SOURCE WIRE ALREADY USED - SKIPPING"
+	continue
+    }
+    lappend src_wires $src_wire
 
     set mylut [create_cell -reference LUT1 mylut_$idx]
     set myff [create_cell -reference FDRE myff_$idx]
