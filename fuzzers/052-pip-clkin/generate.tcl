@@ -76,14 +76,14 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set dst_wire [lindex $line 1]
     if {[lsearch $dst_wires $dst_wire] >= 0} {
         puts "DESTINATION WIRE ALREADY USED - SKIPPING"
-	continue
+        continue
     }
     lappend dst_wires $dst_wire
 
     set src_wire [lindex $line 2]
     if {[lsearch $src_wires $src_wire] >= 0} {
         puts "SOURCE WIRE ALREADY USED - SKIPPING"
-	continue
+        continue
     }
     lappend src_wires $src_wire
 
