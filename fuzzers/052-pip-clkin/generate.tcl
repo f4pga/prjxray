@@ -1,4 +1,35 @@
 source "$::env(XRAY_DIR)/utils/utils.tcl"
+proc randsample_list_unique {num lst {axis ""}} {
+    set rlst {}
+    set coords {}
+    set regexp_string {[A-Z_]+(X[0-9]+)(Y[0-9]+)}
+    for {set i 0} {$i<$num} {incr i} {
+        set j [expr {int(rand()*[llength $lst])}]
+        set element [lindex $lst $j]
+        if {$axis != ""} {
+            regexp $regexp_string $element dummy x_coord y_coord
+            set attempts 0
+            if {$axis == "X"} {
+                while {[lsearch -regexp $rlst "\[A-Z_\]+${x_coord}Y\[0-9\]+"] >= 0 && $attempts < 10} {
+                    incr attempts
+                    set j [expr {int(rand()*[llength $lst])}]
+                    set element [lindex $lst $j]
+                    regexp $regexp_string $element dummy x_coord y_coord
+                }
+            } elseif {$axis == "Y"} {
+                while {[lsearch -regexp $rlst "\[A-Z_\]+X\[0-9\]+${y_coord}"] >= 0 && $attempts < 10} {
+                    incr attempts
+                    set j [expr {int(rand()*[llength $lst])}]
+                    set element [lindex $lst $j]
+                    regexp $regexp_string $element dummy x_coord y_coord
+                }
+            }
+        }
+        lappend rlst $element
+        set lst [lreplace $lst $j $j]
+    }
+    return $rlst
+}
 
 create_project -force -part $::env(XRAY_PART) design design
 
@@ -29,11 +60,11 @@ for {gets $fp line} {$line != ""} {gets $fp line} {
 }
 close $fp
 
-# each run can fail up to three times so we need to prepare 3*todo_lines tiles to work on
-set tiles [expr 3 * [llength $todo_lines]]
+set tiles [llength $todo_lines]
 
-set int_l_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_L}]]
-set int_r_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_R}]]
+set int_l_tiles [randsample_list_unique $tiles [filter [pblock_tiles roi] {TYPE == INT_L}] "X"]
+set int_r_tiles [randsample_list_unique $tiles [filter [pblock_tiles roi] {TYPE == INT_R}] "X"]
+set to_nodes {}
 
 for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set line [lindex $todo_lines $idx]
@@ -49,50 +80,52 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
     set mynet [create_net mynet_$idx]
     connect_net -net $mynet -objects "$mylut/O $myff/C"
 
-    set tries 0
-    while {1} {
-        set tile_idx [expr $tries + [expr $idx * 3]]
-        incr tries
+    set tile_idx $idx
+    if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $tile_idx]; set other_tile [lindex $int_r_tiles $tile_idx]}
+    if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $tile_idx]; set other_tile [lindex $int_l_tiles $tile_idx]}
 
-        if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $tile_idx]; set other_tile [lindex $int_r_tiles $tile_idx]}
-        if {$tile_type == "INT_R"} {set tile [lindex $int_r_tiles $tile_idx]; set other_tile [lindex $int_l_tiles $tile_idx]}
+    set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+            -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
 
-        set driver_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
-                -of_objects [get_nodes -of_objects [get_wires $other_tile/CLK*0]]]]]
+    set recv_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
+            -of_objects [get_nodes -of_objects [get_wires $tile/$dst_wire]]]]]
 
-        set recv_site [get_sites -of_objects [get_site_pins -of_objects [get_nodes -downhill \
-                -of_objects [get_nodes -of_objects [get_wires $tile/$dst_wire]]]]]
+    set_property -dict "LOC $driver_site BEL A6LUT" $mylut
+    set ffbel [lindex "AFF A5FF BFF B5FF CFF C5FF DFF D5FF" [expr {int(rand()*8)}]]
+    set_property -dict "LOC $recv_site BEL $ffbel" $myff
 
-        set_property -dict "LOC $driver_site BEL A6LUT" $mylut
-        set ffbel [lindex "AFF A5FF BFF B5FF CFF C5FF DFF D5FF" [expr {int(rand()*8)}]]
-        set_property -dict "LOC $recv_site BEL $ffbel" $myff
-
-        puts "ffbel $ffbel"
-        puts "tile $tile"
-
-        set rc [route_via $mynet "$tile/$src_wire $tile/$dst_wire" 0]
-        if {$rc != 0} {
-            puts "ROUTING DONE!"
-            break
-        }
-
-        # fallback
-        puts "WARNING: failed to route net"
-        write_checkpoint -force route_todo_$idx.$tries.fail.dcp
-
-        puts "Rolling back route"
-        set_property is_route_fixed 0 $mynet
-        set_property is_bel_fixed 0 $mylut
-        set_property is_loc_fixed 1 $mylut
-        set_property is_bel_fixed 0 $myff
-        set_property is_loc_fixed 1 $myff
-        route_design -unroute -nets $mynet
-
-        # sometimes it gets stuck in specific src -> dst locations
-        if {$tries >= 3} {
-            error "ERROR: failed to route net after $tries tries"
+    puts "ffbel $ffbel"
+    puts "tile $tile"
+    puts "other tile: $other_tile"
+    set to_node_name_dst [get_nodes -of_objects [get_wires $tile/$dst_wire]]
+    puts "to_node_name_dst: $to_node_name_dst"
+    if {[regexp {[A-Z_]+(X[0-9]+)(Y[0-9]+)} $to_node_name_dst dummy x_coord_dst y_coord_dst]} {
+        if {[lsearch $to_nodes $x_coord_dst] == -1} {
+            lappend to_nodes $x_coord_dst
+        } else {
+            puts "TO_NODE ALREADY USED - SKIPPING"
+            continue
         }
     }
+    set to_node_name_src [get_nodes -of_objects [get_wires $tile/$src_wire]]
+    puts "to_node_name_src: $to_node_name_src"
+    if {[regexp {[A-Z_]+(X[0-9]+)(Y[0-9]+)} $to_node_name_src dummy x_coord_src y_coord_src]} {
+        if {[lsearch $to_nodes $x_coord_src] == -1} {
+            lappend to_nodes $x_coord_src
+        } elseif {$x_coord_src != $x_coord_dst} {
+            puts "TO_NODE ALREADY USED - SKIPPING"
+            continue
+        }
+    }
+
+    set rc [route_via $mynet "$tile/$src_wire $tile/$dst_wire" 0]
+    if {$rc != 0} {
+        puts "ROUTING DONE!"
+        continue
+    }
+
+    write_checkpoint -force route_todo_$idx.fail.dcp
+    error "ERROR: failed to route net"
 }
 
 route_design
