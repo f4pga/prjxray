@@ -16,6 +16,14 @@ General notes:
 tilegrid.json
 -------------
 
+The file `tilegrid.json` contains lists of all tiles in the device and the configuration segments formed by those tiles. It also documents the membership relationship of tiles and segments.
+
+For each segment this contains the configuration frame base address, and the word offset within the frames, as well as the number of frames for the segment and number of occupied words in each frame.
+
+FIXME: We should cross link to how to use the base address and word offset.
+
+For each tile this file contains the tile type, grid X/Y coordinates for the tile, and sites (slices) within the tile.
+
 This section assumes you are already familiar with the 7 series bitstream format.
 
 This file contains two elements:
@@ -100,6 +108,10 @@ Interpreted as:
 
 tileconn.json
 -------------
+
+The file `tileconn.json` contains the information how the wires of neighboring tiles are connected to each other. It contains one entry for each pair of tile types, each containing a list of pairs of wires that belong to the same node.
+
+FIXME: This is a good place to add the tile wire, pip, site pin diagram.
 
 This file documents how adjacent tile pairs are connected.
 No directionality is given.
