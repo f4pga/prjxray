@@ -73,12 +73,12 @@ Related tools:
    * Ex: CLB is solved by first solving LUT bits, and then solving FF bits
 
 
-Interconnect :term:`PIP` Tags
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Interconnect :term:`PIP <pip>` Tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Tags for interconnect :term:`PIP`s are stored in the `segbits_int_l.db` and `segbits_int_r.db` database files.
+Tags for interconnect :term:`PIPs <pip>` are stored in the `segbits_int_l.db` and `segbits_int_r.db` database files.
 
-Tags that enable interconnect :term:`PIP`s have the following syntax: `<tile_type>.<destination_wire>.<source_wire>`.
+Tags that enable interconnect :term:`PIPs <pip>` have the following syntax: `<tile_type>.<destination_wire>.<source_wire>`.
 
 The `<tile_type>` may be `INT_L` or `INT_R`. The destination and source wires are wire names in that tile type. For example, consider the following entry in `segbits_int_l.db`: `INT_L.NL1BEG1.NN6END2 07_32 12_33`
 
@@ -96,7 +96,7 @@ Tags for CLB tiles use a dot-separated hierarchy for their tag names. For exampl
 ppips_*.db
 ----------
 
-Pseudo :term:`PIP`s are :term:`PIP`s in the Vivado tool, but do not have actual bit pattern. The `ppips_*.db` files contain information on pseudo-:term:`PIP`s. Those files contain one entry per pseudo-PIP, each with one of the following three tags: `always`, `default` or `hint`. The tag `always` is used for pseudo-:term:`PIP`s that are actually always-on, i.e. that are permanent connections between two wires. The tag `default` is used for pseudo-:term:`PIP`s that represent the default behavior if no other driver has been configured for the destination net (all `default` pseudo-:term:`PIP`s connect to the `VCC_WIRE` net). And the tag `hint` is used for :term:`PIP`s that are used by Vivado to tell the router that two logic slice outputs drive the same value, i.e. behave like they are connected as far as the routing process is concerned.
+Pseudo :term:`PIPs <pip>` are :term:`PIPs <pip>` in the Vivado tool, but do not have actual bit pattern. The `ppips_*.db` files contain information on pseudo-:term:`PIPs <pip>`. Those files contain one entry per pseudo-PIP, each with one of the following three tags: `always`, `default` or `hint`. The tag `always` is used for pseudo-:term:`PIPs <pip>` that are actually always-on, i.e. that are permanent connections between two wires. The tag `default` is used for pseudo-:term:`PIPs <pip>` that represent the default behavior if no other driver has been configured for the destination net (all `default` pseudo-:term:`PIPs <pip>` connect to the `VCC_WIRE` net). And the tag `hint` is used for :term:`PIPs <pip>` that are used by Vivado to tell the router that two logic slice outputs drive the same value, i.e. behave like they are connected as far as the routing process is concerned.
 
 mask_*.db
 ---------

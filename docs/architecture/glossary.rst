@@ -147,6 +147,11 @@ Glossary
     One of the configurable input/output blocks that connect the :term:`FPGA`
     to external devices.
 
+  Interconnect tile
+  INT
+    An interconnect tile (`INT_L`, `INT_R`) is used to connect other tiles to
+    the fabric. It is also frequently called a switch box.
+
   LUT
     A lookup table (LUT) is a logic element on the :term:`FPGA`. LUTs function
     as a ROM, apply combinatorial logic, and generate the output value for a
