@@ -61,7 +61,9 @@ all:: 005-tilegrid/run.ok
 	touch 005-tilegrid/run.ok
 endif
 
+ifneq ($(XRAY_DATABASE),kintex7)
 $(eval $(call fuzzer,007-timing,005-tilegrid))
+endif
 $(eval $(call fuzzer,010-clb-lutinit,005-tilegrid))
 $(eval $(call fuzzer,011-clb-ffconfig,005-tilegrid))
 $(eval $(call fuzzer,012-clb-n5ffmux,005-tilegrid))
