@@ -21,7 +21,7 @@ The first number indicates the frame address relative to the base frame address 
 
 The second number indicates the bit position width.
 
-FIXME: Expand this section. We've had a couple questions around this, probably good to get a complete description of this that we can point people too. This is probably a good place to talk about tile grid and how it applies to segbit.
+.. warning:: FIXME: Expand this section. We've had a couple questions around this, probably good to get a complete description of this that we can point people too. This is probably a good place to talk about tile grid and how it applies to segbit.
 
 
 segbits_*.db
@@ -82,7 +82,7 @@ Tags that enable interconnect :term:`PIPs <pip>` have the following syntax: `<ti
 
 The `<tile_type>` may be `INT_L` or `INT_R`. The destination and source wires are wire names in that tile type. For example, consider the following entry in `segbits_int_l.db`: `INT_L.NL1BEG1.NN6END2 07_32 12_33`
 
-FIXME: This is probably a good place to reference tileconn as the documentation that explains how wires are connected outside of switchboxes (which is what pips document).
+.. warning:: FIXME: This is probably a good place to reference tileconn as the documentation that explains how wires are connected outside of switchboxes (which is what pips document).
 
 This means that the bits `07_32` and `12_33` must be set in the segment to drive the value from the wire `NN6END2` to the wire `NL1BEG1`.
 
@@ -136,7 +136,7 @@ So in summary:
 
 So, with this in mind, we have frame base address 0x00020500 and word # 2. This maps to tilegrid.json entry SEG_CLBLL_L_X12Y101 (has "baseaddr": ["0x00020600", 2]). This also yields "type": "clbll_l" meaning we are configuring a CLBLL_L.
 
-FIXME: This example is out of date with the new tilegrid format, should update it.
+.. warning:: FIXME: This example is out of date with the new tilegrid format, should update it.
 
 
 Looking at segbits_clbll_l.db, we need to look up the bit at segment column 11, offset at bit 5. However, this is not present, so we fall back to segbits_int_l.db. This yields a few entries related to EL1BEG (ex: INT_L.EL1BEG_N3.EL1END0 11_05 13_05).
