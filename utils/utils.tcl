@@ -96,6 +96,19 @@ proc pblock_tiles {pblock} {
     return [get_tiles "$clb_tiles $int_tiles"]
 }
 
+# returns list of unique tile types
+proc get_tile_types {} {
+    set all_tiles [get_tiles]
+    set types {}
+    foreach tile $all_tiles {
+        set type [get_property TYPE $tile]
+        #ignore empty tiles
+        if {$type == "NULL"} { continue }
+        if {[lsearch -exact $types $type] == -1} {lappend types $type}
+    }
+    return $types
+}
+
 proc lintersect {lst1 lst2} {
     set rlst {}
     foreach el $lst1 {
