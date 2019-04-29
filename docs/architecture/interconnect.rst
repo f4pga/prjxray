@@ -8,7 +8,7 @@ Some :term:`PIPs <pip>` are not "real", in the sense that no bit pattern in the 
 
 .. warning:: FIXME: Check the above is true.
 
-The bit switchbox in an :term:`INT`s tile also contains a few 1:1 connections that are in fact always present and have no corresponding configuration bits.
+The bit switchbox in an :term:`INTs <INT>` tile also contains a few 1:1 connections that are in fact always present and have no corresponding configuration bits.
 
 Regular :term:`PIPs <pip>`
 --------------------------
@@ -17,7 +17,7 @@ Regular :term:`PIPs <pip>` correspond to a bit pattern that is present in the bi
 
 .. warning:: FIXME: Check if the above is true for PIPs outside of the INT switch box.
 
-For example, when the bits 05_57 and 11_56 are set then SR1END3->SE2BEG3 is enabled, but when 08_56 and 11_56 are set then ER1END3->SE2BEG3 is enabled (in an :term:`INT_L`s tile paired with a CLBLL_L tile). A configuration in which all three bits are set is invalid. See `segbits_int_[lr].db` for a complete list of bit pattern for configuring :term:`PIPs <pip>`.
+For example, when the bits 05_57 and 11_56 are set then SR1END3->SE2BEG3 is enabled, but when 08_56 and 11_56 are set then ER1END3->SE2BEG3 is enabled (in an :term:`INT_L <INT>`s tile paired with a CLBLL_L tile). A configuration in which all three bits are set is invalid. See `segbits_int_[lr].db` for a complete list of bit pattern for configuring :term:`PIPs <pip>`.
 
 VCC Drivers
 -----------
