@@ -21,7 +21,7 @@ The first number indicates the frame address relative to the base frame address 
 
 The second number indicates the bit position width.
 
-FIXME: Expand this section. We've had a couple questions around this, probably good to get a complete description of this that we can point people too. This is probably a good place to talk about tile grid and how it applies to segbit.
+.. warning:: FIXME: Expand this section. We've had a couple questions around this, probably good to get a complete description of this that we can point people too. This is probably a good place to talk about tile grid and how it applies to segbit.
 
 
 segbits_*.db
@@ -73,16 +73,16 @@ Related tools:
    * Ex: CLB is solved by first solving LUT bits, and then solving FF bits
 
 
-Interconnect :term:`PIP` Tags
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Interconnect :term:`PIP <pip>` Tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Tags for interconnect :term:`PIP`s are stored in the `segbits_int_l.db` and `segbits_int_r.db` database files.
+Tags for interconnect :term:`PIPs <pip>` are stored in the `segbits_int_l.db` and `segbits_int_r.db` database files.
 
-Tags that enable interconnect :term:`PIP`s have the following syntax: `<tile_type>.<destination_wire>.<source_wire>`.
+Tags that enable interconnect :term:`PIPs <pip>` have the following syntax: `<tile_type>.<destination_wire>.<source_wire>`.
 
 The `<tile_type>` may be `INT_L` or `INT_R`. The destination and source wires are wire names in that tile type. For example, consider the following entry in `segbits_int_l.db`: `INT_L.NL1BEG1.NN6END2 07_32 12_33`
 
-FIXME: This is probably a good place to reference tileconn as the documentation that explains how wires are connected outside of switchboxes (which is what pips document).
+.. warning:: FIXME: This is probably a good place to reference tileconn as the documentation that explains how wires are connected outside of switchboxes (which is what pips document).
 
 This means that the bits `07_32` and `12_33` must be set in the segment to drive the value from the wire `NN6END2` to the wire `NL1BEG1`.
 
@@ -96,7 +96,7 @@ Tags for CLB tiles use a dot-separated hierarchy for their tag names. For exampl
 ppips_*.db
 ----------
 
-Pseudo :term:`PIP`s are :term:`PIP`s in the Vivado tool, but do not have actual bit pattern. The `ppips_*.db` files contain information on pseudo-:term:`PIP`s. Those files contain one entry per pseudo-PIP, each with one of the following three tags: `always`, `default` or `hint`. The tag `always` is used for pseudo-:term:`PIP`s that are actually always-on, i.e. that are permanent connections between two wires. The tag `default` is used for pseudo-:term:`PIP`s that represent the default behavior if no other driver has been configured for the destination net (all `default` pseudo-:term:`PIP`s connect to the `VCC_WIRE` net). And the tag `hint` is used for :term:`PIP`s that are used by Vivado to tell the router that two logic slice outputs drive the same value, i.e. behave like they are connected as far as the routing process is concerned.
+Pseudo :term:`PIPs <pip>` are :term:`PIPs <pip>` in the Vivado tool, but do not have actual bit pattern. The `ppips_*.db` files contain information on pseudo-:term:`PIPs <pip>`. Those files contain one entry per pseudo-PIP, each with one of the following three tags: `always`, `default` or `hint`. The tag `always` is used for pseudo-:term:`PIPs <pip>` that are actually always-on, i.e. that are permanent connections between two wires. The tag `default` is used for pseudo-:term:`PIPs <pip>` that represent the default behavior if no other driver has been configured for the destination net (all `default` pseudo-:term:`PIPs <pip>` connect to the `VCC_WIRE` net). And the tag `hint` is used for :term:`PIPs <pip>` that are used by Vivado to tell the router that two logic slice outputs drive the same value, i.e. behave like they are connected as far as the routing process is concerned.
 
 mask_*.db
 ---------
@@ -136,7 +136,7 @@ So in summary:
 
 So, with this in mind, we have frame base address 0x00020500 and word # 2. This maps to tilegrid.json entry SEG_CLBLL_L_X12Y101 (has "baseaddr": ["0x00020600", 2]). This also yields "type": "clbll_l" meaning we are configuring a CLBLL_L.
 
-FIXME: This example is out of date with the new tilegrid format, should update it.
+.. warning:: FIXME: This example is out of date with the new tilegrid format, should update it.
 
 
 Looking at segbits_clbll_l.db, we need to look up the bit at segment column 11, offset at bit 5. However, this is not present, so we fall back to segbits_int_l.db. This yields a few entries related to EL1BEG (ex: INT_L.EL1BEG_N3.EL1END0 11_05 13_05).
