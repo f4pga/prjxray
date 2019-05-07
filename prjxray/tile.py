@@ -1,37 +1,237 @@
+""" Database files available for a tile type. """
 from collections import namedtuple
 import json
 from prjxray import lib
-""" Database files available for a tile """
+from prjxray.timing import fast_slow_tuple_to_corners, RcElement
+
 TileDbs = namedtuple(
     'TileDbs', 'segbits block_ram_segbits ppips mask tile_type')
 
-Pip = namedtuple(
-    'Pip', 'name net_to net_from can_invert is_directional is_pseudo')
-""" Site - Represents an instance of a site within a tile.
+class OutpinTiming(namedtuple('OutpinTiming', 'delays drive_resistance')):
+    """ Timing for site output pins.
 
-name - Name of site within tile, instance specific.
-prefix - Prefix of site naming in Xilinx parlance.
-type - What type of slice this instance presents.
-pins - Instaces of site pins within this site and tile.  This is an tuple of
-       SitePin tuples, and is specific to this instance of the site within
-       the tile.
+    Attributes
+    ----------
+    delays : dicts of PvtCorner to IntristicDelay
+        Intristic delay of output pin.
+    drive_resistance : float
+        Resistance of drive output pin (milliOhms).
 
-"""
-Site = namedtuple('Site', 'name prefix x y type site_pins')
-""" SitePin - Tuple representing a site pin within a tile.
+    """
+    pass
 
-Sites are generic based on type, however sites are instanced
-within a tile 1 or more times.  The SitePin contains both site type generic
-information and tile type specific information.
+class InpinTiming(namedtuple('InpinTiming', 'delays capacitance')):
+    """ Timing for site input pins.
 
-name - Site type specific name.  This name is expected to be the same for all
-       sites of the same type.
-wire - Wire name within the tile.  This name is site instance specific.
+    Attributes
+    ----------
+    delays : dicts of PvtCorner to IntristicDelay
+        Intristic delay of input pin.
+    capacitance : float
+        Capacitance of input pints (microFarads).
 
-"""
-SitePin = namedtuple('SitePin', 'name wire')
+    """
+    pass
+
+class PipTiming(namedtuple('PipTiming', 'delays drive_resistance internal_capacitance')):
+    """ Timing for pips.
+
+    Attributes
+    ----------
+    delays : dicts of PvtCorner to IntristicDelay
+        Intristic delay of pip.
+    internal_capacitance : float
+        Capacitance (microFarads) of pip (which is only seen if pip is used).
+    drive_resistance : float
+        Resistance of drive output pin (milliOhms).
+
+    """
+    pass
+
+class Pip(namedtuple(
+    'Pip', ('name', 'net_to', 'net_from', 'can_invert', 'is_directional',
+        'is_pseudo', 'is_pass_transitor', 'timing', 'backward_timing'))):
+    """ Pip information.
+
+    Attributes
+    ----------
+
+    name : str
+        Name of pip
+    net_to : str
+        Name of output tile wire when pip is unidirectional.
+    net_from: str
+        Name of input tile wire when pip is unidirectional.
+    can_invert : bool
+        Can this pip invert the signal.
+    is_directional : bool
+        True if this pip is unidirectional, False if this pip is
+        unidirectional.
+    is_pseudo : bool
+        True if this pip is mark as a pseudo-pip.
+    is_pass_transitor : bool
+        True if this pip is non-isolating.
+    timing : PipTiming
+        Timing used when connecting net_from to net_to.  This is the only
+        timing used when a pip is unidirectional.
+
+        May be None if timing information is not present in the database.
+    backward_timing : PipTiming
+        Timing used when connecting net_to to net_from.  This is only used
+        if the pip is bidirectional.
+
+        May be None if timing information is not present in the database.
+
+    """
+    pass
+
+class Site(namedtuple('Site', 'name prefix x y type site_pins')):
+    """ Represents an instance of a site within a tile.
+
+    Attributes
+    ----------
+    name : str
+        Name of site within tile, instance specific.
+    prefix : str
+        Prefix of site naming in Xilinx parlance.
+    type : str
+        What type of slice this instance presents.
+    site_pins : list of SitePin
+        Instaces of site pins within this site and tile.  This is an tuple of
+        SitePin tuples, and is specific to this instance of the site within
+        the tile.
+
+    """
+
+class SitePin(namedtuple('SitePin', 'name wire timing')):
+    """ Tuple representing a site pin within a tile.
+
+    Sites are generic based on type, however sites are instanced
+    within a tile 1 or more times.  The SitePin contains both site type generic
+    information and tile type specific information.
+
+    Attributes
+    ----------
+    name : str
+        Site type specific name.  This name is expected to be the same for
+        all sites of the same type.
+    wire : str
+        Wire name within the tile.  This name is site instance specific.
+    timing : Either InpinTiming or OutpinTiming
+        Timing of site pin. May be None if database lacks timing information.
+
+    """
 
 WireInfo = namedtuple('WireInfo', 'pips sites')
+
+# Conversion factor from database to internal units.
+RESISTANCE_FACTOR = 1
+CAPACITANCE_FACTOR = 1e3
+
+def get_pip_timing(pip_timing_json):
+    """ Convert pip_timing_json JSON into PipTiming object.
+
+    Returns
+    -------
+    If timing information is not present for this pip, returns None.
+    If timing information is present, returns PipTiming.  Some fields may be
+    None if the pip type lacks that field.
+
+    """
+
+    if pip_timing_json is None:
+        return None
+
+    delays = None
+
+    if pip_timing_json.get('delay') is not None:
+        delays = fast_slow_tuple_to_corners(pip_timing_json.get('delay'))
+
+    in_cap = pip_timing_json.get('in_cap')
+    if in_cap is not None:
+        in_cap = float(in_cap)/CAPACITANCE_FACTOR
+    else:
+        in_cap = 0
+
+    res = pip_timing_json.get('res')
+    if res is not None:
+        res = float(res)/RESISTANCE_FACTOR
+    else:
+        res = 0
+
+    return PipTiming(
+            delays=delays, drive_resistance=res, internal_capacitance=in_cap,
+            )
+
+
+def get_site_pin_timing(site_pin_info):
+    """ Convert site_pin_info JSON into InpinTiming or OutpinTiming object.
+
+    Returns
+    -------
+    If timing information is not present for this site pin, returns None.
+    If this is an output pin, returns OutpinTiming.
+    If this is an input pin, returns InpinTiming.
+
+    """
+    if isinstance(site_pin_info, str):
+        return site_pin_info, None
+
+    wire = site_pin_info['wire']
+
+    if 'delay' not in site_pin_info:
+        return None
+
+    delays = fast_slow_tuple_to_corners(site_pin_info['delay'])
+
+    if 'cap' in site_pin_info:
+        assert 'res' not in site_pin_info
+        return wire, InpinTiming(
+                delays=delays,
+                capacitance=float(site_pin_info['cap'])/CAPACITANCE_FACTOR,
+                )
+    else:
+        assert 'res' in site_pin_info
+        return wire, OutpinTiming(
+                delays=delays,
+                drive_resistance=float(site_pin_info['res'])/RESISTANCE_FACTOR,
+                )
+
+
+def get_wires(wires):
+    """ Converts database input to dictionary of tile wires to wire timing.
+
+    Returns dictionary of tile wire name to RcElement or None. """
+
+    if isinstance(wires, list):
+        # Handle old database gracefully.
+        return {wire: None for wire in wires}
+
+    output = {}
+
+    for wire, rc_json in wires.items():
+        if rc_json is None:
+            output[wire] = RcElement(
+                    resistance=0,
+                    capacitance=0,
+                    )
+        else:
+            output[wire] = RcElement(
+                    resistance=float(rc_json['res'])/RESISTANCE_FACTOR,
+                    capacitance=float(rc_json['cap'])/CAPACITANCE_FACTOR,
+                    )
+
+    return output
+
+def is_pass_transitor(pip_json):
+    """ Returns boolean if pip JSON indicates pip is a pass transistor.
+
+    Always returns False if database lacks this information.
+    """
+    if 'is_pass_transitor' in pip_json:
+        return bool(int(pip_json['is_pass_transitor']))
+    else:
+        return False
 
 
 class Tile(object):
@@ -49,17 +249,32 @@ class Tile(object):
 
         def yield_sites(sites):
             for site in sites:
+                site_pins = []
+                for name, site_pin_info in site['site_pins'].items():
+                    if site_pin_info is not None:
+                        wire, timing = get_site_pin_timing(site_pin_info)
+                        site_pins.append(
+                                SitePin(
+                                    name=name,
+                                    wire=wire,
+                                    timing=timing,
+                                    ))
+                    else:
+                        site_pins.append(
+                                SitePin(
+                                    name=name,
+                                    wire=None,
+                                    timing=None,
+                                    ))
+
                 yield Site(
                     name=site['name'],
                     prefix=site['prefix'],
                     type=site['type'],
                     x=site['x_coord'],
                     y=site['y_coord'],
-                    site_pins=tuple(
-                        SitePin(
-                            name=name,
-                            wire=wire,
-                        ) for name, wire in site['site_pins'].items()))
+                    site_pins=site_pins,
+                    )
 
         def yield_pips(pips):
             for name, pip in pips.items():
@@ -70,12 +285,15 @@ class Tile(object):
                     can_invert=bool(int(pip['can_invert'])),
                     is_directional=bool(int(pip['is_directional'])),
                     is_pseudo=bool(int(pip['is_pseudo'])),
+                    is_pass_transitor=is_pass_transitor(pip),
+                    timing=get_pip_timing(pip.get('src_to_dst')),
+                    backward_timing=get_pip_timing(pip.get('dst_to_src')),
                 )
 
         with open(self.tile_dbs.tile_type) as f:
             tile_type = json.load(f)
             assert self.tilename_upper == tile_type['tile_type']
-            self.wires = tile_type['wires']
+            self.wires = get_wires(tile_type['wires'])
             self.sites = tuple(yield_sites(tile_type['sites']))
             self.pips = tuple(yield_pips(tile_type['pips']))
 
