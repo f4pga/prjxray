@@ -56,6 +56,30 @@ Example timing tree:
 |Inpin|          |Inpin|
 +-----+          +-----+
 
+Note on units:
+
+The timing model operates on the following types of units:
+ - Time
+ - Resistance
+ - Capacitance
+
+For a consistent unit set, the following equation must be satisfied:
+
+1 Resistance unit * 1 Capacitance unit = 1 Time unit
+
+The SI unit set would be:
+ - Time = seconds
+ - Resistance = Ohms
+ - Capacitance = Farads
+
+However as long as the scale factors are consistent, the model will work
+with other unit combinations.  For example:
+ - Time = nanoseconds (1e-9 seconds)
+ - Resistance = milliOhms (1e-3 Ohms)
+ - Capacitance = microFarads (1e-6 Farads)
+
+(1e-3 * 1e-6) (Ohms * Farads) does equal (1e-9) seconds.
+
 """
 import enum
 from collections import namedtuple
@@ -101,10 +125,10 @@ class RcElement(namedtuple('RcElement', 'resistance capacitance')):
     ----------
 
     resistance : float
-        Resistance of element (milliOhms)
+        Resistance of element
 
     capacitance : float
-        Capacitance of element (microFarads)
+        Capacitance of element
 
     """
     pass
