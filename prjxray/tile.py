@@ -7,6 +7,7 @@ from prjxray.timing import fast_slow_tuple_to_corners, RcElement
 TileDbs = namedtuple(
     'TileDbs', 'segbits block_ram_segbits ppips mask tile_type')
 
+
 class OutpinTiming(namedtuple('OutpinTiming', 'delays drive_resistance')):
     """ Timing for site output pins.
 
@@ -19,6 +20,7 @@ class OutpinTiming(namedtuple('OutpinTiming', 'delays drive_resistance')):
 
     """
     pass
+
 
 class InpinTiming(namedtuple('InpinTiming', 'delays capacitance')):
     """ Timing for site input pins.
@@ -33,7 +35,9 @@ class InpinTiming(namedtuple('InpinTiming', 'delays capacitance')):
     """
     pass
 
-class PipTiming(namedtuple('PipTiming', 'delays drive_resistance internal_capacitance')):
+
+class PipTiming(namedtuple('PipTiming',
+                           'delays drive_resistance internal_capacitance')):
     """ Timing for pips.
 
     Attributes
@@ -48,9 +52,11 @@ class PipTiming(namedtuple('PipTiming', 'delays drive_resistance internal_capaci
     """
     pass
 
+
 class Pip(namedtuple(
-    'Pip', ('name', 'net_to', 'net_from', 'can_invert', 'is_directional',
-        'is_pseudo', 'is_pass_transitor', 'timing', 'backward_timing'))):
+        'Pip',
+    ('name', 'net_to', 'net_from', 'can_invert', 'is_directional', 'is_pseudo',
+     'is_pass_transitor', 'timing', 'backward_timing'))):
     """ Pip information.
 
     Attributes
@@ -85,6 +91,7 @@ class Pip(namedtuple(
     """
     pass
 
+
 class Site(namedtuple('Site', 'name prefix x y type site_pins')):
     """ Represents an instance of a site within a tile.
 
@@ -102,6 +109,7 @@ class Site(namedtuple('Site', 'name prefix x y type site_pins')):
         the tile.
 
     """
+
 
 class SitePin(namedtuple('SitePin', 'name wire timing')):
     """ Tuple representing a site pin within a tile.
@@ -122,11 +130,13 @@ class SitePin(namedtuple('SitePin', 'name wire timing')):
 
     """
 
+
 WireInfo = namedtuple('WireInfo', 'pips sites')
 
 # Conversion factor from database to internal units.
 RESISTANCE_FACTOR = 1
 CAPACITANCE_FACTOR = 1e3
+
 
 def get_pip_timing(pip_timing_json):
     """ Convert pip_timing_json JSON into PipTiming object.
@@ -149,19 +159,21 @@ def get_pip_timing(pip_timing_json):
 
     in_cap = pip_timing_json.get('in_cap')
     if in_cap is not None:
-        in_cap = float(in_cap)/CAPACITANCE_FACTOR
+        in_cap = float(in_cap) / CAPACITANCE_FACTOR
     else:
         in_cap = 0
 
     res = pip_timing_json.get('res')
     if res is not None:
-        res = float(res)/RESISTANCE_FACTOR
+        res = float(res) / RESISTANCE_FACTOR
     else:
         res = 0
 
     return PipTiming(
-            delays=delays, drive_resistance=res, internal_capacitance=in_cap,
-            )
+        delays=delays,
+        drive_resistance=res,
+        internal_capacitance=in_cap,
+    )
 
 
 def get_site_pin_timing(site_pin_info):
@@ -187,15 +199,15 @@ def get_site_pin_timing(site_pin_info):
     if 'cap' in site_pin_info:
         assert 'res' not in site_pin_info
         return wire, InpinTiming(
-                delays=delays,
-                capacitance=float(site_pin_info['cap'])/CAPACITANCE_FACTOR,
-                )
+            delays=delays,
+            capacitance=float(site_pin_info['cap']) / CAPACITANCE_FACTOR,
+        )
     else:
         assert 'res' in site_pin_info
         return wire, OutpinTiming(
-                delays=delays,
-                drive_resistance=float(site_pin_info['res'])/RESISTANCE_FACTOR,
-                )
+            delays=delays,
+            drive_resistance=float(site_pin_info['res']) / RESISTANCE_FACTOR,
+        )
 
 
 def get_wires(wires):
@@ -212,16 +224,17 @@ def get_wires(wires):
     for wire, rc_json in wires.items():
         if rc_json is None:
             output[wire] = RcElement(
-                    resistance=0,
-                    capacitance=0,
-                    )
+                resistance=0,
+                capacitance=0,
+            )
         else:
             output[wire] = RcElement(
-                    resistance=float(rc_json['res'])/RESISTANCE_FACTOR,
-                    capacitance=float(rc_json['cap'])/CAPACITANCE_FACTOR,
-                    )
+                resistance=float(rc_json['res']) / RESISTANCE_FACTOR,
+                capacitance=float(rc_json['cap']) / CAPACITANCE_FACTOR,
+            )
 
     return output
+
 
 def is_pass_transitor(pip_json):
     """ Returns boolean if pip JSON indicates pip is a pass transistor.
@@ -254,18 +267,18 @@ class Tile(object):
                     if site_pin_info is not None:
                         wire, timing = get_site_pin_timing(site_pin_info)
                         site_pins.append(
-                                SitePin(
-                                    name=name,
-                                    wire=wire,
-                                    timing=timing,
-                                    ))
+                            SitePin(
+                                name=name,
+                                wire=wire,
+                                timing=timing,
+                            ))
                     else:
                         site_pins.append(
-                                SitePin(
-                                    name=name,
-                                    wire=None,
-                                    timing=None,
-                                    ))
+                            SitePin(
+                                name=name,
+                                wire=None,
+                                timing=None,
+                            ))
 
                 yield Site(
                     name=site['name'],
@@ -274,7 +287,7 @@ class Tile(object):
                     x=site['x_coord'],
                     y=site['y_coord'],
                     site_pins=site_pins,
-                    )
+                )
 
         def yield_pips(pips):
             for name, pip in pips.items():

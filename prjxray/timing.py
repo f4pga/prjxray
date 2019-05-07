@@ -60,6 +60,7 @@ Example timing tree:
 import enum
 from collections import namedtuple
 
+
 class PvtCorner(enum.Enum):
     """ Process/voltage/temperature corner definitions. """
 
@@ -68,6 +69,7 @@ class PvtCorner(enum.Enum):
 
     # Corner where device operates with slowest intristic delays.
     SLOW = "SLOW"
+
 
 class IntristicDelay(namedtuple('IntristicDelay', 'min max')):
     """ An intristic delay instance.
@@ -90,6 +92,7 @@ class IntristicDelay(namedtuple('IntristicDelay', 'min max')):
     max : float
         Maximum instrinsic delay (nsec)
     """
+
 
 class RcElement(namedtuple('RcElement', 'resistance capacitance')):
     """ One part of an RcNode, embedded within an RcTree.
@@ -122,23 +125,25 @@ def fast_slow_tuple_to_corners(arr):
     fast_min, fast_max, slow_min, slow_max = map(float, arr)
 
     return {
-            PvtCorner.FAST: IntristicDelay(
-                min=fast_min,
-                max=fast_max,
-                ),
-            PvtCorner.SLOW: IntristicDelay(
-                min=slow_min,
-                max=slow_max,
-                ),
-            }
+        PvtCorner.FAST: IntristicDelay(
+            min=fast_min,
+            max=fast_max,
+        ),
+        PvtCorner.SLOW: IntristicDelay(
+            min=slow_min,
+            max=slow_max,
+        ),
+    }
 
 
 # Math models are used to represent abstract operations for the timing models.
 # This is useful for creating excel workbooks that can update dynamically, or
 # generating a model with symbolic constants to be backsolved.
 
+
 class ExcelMathModel(object):
     """ Math model used for outputting to an dyanmic Excel sheet. """
+
     def __init__(self):
         pass
 
@@ -171,6 +176,7 @@ class ExcelMathModel(object):
 
 def PythonMathModel(object):
     """ Math model used for outputting values equalated immediately. """
+
     def __init__(self):
         pass
 
@@ -184,16 +190,17 @@ def PythonMathModel(object):
         return v
 
     def divide(self, a, b):
-        return a/b
+        return a / b
 
     def plus(self, a, b):
-        return a+b
+        return a + b
 
     def multiply(self, a, b):
-        return a*b
+        return a * b
 
     def eval(self, elem):
         return elem
+
 
 class TimingNode(object):
     """ Base class for timing node models.
@@ -243,6 +250,7 @@ class DownstreamNode(TimingNode):
     """ All non-root TimingNode's are DownstreamNode's.
 
     """
+
     def propigate_delays(self, elements, math):
         """ Propigates upstream delay elements to children of the tree.
 
@@ -301,7 +309,8 @@ class Outpin(TimingNode):
 
     def propigate_downstream_capacitance(self, math):
         assert self.sink_wire is not None
-        self.downstream_cap = self.sink_wire.propigate_downstream_capacitance(math)
+        self.downstream_cap = self.sink_wire.propigate_downstream_capacitance(
+            math)
         self.rc_delay = math.multiply(self.downstream_cap, self.resistance)
 
     def propigate_delays(self, math):
@@ -347,6 +356,7 @@ class Inpin(DownstreamNode):
         Intristic delays on input pin.
 
     """
+
     def __init__(self, capacitance, delays, name=None):
         self.capacitance = capacitance
         self.delays = delays
@@ -393,6 +403,7 @@ class Wire(DownstreamNode):
         Math model used to compute lumped resistance and capacitance.
 
     """
+
     def __init__(self, rc_elements, math):
         self.resistance = math.sum(elem.resistance for elem in rc_elements)
         self.capacitance = math.sum(elem.capacitance for elem in rc_elements)
@@ -417,11 +428,14 @@ class Wire(DownstreamNode):
         self.children.append(child)
 
     def propigate_downstream_capacitance(self, math):
-        downstream_cap = math.sum(child.propigate_downstream_capacitance(math) for child in self.children)
+        downstream_cap = math.sum(
+            child.propigate_downstream_capacitance(math)
+            for child in self.children)
 
         # Pi-model is definied such that wire resistance only sees half of the
         # wire capacitance.
-        self.downstream_cap = math.plus(math.divide(self.capacitance, 2), downstream_cap)
+        self.downstream_cap = math.plus(
+            math.divide(self.capacitance, 2), downstream_cap)
 
         # Upstream seems all of the wires capacitance
         return math.plus(downstream_cap, self.capacitance)
@@ -445,6 +459,7 @@ class Wire(DownstreamNode):
         assert self.downstream_cap is not None
         return self.downstream_cap
 
+
 class Buffer(DownstreamNode):
     """ Represents an isolating switch.
 
@@ -462,6 +477,7 @@ class Buffer(DownstreamNode):
         Delay through switch
 
     """
+
     def __init__(self, internal_capacitance, drive_resistance, delays):
         self.internal_capacitance = internal_capacitance
         self.drive_resistance = drive_resistance
@@ -488,7 +504,8 @@ class Buffer(DownstreamNode):
 
     def propigate_downstream_capacitance(self, math):
         assert self.sink_wire is not None
-        self.downstream_cap = self.sink_wire.propigate_downstream_capacitance(math)
+        self.downstream_cap = self.sink_wire.propigate_downstream_capacitance(
+            math)
         return self.internal_capacitance
 
     def propigate_delays(self, elements, math):
@@ -496,7 +513,8 @@ class Buffer(DownstreamNode):
 
         assert self.sink_wire is not None
         self.sink_wire.propigate_delays(self.propigated_delays + [self], math)
-        self.rc_delay = math.multiply(self.downstream_cap, self.drive_resistance)
+        self.rc_delay = math.multiply(
+            self.downstream_cap, self.drive_resistance)
 
     def get_intrinsic_delays(self):
         return self.delays
@@ -521,6 +539,7 @@ class PassTransistor(DownstreamNode):
         Delay through switch.
 
     """
+
     def __init__(self, drive_resistance, delays):
         self.drive_resistance = drive_resistance
         self.delays = delays
@@ -547,7 +566,8 @@ class PassTransistor(DownstreamNode):
 
     def propigate_downstream_capacitance(self, math):
         assert self.sink_wire is not None
-        self.downstream_cap = self.sink_wire.propigate_downstream_capacitance(math)
+        self.downstream_cap = self.sink_wire.propigate_downstream_capacitance(
+            math)
 
         return self.downstream_cap
 
@@ -556,7 +576,8 @@ class PassTransistor(DownstreamNode):
 
         assert self.sink_wire is not None
         self.sink_wire.propigate_delays(self.propigated_delays + [self], math)
-        self.rc_delay = math.multiply(self.downstream_cap, self.drive_resistance)
+        self.rc_delay = math.multiply(
+            self.downstream_cap, self.drive_resistance)
 
     def get_intrinsic_delays(self):
         return self.delays
