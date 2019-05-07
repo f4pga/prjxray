@@ -28,6 +28,34 @@ and inpins are leafs of the elmore tree. Wires and pass-transistor switches are
 nodes in the tree. Wires share their capacitance upstream and downstream using
 a pi-model.
 
+Example timing tree:
+
++------+
+|Outpin|
++--+---+
+   |
+   |
+   v
++--+--+
+|Wire |
++--+--+
+   |
+   +-----------------+
+   |                 |
++--+---+     +-------+------+
+|Buffer|     |PassTransistor|
++--+---+     +------+-------+
+   |                |
+   v                v
++--+-+           +--+-+
+|Wire|           |Wire|
++--+-+           +--+-+
+   |                |
+   v                v
++--+--+          +--+--+
+|Inpin|          |Inpin|
++-----+          +-----+
+
 """
 import enum
 from collections import namedtuple
