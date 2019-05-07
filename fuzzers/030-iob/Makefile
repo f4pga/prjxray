@@ -12,9 +12,11 @@ build/segbits_xiob33.db: build/segbits_xiob33.rdb process_rdb.py bits.dbf
 	${XRAY_MASKMERGE} build/mask_xiob33.db $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
 
 pushdb:
+ifneq (${XRAY_DATABASE}, zynq7)
 	${XRAY_MERGEDB} liob33 build/segbits_xiob33.db
-	${XRAY_MERGEDB} riob33 build/segbits_xiob33.db
 	${XRAY_MERGEDB} mask_liob33 build/mask_xiob33.db
+endif
+	${XRAY_MERGEDB} riob33 build/segbits_xiob33.db
 	${XRAY_MERGEDB} mask_riob33 build/mask_xiob33.db
 
 .PHONY: database pushdb
