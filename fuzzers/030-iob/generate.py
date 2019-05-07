@@ -26,6 +26,8 @@ def skip_broken_tiles(d):
     """
     if os.getenv('XRAY_DATABASE') == 'artix7' and d['tile'] == 'LIOB33_X0Y43':
         return True
+    if os.getenv('XRAY_DATABASE') == 'zynq7' and d['tile'] == 'RIOB33_X31Y43':
+        return True
 
     return False
 
