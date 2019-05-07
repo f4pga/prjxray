@@ -56,7 +56,7 @@ class PipTiming(namedtuple('PipTiming',
 class Pip(namedtuple(
         'Pip',
     ('name', 'net_to', 'net_from', 'can_invert', 'is_directional', 'is_pseudo',
-     'is_pass_transitor', 'timing', 'backward_timing'))):
+     'is_pass_transistor', 'timing', 'backward_timing'))):
     """ Pip information.
 
     Attributes
@@ -75,7 +75,7 @@ class Pip(namedtuple(
         unidirectional.
     is_pseudo : bool
         True if this pip is mark as a pseudo-pip.
-    is_pass_transitor : bool
+    is_pass_transistor : bool
         True if this pip is non-isolating.
     timing : PipTiming
         Timing used when connecting net_from to net_to.  This is the only
@@ -236,13 +236,13 @@ def get_wires(wires):
     return output
 
 
-def is_pass_transitor(pip_json):
+def is_pass_transistor(pip_json):
     """ Returns boolean if pip JSON indicates pip is a pass transistor.
 
     Always returns False if database lacks this information.
     """
-    if 'is_pass_transitor' in pip_json:
-        return bool(int(pip_json['is_pass_transitor']))
+    if 'is_pass_transistor' in pip_json:
+        return bool(int(pip_json['is_pass_transistor']))
     else:
         return False
 
@@ -298,7 +298,7 @@ class Tile(object):
                     can_invert=bool(int(pip['can_invert'])),
                     is_directional=bool(int(pip['is_directional'])),
                     is_pseudo=bool(int(pip['is_pseudo'])),
-                    is_pass_transitor=is_pass_transitor(pip),
+                    is_pass_transistor=is_pass_transistor(pip),
                     timing=get_pip_timing(pip.get('src_to_dst')),
                     backward_timing=get_pip_timing(pip.get('dst_to_src')),
                 )
