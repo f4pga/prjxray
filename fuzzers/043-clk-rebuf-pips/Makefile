@@ -1,4 +1,4 @@
-N ?= 25
+N ?= 50
 
 include ../fuzzer.mk
 
