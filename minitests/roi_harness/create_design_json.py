@@ -3,6 +3,7 @@ import csv
 import argparse
 import sys
 import fasm
+import os
 from prjxray.db import Database
 from prjxray.roi import Roi
 from prjxray.util import get_db_root
@@ -16,6 +17,17 @@ def set_port_wires(ports, name, pin, wires_outside_roi):
             return
 
     assert False, name
+
+
+def parse_annotation(annotations):
+    for annotation in annotations:
+        if annotation.name == "unknown_segment":
+            segment = annotation.value
+        if annotation.name == "unknown_segbit":
+            segbit = annotation.value
+        if annotation.name == "unknown_bit":
+            bit = annotation.value
+    return segment, segbit, bit
 
 
 def main():
@@ -80,16 +92,20 @@ def main():
             frames_in_use.add(bit.base_address)
 
     required_features = []
+    ignored_bits = []
+    # There seems to be list of bits for Zynq7 that are always set regardless of the design we generate the bitstream for
+    # More details can be found in the related Github issue: https://github.com/SymbiFlow/prjxray/issues/746
+    if os.getenv("XRAY_DATABASE") == "zynq7":
+        ignored_bits = ["0040111a_68_30", "0040111a_68_31", "0040111b_68_29"]
+
     for fasm_line in fasm.parse_fasm_filename(args.design_fasm):
         if fasm_line.annotations:
-            for annotation in fasm_line.annotations:
-                if annotation.name != 'unknown_segment':
-                    continue
-
-                unknown_base_address = int(annotation.value, 0)
-
-                assert False, "Found unknown bit in base address 0x{:08x}".format(
-                    unknown_base_address)
+            segment, segbit, bit = parse_annotation(fasm_line.annotations)
+            if bit in ignored_bits:
+                continue
+            unknown_base_address = int(segment, 0)
+            assert False, "Found unknown bit in base address 0x{:08x}".format(
+                unknown_base_address)
 
         if not fasm_line.set_feature:
             continue
