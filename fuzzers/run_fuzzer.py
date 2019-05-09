@@ -81,17 +81,17 @@ class Logger:
     >>> l = Logger("fuzz", datetime(2001, 11, 1), 6)
     >>> l._now = lambda: datetime(2001, 11, 1, second=10)
     >>> l.log("Test!")
-    fuzz   -   10s: Test!
+    2001-11-01T00:00:10 - fuzz   -   10s: Test!
     >>> l.log("Format {} {t}", [1,], {'t': 2})
-    fuzz   -   10s: Format 1 2
+    2001-11-01T00:00:10 - fuzz   -   10s: Format 1 2
     >>> l.log('''\\
     ... Line 1
     ... Line 2
     ... Line 3
     ... ''')
-    fuzz   -   10s: Line 1
-    fuzz   -   10s: Line 2
-    fuzz   -   10s: Line 3
+    2001-11-01T00:00:10 - fuzz   -   10s: Line 1
+    2001-11-01T00:00:10 - fuzz   -   10s: Line 2
+    2001-11-01T00:00:10 - fuzz   -   10s: Line 3
     """
 
     def __init__(self, fuzzer, time_start, padding):
@@ -277,8 +277,71 @@ class PsTree:
         return "{}\n{}".format(stdout, stderr)
 
 
-def get_memory():
-    return subprocess.check_output('free -mh', shell=True).decode("utf-8")
+def mem_convert(s):
+    """
+    >>> mem_convert('62G')
+    62000000000.0
+    >>> mem_convert('62M')
+    62000000.0
+    >>> mem_convert('62B')
+    62.0
+    """
+    units = {
+        'G': 1e9,
+        'M': 1e6,
+        'K': 1e3,
+        'B': 1,
+    }
+    u = '',
+    m = 1
+    for u, m in units.items():
+        if s.endswith(u):
+            break
+
+    v = float(s[:-len(u)])
+    v = v * m
+    return v
+
+
+def get_memory(memstr=None):
+    r"""
+    >>> import pprint
+    >>> pprint.pprint(get_memory('''\
+    ...               total        used        free      shared  buff/cache   available
+    ... Mem:           62G        19G       4.8G       661M        38G        42G
+    ... Swap:           0B         0B         0B
+    ... '''))
+    {'mem': {'available': 42000000000.0,
+             'buff/cache': 38000000000.0,
+             'free': 4800000000.0,
+             'shared': 661000000.0,
+             'total': 62000000000.0,
+             'used': 19000000000.0},
+     'swap': {'free': 0.0, 'total': 0.0, 'used': 0.0}}
+    """
+    if memstr is None:
+        memstr = subprocess.check_output(
+            'free -mh', shell=True).decode("utf-8")
+
+    lines = [x.split() for x in memstr.strip().splitlines()]
+    lines[0].insert(0, 'type:')
+
+    for l in lines:
+        l[0] = l[0][:-1].lower()
+
+    headers = lines[0][1:]
+    lines = lines[1:]
+
+    memory = {}
+    for l in lines:
+        t, l = l[0], l[1:]
+
+        d = {}
+        for k, v in zip(headers, l):
+            d[k] = mem_convert(v)
+        memory[t] = d
+
+    return memory
 
 
 def should_run_submake(make_flags):
@@ -470,10 +533,13 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
 
             if retcode is not None:
                 break
+            mem = get_memory()['mem']
             log(
-                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}%).\n{}\n{}",
+                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}% Mem:{:0.1f}Gi used, {:0.1f}Gi free).\n{}",
                 *get_load(),
-                get_memory(),
+                mem['used'] / 1e9,
+                mem['available'] /
+                1e9,  # Using available so the numbers add up.
                 PsTree.get(p.pid),
             )
     except (Exception, KeyboardInterrupt, SystemExit):
