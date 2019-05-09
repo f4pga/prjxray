@@ -279,17 +279,17 @@ class PsTree:
 
 def mem_convert(s):
     """
-    >>> mem_convert('62Gi')
+    >>> mem_convert('62G')
     62000000000.0
-    >>> mem_convert('62Mi')
+    >>> mem_convert('62M')
     62000000.0
     >>> mem_convert('62B')
     62.0
     """
     units = {
-        'Gi': 1e9,
-        'Mi': 1e6,
-        'Ki': 1e3,
+        'G': 1e9,
+        'M': 1e6,
+        'K': 1e3,
         'B': 1,
     }
     u = '',
@@ -308,8 +308,8 @@ def get_memory(memstr=None):
     >>> import pprint
     >>> pprint.pprint(get_memory('''\
     ...               total        used        free      shared  buff/cache   available
-    ... Mem:           62Gi        19Gi       4.8Gi       661Mi        38Gi        42Gi
-    ... Swap:            0B          0B          0B
+    ... Mem:           62G        19G       4.8G       661M        38G        42G
+    ... Swap:           0B         0B         0B
     ... '''))
     {'mem': {'available': 42000000000.0,
              'buff/cache': 38000000000.0,
