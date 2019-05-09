@@ -8,7 +8,7 @@ TileDbs = namedtuple(
     'TileDbs', 'segbits block_ram_segbits ppips mask tile_type')
 
 
-class OutpinTiming(namedtuple('OutpinTiming', 'delays drive_resistance')):
+class OutPinTiming(namedtuple('OutPinTiming', 'delays drive_resistance')):
     """ Timing for site output pins.
 
     Attributes
@@ -22,7 +22,7 @@ class OutpinTiming(namedtuple('OutpinTiming', 'delays drive_resistance')):
     pass
 
 
-class InpinTiming(namedtuple('InpinTiming', 'delays capacitance')):
+class InPinTiming(namedtuple('InPinTiming', 'delays capacitance')):
     """ Timing for site input pins.
 
     Attributes
@@ -125,7 +125,7 @@ class SitePin(namedtuple('SitePin', 'name wire timing')):
         all sites of the same type.
     wire : str
         Wire name within the tile.  This name is site instance specific.
-    timing : Either InpinTiming or OutpinTiming
+    timing : Either InPinTiming or OutPinTiming
         Timing of site pin. May be None if database lacks timing information.
 
     """
@@ -177,13 +177,13 @@ def get_pip_timing(pip_timing_json):
 
 
 def get_site_pin_timing(site_pin_info):
-    """ Convert site_pin_info JSON into InpinTiming or OutpinTiming object.
+    """ Convert site_pin_info JSON into InPinTiming or OutPinTiming object.
 
     Returns
     -------
     If timing information is not present for this site pin, returns None.
-    If this is an output pin, returns OutpinTiming.
-    If this is an input pin, returns InpinTiming.
+    If this is an output pin, returns OutPinTiming.
+    If this is an input pin, returns InPinTiming.
 
     """
     if isinstance(site_pin_info, str):
@@ -198,13 +198,13 @@ def get_site_pin_timing(site_pin_info):
 
     if 'cap' in site_pin_info:
         assert 'res' not in site_pin_info
-        return wire, InpinTiming(
+        return wire, InPinTiming(
             delays=delays,
             capacitance=float(site_pin_info['cap']) / CAPACITANCE_FACTOR,
         )
     else:
         assert 'res' in site_pin_info
-        return wire, OutpinTiming(
+        return wire, OutPinTiming(
             delays=delays,
             drive_resistance=float(site_pin_info['res']) / RESISTANCE_FACTOR,
         )
