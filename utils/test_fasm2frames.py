@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 # TODO: need better coverage for different tile types
 
+from io import StringIO
+import os
+import os.path
+import re
+import unittest
+import tempfile
+
+import prjxray
 import fasm2frames
 
-import unittest
-from io import StringIO
-import re
+from textx.exceptions import TextXSyntaxError
 
 
 def frm2bits(txt):
@@ -49,105 +55,108 @@ def bitread2bits(txt):
     return bits_ref
 
 
-# FIXME: These functions are currently broken.
-@unittest.skip
 class TestStringMethods(unittest.TestCase):
+    def filename_test_data(self, fname):
+        return os.path.join(os.path.dirname(__file__), 'test_data', fname)
+
+    def get_test_data(self, fname):
+        with open(self.filename_test_data(fname)) as f:
+            return f.read()
+
+    def fasm2frames(self, fin_data, **kw):
+        with tempfile.NamedTemporaryFile(suffix='.fasm') as fin:
+            fin.write(fin_data.encode('utf-8'))
+            fin.flush()
+
+            fout = StringIO()
+            fasm2frames.run(
+                self.filename_test_data('db'), fin.name, fout, **kw)
+
+            return fout.getvalue()
+
     def test_lut(self):
         '''Simple smoke test on just the LUTs'''
-        fout = StringIO()
-        fasm2frames.run(open('test_data/lut.fasm', 'r'), fout)
+        self.fasm2frames(self.get_test_data('lut.fasm'))
 
     def bitread_frm_equals(self, frm_fn, bitread_fn):
-        fout = StringIO()
-        fasm2frames.run(open(frm_fn, 'r'), fout)
+        fout = self.fasm2frames(self.get_test_data(frm_fn))
 
         # Build a list of output used bits
-        bits_out = frm2bits(fout.getvalue())
+        bits_out = frm2bits(fout)
 
         # Build a list of reference used bits
-        bits_ref = bitread2bits(open(bitread_fn, 'r').read())
+        bits_ref = bitread2bits(self.get_test_data(bitread_fn))
 
         # Now check for equivilence vs reference design
-        self.assertEquals(len(bits_ref), len(bits_out))
-        self.assertEquals(bits_ref, bits_out)
+        self.assertEqual(len(bits_ref), len(bits_out))
+        self.assertEqual(bits_ref, bits_out)
 
     def test_lut_int(self):
-        self.bitread_frm_equals(
-            'test_data/lut_int.fasm', 'test_data/lut_int/design.bits')
+        self.bitread_frm_equals('lut_int.fasm', 'lut_int/design.bits')
 
     def test_ff_int(self):
-        self.bitread_frm_equals(
-            'test_data/ff_int.fasm', 'test_data/ff_int/design.bits')
+        self.bitread_frm_equals('ff_int.fasm', 'ff_int/design.bits')
 
+    @unittest.skip
     def test_ff_int_op1(self):
         '''Omitted key set to '''
-        self.bitread_frm_equals(
-            'test_data/ff_int_op1.fasm', 'test_data/ff_int/design.bits')
+        self.bitread_frm_equals('ff_int_op1.fasm', 'ff_int/design.bits')
 
     # Same check as above, but isolated test case
     def test_opkey_01_default(self):
         '''Optional key with binary omitted value should produce valid result'''
-        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX")
-        fout = StringIO()
-        fasm2frames.run(fin, fout)
+        self.fasm2frames("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX")
 
+    @unittest.skip
     def test_opkey_01_1(self):
-        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1")
-        fout = StringIO()
-        fasm2frames.run(fin, fout)
+        self.fasm2frames("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1")
 
+    @unittest.skip
     def test_opkey_enum(self):
         '''Optional key with enumerated value should produce syntax error'''
-        # CLBLM_L.SLICEM_X0.AMUX.O6 !30_06 !30_07 !30_08 30_11
-        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.AMUX.O6")
-        fout = StringIO()
         try:
-            fasm2frames.run(fin, fout)
+            # CLBLM_L.SLICEM_X0.AMUXFF.O6 !30_06 !30_07 !30_08 30_11
+            self.fasm2frames("CLBLM_L_X10Y102.SLICEM_X0.AFFMUX.O6")
             self.fail("Expected syntax error")
-        except fasm2frames.FASMSyntaxError:
+        except TextXSyntaxError:
             pass
 
     def test_ff_int_0s(self):
         '''Explicit 0 entries'''
-        self.bitread_frm_equals(
-            'test_data/ff_int_0s.fasm', 'test_data/ff_int/design.bits')
+        self.bitread_frm_equals('ff_int_0s.fasm', 'ff_int/design.bits')
 
     def test_badkey(self):
         '''Bad key should throw syntax error'''
-        fin = StringIO("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 2")
-        fout = StringIO()
         try:
-            fasm2frames.run(fin, fout)
+            self.fasm2frames("CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 2")
             self.fail("Expected syntax error")
-        except fasm2frames.FASMSyntaxError:
+        except TextXSyntaxError:
             pass
 
+    @unittest.skip
     def test_dupkey(self):
         '''Duplicate key should throw syntax error'''
-        fin = StringIO(
-            """\
+        try:
+            self.fasm2frames(
+                """\
 CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 0
 CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1
 """)
-        fout = StringIO()
-        try:
-            fasm2frames.run(fin, fout)
             self.fail("Expected syntax error")
-        except fasm2frames.FASMSyntaxError:
+        except TextXSyntaxError:
             pass
 
+    @unittest.skip
     def test_sparse(self):
-        '''Verify sparse equivilent to normal encoding'''
-        frm_fn = 'test_data/lut_int.fasm'
+        '''Verify sparse equivalent to normal encoding'''
+        frm_fn = 'lut_int.fasm'
 
-        fout_sparse = StringIO()
-        fasm2frames.run(open(frm_fn, 'r'), fout_sparse, sparse=True)
-        fout_sparse_txt = fout_sparse.getvalue()
+        fout_sparse_txt = self.fasm2frames(
+            self.get_test_data(frm_fn), sparse=True)
         bits_sparse = frm2bits(fout_sparse_txt)
 
-        fout_full = StringIO()
-        fasm2frames.run(open(frm_fn, 'r'), fout_full, sparse=False)
-        fout_full_txt = fout_full.getvalue()
+        fout_full_txt = self.fasm2frames(
+            self.get_test_data(frm_fn), sparse=False)
         bits_full = frm2bits(fout_full_txt)
 
         # Now check for equivilence vs reference design
