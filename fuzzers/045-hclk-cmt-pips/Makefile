@@ -10,7 +10,7 @@ TODO_RE=".*"
 EXCLUDE_RE="(^.*LEAF)|(^.*BUFMR)|(^.*FREQ_REF)|(^.*PHSR)|(^.*CLK_PLL7)|(^.*CLK_MMCM13)"
 
 MAKETODO_FLAGS=--sides ",l" --pip-type ${PIP_TYPE} --seg-type ${PIP_TYPE} --re $(TODO_RE) --exclude-re $(EXCLUDE_RE)
-N = 50
+N = 100
 
 # These PIPs all appear to be either a 1 bit solutions.
 SEGMATCH_FLAGS=-c 2
