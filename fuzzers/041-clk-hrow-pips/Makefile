@@ -5,7 +5,7 @@ PIPLIST_TCL=$(FUZDIR)/clk_hrow_pip_list.tcl
 TODO_RE=".*"
 
 MAKETODO_FLAGS=--sides "bot_r,top_r" --pip-type ${PIP_TYPE} --seg-type clk_hrow --re $(TODO_RE)
-N = 50
+N = 80
 
 # These PIPs all appear to be either a 2 bit solutions.
 SEGMATCH_FLAGS=-c 2
