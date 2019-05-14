@@ -98,8 +98,7 @@ $(eval $(call fuzzer,052-pip-clkin,048-int-piplist))
 $(eval $(call fuzzer,053-pip-ctrlin,048-int-piplist))
 $(eval $(call fuzzer,054-pip-fan-alt,048-int-piplist))
 $(eval $(call fuzzer,055-pip-gnd,048-int-piplist))
-#Disable until all other fuzzer instabilities are fixed
-#$(eval $(call fuzzer,056-pip-rem,049-int-imux-gfan 050-pip-seed 051-pip-imuxlout-bypalts 052-pip-clkin 053-pip-ctrlin 054-pip-fan-alt 055-pip-gnd))
+$(eval $(call fuzzer,056-pip-rem,049-int-imux-gfan 050-pip-seed 051-pip-imuxlout-bypalts 052-pip-clkin 053-pip-ctrlin 054-pip-fan-alt 055-pip-gnd))
 #Disable the longest running fuzzer to speed up test iterations
 #$(eval $(call fuzzer,057-pip-bi,056-pip-rem))
 ifneq ($(QUICK),Y)

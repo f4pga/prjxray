@@ -111,6 +111,8 @@ proc route_todo {} {
             # sometimes it gets stuck in specific orientations
             if {$tries >= 3} {
                 puts "WARNING: failed to route net after $tries tries"
+                remove_net $mynet
+                remove_cell $mylut
                 break
             }
         }
