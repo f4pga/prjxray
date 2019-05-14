@@ -22,7 +22,7 @@ def produce_sdf(timings, outdir):
 """
 (DELAYFILE
     (SDFVERSION \"3.0\")
-    (TIMESCALE 1ps)
+    (TIMESCALE 1ns)
 """
         for site in sorted(timings[slice]):
             for bel_type in sorted(timings[slice][site]):
