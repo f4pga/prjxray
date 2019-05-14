@@ -45,14 +45,29 @@ def clean_bname(bname):
     return bname
 
 
-def pin_in_model(pin, model):
+def pin_in_model(pin, model, direction=None):
+
+    # strip site location
+    model = model.split(':')[0]
+    extended_pin_name = pin
+
+    # some timings reports pins with their directions
+    # this happens for e.g. CLB reg_init D pin, which
+    # timing is reported as DIN
+    if direction is not None:
+        extended_pin_name = pin + direction
 
     if len(pin.split('_')) == 1:
         # pin name is one word, search it in the model
-        return pin in model.split('_')
+        if pin in model.split('_'):
+            return True, pin
+        elif extended_pin_name in model.split('_'):
+            return True, extended_pin_name
+        else:
+            return False, None
     else:
         # pin name is multi word, search for a string
-        return pin in model
+        return (pin in model), pin
 
 
 def remove_pin_from_model(pin, model):
@@ -140,50 +155,67 @@ def read_raw_timings(fin, properties, pins, site_pins):
 
                         # locate pins
                         for pin in pins[slice][site_name][delay_btype_orig]:
-                            if pin_in_model(pin.lower(), speed_model_clean):
+                            orig_pin = pin
+                            pim, pin = pin_in_model(
+                                pin.lower(), speed_model_clean, 'in')
+                            if pim:
                                 if pins[slice][site_name][delay_btype_orig][
-                                        pin]['direction'] == 'IN':
+                                        orig_pin]['direction'] == 'IN':
                                     bel_input = pin
                                 if pins[slice][site_name][delay_btype_orig][
-                                        pin]['direction'] == 'OUT':
+                                        orig_pin]['direction'] == 'OUT':
                                     bel_output = pin
                                 if pins[slice][site_name][delay_btype_orig][
-                                        pin]['is_clock']:
+                                        orig_pin]['is_clock']:
                                     bel_clock = pin
                                 speed_model_clean = remove_pin_from_model(
                                     pin.lower(), speed_model_clean)
 
                         # Some speed models describe delays from/to site pins instead of BEL pins
+                        if bel_clock is None:
+                            for pin in site_pins[slice][site_name.lower()]:
+                                orig_pin = pin
+                                pim, pin = pin_in_model(
+                                    pin.lower(), speed_model_clean)
+                                if pim:
+                                    if site_pins[slice][site_name.lower(
+                                    )][orig_pin]['is_clock']:
+                                        bel_clock = pin
+                                        bel_clock_orig_pin = orig_pin
+                                        speed_model_clean = remove_pin_from_model(
+                                            pin.lower(), speed_model_clean)
+
                         if bel_input is None:
                             # search site inputs
                             for pin in site_pins[slice][site_name.lower()]:
-                                if pin_in_model(pin.lower(),
-                                                speed_model_clean):
+                                orig_pin = pin
+                                pim, pin = pin_in_model(
+                                    pin.lower(), speed_model_clean, 'in')
+                                if pim:
                                     if site_pins[slice][site_name.lower(
-                                    )][pin]['direction'] == 'IN':
+                                    )][orig_pin]['direction'] == 'IN':
                                         bel_input = pin
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
 
                         if bel_output is None:
                             for pin in site_pins[slice][site_name.lower()]:
-                                if pin_in_model(pin.lower(),
-                                                speed_model_clean):
+                                orig_pin = pin
+                                pim, pin = pin_in_model(
+                                    pin.lower(), speed_model_clean)
+                                if pim:
                                     if site_pins[slice][site_name.lower(
-                                    )][pin]['direction'] == 'OUT':
+                                    )][orig_pin]['direction'] == 'OUT':
                                         bel_output = pin
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
 
-                        if bel_clock is None:
-                            for pin in site_pins[slice][site_name.lower()]:
-                                if pin_in_model(pin.lower(),
-                                                speed_model_clean):
-                                    if site_pins[slice][site_name.lower(
-                                    )][pin]['is_clock']:
-                                        bel_clock = pin
-                                        speed_model_clean = remove_pin_from_model(
-                                            pin.lower(), speed_model_clean)
+                        # if we couldn't find input, check if the clock is the
+                        # only input
+                        if bel_input is None and (bel_clock is not None):
+                            if site_pins[slice][site_name.lower(
+                            )][bel_clock_orig_pin]['direction'] == 'IN':
+                                bel_input = bel_clock
 
                         # restore speed model name
                         speed_model = delay_btype + speed_model_clean
