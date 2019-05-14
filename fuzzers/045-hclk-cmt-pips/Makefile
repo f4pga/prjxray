@@ -10,7 +10,7 @@ TODO_RE=".*"
 EXCLUDE_RE="(^.*LEAF)|(^.*BUFMR)|(^.*FREQ_REF)|(^.*PHSR)|(^.*CLK_PLL7)|(^.*CLK_MMCM13)"
 
 MAKETODO_FLAGS=--sides ",l" --pip-type ${PIP_TYPE} --seg-type ${PIP_TYPE} --re $(TODO_RE) --exclude-re $(EXCLUDE_RE)
-N = 50
+N = 100
 
 # These PIPs all appear to be either a 1 bit solutions.
 SEGMATCH_FLAGS=-c 2
@@ -19,46 +19,63 @@ A_PIPLIST=hclk_cmt.txt
 
 include ../pip_loop.mk
 
+ifneq (${XRAY_DATABASE}, zynq7)
 build/segbits_hclk_cmt.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o build/segbits_hclk_cmt.rdb \
 		$(shell find build -name segdata_hclk_cmt.txt)
+
+build/segbits_hclk_cmt.db: build/segbits_hclk_cmt.rdb
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
+		--seg-fn-in build/segbits_hclk_cmt.rdb \
+		--seg-fn-out build/segbits_hclk_cmt.db
+
+	# Keep a copy to track iter progress
+	cp build/segbits_hclk_cmt.rdb build/$(ITER)/segbits_hclk_cmt.rdb
+
+	${XRAY_MASKMERGE} build/mask_hclk_cmt.db \
+		$(shell find build -name segdata_hclk_cmt.txt)
+endif
 
 build/segbits_hclk_cmt_l.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o build/segbits_hclk_cmt_l.rdb \
 		$(shell find build -name segdata_hclk_cmt_l.txt)
 
-database: build/segbits_hclk_cmt.rdb build/segbits_hclk_cmt_l.rdb
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
-		--seg-fn-in build/segbits_hclk_cmt.rdb \
-		--seg-fn-out build/segbits_hclk_cmt.db
-
+build/segbits_hclk_cmt_l.db: build/segbits_hclk_cmt_l.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
 		--seg-fn-in build/segbits_hclk_cmt_l.rdb \
 		--seg-fn-out build/segbits_hclk_cmt_l.db
 
 	# Keep a copy to track iter progress
-	cp build/segbits_hclk_cmt.rdb build/$(ITER)/segbits_hclk_cmt.rdb
 	cp build/segbits_hclk_cmt_l.rdb build/$(ITER)/segbits_hclk_cmt_l.rdb
 
 
-	${XRAY_MASKMERGE} build/mask_hclk_cmt.db \
-		$(shell find build -name segdata_hclk_cmt.txt)
 	${XRAY_MASKMERGE} build/mask_hclk_cmt_l.db \
 		$(shell find build -name segdata_hclk_cmt_l.txt)
 
+
+ifneq (${XRAY_DATABASE}, zynq7)
+database: build/segbits_hclk_cmt.db build/segbits_hclk_cmt_l.db
 	# Clobber existing .db to eliminate potential conflicts
 	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} hclk_cmt build/segbits_hclk_cmt.db
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} hclk_cmt_l build/segbits_hclk_cmt_l.db
+else
+database: build/segbits_hclk_cmt_l.db
+	# Clobber existing .db to eliminate potential conflicts
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
+	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} hclk_cmt_l build/segbits_hclk_cmt_l.db
+endif
 
 build/cmt_regions.csv: output_cmt.tcl
 	mkdir -p build
 	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
 
 pushdb: database
+ifneq (${XRAY_DATABASE}, zynq7)
 	${XRAY_MERGEDB} hclk_cmt build/segbits_hclk_cmt.db
-	${XRAY_MERGEDB} hclk_cmt_l build/segbits_hclk_cmt_l.db
 	${XRAY_MERGEDB} mask_hclk_cmt build/mask_hclk_cmt.db
+endif
+	${XRAY_MERGEDB} hclk_cmt_l build/segbits_hclk_cmt_l.db
 	${XRAY_MERGEDB} mask_hclk_cmt_l build/mask_hclk_cmt_l.db
 
 .PHONY: database pushdb
