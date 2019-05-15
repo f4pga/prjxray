@@ -11,10 +11,13 @@ FUZZONLY=N
 BITONLY=N
 
 all:
-clean: clean_fuzzers clean_logs clean_locks
+clean: clean_fuzzers clean_piplists clean_logs clean_locks
 
 clean_locks:
 	rm -rf /tmp/segbits_*.db.lock
+
+clean_piplists:
+	rm -rf $(XRAY_FUZZERS_DIR)/piplist/build
 
 define fuzzer
 
