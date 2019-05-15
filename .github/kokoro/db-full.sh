@@ -176,5 +176,6 @@ echo "----------------------------------------"
 	echo
 	echo "Cleaning up so CI doesn't save all the excess data."
 	make clean_fuzzers
+	make clean_piplists
 )
 echo "----------------------------------------"
