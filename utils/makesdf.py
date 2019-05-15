@@ -24,8 +24,8 @@ def produce_sdf(timings, outdir):
     (SDFVERSION \"3.0\")
     (TIMESCALE 1ps)
 """
-        for site in timings[slice]:
-            for bel_type in timings[slice][site]:
+        for site in sorted(timings[slice]):
+            for bel_type in sorted(timings[slice][site]):
                 combinational, sequential = get_elems_count(
                     timings, slice, site, bel_type)
                 #define CELL
