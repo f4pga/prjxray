@@ -2,7 +2,14 @@
 
 import os
 import os.path
+import re
 from prjxray.segmaker import Segmaker
+
+
+def src_has_active_bit(src):
+    if re.match(r"^CLK_HROW_CK_INT_[01]_[01]", src) is not None:
+        return False
+    return True
 
 
 def main():
@@ -113,6 +120,9 @@ def main():
     for tile_type, srcs in clk_list.items():
         for tile, pips_srcs_dsts in tiledata.items():
             for src in srcs:
+                #Don't solve fake features
+                if not src_has_active_bit(src):
+                    continue
                 if 'GCLK' not in src:
                     active = src in active_clks[tile]
                     segmk.add_tile_tag(tile, '{}_ACTIVE'.format(src), active)
