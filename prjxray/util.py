@@ -126,18 +126,24 @@ def parse_db_line(line):
     assert re.match(r'[A-Z0-9_.]+',
                     tag), "Invalid tag name: %s, line: %s" % (tag, line)
     orig_bits = line.replace(tag + " ", "")
+    if re.match(r'^origin:', orig_bits):
+        origin = parts[1][7:]
+        bits = frozenset(parts[2:])
+        orig_bits = line.replace(tag + " " + origin + " ", "")
+    else:
+        origin = None
+        bits = frozenset(parts[1:])
     # <0 candidates> etc
     # Ex: INT_L.BYP_BOUNCE5.BYP_ALT5 always
     if "<" in orig_bits or "always" == orig_bits:
-        return tag, None, orig_bits
+        return tag, None, orig_bits, origin
 
-    bits = frozenset(parts[1:])
     # Ex: CLBLL_L.SLICEL_X0.AOUTMUX.A5Q !30_06 !30_08 !30_11 30_07
     for bit in bits:
         # 19_39
         # 100_319
         assert re.match(r'[!]*[0-9]+_[0-9]+', bit), "Invalid bit: %s" % bit
-    return tag, bits, None
+    return tag, bits, None, origin
 
 
 def parse_db_lines(fn):
@@ -146,10 +152,14 @@ def parse_db_lines(fn):
             yield line, parse_db_line(line)
 
 
-def write_db_lines(fn, entries):
+def write_db_lines(fn, entries, track_origin=False):
     new_lines = []
-    for tag, bits in entries.items():
-        new_line = " ".join([tag] + sorted(bits))
+    for tag, (bits, origin) in entries.items():
+        if track_origin:
+            assert origin is not None
+            new_line = " ".join([tag, "origin:" + origin] + sorted(bits))
+        else:
+            new_line = " ".join([tag] + sorted(bits))
         new_lines.append(new_line)
 
     with open(fn, "w") as f:

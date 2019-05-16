@@ -131,6 +131,13 @@ if $ismask ; then
 else
     # tmp1 must be placed second to take precedence over old bad entries
     python3 ${XRAY_DIR}/utils/mergedb.py --out "$tmp2" "$db" "$tmp1"
+    if ! $ismask ; then
+	db_origin=$XRAY_DATABASE_DIR/$XRAY_DATABASE/segbits_$1.origin_info.db
+        if [ ! -f $db_origin ] ; then
+            touch "$db_origin"
+        fi
+        python3 ${XRAY_DIR}/utils/mergedb.py --out "$db_origin" "$db_origin" "$tmp1" --track_origin
+    fi
 fi
 # Check aggregate db for consistency and make canonical
 ${XRAY_PARSEDB} --strict "$tmp2" "$db"

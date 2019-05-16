@@ -58,7 +58,7 @@ def maketodo(
         with open(dbfile, "r") as f:
             # INT.BYP_ALT0.BYP_BOUNCE_N3_3 !22_07 !23_07 !25_07 21_07 24_07
             for line in f:
-                tag, _bits, mode = util.parse_db_line(line.strip())
+                tag, _bits, mode, _ = util.parse_db_line(line.strip())
                 # Only count resolved entries
                 if mode:
                     continue
