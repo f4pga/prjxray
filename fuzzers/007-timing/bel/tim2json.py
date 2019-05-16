@@ -210,6 +210,17 @@ def read_raw_timings(fin, properties, pins, site_pins):
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
 
+                        # check if the input is not a BEL property
+                        if bel_input is None:
+                            # if there is anything not yet decoded
+                            if len(speed_model_clean.split("_")) > 1:
+                                for prop in properties[slice][site_name][
+                                        delay_btype_orig]:
+                                    if prop.lower() in speed_model_clean:
+                                        bel_input = prop
+                                        speed_model_clean = remove_pin_from_model(
+                                            prop.lower(), speed_model_clean)
+                                        break
                         # if we couldn't find input, check if the clock is the
                         # only input
                         if bel_input is None and (bel_clock is not None):
@@ -277,7 +288,7 @@ def read_raw_timings(fin, properties, pins, site_pins):
     return timings
 
 
-def read_bel_properties(properties_file):
+def read_bel_properties(properties_file, properties_map):
 
     properties = dict()
     with open(properties_file, 'r') as f:
@@ -304,6 +315,10 @@ def read_bel_properties(properties_file):
                         # the name always starts with "CONFIG." and ends with ".VALUES"
                         # let's get rid of that
                         prop_name = prop_name[7:-7]
+                        # append name prop name mappings
+                        if bel_name in properties_map:
+                            if prop_name in properties_map[bel_name]:
+                                prop_name = properties_map[bel_name][prop_name]
                         prop_values_count = int(raw_props[prop_loc + 1])
                         properties[tile][site_name][bel_name][
                             prop_name] = raw_props[prop_loc + 2:prop_loc + 2 +
@@ -387,8 +402,14 @@ def main():
     parser.add_argument('--sitepins', type=str, help='Site pins input file')
     parser.add_argument(
         '--debug', type=bool, default=False, help='Enable debug json dumps')
+    parser.add_argument(
+        '--propertiesmap', type=str, help='Properties names mappings')
     args = parser.parse_args()
-    properties = read_bel_properties(args.properties)
+
+    with open(args.propertiesmap, 'r') as fp:
+        properties_map = json.load(fp)
+
+    properties = read_bel_properties(args.properties, properties_map)
 
     if args.debug:
         with open('debug_prop.json', 'w') as fp:
