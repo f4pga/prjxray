@@ -19,13 +19,19 @@ def merge(timings_list, site):
                 if site in cell_instance.split(divider):
                     if 'cells' not in merged_timings:
                         merged_timings['cells'] = dict()
+                    if cell not in merged_timings['cells']:
+                        merged_timings['cells'][cell] = dict()
+                    if cell_instance not in merged_timings['cells'][cell]:
+                        merged_timings['cells'][cell][cell_instance] = dict()
 
-                    if cell in merged_timings['cells']:
-                        assert merged_timings['cells'][cell] == \
-                               timings['cells'][cell],          \
+                    if cell_instance in merged_timings['cells'][cell][
+                            cell_instance]:
+                        assert merged_timings['cells'][cell][cell_instance] == \
+                               timings['cells'][cell][cell_instance],          \
                                "Attempting to merge differing cells"
 
-                    merged_timings['cells'][cell] = timings['cells'][cell]
+                    merged_timings['cells'][cell][cell_instance] = timings[
+                        'cells'][cell][cell_instance]
 
     return merged_timings
 

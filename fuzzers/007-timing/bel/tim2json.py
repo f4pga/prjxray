@@ -45,14 +45,29 @@ def clean_bname(bname):
     return bname
 
 
-def pin_in_model(pin, model):
+def pin_in_model(pin, model, direction=None):
+
+    # strip site location
+    model = model.split(':')[0]
+    extended_pin_name = pin
+
+    # some timings reports pins with their directions
+    # this happens for e.g. CLB reg_init D pin, which
+    # timing is reported as DIN
+    if direction is not None:
+        extended_pin_name = pin + direction
 
     if len(pin.split('_')) == 1:
         # pin name is one word, search it in the model
-        return pin in model.split('_')
+        if pin in model.split('_'):
+            return True, pin
+        elif extended_pin_name in model.split('_'):
+            return True, extended_pin_name
+        else:
+            return False, None
     else:
         # pin name is multi word, search for a string
-        return pin in model
+        return (pin in model), pin
 
 
 def remove_pin_from_model(pin, model):
@@ -64,9 +79,7 @@ def remove_pin_from_model(pin, model):
         return "_".join(tmp)
     else:
         # pin name is multi word, search for a string
-        return "_".join(
-            list(filter(None,
-                        speed_model.replace(pin, '').split('_'))))
+        return "_".join(list(filter(None, model.replace(pin, '').split('_'))))
 
 
 def read_raw_timings(fin, properties, pins, site_pins):
@@ -140,50 +153,112 @@ def read_raw_timings(fin, properties, pins, site_pins):
 
                         # locate pins
                         for pin in pins[slice][site_name][delay_btype_orig]:
-                            if pin_in_model(pin.lower(), speed_model_clean):
+                            orig_pin = pin
+                            pim, pin = pin_in_model(
+                                pin.lower(), speed_model_clean, 'in')
+                            if pim:
                                 if pins[slice][site_name][delay_btype_orig][
-                                        pin]['direction'] == 'IN':
-                                    bel_input = pin
-                                if pins[slice][site_name][delay_btype_orig][
-                                        pin]['direction'] == 'OUT':
-                                    bel_output = pin
-                                if pins[slice][site_name][delay_btype_orig][
-                                        pin]['is_clock']:
+                                        orig_pin]['is_clock']:
                                     bel_clock = pin
+                                elif pins[slice][site_name][delay_btype_orig][
+                                        orig_pin]['direction'] == 'IN':
+                                    bel_input = pin
+                                elif pins[slice][site_name][delay_btype_orig][
+                                        orig_pin]['direction'] == 'OUT':
+                                    bel_output = pin
                                 speed_model_clean = remove_pin_from_model(
                                     pin.lower(), speed_model_clean)
+
+                        if bel_clock is None:
+                            for pin in site_pins[slice][site_name.lower()]:
+                                orig_pin = pin
+                                pim, pin = pin_in_model(
+                                    pin.lower(), speed_model_clean)
+                                if pim:
+                                    if site_pins[slice][site_name.lower(
+                                    )][orig_pin]['is_clock']:
+                                        bel_clock = pin
+                                        bel_clock_orig_pin = orig_pin
+                                        speed_model_clean = remove_pin_from_model(
+                                            pin.lower(), speed_model_clean)
 
                         # Some speed models describe delays from/to site pins instead of BEL pins
                         if bel_input is None:
                             # search site inputs
                             for pin in site_pins[slice][site_name.lower()]:
-                                if pin_in_model(pin.lower(),
-                                                speed_model_clean):
+                                orig_pin = pin
+                                pim, pin = pin_in_model(
+                                    pin.lower(), speed_model_clean, 'in')
+                                if pim:
                                     if site_pins[slice][site_name.lower(
-                                    )][pin]['direction'] == 'IN':
+                                    )][orig_pin]['direction'] == 'IN':
                                         bel_input = pin
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
 
                         if bel_output is None:
                             for pin in site_pins[slice][site_name.lower()]:
-                                if pin_in_model(pin.lower(),
-                                                speed_model_clean):
+                                orig_pin = pin
+                                pim, pin = pin_in_model(
+                                    pin.lower(), speed_model_clean)
+                                if pim:
                                     if site_pins[slice][site_name.lower(
-                                    )][pin]['direction'] == 'OUT':
+                                    )][orig_pin]['direction'] == 'OUT':
                                         bel_output = pin
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
 
-                        if bel_clock is None:
-                            for pin in site_pins[slice][site_name.lower()]:
-                                if pin_in_model(pin.lower(),
-                                                speed_model_clean):
-                                    if site_pins[slice][site_name.lower(
-                                    )][pin]['is_clock']:
-                                        bel_clock = pin
+                        # check if the input is not a BEL property
+                        if bel_input is None:
+                            # if there is anything not yet decoded
+                            if len(speed_model_clean.split("_")) > 1:
+                                for prop in properties[slice][site_name][
+                                        delay_btype_orig]:
+                                    if prop.lower() in speed_model_clean:
+                                        bel_input = prop
                                         speed_model_clean = remove_pin_from_model(
-                                            pin.lower(), speed_model_clean)
+                                            prop.lower(), speed_model_clean)
+                                        break
+                        # if we couldn't find input, check if the clock is the
+                        # only input
+                        if bel_input is None and (bel_clock is not None):
+                            if bel_clock_orig_pin in site_pins[slice][site_name.lower()] and \
+                            site_pins[slice][site_name.lower(
+                            )][bel_clock_orig_pin]['direction'] == 'IN':
+                                bel_input = bel_clock
+
+                        # if we still don't have the input check if the input
+                        # is wider than 1 bit and timing defined for the whole
+                        # port
+                        import re
+                        if bel_input is None:
+                            for pin in pins[slice][site_name][
+                                    delay_btype_orig]:
+                                number = re.search(r'\d+$', pin)
+                                if number is not None:
+                                    orig_pin = pin[:-(
+                                        len(str(number.group())))]
+                                    pim, pin = pin_in_model(
+                                        orig_pin.lower(), speed_model_clean)
+                                    if not pim:
+                                        # some inputs pins are named with unsignificant zeros
+                                        # remove ti and try again
+                                        orig_pin = orig_pin + str(
+                                            int(number.group()))
+                                        pim, pin = pin_in_model(
+                                            orig_pin.lower(),
+                                            speed_model_clean)
+
+                                    if pim:
+                                        bel_input = pin
+                                        speed_model_clean = remove_pin_from_model(
+                                            orig_pin.lower(),
+                                            speed_model_clean)
+
+                        # if we still don't have input, give up
+                        if bel_input is None:
+                            delay_loc += 6
+                            continue
 
                         # restore speed model name
                         speed_model = delay_btype + speed_model_clean
@@ -212,6 +287,7 @@ def read_raw_timings(fin, properties, pins, site_pins):
                             speed_model_orig]['type'] = btype.upper()
                         timings[slice][bel_location][delay_btype][
                             speed_model_orig]['input'] = bel_input.upper()
+
                         if bel_output is not None:
                             timings[slice][bel_location][delay_btype][
                                 speed_model_orig]['output'] = bel_output.upper(
@@ -245,7 +321,7 @@ def read_raw_timings(fin, properties, pins, site_pins):
     return timings
 
 
-def read_bel_properties(properties_file):
+def read_bel_properties(properties_file, properties_map):
 
     properties = dict()
     with open(properties_file, 'r') as f:
@@ -272,6 +348,10 @@ def read_bel_properties(properties_file):
                         # the name always starts with "CONFIG." and ends with ".VALUES"
                         # let's get rid of that
                         prop_name = prop_name[7:-7]
+                        # append name prop name mappings
+                        if bel_name in properties_map:
+                            if prop_name in properties_map[bel_name]:
+                                prop_name = properties_map[bel_name][prop_name]
                         prop_values_count = int(raw_props[prop_loc + 1])
                         properties[tile][site_name][bel_name][
                             prop_name] = raw_props[prop_loc + 2:prop_loc + 2 +
@@ -355,8 +435,14 @@ def main():
     parser.add_argument('--sitepins', type=str, help='Site pins input file')
     parser.add_argument(
         '--debug', type=bool, default=False, help='Enable debug json dumps')
+    parser.add_argument(
+        '--propertiesmap', type=str, help='Properties names mappings')
     args = parser.parse_args()
-    properties = read_bel_properties(args.properties)
+
+    with open(args.propertiesmap, 'r') as fp:
+        properties_map = json.load(fp)
+
+    properties = read_bel_properties(args.properties, properties_map)
 
     if args.debug:
         with open('debug_prop.json', 'w') as fp:
