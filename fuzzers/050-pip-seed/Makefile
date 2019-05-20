@@ -3,7 +3,7 @@ ifeq ($(QUICK),Y)
 N ?= 1
 SEGMATCH_FLAGS=
 else
-N ?= 48
+N ?= 60
 # Do relatively large batch to keep parallelism high
 # LCM between 12 (CPUs on my system) and 16, a common CPU count
 SEGMATCH_FLAGS=-m 15 -M 45
