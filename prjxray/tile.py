@@ -134,7 +134,7 @@ class SitePin(namedtuple('SitePin', 'name wire timing')):
 WireInfo = namedtuple('WireInfo', 'pips sites')
 
 # Conversion factor from database to internal units.
-RESISTANCE_FACTOR = 1
+RESISTANCE_FACTOR = 1e3
 CAPACITANCE_FACTOR = 1e3
 
 
