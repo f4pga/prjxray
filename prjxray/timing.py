@@ -94,6 +94,11 @@ class PvtCorner(enum.Enum):
     # Corner where device operates with slowest intristic delays.
     SLOW = "SLOW"
 
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
+
 
 class IntristicDelay(namedtuple('IntristicDelay', 'min max')):
     """ An intristic delay instance.
@@ -134,6 +139,25 @@ class RcElement(namedtuple('RcElement', 'resistance capacitance')):
     pass
 
 
+class hashabledict(dict):
+    """ Immutable version of dictionary with hash support. """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.hash = hash(tuple(sorted(self.items())))
+
+    def setdefault(self, *args, **kwargs):
+        raise NotImplementedError("hashabledict cannot be mutated.")
+
+    def __setitem__(self, *args, **kwargs):
+        raise NotImplementedError("hashabledict cannot be mutated.")
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("hashabledict cannot be mutated.")
+
+    def __hash__(self):
+        return self.hash
+
+
 def fast_slow_tuple_to_corners(arr):
     """ Convert delay 4-tuple into two IntristicDelay objects.
 
@@ -148,16 +172,17 @@ def fast_slow_tuple_to_corners(arr):
 
     fast_min, fast_max, slow_min, slow_max = map(float, arr)
 
-    return {
-        PvtCorner.FAST: IntristicDelay(
-            min=fast_min,
-            max=fast_max,
-        ),
-        PvtCorner.SLOW: IntristicDelay(
-            min=slow_min,
-            max=slow_max,
-        ),
-    }
+    return hashabledict(
+        {
+            PvtCorner.FAST: IntristicDelay(
+                min=fast_min,
+                max=fast_max,
+            ),
+            PvtCorner.SLOW: IntristicDelay(
+                min=slow_min,
+                max=slow_max,
+            ),
+        })
 
 
 class TimingNode(object):
