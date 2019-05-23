@@ -141,6 +141,7 @@ class RcElement(namedtuple('RcElement', 'resistance capacitance')):
 
 class hashabledict(dict):
     """ Immutable version of dictionary with hash support. """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hash = hash(tuple(sorted(self.items())))
