@@ -21,8 +21,37 @@ route_design
 
 # write_checkpoint -force design.dcp
 
+# This function checks the input todo file to ensure there is enough stimulus.
+# By default if the input todo file is bigger than the specified number of lines then
+# it is used in the subsequent stages of the script.
+# However, when the input todo is smaller then a todo file from a previous iteration,
+# which meets the minimum lines requirement, gets chosen.
+# This helps with increasing the stimuli without increasing the
+# global number of specimen used in every iteration.
+proc get_todo {{min_lines 0}} {
+    if {[info exists ::env(ITER)]} {
+        set current_iter $::env(ITER)
+    } else {
+        set current_iter 1
+    }
+    set todo_file "../../todo/${current_iter}_all.txt"
+    lassign [exec wc -l $todo_file] line_count file_name
+    if {$min_lines == 0} {
+        return $file_name
+    }
+    if {$current_iter == 1 && $line_count < $min_lines} {
+        error "ERROR: Initial TODO is too small"
+    }
+    while {$line_count < $min_lines} {
+        incr current_iter -1
+        set todo_file "../../todo/${current_iter}_all.txt"
+        lassign [exec wc -l $todo_file] line_count file_name
+    }
+    return $file_name
+}
 
-set fp [open "../../todo.txt" r]
+
+set fp [open [get_todo 10] r]
 set todo_lines {}
 for {gets $fp line} {$line != ""} {gets $fp line} {
     lappend todo_lines [split $line .]
