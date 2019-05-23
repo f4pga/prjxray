@@ -27,9 +27,9 @@ for {gets $fp line} {$line != ""} {gets $fp line} {
     lappend todo_lines [split $line .]
 }
 close $fp
-
+set tries_limit 10
 # each run can fail up to three times so we need to prepare 3*todo_lines tiles to work on
-set tiles [expr 3 * [llength $todo_lines]]
+set tiles [expr $tries_limit * [llength $todo_lines]]
 
 set int_l_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_L}]]
 set int_r_tiles [randsample_list $tiles [filter [pblock_tiles roi] {TYPE == INT_R}]]
@@ -51,7 +51,7 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
 
     set tries 0
     while {1} {
-        set tile_idx [expr $tries + [expr $idx * 3]]
+        set tile_idx [expr $tries + [expr $idx * $tries_limit]]
         incr tries
 
         if {$tile_type == "INT_L"} {set tile [lindex $int_l_tiles $tile_idx]; set other_tile [lindex $int_r_tiles $idx]}
@@ -83,7 +83,7 @@ for {set idx 0} {$idx < [llength $todo_lines]} {incr idx} {
         route_design -unroute -nets $mynet
 
         # sometimes it gets stuck in specific src -> dst locations
-        if {$tries >= 3} {
+        if {$tries >= $tries_limit} {
             error "WARNING: failed to route net after $tries tries"
         }
     }
