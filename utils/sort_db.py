@@ -339,6 +339,9 @@ def main(argv):
     for n in sorted(os.listdir()):
         if not os.path.isfile(n):
             continue
+        # Leave db files with fuzzer of origin untouched
+        if "origin_info" in n:
+            continue
 
         base, ext = os.path.splitext(n)
 
