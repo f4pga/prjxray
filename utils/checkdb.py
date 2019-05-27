@@ -67,6 +67,9 @@ def parsedb_all(db_root, verbose=False):
 
     files = 0
     for bit_fn in glob.glob('%s/segbits_*.db' % db_root):
+        # Don't parse db files with fuzzer origin information
+        if "origin_info" in bit_fn:
+            continue
         verbose and print("Checking %s" % bit_fn)
         parsedb.run(bit_fn, fnout=None, strict=True, verbose=verbose)
         files += 1
