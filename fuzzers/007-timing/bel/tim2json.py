@@ -45,7 +45,19 @@ def clean_bname(bname):
     return bname
 
 
-def pin_in_model(pin, model, direction=None):
+def pin_in_model(pin, pin_aliases, model, direction=None):
+    """
+    Checks if a given pin belongs to the model.
+
+    Args:
+        pin: Pin name to look for
+        pin_aliases: A dict of list of aliases for given bel/site
+        model: Model name string
+        direction: Optional pin direction suffix
+
+    Returns:
+        is_pin_in_model, model_pin_name, pin_name
+    """
 
     # strip site location
     model = model.split(':')[0]
@@ -60,14 +72,20 @@ def pin_in_model(pin, model, direction=None):
     if len(pin.split('_')) == 1:
         # pin name is one word, search it in the model
         if pin in model.split('_'):
-            return True, pin
+            return True, pin, pin
         elif extended_pin_name in model.split('_'):
-            return True, extended_pin_name
+            return True, extended_pin_name, extended_pin_name
+        elif pin_aliases is not None:
+            for alias in pin_aliases.get(pin.upper(), ()):
+                pin_alias = alias.lower()
+                if pin_alias in model.split('_'):
+                    return True, pin_alias, pin
+            return False, None, None
         else:
-            return False, None
+            return False, None, None
     else:
         # pin name is multi word, search for a string
-        return (pin in model), pin
+        return (pin in model), pin, pin
 
 
 def remove_pin_from_model(pin, model):
@@ -81,8 +99,7 @@ def remove_pin_from_model(pin, model):
         # pin name is multi word, search for a string
         return "_".join(list(filter(None, model.replace(pin, '').split('_'))))
 
-
-def read_raw_timings(fin, properties, pins, site_pins):
+def read_raw_timings(fin, properties, pins, site_pins, bel_suffix_map, pin_alias_map):
 
     timings = dict()
     with open(fin, "r") as f:
@@ -150,33 +167,36 @@ def read_raw_timings(fin, properties, pins, site_pins):
                         if speed_model.startswith(delay_btype):
                             speed_model_clean = speed_model[len(delay_btype):]
 
+                        # Get pin alias map
+                        pin_aliases = pin_alias_map.get(delay_btype, None)
+
                         # locate pins
                         for pin in pins[slice][site_name][delay_btype_orig]:
                             orig_pin = pin
-                            pim, pin = pin_in_model(
-                                pin.lower(), speed_model_clean, 'in')
+                            pim, pin, pin_name = pin_in_model(
+                                pin.lower(), pin_aliases, speed_model_clean, 'in')
                             if pim:
                                 if pins[slice][site_name][delay_btype_orig][
                                         orig_pin]['is_clock']:
-                                    bel_clock = pin
+                                    bel_clock = pin_name
                                 elif pins[slice][site_name][delay_btype_orig][
                                         orig_pin]['direction'] == 'IN':
-                                    bel_input = pin
+                                    bel_input = pin_name
                                 elif pins[slice][site_name][delay_btype_orig][
                                         orig_pin]['direction'] == 'OUT':
-                                    bel_output = pin
+                                    bel_output = pin_name
                                 speed_model_clean = remove_pin_from_model(
                                     pin.lower(), speed_model_clean)
 
                         if bel_clock is None:
                             for pin in site_pins[slice][site_name.lower()]:
                                 orig_pin = pin
-                                pim, pin = pin_in_model(
-                                    pin.lower(), speed_model_clean)
+                                pim, pin, pin_name = pin_in_model(
+                                    pin.lower(), pin_aliases, speed_model_clean)
                                 if pim:
                                     if site_pins[slice][site_name.lower(
                                     )][orig_pin]['is_clock']:
-                                        bel_clock = pin
+                                        bel_clock = pin_name
                                         bel_clock_orig_pin = orig_pin
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
@@ -186,24 +206,24 @@ def read_raw_timings(fin, properties, pins, site_pins):
                             # search site inputs
                             for pin in site_pins[slice][site_name.lower()]:
                                 orig_pin = pin
-                                pim, pin = pin_in_model(
-                                    pin.lower(), speed_model_clean, 'in')
+                                pim, pin, pin_name = pin_in_model(
+                                    pin.lower(), pin_aliases, speed_model_clean, 'in')
                                 if pim:
                                     if site_pins[slice][site_name.lower(
                                     )][orig_pin]['direction'] == 'IN':
-                                        bel_input = pin
+                                        bel_input = pin_name
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
 
                         if bel_output is None:
                             for pin in site_pins[slice][site_name.lower()]:
                                 orig_pin = pin
-                                pim, pin = pin_in_model(
-                                    pin.lower(), speed_model_clean)
+                                pim, pin, pin_name = pin_in_model(
+                                    pin.lower(), pin_aliases, speed_model_clean)
                                 if pim:
                                     if site_pins[slice][site_name.lower(
                                     )][orig_pin]['direction'] == 'OUT':
-                                        bel_output = pin
+                                        bel_output = pin_name
                                         speed_model_clean = remove_pin_from_model(
                                             pin.lower(), speed_model_clean)
 
@@ -237,19 +257,22 @@ def read_raw_timings(fin, properties, pins, site_pins):
                                 if number is not None:
                                     orig_pin = pin[:-(
                                         len(str(number.group())))]
-                                    pim, pin = pin_in_model(
-                                        orig_pin.lower(), speed_model_clean)
+                                    pim, pin, pin_name = pin_in_model(
+                                        orig_pin.lower(), 
+                                        pin_aliases, 
+                                        speed_model_clean)
                                     if not pim:
                                         # some inputs pins are named with unsignificant zeros
                                         # remove ti and try again
                                         orig_pin = orig_pin + str(
                                             int(number.group()))
-                                        pim, pin = pin_in_model(
+                                        pim, pin, pin_name = pin_in_model(
                                             orig_pin.lower(),
+                                            pin_aliases, 
                                             speed_model_clean)
 
                                     if pim:
-                                        bel_input = pin
+                                        bel_input = pin_name
                                         speed_model_clean = remove_pin_from_model(
                                             orig_pin.lower(),
                                             speed_model_clean)
@@ -258,6 +281,14 @@ def read_raw_timings(fin, properties, pins, site_pins):
                         if bel_input is None:
                             delay_loc += 6
                             continue
+
+                        # Check if the timing entry matches an explicitly given
+                        # bel suffix. If it does then append the suffix.
+                        suffixes = bel_suffix_map.get(delay_btype, ())
+                        for suffix in suffixes:
+                            if speed_model.endswith(suffix):
+                                speed_model_clean += "_{}".format(suffix.lower())
+                                break
 
                         # restore speed model name
                         speed_model = delay_btype + speed_model_clean
@@ -439,10 +470,20 @@ def main():
         '--debug', type=bool, default=False, help='Enable debug json dumps')
     parser.add_argument(
         '--propertiesmap', type=str, help='Properties names mappings')
+    parser.add_argument(
+        '--pinaliasmap', type=str, help='Pin name alias mappings')
+    parser.add_argument(
+        '--belsuffixmap', type=str, help='Explicit BEL suffix map')
     args = parser.parse_args()
 
     with open(args.propertiesmap, 'r') as fp:
         properties_map = json.load(fp)
+
+    with open(args.pinaliasmap, 'r') as fp:
+        pin_alias_map = json.load(fp)
+
+    with open(args.belsuffixmap, 'r') as fp:
+        bel_suffix_map = json.load(fp)
 
     properties = read_bel_properties(args.properties, properties_map)
 
@@ -460,7 +501,7 @@ def main():
         with open('debug_site_pins.json', 'w') as fp:
             json.dump(site_pins, fp, indent=4, sort_keys=True)
 
-    timings = read_raw_timings(args.timings, properties, pins, site_pins)
+    timings = read_raw_timings(args.timings, properties, pins, site_pins, bel_suffix_map, pin_alias_map)
     with open(args.json, 'w') as fp:
         json.dump(timings, fp, indent=4, sort_keys=True)
 
