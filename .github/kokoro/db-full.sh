@@ -54,18 +54,19 @@ echo "----------------------------------------"
 	# which is well before the 05x INT fuzzers complete.
 	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
 	set -x +e
-	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS" -
+	tmp=`mktemp`
+	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS" $tmp
 	DATABASE_RET=$?
 	set +x -e
-	echo "----------------------------------------"
-
-	# Collect the Vivado logs into one tgz archive
-	echo "Collecting Vivado logs"
-	find . -name vivado.log | xargs tar -czvf vivado.tgz
-	echo "----------------------------------------"
 
 	if [[ $DATABASE_RET != 0 ]] ; then
+		# Collect the Vivado logs into one tgz archive
+		echo "Packing failing test cases"
+		grep "recipe for target" $tmp | awk 'match($0,/recipe for target.*'\''(.*)\/run.ok'\''/,res) {print res[1]}' | xargs tar -zcf fails.tgz
+		echo "----------------------------------------"
 		echo "A failure occurred during Database build."
+		echo "----------------------------------------"
+		rm $tmp
 		exit $DATABASE_RET
 	fi
 
