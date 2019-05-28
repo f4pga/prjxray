@@ -124,7 +124,7 @@ def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
             if line == llast:
                 continue
 
-            tag, bits, mode = util.parse_db_line(line)
+            tag, bits, mode, _ = util.parse_db_line(line)
             # an enum that needs masking
             # check below asserts that a mask was actually applied
             if mode and mode != "<0 candidates>" and not strict:

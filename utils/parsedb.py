@@ -15,7 +15,7 @@ def run(fnin, fnout=None, strict=False, verbose=False):
         # TODO: figure out what to do with masks
         if line.startswith("bit "):
             continue
-        tag, bits, mode = util.parse_db_line(line)
+        tag, bits, mode, _ = util.parse_db_line(line)
         if strict:
             if mode != "always":
                 assert not mode, "strict: got ill defined line: %s" % (line, )
