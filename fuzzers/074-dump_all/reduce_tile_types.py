@@ -39,9 +39,20 @@ def flatten_site_pins(tile, site, site_pins, site_pin_node_to_wires):
 
             assert len(wires) == 1, repr(wires)
 
+            pin_info = {
+                'wire': wires[0],
+                'delay': site_pin['delay'],
+            }
+
+            if 'cap' in site_pin:
+                pin_info['cap'] = site_pin['cap']
+
+            if 'res' in site_pin:
+                pin_info['res'] = site_pin['res']
+
             yield (
                 check_and_strip_prefix(site_pin['site_pin'], site + '/'),
-                wires[0])
+                pin_info)
 
     return dict(inner())
 
@@ -103,6 +114,18 @@ def get_pips(tile, pips):
             pip['is_directional'],
             'can_invert':
             pip['can_invert'],
+            'is_pass_transistor':
+            pip['is_pass_transistor'],
+            'src_to_dst': {
+                'delay': pip.get('forward_delay', None),
+                'in_cap': pip.get('forward_in_cap', None),
+                'res': pip.get('forward_res', None),
+            },
+            'dst_to_src': {
+                'delay': pip.get('reverse_delay', None),
+                'in_cap': pip.get('reverse_in_cap', None),
+                'res': pip.get('reverse_res', None),
+            },
         }
 
     return proto_pips
@@ -148,7 +171,7 @@ def check_wires(wires, sites, pips):
         for site in sites:
             for wire_to_site_pin in site['site_pins'].values():
                 if wire_to_site_pin is not None:
-                    assert wire_to_site_pin in wires, repr(
+                    assert wire_to_site_pin['wire'] in wires, repr(
                         (wire_to_site_pin, wires))
 
     if pips is not None:
@@ -207,19 +230,37 @@ def read_json5(fname, database_file):
     def inner():
         for wire in tile['wires']:
             assert wire['wire'].startswith(tile['tile'] + '/')
-            yield wire['wire'][len(tile['tile']) + 1:]
 
-    wires = set(inner())
+            if wire['res'] != '0.000' or wire['cap'] != '0.000':
+                wire_delay_model = {
+                    'res': wire['res'],
+                    'cap': wire['cap'],
+                }
+            else:
+                wire_delay_model = None
+
+            yield wire['wire'][len(tile['tile']) + 1:], wire_delay_model
+
+    wires = {k: v for (k, v) in inner()}
     wires_from_nodes = set(node_lookup.wires_for_tile(tile['tile']))
-    assert len(wires_from_nodes - wires) == 0, repr((wires, wires_from_nodes))
+    assert len(wires_from_nodes - wires.keys()) == 0, repr(
+        (wires, wires_from_nodes))
 
     return fname, tile, site_types, sites, pips, wires
+
+
+def compare_and_update_wires(wires, new_wires):
+    for wire in new_wires:
+        if wire not in wires:
+            wires[wire] = new_wires
+        else:
+            assert wires[wire] == new_wires[wire]
 
 
 def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
     sites = None
     pips = None
-    wires = set()
+    wires = None
 
     with progressbar.ProgressBar(max_value=len(tile_instances)) as bar:
         chunksize = 1
@@ -259,7 +300,10 @@ def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
             else:
                 compare_and_update_pips(pips, new_pips)
 
-            wires |= new_wires
+            if wires is None:
+                wires = new_wires
+            else:
+                compare_and_update_wires(wires, new_wires)
 
             bar.update(idx + 1)
 
@@ -269,7 +313,7 @@ def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
         'tile_type': tile_type,
         'sites': sites,
         'pips': pips,
-        'wires': tuple(wires),
+        'wires': wires,
     }
 
 
