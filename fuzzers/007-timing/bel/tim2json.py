@@ -56,25 +56,25 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
         direction: Optional pin direction suffix
 
     Returns:
-        is_pin_in_model, is_alias, pin_name
+        is_pin_in_model, pin_name
 
     >>> pin_in_model("d", None, "ff_init_din_q", "in")
-    (True, False, 'din')
+    (True, 'din')
 
     >>> pin_in_model("q", None, "ff_init_clk_q", None)
-    (True, False, 'q')
+    (True, 'q')
 
     >>> pin_in_model("q", {"Q": ["QL", "QH"]}, "ff_init_clk_ql", None)
-    (True, True, 'q')
+    (True, 'q')
 
     >>> pin_in_model("logic_out", None, "my_cell_i_logic_out", None)
-    (True, False, 'logic_out')
+    (True, 'logic_out')
 
     >>> pin_in_model("logic_out", {"LOGIC_OUT": ["LOGIC_O", "O"]}, "my_cell_i_logic_o", None)
-    (True, True, 'logic_out')
+    (True, 'logic_out')
 
     >>> pin_in_model("logic_out", {"LOGIC_OUT": ["LOGIC_O", "O"]}, "my_cell_i_o", None)
-    (True, True, 'logic_out')
+    (True, 'logic_out')
     """
 
     # strip site location
@@ -90,37 +90,52 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
     if len(pin.split('_')) == 1:
         # pin name is one word, search it in the model
         if pin in model.split('_'):
-            return True, False, pin
+            return True, pin
         elif extended_pin_name in model.split('_'):
-            return True, False, extended_pin_name
+            return True, extended_pin_name
         elif pin_aliases is not None:
             for alias in pin_aliases.get(pin.upper(), ()):
                 pin_alias = alias.lower()
                 if pin_alias in model.split('_'):
-                    return True, True, pin
-            return False, False, None
+                    return True, pin
+            return False, None
         else:
-            return False, False, None
+            return False, None
     else:
         # pin name is multi word, search for a string
         if pin in model:
-            return True, False, pin
+            return True, pin
         elif pin_aliases is not None:
             for alias in pin_aliases.get(pin.upper(), ()):
                 pin_alias = alias.lower()
                 if pin_alias in model:
-                    return True, True, pin
+                    return True, pin
         else:
-            return False, False, None
+            return False, None
 
 
 def remove_pin_from_model(pin, model):
+    """
+    Removes the pin from model name if present.
+
+    >>> remove_pin_from_model("q", "ff_init_d_q")
+    'ff_init_d'
+    >>> remove_pin_from_model("q", "ff_init_d_ql")
+    'ff_init_d_ql'
+    >>> remove_pin_from_model("logic_out", "ff_init_d_logic_out")
+    'ff_init_d'
+    >>> remove_pin_from_model("logic_out", "ff_init_d_second_out")
+    'ff_init_d_second_out'
+    """
 
     if len(pin.split('_')) == 1:
         # pin name is one word, search it in the model
         tmp = model.split('_')
-        tmp.remove(pin)
-        return "_".join(tmp)
+        if pin in tmp:
+            tmp.remove(pin)
+            return "_".join(tmp)
+        else:
+            return model
     else:
         # pin name is multi word, search for a string
         return "_".join(list(filter(None, model.replace(pin, '').split('_'))))
@@ -200,7 +215,7 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                         # locate pins
                         for pin in pins[slice][site_name][delay_btype_orig]:
                             orig_pin = pin
-                            pim, is_alias, pin = pin_in_model(
+                            pim, pin = pin_in_model(
                                 pin.lower(), pin_aliases, speed_model_clean,
                                 'in')
                             if pim:
@@ -213,14 +228,13 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                 elif pins[slice][site_name][delay_btype_orig][
                                         orig_pin]['direction'] == 'OUT':
                                     bel_output = pin
-                                if not is_alias:
-                                    speed_model_clean = remove_pin_from_model(
-                                        pin.lower(), speed_model_clean)
+                                speed_model_clean = remove_pin_from_model(
+                                    pin.lower(), speed_model_clean)
 
                         if bel_clock is None:
                             for pin in site_pins[slice][site_name.lower()]:
                                 orig_pin = pin
-                                pim, is_alias, pin = pin_in_model(
+                                pim, pin = pin_in_model(
                                     pin.lower(), pin_aliases,
                                     speed_model_clean)
                                 if pim:
@@ -228,39 +242,36 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                     )][orig_pin]['is_clock']:
                                         bel_clock = pin
                                         bel_clock_orig_pin = orig_pin
-                                        if not is_alias:
-                                            speed_model_clean = remove_pin_from_model(
-                                                pin.lower(), speed_model_clean)
+                                        speed_model_clean = remove_pin_from_model(
+                                            pin.lower(), speed_model_clean)
 
                         # Some speed models describe delays from/to site pins instead of BEL pins
                         if bel_input is None:
                             # search site inputs
                             for pin in site_pins[slice][site_name.lower()]:
                                 orig_pin = pin
-                                pim, is_alias, pin = pin_in_model(
+                                pim, pin = pin_in_model(
                                     pin.lower(), pin_aliases,
                                     speed_model_clean, 'in')
                                 if pim:
                                     if site_pins[slice][site_name.lower(
                                     )][orig_pin]['direction'] == 'IN':
                                         bel_input = pin
-                                        if not is_alias:
-                                            speed_model_clean = remove_pin_from_model(
-                                                pin.lower(), speed_model_clean)
+                                        speed_model_clean = remove_pin_from_model(
+                                            pin.lower(), speed_model_clean)
 
                         if bel_output is None:
                             for pin in site_pins[slice][site_name.lower()]:
                                 orig_pin = pin
-                                pim, is_alias, pin = pin_in_model(
+                                pim, pin = pin_in_model(
                                     pin.lower(), pin_aliases,
                                     speed_model_clean)
                                 if pim:
                                     if site_pins[slice][site_name.lower(
                                     )][orig_pin]['direction'] == 'OUT':
                                         bel_output = pin
-                                        if not is_alias:
-                                            speed_model_clean = remove_pin_from_model(
-                                                pin.lower(), speed_model_clean)
+                                        speed_model_clean = remove_pin_from_model(
+                                            pin.lower(), speed_model_clean)
 
                         # check if the input is not a BEL property
                         if bel_input is None:
@@ -292,7 +303,7 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                 if number is not None:
                                     orig_pin = pin[:-(
                                         len(str(number.group())))]
-                                    pim, is_alias, pin = pin_in_model(
+                                    pim, pin = pin_in_model(
                                         orig_pin.lower(), pin_aliases,
                                         speed_model_clean)
                                     if not pim:
@@ -300,16 +311,15 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                         # remove ti and try again
                                         orig_pin = orig_pin + str(
                                             int(number.group()))
-                                        pim, is_alias, pin = pin_in_model(
+                                        pim, pin = pin_in_model(
                                             orig_pin.lower(), pin_aliases,
                                             speed_model_clean)
 
                                     if pim:
                                         bel_input = pin
-                                        if not is_alias:
-                                            speed_model_clean = remove_pin_from_model(
-                                                orig_pin.lower(),
-                                                speed_model_clean)
+                                        speed_model_clean = remove_pin_from_model(
+                                            orig_pin.lower(),
+                                            speed_model_clean)
 
                         # if we still don't have input, give up
                         if bel_input is None:
