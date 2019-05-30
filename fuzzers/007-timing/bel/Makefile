@@ -7,7 +7,7 @@ build/bel_timings.txt:
 	bash runme.sh
 
 build/bel_timings.json: build/bel_timings.txt
-	python3 tim2json.py --timings=build/bel_timings.txt --json=build/bel_timings.json --properties=build/bel_properties.txt --propertiesmap=properties_map.json --pinaliasmap=pin_alias_map.json --belsuffixmap=bel_suffix_map.json --belpins=build/bel_pins.txt --sitepins=build/tile_pins.txt --debug true
+	python3 tim2json.py --timings=build/bel_timings.txt --json=build/bel_timings.json --properties=build/bel_properties.txt --propertiesmap=properties_map.json --pinaliasmap=pin_alias_map.json --belpins=build/bel_pins.txt --sitepins=build/tile_pins.txt --debug true
 
 build/sdf: build/bel_timings.json
 	python3 ${XRAY_UTILS_DIR}/makesdf.py --json=${PWD}/build/bel_timings.json --sdf=${PWD}/build
