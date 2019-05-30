@@ -148,12 +148,14 @@ echo "----------------------------------------"
 	# Pretty HTML file version
 	diff2html --summary=open --file diff.html --format html \
 		-- \
-		--irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
+		--irreversible-delete --find-renames --find-copies \
+		--ignore-all-space origin/master || true
 
 	# Programmatic JSON version
 	diff2html --file diff.json --format json \
 		-- \
-		--irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
+		--irreversible-delete --find-renames --find-copies \
+		--ignore-all-space origin/master || true
 )
 echo "----------------------------------------"
 
