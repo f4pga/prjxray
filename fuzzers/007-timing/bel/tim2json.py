@@ -57,6 +57,24 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
 
     Returns:
         is_pin_in_model, is_alias, pin_name
+
+    >>> pin_in_model("d", None, "ff_init_din_q", "in")
+    (True, False, 'din')
+
+    >>> pin_in_model("q", None, "ff_init_clk_q", None)
+    (True, False, 'q')
+
+    >>> pin_in_model("q", {"Q": ["QL", "QH"]}, "ff_init_clk_ql", None)
+    (True, True, 'q')
+
+    >>> pin_in_model("logic_out", None, "my_cell_i_logic_out", None)
+    (True, False, 'logic_out')
+
+    >>> pin_in_model("logic_out", {"LOGIC_OUT": ["LOGIC_O", "O"]}, "my_cell_i_logic_o", None)
+    (True, True, 'logic_out')
+
+    >>> pin_in_model("logic_out", {"LOGIC_OUT": ["LOGIC_O", "O"]}, "my_cell_i_o", None)
+    (True, True, 'logic_out')
     """
 
     # strip site location
@@ -85,7 +103,15 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
             return False, False, None
     else:
         # pin name is multi word, search for a string
-        return (pin in model), pin, pin
+        if pin in model:
+            return True, False, pin
+        elif pin_aliases is not None:
+            for alias in pin_aliases.get(pin.upper(), ()):
+                pin_alias = alias.lower()
+                if pin_alias in model:
+                    return True, True, pin
+        else:
+            return False, False, None
 
 
 def remove_pin_from_model(pin, model):
