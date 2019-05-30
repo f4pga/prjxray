@@ -13,6 +13,7 @@ set root_fp [open "root_${blocknb}.csv" w]
 #puts $root_fp "filetype,subtype,filename"
 
 set tiles [get_tiles]
+# Convert DRIVE from ??? units to 10^(-3 to -6) Ohms
 set MAGIC 0.6875
 
 set speed_model_index_map [dict create]
