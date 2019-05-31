@@ -100,7 +100,8 @@ def create_ordered_wires_for_node(node, wires_in_node, downhill, uphill):
             roots |= set((wire[0], wire[-1]))
             all_wires |= set(wire)
 
-    assert len(wires_in_node) >= len(all_wires)
+    assert len(wires_in_node) >= len(all_wires), (
+        len(wires_in_node), len(all_wires))
 
     if len(all_wires) <= 2:
         return {'edges': tuple(all_wires), 'joins': {}}
