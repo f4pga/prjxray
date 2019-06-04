@@ -9,6 +9,7 @@ TILEGRID_TDB_DEPENDENCIES += bram_block/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += bram_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clb_int/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += cfg/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += dsp/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += fifo_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += cfg_int/build/segbits_tilegrid.tdb
@@ -53,6 +54,9 @@ clb/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 
 clb_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd clb_int && $(MAKE)
+
+cfg/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+	cd cfg && $(MAKE)
 
 iob/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
 	cd iob && $(MAKE)
@@ -126,6 +130,7 @@ clean:
 	rm -rf build run.ok
 	cd clb && $(MAKE) clean
 	cd clb_int && $(MAKE) clean
+	cd cfg && $(MAKE) clean
 	cd iob && $(MAKE) clean
 	cd iob_int && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
