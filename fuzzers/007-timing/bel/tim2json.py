@@ -338,6 +338,7 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                         # if we still don't have input, give up
                         if bel_input is None:
                             delay_loc += 6
+                            continue
 
                         # restore speed model name
                         speed_model = delay_btype + speed_model_clean
