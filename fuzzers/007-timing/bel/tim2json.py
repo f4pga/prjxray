@@ -345,7 +345,8 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                         speed_model = delay_btype + speed_model_clean
 
                         if sequential is not None:
-                            if bel_output is None and bel_clock is None:
+                            if bel_output is None and bel_clock is None or \
+                               bel_output is None and bel_clock == bel_input:
                                 delay_loc += 6
                                 continue
                         else:
