@@ -300,13 +300,14 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                         # is wider than 1 bit and timing defined for the whole
                         # port
                         import re
-                        if bel_input is None:
+                        if (bel_input is None) or (bel_output is None):
                             for pin in pins[slice][site_name][
                                     delay_btype_orig]:
                                 number = re.search(r'\d+$', pin)
                                 if number is not None:
                                     orig_pin = pin[:-(
                                         len(str(number.group())))]
+                                    orig_pin_full = pin
                                     pim, pin = pin_in_model(
                                         orig_pin.lower(), pin_aliases,
                                         speed_model_clean)
@@ -320,10 +321,16 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                             speed_model_clean)
 
                                     if pim:
-                                        bel_input = pin
+                                        if pins[slice][site_name][delay_btype_orig][orig_pin_full]['direction'] == 'IN' \
+                                            and bel_input is None:
+                                            bel_input = pin
+                                        if pins[slice][site_name][delay_btype_orig][orig_pin_full]['direction'] == 'OUT' \
+                                            and bel_output is None:
+                                            bel_output = pin
                                         speed_model_clean = remove_pin_from_model(
                                             orig_pin.lower(),
                                             speed_model_clean)
+
 
                         # if we still don't have input, give up
                         if bel_input is None:
