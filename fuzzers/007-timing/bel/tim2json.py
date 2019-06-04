@@ -101,10 +101,6 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
             return False, None
         else:
             return False, None
-        # sometimes pins have duplicated name
-        #for p in model.split('_'):
-        #    if pin in p:
-        #        return True, p
         return False, None
     else:
         # pin name is multi word, search for a string
