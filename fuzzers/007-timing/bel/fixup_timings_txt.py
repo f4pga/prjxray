@@ -2,6 +2,7 @@
 
 import argparse
 
+
 def fix_line(line, site, filetype):
     line = line.split()
     newline = list()
@@ -16,13 +17,13 @@ def fix_line(line, site, filetype):
     all_entries = 0
     loc = 2
     for site in range(0, sites_count):
-       bels_count = int(line[loc + 1])
-       loc += 2
-       for bel in range(0, bels_count):
-           entries_count = int(line[loc + 1])
-           loc += 2
-           all_entries += entries_count
-           for entry in range(0, entries_count):
+        bels_count = int(line[loc + 1])
+        loc += 2
+        for bel in range(0, bels_count):
+            entries_count = int(line[loc + 1])
+            loc += 2
+            all_entries += entries_count
+            for entry in range(0, entries_count):
                 if filetype == 'timings':
                     for delay_word in range(0, 6):
                         entries.append(line[loc])
@@ -44,13 +45,19 @@ def fix_line(line, site, filetype):
     newline.extend(entries)
     return " ".join(newline) + "\n"
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--txtin', type=str, help='Input text file')
     parser.add_argument('--txtout', type=str, help='Output text file')
-    parser.add_argument('--site', type=str, help='Site to which the entries should be squashed')
-    parser.add_argument('--slice', type=str, help='Slice for which the entries shall be fixed')
-    parser.add_argument('--type', type=str, choices=['timings', 'pins', 'properties'])
+    parser.add_argument(
+        '--site',
+        type=str,
+        help='Site to which the entries should be squashed')
+    parser.add_argument(
+        '--slice', type=str, help='Slice for which the entries shall be fixed')
+    parser.add_argument(
+        '--type', type=str, choices=['timings', 'pins', 'properties'])
 
     args = parser.parse_args()
     lines = list()
@@ -64,6 +71,7 @@ def main():
     with open(args.txtout, 'w') as fp:
         for line in lines:
             fp.write(line)
+
 
 if __name__ == "__main__":
     main()

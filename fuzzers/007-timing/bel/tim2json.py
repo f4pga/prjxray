@@ -281,7 +281,8 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
 
                         # if we couldn't find input, check if the clock is the
                         # only input. This applies only to combinational paths
-                        if (sequential is None) and (bel_input is None) and (bel_clock is not None):
+                        if (sequential is None) and (bel_input is None) and (
+                                bel_clock is not None):
                             if bel_clock_orig_pin in site_pins[slice][site_name.lower()] and \
                             site_pins[slice][site_name.lower(
                             )][bel_clock_orig_pin]['direction'] == 'IN':
@@ -333,7 +334,6 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                         speed_model_clean = remove_pin_from_model(
                                             orig_pin.lower(),
                                             speed_model_clean)
-
 
                         # if we still don't have input, give up
                         if bel_input is None:
