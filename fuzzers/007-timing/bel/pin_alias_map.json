@@ -1,8 +1,60 @@
 {
     "ff_init": {
-        "Q": ["QL", "QH"]
+        "Q": {
+             "names" : ["QL", "QH"],
+             "property" : true
+         }
     },
     "reg_init": {
-        "Q": ["QL", "QH"]
+        "Q": {
+             "names" : ["QL", "QH"],
+             "property" : true
+         }
+    },
+    "rambfifo36e1" : {
+         "RSTRAMARSTRAMLRST" : {
+             "names" : ["rstramarstl"],
+             "property" : false
+         },
+         "ADDRARDADDRU0" : {
+             "names" : ["addrau"],
+             "property" : false
+         },
+         "ADDRARDADDRL15" : {
+             "names" : ["addra15l"],
+             "property" : false
+         },
+         "RSTRAMARSTRAMU" : {
+             "names" : ["rstramau"],
+             "property" : false
+         },
+         "ADDRBWRADDRU0" : {
+             "names" : ["addrbu"],
+             "property" : false
+         },
+         "ADDRBWRADDRL15" : {
+             "names" : ["addrb15l"],
+             "property" : false
+         },
+         "WEBWEU0" : {
+             "names" : ["webu"],
+             "property" : false
+         },
+         "DOADO0" : {
+             "names" : ["doadol", "doadou"],
+             "property" : false
+         },
+         "DOBDO0" : {
+             "names" : ["dobdol", "dobdou"],
+             "property" : false
+         },
+         "DOPADOP0" : {
+             "names" : ["dopadopl", "dopadopu"],
+             "property" : false
+         },
+         "DOPBDOP0" : {
+             "names" : ["dopbdopl", "dopbdopu"],
+             "property" : false
+         }
     }
 }

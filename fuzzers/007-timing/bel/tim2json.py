@@ -93,11 +93,14 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
             return True, pin
         elif extended_pin_name in model.split('_'):
             return True, extended_pin_name
-        elif pin_aliases is not None:
-            for alias in pin_aliases.get(pin.upper(), ()):
+        elif (pin_aliases is not None) and (pin.upper() in pin_aliases):
+            for alias in pin_aliases[pin.upper()]['names']:
                 pin_alias = alias.lower()
                 if pin_alias in model.split('_'):
-                    return True, pin
+                    if pin_aliases[pin.upper()]['property']:
+                        return True, pin
+                    else:
+                        return True, pin_alias
             return False, None
         else:
             return False, None
@@ -335,11 +338,6 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                         # if we still don't have input, give up
                         if bel_input is None:
                             delay_loc += 6
-                            if slice.startswith('BRAM'):
-                                print("skipping BRAM for bel:", speed_model_orig)
-                                print("delay_btype_orig:", delay_btype_orig)
-                                print("btype:", btype)
-                            continue
 
                         # restore speed model name
                         speed_model = delay_btype + speed_model_clean
