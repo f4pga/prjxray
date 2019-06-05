@@ -2,59 +2,59 @@
     "ff_init": {
         "Q": {
              "names" : ["QL", "QH"],
-             "property" : true
+             "is_property_related" : true
          }
     },
     "reg_init": {
         "Q": {
              "names" : ["QL", "QH"],
-             "property" : true
+             "is_property_related" : true
          }
     },
     "rambfifo36e1" : {
          "RSTRAMARSTRAMLRST" : {
              "names" : ["rstramarstl"],
-             "property" : false
+             "is_property_related" : false
          },
          "ADDRARDADDRU0" : {
              "names" : ["addrau"],
-             "property" : false
+             "is_property_related" : false
          },
          "ADDRARDADDRL15" : {
              "names" : ["addra15l"],
-             "property" : false
+             "is_property_related" : false
          },
          "RSTRAMARSTRAMU" : {
              "names" : ["rstramau"],
-             "property" : false
+             "is_property_related" : false
          },
          "ADDRBWRADDRU0" : {
              "names" : ["addrbu"],
-             "property" : false
+             "is_property_related" : false
          },
          "ADDRBWRADDRL15" : {
              "names" : ["addrb15l"],
-             "property" : false
+             "is_property_related" : false
          },
          "WEBWEU0" : {
              "names" : ["webu"],
-             "property" : false
+             "is_property_related" : false
          },
          "DOADO0" : {
              "names" : ["doadol", "doadou"],
-             "property" : false
+             "is_property_related" : false
          },
          "DOBDO0" : {
              "names" : ["dobdol", "dobdou"],
-             "property" : false
+             "is_property_related" : false
          },
          "DOPADOP0" : {
              "names" : ["dopadopl", "dopadopu"],
-             "property" : false
+             "is_property_related" : false
          },
          "DOPBDOP0" : {
              "names" : ["dopbdopl", "dopbdopu"],
-             "property" : false
+             "is_property_related" : false
          }
     }
 }

@@ -63,13 +63,13 @@ def find_aliased_pin(pin, model, pin_aliases):
     >>> find_aliased_pin("a", "a_b_some_test_string", None)
     (False, None)
 
-    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["din"], "property" : False}})
+    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["din"], "is_property_related" : False}})
     (True, 'din')
 
-    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["din"], "property" : True}})
+    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["din"], "is_property_related" : True}})
     (True, 'd')
 
-    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["notdin"], "property" : True}})
+    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["notdin"], "is_property_related" : True}})
     (False, None)
     """
     if (pin_aliases is not None) and (pin.upper() in pin_aliases):
@@ -81,7 +81,7 @@ def find_aliased_pin(pin, model, pin_aliases):
             else:
                 model_to_check = model
             if pin_alias in model_to_check:
-                if pin_aliases[pin.upper()]['property']:
+                if pin_aliases[pin.upper()]['is_property_related']:
                     return True, pin.lower()
                 else:
                     return True, pin_alias
@@ -108,16 +108,16 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
     >>> pin_in_model("q", None, "ff_init_clk_q", None)
     (True, 'q')
 
-    >>> pin_in_model("q", {"Q": {"names" : ["QL", "QH"], "property" : True}}, "ff_init_clk_ql", None)
+    >>> pin_in_model("q", {"Q": {"names" : ["QL", "QH"], "is_property_related" : True}}, "ff_init_clk_ql", None)
     (True, 'q')
 
     >>> pin_in_model("logic_out", None, "my_cell_i_logic_out", None)
     (True, 'logic_out')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "property" : False}}, "my_cell_i_logic_o", None)
+    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}}, "my_cell_i_logic_o", None)
     (True, 'logic_o')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "property" : False}}, "my_cell_i_o", None)
+    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}}, "my_cell_i_o", None)
     (True, 'o')
     """
 
