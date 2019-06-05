@@ -45,6 +45,50 @@ def clean_bname(bname):
     return bname
 
 
+def find_aliased_pin(pin, model, pin_aliases):
+    """
+    Searches for aliased pins
+
+    Args:
+        pin: pin name to look for
+        model: timing model string
+        pin_aliases: A dict of list of aliases for given bel/site
+
+    Returns:
+        is_pin_aliased: Bool
+        new_pin_name: string
+        If pin is found in the alias list the function returs a
+        new pin name which should be used in further processing
+
+    >>> find_aliased_pin("a", "a_b_some_test_string", None)
+    (False, None)
+
+    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["din"], "property" : False}})
+    (True, 'din')
+
+    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["din"], "property" : True}})
+    (True, 'd')
+
+    >>> find_aliased_pin("d", "din_dout_setup", {"D": {"names" : ["notdin"], "property" : True}})
+    (False, None)
+    """
+    if (pin_aliases is not None) and (pin.upper() in pin_aliases):
+        for alias in pin_aliases[pin.upper()]['names']:
+            single_word_alias = (len(alias.split('_')) == 1)
+            pin_alias = alias.lower()
+            if single_word_alias:
+                model_to_check = model.split('_')
+            else:
+                model_to_check = model
+            if pin_alias in model_to_check:
+                if pin_aliases[pin.upper()]['property']:
+                    return True, pin.lower()
+                else:
+                    return True, pin_alias
+
+    return False, None
+
+
 def pin_in_model(pin, pin_aliases, model, direction=None):
     """
     Checks if a given pin belongs to the model.
@@ -64,22 +108,24 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
     >>> pin_in_model("q", None, "ff_init_clk_q", None)
     (True, 'q')
 
-    >>> pin_in_model("q", {"Q": ["QL", "QH"]}, "ff_init_clk_ql", None)
+    >>> pin_in_model("q", {"Q": {"names" : ["QL", "QH"], "property" : True}}, "ff_init_clk_ql", None)
     (True, 'q')
 
     >>> pin_in_model("logic_out", None, "my_cell_i_logic_out", None)
     (True, 'logic_out')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": ["LOGIC_O", "O"]}, "my_cell_i_logic_o", None)
-    (True, 'logic_out')
+    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "property" : False}}, "my_cell_i_logic_o", None)
+    (True, 'logic_o')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": ["LOGIC_O", "O"]}, "my_cell_i_o", None)
-    (True, 'logic_out')
+    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "property" : False}}, "my_cell_i_o", None)
+    (True, 'o')
     """
 
     # strip site location
     model = model.split(':')[0]
     extended_pin_name = pin
+    aliased_pin, aliased_pin_name = find_aliased_pin(
+        pin.upper(), model, pin_aliases)
 
     # some timings reports pins with their directions
     # this happens for e.g. CLB reg_init D pin, which
@@ -93,27 +139,16 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
             return True, pin
         elif extended_pin_name in model.split('_'):
             return True, extended_pin_name
-        elif (pin_aliases is not None) and (pin.upper() in pin_aliases):
-            for alias in pin_aliases[pin.upper()]['names']:
-                pin_alias = alias.lower()
-                if pin_alias in model.split('_'):
-                    if pin_aliases[pin.upper()]['property']:
-                        return True, pin
-                    else:
-                        return True, pin_alias
-            return False, None
+        elif aliased_pin:
+            return True, aliased_pin_name
         else:
             return False, None
-        return False, None
     else:
         # pin name is multi word, search for a string
         if pin in model:
             return True, pin
-        elif pin_aliases is not None:
-            for alias in pin_aliases.get(pin.upper(), ()):
-                pin_alias = alias.lower()
-                if pin_alias in model:
-                    return True, pin
+        elif aliased_pin:
+            return True, aliased_pin_name
         else:
             return False, None
 
