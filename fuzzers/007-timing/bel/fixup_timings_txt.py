@@ -4,6 +4,27 @@ import argparse
 
 
 def fix_line(line, site, filetype):
+    """
+    Squashes the entries for multilpe sites into one.
+    This is required when entries are defined for a different
+    site than they are reported.
+    Such situation happend e.g.
+    for BRAM_[LR]. All the entries are defined for RAMBFIFO36E1,
+    while they are reported for RAMB18E1 or FIFO18E1
+
+    Args:
+    line: raw dump file line
+    site: site to which all the entries will be squashed
+    filetype: entries type. One of [timings, pins, properties]
+
+    Returns:
+    newline: line with squashed entries
+    """
+
+    assert filetype in [
+        "timings", "pins", "properties"
+    ], "Unsupported filetype"
+
     line = line.split()
     newline = list()
     sites_count = int(line[1])
