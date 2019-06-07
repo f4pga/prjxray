@@ -8,6 +8,7 @@ and checks if those pips are listed there.
 
 Missing segbits for pips are reported as well as missing segbit files.
 """
+import sys
 import logging
 import json
 import argparse
@@ -74,7 +75,7 @@ def read_segbits(segbits_file):
 # =============================================================================
 
 
-def main():
+def main(argv):
     """
     The main
     """
@@ -100,7 +101,7 @@ def main():
         default=[],
         help="Tile type name regex list for tile types to include")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     logging.basicConfig(level=50 - args.verbose * 10, format="%(message)s")
 
@@ -214,8 +215,10 @@ def main():
         else:
             logging.warning(" OK: no pips")
 
+    return 0
+
 
 # =============================================================================
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(sys.argv))
