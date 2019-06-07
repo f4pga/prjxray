@@ -46,15 +46,20 @@ with open("design.txt", "r") as f:
         fan_alt_byp_bounce = re.match('^FAN_ALT[0-9]',
                                       dst) is not None and re.match(
                                           '^BYP_BOUNCE.*', src) is not None
+        byp_alt_imux_dst = re.match(
+            '^(BYP_ALT[0-9]+|IMUX_?L?[0-9]+)', dst) is not None
+        logic_out_src = re.match('^LOGIC_OUTS_?L?[0-9]+', src) is not None
 
         # Okay: BYP_ALT0.VCC_WIRE
         # Skip: INT.IMUX13.VCC_WIRE, INT.IMUX_L43.VCC_WIRE
+        # Skip: INT.BYP_ALT[0-9].LOGIC_OUTS_ and INT.IMUX_?L?. LOGIC_OUTS_
         if pnum == 1 or pdir == 0 or \
                 src == "VCC_WIRE" or \
                 re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", src) or \
                 re.match(r"^(L[HV]B?|G?CLK)(_L)?(_B)?[0-9]", dst) or \
                 gfan_src or \
                 fan_alt_byp_bounce or \
+                (logic_out_src and byp_alt_imux_dst) or \
                 re.match(r"^(CTRL|GFAN)(_L)?[0-9]", dst):
             ignpip.add(pip)
 
