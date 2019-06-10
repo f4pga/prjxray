@@ -36,7 +36,7 @@ class ConfigurationColumn {
 	    FrameAddress address) const;
 
        private:
-	friend class YAML::convert<ConfigurationColumn>;
+	friend struct YAML::convert<ConfigurationColumn>;
 
 	unsigned int frame_count_;
 };

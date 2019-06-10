@@ -40,7 +40,7 @@ class Part {
 	    FrameAddress address) const;
 
        private:
-	friend class YAML::convert<Part>;
+	friend struct YAML::convert<Part>;
 
 	uint32_t idcode_;
 	GlobalClockRegion top_region_;

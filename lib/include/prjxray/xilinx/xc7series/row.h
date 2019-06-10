@@ -41,7 +41,7 @@ class Row {
 	    FrameAddress address) const;
 
        private:
-	friend class YAML::convert<Row>;
+	friend struct YAML::convert<Row>;
 
 	std::map<BlockType, ConfigurationBus> configuration_buses_;
 };

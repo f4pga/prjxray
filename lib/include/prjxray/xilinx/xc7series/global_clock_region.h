@@ -45,7 +45,7 @@ class GlobalClockRegion {
 	    FrameAddress address) const;
 
        private:
-	friend class YAML::convert<GlobalClockRegion>;
+	friend struct YAML::convert<GlobalClockRegion>;
 
 	std::map<unsigned int, Row> rows_;
 };

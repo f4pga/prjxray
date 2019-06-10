@@ -42,7 +42,7 @@ class ConfigurationBus {
 	    FrameAddress address) const;
 
        private:
-	friend class YAML::convert<ConfigurationBus>;
+	friend struct YAML::convert<ConfigurationBus>;
 
 	std::map<unsigned int, ConfigurationColumn> configuration_columns_;
 };
