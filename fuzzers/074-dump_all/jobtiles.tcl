@@ -18,22 +18,24 @@ set MAGIC 0.6875
 
 set speed_model_index_map [dict create]
 set speed_model_name_map [dict create]
-foreach speed_model [get_speed_models] {
-    set index [get_property SPEED_INDEX $speed_model]
-    if { $index != 65535 } {
-        if [dict exists $speed_model_index_map $index] {
-            error "$index already in map!"
-        }
-        dict set speed_model_index_map $index $speed_model
+
+proc lookup_speed_model_index {index} {
+    upvar speed_model_index_map speed_model_index_map
+    if { ![dict exists $speed_model_index_map $index] } {
+        set model [get_speed_models -filter "SPEED_INDEX == $index"]
+        dict set speed_model_index_map $index $model
+    }
+    return [dict get $speed_model_index_map $index]
+}
+
+proc lookup_speed_model_name {name} {
+    upvar speed_model_name_map speed_model_name_map
+    if { ![dict exists $speed_model_name_map $name] } {
+        set model [get_speed_models -filter "NAME == $name"]
+        dict set speed_model_name_map $name $model
     }
 
-    if { [get_property IS_INSTANCE_SPECIFIC -quiet $speed_model] != 1 } {
-        set name [get_property NAME $speed_model]
-        if [dict exists $speed_model_name_map $name] {
-            error "$name already in map!"
-        }
-        dict set speed_model_name_map $name $speed_model
-    }
+    return [dict get $speed_model_name_map $name]
 }
 
 for {set j $start } { $j < $stop } { incr j } {
@@ -76,13 +78,13 @@ for {set j $start } { $j < $stop } { incr j } {
             # SPEED_INDEX
             puts $fp "\t\t\t\{"
             puts $fp "\t\t\t\t\"site_pin\":\"$site_pin\","
-            set site_pin_speed_model [dict get $speed_model_index_map [get_property SPEED_INDEX $site_pin]]
+            set site_pin_speed_model [lookup_speed_model_index [get_property SPEED_INDEX $site_pin]]
             set dir [get_property DIRECTION $site_pin]
 
             if { $dir == "IN" } {
                 puts $fp "\t\t\t\t\"cap\": \"[get_property CAP $site_pin_speed_model]\","
             } else {
-                set site_pin_speed_model [dict get $speed_model_name_map [get_property DRIVER $site_pin_speed_model]]
+                set site_pin_speed_model [lookup_speed_model_name [get_property DRIVER $site_pin_speed_model]]
                 puts $fp "\t\t\t\t\"res\": \"[expr $MAGIC * [get_property DRIVE $site_pin_speed_model]]\","
             }
 
@@ -133,9 +135,9 @@ for {set j $start } { $j < $stop } { incr j } {
         # IS_TEST_PIP NAME SPEED_INDEX TILE
         puts $fp "\t\t\{"
         puts $fp "\t\t\t\"pip\":\"$pip\","
-        set pip_speed_model [dict get $speed_model_index_map [get_property SPEED_INDEX $pip]]
-        set forward_speed_model [dict get $speed_model_name_map [get_property FORWARD $pip_speed_model]]
-        set reverse_speed_model [dict get $speed_model_name_map [get_property REVERSE $pip_speed_model]]
+        set pip_speed_model [lookup_speed_model_index [get_property SPEED_INDEX $pip]]
+        set forward_speed_model [lookup_speed_model_name [get_property FORWARD $pip_speed_model]]
+        set reverse_speed_model [lookup_speed_model_name [get_property REVERSE $pip_speed_model]]
 
         set forward_speed_model_type [get_property TYPE $forward_speed_model]
         set reverse_speed_model_type [get_property TYPE $reverse_speed_model]
@@ -188,7 +190,7 @@ for {set j $start } { $j < $stop } { incr j } {
         # IS_PART_OF_BUS NAME NUM_DOWNHILL_PIPS NUM_INTERSECTS NUM_PIPS
         # NUM_TILE_PORTS NUM_UPHILL_PIPS SPEED_INDEX TILE_NAME TILE_PATTERN_OFFSET
         puts $fp "\t\t\{"
-        set wire_speed_model [dict get $speed_model_index_map [get_property SPEED_INDEX $wire]]
+        set wire_speed_model [lookup_speed_model_index [get_property SPEED_INDEX $wire]]
         puts $fp "\t\t\t\"wire\":\"$wire\","
         puts $fp "\t\t\t\"res\":\"[get_property WIRE_RES $wire_speed_model]\","
         puts $fp "\t\t\t\"cap\":\"[get_property WIRE_CAP $wire_speed_model]\","
