@@ -80,6 +80,8 @@ def main(argv):
     The main
     """
 
+    exitcode = 0
+
     # Parse arguments
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -178,6 +180,7 @@ def main(argv):
             if len(segbits) == 0:
                 missing_bits = len(pips_to_check)
                 logging.critical(" MISSING: no segbits file!")
+                exitcode = -1
 
             # Segbits file present
             else:
@@ -192,12 +195,14 @@ def main(argv):
                             logging.error(
                                 " WARNING: no bits for pip '{}' which defaults to VCC_WIRE"
                                 .format(pip))
+                            exitcode = -1
 
                         # A regular pip
                         else:
                             missing_bits += 1
                             logging.error(
                                 " MISSING: no bits for pip '{}'".format(pip))
+                            exitcode = -1
 
                     # The pip has segbits
                     else:
@@ -208,6 +213,7 @@ def main(argv):
                 logging.critical(
                     " MISSING: no bits for {}/{} pips!".format(
                         missing_bits, missing_bits + known_bits))
+                exitcode = -1
             else:
                 logging.critical(" OK: no missing bits")
 
@@ -215,7 +221,7 @@ def main(argv):
         else:
             logging.warning(" OK: no pips")
 
-    return 0
+    return exitcode
 
 
 # =============================================================================
