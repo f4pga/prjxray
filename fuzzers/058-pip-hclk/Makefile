@@ -8,8 +8,6 @@ database: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -o build/segbits_hclk_r.db $(shell find . -name segdata_hclk_r_design_*.txt)
 	${XRAY_MASKMERGE} build/mask_hclk_l.db $(shell find . -name segdata_hclk_l_design_*.txt)
 	${XRAY_MASKMERGE} build/mask_hclk_r.db $(shell find . -name segdata_hclk_r_design_*.txt)
-	grep CK_INOUT build/segbits_hclk_l.db | sed 's, .*, always,' > build/ppips_hclk_l.txt
-	grep CK_INOUT build/segbits_hclk_r.db | sed 's, .*, always,' > build/ppips_hclk_r.txt
 
 pushdb:
 	${XRAY_DBFIXUP} --db-root . --clb-int
@@ -17,8 +15,6 @@ pushdb:
 	${XRAY_MERGEDB} hclk_r build/segbits_hclk_r.db
 	${XRAY_MERGEDB} mask_hclk_l build/mask_hclk_l.db
 	${XRAY_MERGEDB} mask_hclk_r build/mask_hclk_r.db
-	cp build/ppips_hclk_l.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_l.db
-	cp build/ppips_hclk_r.txt  ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/ppips_hclk_r.db
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)
