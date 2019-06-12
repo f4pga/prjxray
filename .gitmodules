@@ -21,16 +21,16 @@
 	url = https://github.com/SymbiFlow/python-sdf-timing.git
 [submodule "minitests/litex/litex"]
 	path = minitests/litex/litex
-	url = https://github.com/antmicro/litex.git
+	url = https://github.com/enjoy-digital/litex
 [submodule "minitests/litex/liteeth"]
 	path = minitests/litex/liteeth
-	url = http://github.com/enjoy-digital/liteeth
+	url = https://github.com/enjoy-digital/liteeth
 [submodule "minitests/litex/litedram"]
 	path = minitests/litex/litedram
-	url = http://github.com/enjoy-digital/litedram
+	url = https://github.com/enjoy-digital/litedram
 [submodule "minitests/litex/migen"]
 	path = minitests/litex/migen
-	url = http://github.com/enjoy-digital/migen
-[submodule "minitests/litex/ct"]
-	path = minitests/litex/ct
-	url = https://github.com/crosstool-ng/crosstool-ng.git
+	url = https://github.com/m-labs/migen
+[submodule "minitests/litex/crosstool-ng"]
+	path = minitests/litex/crosstool-ng
+	url = https://github.com/crosstool-ng/crosstool-ng
