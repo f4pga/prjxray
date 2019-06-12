@@ -1,29 +1,29 @@
-YOSYS = /home/tmichalak/Development/X-Ray/yosys
-CROSS_TOOL = $(PWD)/ct/riscv32-unknown-elf/bin
-LITEX_ARGS = --no-compile-software
+#YOSYS = /home/tmichalak/Development/X-Ray/yosys
+CROSS_TOOL = $(PWD)/crosstool-ng/riscv32-unknown-elf/bin
+LITEX_ARGS = --cpu-type vexriscv --with-ethernet --no-compile-software 
 
-all: toolchain.ok
+all: crosstool-ng/build.ok
 	@echo $$(PWD)
 clean:
 	rm toolchain.ok
 
 
 #  ------------ toolchain -------------
-build-toolchain:
+crosstool-ng/build.ok:
 	./build_toolchain.sh
 
 build-yosys:
 	./build_yosys.sh
 
-litex/yosys: build-toolchain
+litex/yosys: crosstool-ng/build.ok
 	PYTHONPATH="$(PWD)/migen:$(PWD)/litex:$(PWD)/litedram:$(PWD)/liteeth" \
 	PATH="$(YOSYS):$(CROSS_TOOL):$(PATH)" \
 	python3 \
 		litex/litex/boards/targets/arty.py \
 		--output-dir=soc_basesoc_arty_yosys \
-		$(LITEX_ARGS)
+		$(LITEX_ARGS) --no-compile-gateware
 
-litex/vivado: build-toolchain
+litex/vivado: crosstool-ng/build.ok
 	PYTHONPATH="$(PWD)/migen:$(PWD)/litex:$(PWD)/litedram:$(PWD)/liteeth" \
 	PATH="$(YOSYS):$(CROSS_TOOL):$(PATH)" \
 	python3 \
