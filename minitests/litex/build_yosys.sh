@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
-cd yosys
+cd ../../third_party/yosys
 make config-gcc
 make -j`nproc`

@@ -19,22 +19,22 @@
 [submodule "third_party/python-sdf-timing"]
 	path = third_party/python-sdf-timing
 	url = https://github.com/SymbiFlow/python-sdf-timing.git
-[submodule "minitests/litex/liteeth"]
-	path = minitests/litex/liteeth
+[submodule "third_party/liteeth"]
+	path = third_party/liteeth
 	url = https://github.com/enjoy-digital/liteeth
-[submodule "minitests/litex/litedram"]
-	path = minitests/litex/litedram
+[submodule "third_party/litedram"]
+	path = third_party/litedram
 	url = https://github.com/enjoy-digital/litedram
-[submodule "minitests/litex/migen"]
-	path = minitests/litex/migen
-	url = https://github.com/m-labs/migen
-[submodule "minitests/litex/crosstool-ng"]
-	path = minitests/litex/crosstool-ng
+[submodule "third_party/crosstool-ng"]
+	path = third_party/crosstool-ng
 	url = https://github.com/crosstool-ng/crosstool-ng
-[submodule "minitests/litex/litex"]
-	path = minitests/litex/litex
+[submodule "third_party/litex"]
+	path = third_party/litex
 	url = https://github.com/antmicro/litex
 	branch = prjxray
-[submodule "minitests/litex/yosys"]
-	path = minitests/litex/yosys
+[submodule "third_party/yosys"]
+	path = third_party/yosys
 	url = https://github.com/YosysHQ/yosys
+[submodule "third_party/migen"]
+	path = third_party/migen
+	url = https://github.com/m-labs/migen
