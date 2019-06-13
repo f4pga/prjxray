@@ -35,3 +35,6 @@
 	path = minitests/litex/litex
 	url = https://github.com/antmicro/litex
 	branch = prjxray
+[submodule "minitests/litex/yosys"]
+	path = minitests/litex/yosys
+	url = https://github.com/YosysHQ/yosys
