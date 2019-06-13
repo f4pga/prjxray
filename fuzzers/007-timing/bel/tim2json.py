@@ -97,7 +97,6 @@ def read_raw_timings(fin, properties, pins, site_pins):
 
             sites_count = int(raw_data[1])
             loc = 2
-            timings[slice] = dict()
             for site in range(0, sites_count):
 
                 site_name = raw_data[loc]
@@ -274,6 +273,9 @@ def read_raw_timings(fin, properties, pins, site_pins):
 
                         delay_btype = speed_model
                         extra_ports = None
+
+                        if slice not in timings:
+                            timings[slice] = dict()
 
                         if bel_location not in timings[slice]:
                             timings[slice][bel_location] = dict()
