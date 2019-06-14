@@ -1,5 +1,5 @@
 BASE_PATH = $(abspath $(PWD)/../../../)
-VIVADO = /opt/Xilinx/Vivado/2017.2/bin/vivado
+VIVADO = $(BASE_PATH)/utils/vivado.sh
 PART = xc7a35tcsg324-1
 BIT2FASM_ARGS = --db-root "$(BASE_PATH)/database/artix7" --part "$(BASE_PATH)/database/artix7/$(PART)" --verbose
 
