@@ -3,11 +3,13 @@ VIVADO = $(BASE_PATH)/utils/vivado.sh
 PART = xc7a35tcsg324-1
 BIT2FASM_ARGS = --db-root "$(BASE_PATH)/database/artix7" --part "$(BASE_PATH)/database/artix7/$(PART)" --verbose
 
-all: top.fasm
+all: top.fasm top.bits segprint.log
 
 clean:
 	@rm -f *.bit
+	@rm -f *.bits
 	@rm -f *.fasm
+	@rm -f *.log
 	@rm -rf build
 
 .PHONY: all clean
@@ -25,3 +27,9 @@ top.fasm: top.bit
         $(BIT2FASM_ARGS) \
         top.bit >top.fasm \
         || (rm -f top.fasm && exit -1)
+
+top.bits: top.bit
+	$(XRAY_BITREAD) -part_file $(BASE_PATH)/database/artix7/$(PART).yaml -o top.bits -z -y top.bit
+
+segprint.log: top.bits
+	$(XRAY_SEGPRINT) -z -D -b top.bits > segprint.log
