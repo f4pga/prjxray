@@ -33,8 +33,78 @@ def load_pipfile(pipfile, verbose=False):
     return todos, tile_type
 
 
+def balance_todo_list(
+        todos,
+        balance_wire_re,
+        balance_wire_direction,
+        balance_wire_cnt,
+        verbose=False):
+    """Balance the contents of the todo list
+
+    Todo list balancing allows to specify the name, direction and minimal number of
+    occurrences of a PIP wire in the final todo list.
+    The mechanism should be used in cases where a fuzzer times out because of an
+    unsolvable todo list, i.e. the netlist and resulting segdata generated from an
+    iteration keep segmatch from properly disambiguating the bits for some features.
+
+    When the balance wire name regexp is specified it's guaranteed that all PIPs
+    with matching wire name (whether we want to match a src or dst wire has to be
+    specified with the --balance-wire-direction switch) will have at least the number
+    of entries specified with the --balance-wire-cnt switch in the final todo list.
+    """
+    if balance_wire_re is not None:
+        todo_wires = {}
+        verbose and print("Start balancing the TODO list")
+        for todo in todos:
+            tile_type, dst, src = todo.split(".")
+            wire = src
+            other_wire = dst
+            if balance_wire_direction not in "src":
+                wire = dst
+                other_wire = src
+            balance_wire_match = re.match(balance_wire_re, wire)
+            if balance_wire_match is None:
+                continue
+            if wire not in todo_wires:
+                todo_wires[wire] = set()
+            todo_wires[wire].add(other_wire)
+        for wire, other_wires in todo_wires.items():
+            if len(other_wires) >= balance_wire_cnt:
+                continue
+            else:
+                for todo in orig_todos:
+                    tile_type, dst, src = todo.split(".")
+                    if balance_wire_direction in "src":
+                        if wire in src and dst not in todo_wires[wire]:
+                            todo_wires[wire].add(dst)
+                    else:
+                        if wire in dst and src not in todo_wires[wire]:
+                            todo_wires[wire].add(src)
+                    if len(todo_wires[wire]) == balance_wire_cnt:
+                        break
+        for wire, other_wires in todo_wires.items():
+            assert len(other_wires) >= balance_wire_cnt, "Len is " + str(
+                len(other_wires))
+            for other_wire in other_wires:
+                line = tile_type + "."
+                if balance_wire_direction in "src":
+                    line += other_wire + "." + wire
+                else:
+                    line += wire + "." + other_wire
+                verbose and print("Adding {}".format(line))
+                todos.add(line)
+        verbose and print("Finished balancing the TODO list")
+
+
 def maketodo(
-        pipfile, dbfile, intre, exclude_re=None, not_endswith=None,
+        pipfile,
+        dbfile,
+        intre,
+        exclude_re=None,
+        balance_wire_re=None,
+        balance_wire_direction=None,
+        balance_wire_cnt=None,
+        not_endswith=None,
         verbose=False):
     '''
     db files start with INT., but pipfile lines start with INT_L
@@ -42,6 +112,7 @@ def maketodo(
     050-intpips doesn't care about contents, but most fuzzers use the tile type prefix
     '''
 
+    orig_todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     verbose and print('%s: %u entries' % (pipfile, len(todos)))
     verbose and print("pipfile todo sample: %s" % list(todos)[0])
@@ -74,8 +145,10 @@ def maketodo(
     else:
         verbose and print("WARNING: dbfile doesnt exist: %s" % dbfile)
     verbose and print('Post db %s: %u entries' % (dbfile, len(todos)))
+
     drops = 0
     lines = 0
+    filtered_todos = set()
     for line in todos:
         include = re.match(intre, line) is not None
 
@@ -86,11 +159,17 @@ def maketodo(
             include = re.match(exclude_re, line) is None
 
         if include:
-            print(line)
+            filtered_todos.add(line)
         else:
             drops += 1
         lines += 1
     verbose and print('Print %u entries w/ %u drops' % (lines, drops))
+
+    balance_todo_list(
+        filtered_todos, balance_wire_re, balance_wire_direction,
+        balance_wire_cnt)
+    for todo in filtered_todos:
+        print(todo)
 
 
 def run(
@@ -104,6 +183,9 @@ def run(
         pip_type,
         seg_type,
         exclude_re=None,
+        balance_wire_re=None,
+        balance_wire_direction=None,
+        balance_wire_cnt=None,
         not_endswith=None,
         verbose=False):
     if db_dir is None:
@@ -131,6 +213,9 @@ def run(
             "%s/segbits_%s%s.db" % (db_dir, seg_type, side),
             intre,
             exclude_re=exclude_re,
+            balance_wire_re=balance_wire_re,
+            balance_wire_direction=balance_wire_direction,
+            balance_wire_cnt=balance_wire_cnt,
             not_endswith=not_endswith,
             verbose=verbose)
 
@@ -147,6 +232,14 @@ def main():
     parser.add_argument('--pip-dir', default=None, help='')
     parser.add_argument('--re', required=True, help='')
     parser.add_argument('--exclude-re', required=False, default=None, help='')
+    parser.add_argument(
+        '--balance-wire-re', required=False, default=None, help='')
+    parser.add_argument(
+        '--balance-wire-direction', required=False, default="src", help='')
+    parser.add_argument(
+        '--balance-wire-cnt', required=False, default="1", help='')
+    parser.add_argument(
+        '--balance-re-wire', required=False, default="src", help='')
     parser.add_argument('--pip-type', default="pips_int", help='')
     parser.add_argument('--seg-type', default="int", help='')
     parser.add_argument('--sides', default="l,r", help='')
@@ -162,6 +255,9 @@ def main():
         pip_dir=args.pip_dir,
         intre=args.re,
         exclude_re=args.exclude_re,
+        balance_wire_re=args.balance_wire_re,
+        balance_wire_direction=args.balance_wire_direction,
+        balance_wire_cnt=int(args.balance_wire_cnt),
         sides=args.sides.split(','),
         l=args.l,
         r=args.r,
