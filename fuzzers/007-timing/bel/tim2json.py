@@ -49,16 +49,24 @@ def find_aliased_pin(pin, model, pin_aliases):
     """
     Searches for aliased pins
 
-    Args:
-        pin: pin name to look for
-        model: timing model string
-        pin_aliases: A dict of list of aliases for given bel/site
+    Parameters
+    ----------
+        pin: str
+            Pin name to look for
+        model: str
+            Timing model
+        pin_aliases: dict
+            A dict of list of aliases for given bel/site
 
-    Returns:
-        is_pin_aliased: Bool
-        new_pin_name: string
-        If pin is found in the alias list the function returs a
-        new pin name which should be used in further processing
+    Returns
+    -------
+        bool, str
+
+        The first bool value is set to true if pin is found
+        in the timing model, false otherwise.
+
+        The second returned value is found pin name. If pin
+        is not found None is returned
 
     >>> find_aliased_pin("a", "a_b_some_test_string", None)
     (False, None)
@@ -93,14 +101,26 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
     """
     Checks if a given pin belongs to the model.
 
-    Args:
-        pin: Pin name to look for
-        pin_aliases: A dict of list of aliases for given bel/site
-        model: Model name string
-        direction: Optional pin direction suffix
+    Parameters
+    ----------
+        pin: str
+            Pin name to look for
+        pin_aliases: dict
+            A dict of list of aliases for given bel/site
+        model: str
+            Timing model name
+        direction: str
+            Optional pin direction suffix [IN|OUT]
 
-    Returns:
-        is_pin_in_model, pin_name
+    Returns
+    -------
+        bool, str
+
+        The first returned value is set to true if pin is found,
+        false otherwise.
+
+        The second returned value contains found pin name. If the
+        pin is not found, None is returned.
 
     >>> pin_in_model("d", None, "ff_init_din_q", "in")
     (True, 'din')
@@ -156,6 +176,20 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
 def remove_pin_from_model(pin, model):
     """
     Removes the pin from model name if present.
+
+    Arguments
+    ---------
+
+    pin: str
+        Pin name
+    mode: str
+        Timing model name
+
+    Returns
+    -------
+
+    str
+        Updated timing model name
 
     >>> remove_pin_from_model("q", "ff_init_d_q")
     'ff_init_d'
