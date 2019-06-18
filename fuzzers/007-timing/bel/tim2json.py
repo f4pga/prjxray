@@ -47,7 +47,20 @@ def clean_bname(bname):
 
 def find_aliased_pin(pin, model, pin_aliases):
     """
-    Searches for aliased pins
+    Searches for aliased pins in the timing model.
+    The check is done using data from pin_aliases dictionary.
+    The dictionary has an entry for each aliased pin.
+    Each entry has two fields:
+
+    * names : a list of all the possible aliases
+    * is_property_related: a flag saying if the alias is in fact
+            pin name combined with BEL property (e.g. Q[LH] pins
+            in FF - in this case the pin name is Q [original name],
+            but is named Q[LH] in the timing model. The suffix
+            determines polarity of the FF's set/reset input).
+
+    If is_property_related is set the function returns the original
+    pin name, aliased name is returned otherwise.
 
     Parameters
     ----------
