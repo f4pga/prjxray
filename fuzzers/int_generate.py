@@ -54,10 +54,11 @@ with open(args.design, "r") as f:
         if tile not in tiledata:
             tiledata[tile] = {"pips": set(), "srcs": set(), "dsts": set()}
 
-        if pip in pipdata:
-            assert pipdata[pip] == (src, dst)
+        tile_lr = ("_".join(tile.split("_")[0:2]))
+        if (tile_lr, pip) in pipdata:
+            assert pipdata[(tile_lr, pip)] == (src, dst)
         else:
-            pipdata[pip] = (src, dst)
+            pipdata[(tile_lr, pip)] = (src, dst)
 
         tiledata[tile]["pips"].add(pip)
         tiledata[tile]["srcs"].add(src)
@@ -67,23 +68,23 @@ with open(args.design, "r") as f:
             tiledata[tile]["srcs"].add(dst)
             tiledata[tile]["dsts"].add(src)
 
+        t = ("_".join(tile.split("_")[0:2]), dst, src)
         if pnum == 1 or pdir == 0:
             verbose and print('ignore pnum == 1 or pdir == 0: ', pip)
-            ignpip.add(pip)
+            ignpip.add(t)
 
-        t = ("_".join(tile.split("_")[0:2]), dst, src)
         if t not in todo:
             verbose and print('ignore not todo: ', t)
-            ignpip.add(pip)
+            ignpip.add(t)
 
 for tile, pips_srcs_dsts in tiledata.items():
     pips = pips_srcs_dsts["pips"]
     srcs = pips_srcs_dsts["srcs"]
     dsts = pips_srcs_dsts["dsts"]
-
-    for pip, src_dst in pipdata.items():
+    for (tile_lr, pip), src_dst in pipdata.items():
         src, dst = src_dst
-        if pip in ignpip:
+        t = (tile_lr, dst, src)
+        if t in ignpip:
             pass
         elif pip in pips:
             segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
