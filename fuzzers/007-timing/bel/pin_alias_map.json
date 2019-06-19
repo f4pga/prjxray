@@ -1,0 +1,60 @@
+{
+    "ff_init": {
+        "Q": {
+             "names" : ["QL", "QH"],
+             "is_property_related" : true
+         }
+    },
+    "reg_init": {
+        "Q": {
+             "names" : ["QL", "QH"],
+             "is_property_related" : true
+         }
+    },
+    "rambfifo36e1" : {
+         "RSTRAMARSTRAMLRST" : {
+             "names" : ["rstramarstl"],
+             "is_property_related" : false
+         },
+         "ADDRARDADDRU0" : {
+             "names" : ["addrau"],
+             "is_property_related" : false
+         },
+         "ADDRARDADDRL15" : {
+             "names" : ["addra15l"],
+             "is_property_related" : false
+         },
+         "RSTRAMARSTRAMU" : {
+             "names" : ["rstramau"],
+             "is_property_related" : false
+         },
+         "ADDRBWRADDRU0" : {
+             "names" : ["addrbu"],
+             "is_property_related" : false
+         },
+         "ADDRBWRADDRL15" : {
+             "names" : ["addrb15l"],
+             "is_property_related" : false
+         },
+         "WEBWEU0" : {
+             "names" : ["webu"],
+             "is_property_related" : false
+         },
+         "DOADO0" : {
+             "names" : ["doadol", "doadou"],
+             "is_property_related" : false
+         },
+         "DOBDO0" : {
+             "names" : ["dobdol", "dobdou"],
+             "is_property_related" : false
+         },
+         "DOPADOP0" : {
+             "names" : ["dopadopl", "dopadopu"],
+             "is_property_related" : false
+         },
+         "DOPBDOP0" : {
+             "names" : ["dopbdopl", "dopbdopu"],
+             "is_property_related" : false
+         }
+    }
+}
