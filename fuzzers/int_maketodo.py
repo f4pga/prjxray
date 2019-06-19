@@ -34,6 +34,7 @@ def load_pipfile(pipfile, verbose=False):
 
 
 def balance_todo_list(
+        pipfile,
         todos,
         balance_wire_re,
         balance_wire_direction,
@@ -52,6 +53,7 @@ def balance_todo_list(
     specified with the --balance-wire-direction switch) will have at least the number
     of entries specified with the --balance-wire-cnt switch in the final todo list.
     """
+    orig_todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     if balance_wire_re is not None:
         todo_wires = {}
         verbose and print("Start balancing the TODO list")
@@ -83,8 +85,10 @@ def balance_todo_list(
                     if len(todo_wires[wire]) == balance_wire_cnt:
                         break
         for wire, other_wires in todo_wires.items():
-            assert len(other_wires) >= balance_wire_cnt, "Len is " + str(
-                len(other_wires))
+            if len(other_wires) < balance_wire_cnt:
+                verbose and print(
+                    "Warning: failed to balance the todo list for wire {}, there are only {} PIPs which meet the requirement: {}"
+                    .format(wire, len(other_wires), other_wires))
             for other_wire in other_wires:
                 line = tile_type + "."
                 if balance_wire_direction in "src":
@@ -112,7 +116,6 @@ def maketodo(
     050-intpips doesn't care about contents, but most fuzzers use the tile type prefix
     '''
 
-    orig_todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     verbose and print('%s: %u entries' % (pipfile, len(todos)))
     verbose and print("pipfile todo sample: %s" % list(todos)[0])
@@ -141,7 +144,8 @@ def maketodo(
                     todos.remove(tag)
                 else:
                     verbose and print(
-                        "WARNING: couldnt remove %s (line %s)" % (tag, line))
+                        "WARNING: couldnt remove %s (line %s)" %
+                        (tag, line.strip()))
     else:
         verbose and print("WARNING: dbfile doesnt exist: %s" % dbfile)
     verbose and print('Post db %s: %u entries' % (dbfile, len(todos)))
@@ -166,8 +170,8 @@ def maketodo(
     verbose and print('Print %u entries w/ %u drops' % (lines, drops))
 
     balance_todo_list(
-        filtered_todos, balance_wire_re, balance_wire_direction,
-        balance_wire_cnt)
+        pipfile, filtered_todos, balance_wire_re, balance_wire_direction,
+        balance_wire_cnt, verbose)
     for todo in filtered_todos:
         print(todo)
 
