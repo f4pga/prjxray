@@ -94,8 +94,10 @@ with open("design.txt", "r") as f:
             # CLKINV turns out to be more complicated than origianlly thought
             if isff(cel_prim):
                 segmk.add_site_tag(site, "CLKINV", cinv)
+                segmk.add_site_tag(site, "NOCLKINV", 1 ^ cinv)
             else:
                 segmk.add_site_tag(site, "CLKINV", 1 ^ cinv)
+                segmk.add_site_tag(site, "NOCLKINV", cinv)
 
             # Synchronous vs asynchronous FF
             # Unlike most bits, shared between all CLB FFs
