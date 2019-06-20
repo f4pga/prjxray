@@ -34,14 +34,19 @@ def read_raw_timings(fin, site):
             if speed_model.startswith('bel_d_'):
                 speed_model = speed_model[6:]
 
-            if speed_model not in timings:
-                timings['cells'][speed_model] = dict()
+            speed_model_split = speed_model.split('_')
+            interconn_input = "_".join(speed_model_split[1:-1])
+            interconn_output = speed_model_split[-1]
+            celltype = "routing_bel"
 
-            if site not in timings['cells'][speed_model]:
-                timings['cells'][speed_model][site] = dict()
+            if celltype not in timings['cells']:
+                timings['cells'][celltype] = dict()
 
-            if speed_model not in timings['cells'][speed_model][site]:
-                timings['cells'][speed_model][site][speed_model] = dict()
+            if site not in timings['cells'][celltype]:
+                timings['cells'][celltype][site] = dict()
+
+            if speed_model not in timings['cells'][celltype][site]:
+                timings['cells'][celltype][site][speed_model] = dict()
 
             delays = dict()
             # each timing entry reports 5 delays
@@ -50,18 +55,27 @@ def read_raw_timings(fin, site):
                 delays[t] = v
 
             # create entry for sdf writer
-            port = dict()
-            port['port'] = speed_model
-            port['edge'] = None
+            iport = dict()
+            iport['port'] = interconn_input
+            iport['port_edge'] = None
+            oport = dict()
+            oport['port'] = interconn_output
+            oport['port_edge'] = None
             paths = dict()
             paths = add_timing_paths_entry(
                 paths, 'slow', [delays['SLOW_MIN'], None, delays['SLOW_MAX']])
             paths = add_timing_paths_entry(
                 paths, 'fast', [delays['FAST_MIN'], None, delays['FAST_MAX']])
-            timings['cells'][speed_model][site][
-                speed_model] = utils.add_device(port, paths)
-            timings['cells'][speed_model][site][speed_model][
-                'is_absolute'] = True
+
+            if speed_model.endswith('diff'):
+                iport['port'] = "_".join(speed_model_split[1:])
+                iport['port_edge'] = None
+                timings['cells'][celltype][site][
+                    speed_model] = utils.add_device(iport, paths)
+            else:
+                timings['cells'][celltype][site][
+                    speed_model] = utils.add_interconnect(iport, oport, paths)
+            timings['cells'][celltype][site][speed_model]['is_absolute'] = True
 
     return timings
 
