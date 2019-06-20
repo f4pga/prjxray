@@ -55,7 +55,7 @@ def main():
             timings_list.append(timing)
 
     merged_sdf = merge(timings_list, args.site)
-    open(args.out, 'w').write(sdfparse.emit(merged_sdf))
+    open(args.out, 'w').write(sdfparse.emit(merged_sdf, timescale='1ns'))
 
     if args.json is not None:
         with open(args.json, 'w') as fp:
