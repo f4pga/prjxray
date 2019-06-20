@@ -26,6 +26,7 @@ def read_raw_timings(fin):
 
     return timings
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--timings', type=str, help='Raw timing input file')
@@ -37,6 +38,7 @@ def main():
     timings = read_raw_timings(args.timings)
     with open(args.json, 'w') as fp:
         json.dump(timings, fp, indent=4, sort_keys=True)
+
 
 if __name__ == '__main__':
     main()
