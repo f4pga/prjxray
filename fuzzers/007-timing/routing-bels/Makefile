@@ -1,13 +1,13 @@
-all: build/slicel.json build/slicem.json
+all: build/slicel.sdf build/slicem.sdf
 
 clean:
 	rm -rf build
 
-build/slicel.json: build/slicel.txt
-	python3 tim2sdf.py --timings build/slicel.txt --json build/slicel.json
+build/slicel.sdf: build/slicel.txt
+	python3 tim2sdf.py --timings build/slicel.txt --site slicel --sdf build/slicel.sdf
 
-build/slicem.json: build/slicem.txt
-	python3 tim2sdf.py --timings build/slicem.txt --json build/slicem.json
+build/slicem.sdf: build/slicem.txt
+	python3 tim2sdf.py --timings build/slicem.txt --site slicem --sdf build/slicem.sdf
 
 build/slicel.txt build/slicem.txt:
 	bash runme.sh
