@@ -132,7 +132,6 @@ class ZeroGroups(object):
 
     def add_tag_bits(self, tag, bits):
         if tag in self.zero_tag_to_group:
-            assert len(bits) == 0
             return
 
         group_ids = set()
