@@ -1,4 +1,4 @@
-all: pushdb
+all: build/sdf
 
 clean:
 	rm -rf build
@@ -19,15 +19,5 @@ build/bel_timings.json: build/fixup_timings
 
 build/sdf: build/bel_timings.json
 	python3 ${XRAY_UTILS_DIR}/makesdf.py --json=${PWD}/build/bel_timings.json --sdf=${PWD}/build
+	touch build/sdf.ok
 
-cleandb:
-	rm -rf ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/timings
-
-mergesdfs: build/sdf
-	python3 ${XRAY_UTILS_DIR}/sdfmerge.py --sdfs build/CLBLL_L.sdf build/CLBLL_R.sdf build/CLBLM_L.sdf build/CLBLM_R.sdf --site SLICEM --out build/slicem.sdf
-	python3 ${XRAY_UTILS_DIR}/sdfmerge.py --sdfs build/CLBLL_L.sdf build/CLBLL_R.sdf build/CLBLM_L.sdf build/CLBLM_R.sdf --site SLICEL --out build/slicel.sdf
-
-pushdb: mergesdfs
-	mkdir -p ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/timings
-	cp build/*sdf ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/timings
-	touch run.ok
