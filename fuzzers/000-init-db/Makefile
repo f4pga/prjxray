@@ -23,14 +23,29 @@ SEGBITS=\
       hclk \
       int \
 
-DB_SIMPLE=$(addprefix mask_,$(MASKS)) $(addprefix ppips_,$(PPIPS)) $(addprefix segbits_,$(SEGBITS))
+SEGBITS_R=\
+      clk_bufg_top \
+      clk_bufg_bot \
+      $(SEGBITS)
 
-# Extra (segbits|mask)_bram_(l|r).block_ram.db files
-# FIXME: Are these things also needed for the DSP blocks?
-BLOCK_RAM_EXTRA_FOR=mask_bram segbits_bram
-BLOCK_RAM_EXTRA_DB_FILES=$(addsuffix .block_ram.db,$(addsuffix _l,$(BLOCK_RAM_EXTRA_FOR)) $(addsuffix _r,$(BLOCK_RAM_EXTRA_FOR)))
+SEGBITS_L=\
+      $(SEGBITS)
 
-DB_FILES=$(sort $(addsuffix _l.db,$(DB_SIMPLE)) $(addsuffix _r.db,$(DB_SIMPLE)) $(BLOCK_RAM_EXTRA_DB_FILES))
+DB_SIMPLE_LR=$(addprefix mask_,$(MASKS)) $(addprefix ppips_,$(PPIPS))
+DB_SIMPLE_L=$(addprefix segbits_,$(SEGBITS_L))
+DB_SIMPLE_R=$(addprefix segbits_,$(SEGBITS_R))
+DB_SIMPLE=\
+    $(addsuffix _l, $(DB_SIMPLE_LR) $(DB_SIMPLE_L)) \
+    $(addsuffix _r, $(DB_SIMPLE_LR) $(DB_SIMPLE_R))
+
+BLOCK_RAM_EXTRA_FOR=\
+      mask_bram \
+      segbits_bram
+BLOCK_RAM_EXTRA_DB_FILES=\
+      $(addsuffix .block_ram.db,$(addsuffix _l,$(BLOCK_RAM_EXTRA_FOR)) $(addsuffix _r,$(BLOCK_RAM_EXTRA_FOR)))
+
+
+DB_FILES=$(sort $(addsuffix .origin_info.db,$(DB_SIMPLE)) $(addsuffix .db,$(DB_SIMPLE)) $(BLOCK_RAM_EXTRA_DB_FILES))
 DB_FILES_PATH=$(addprefix $(XRAY_DATABASE_DIR)/$(XRAY_DATABASE)/,$(DB_FILES))
 
 check:
