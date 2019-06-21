@@ -110,6 +110,16 @@ def find_aliased_pin(pin, model, pin_aliases):
     return False, None
 
 
+def instance_in_model(instance, model):
+
+    if len(instance.split('_')) == 1:
+        # instance name is one word, search it in the model
+        return instance in model.split('_')
+    else:
+        # instance name is multi word, search for a string
+        return instance in model
+
+
 def pin_in_model(pin, pin_aliases, model, direction=None):
     """
     Checks if a given pin belongs to the model.
@@ -166,24 +176,14 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
     if direction is not None:
         extended_pin_name = pin + direction
 
-    if len(pin.split('_')) == 1:
-        # pin name is one word, search it in the model
-        if pin in model.split('_'):
-            return True, pin
-        elif extended_pin_name in model.split('_'):
-            return True, extended_pin_name
-        elif aliased_pin:
-            return True, aliased_pin_name
-        else:
-            return False, None
+    if instance_in_model(pin, model):
+        return True, pin
+    elif instance_in_model(extended_pin_name, model):
+        return True, extended_pin_name
+    elif aliased_pin:
+        return True, aliased_pin_name
     else:
-        # pin name is multi word, search for a string
-        if pin in model:
-            return True, pin
-        elif aliased_pin:
-            return True, aliased_pin_name
-        else:
-            return False, None
+        return False, None
 
 
 def remove_pin_from_model(pin, model):
