@@ -278,14 +278,13 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                 # read all BELs data within
                 loc += 2
                 for bel in range(0, bels_count):
-                    tmp_data = raw_data[loc:]
-                    btype = (tmp_data[0]).lower()
-                    delay_count = int(tmp_data[1])
+                    btype = (raw_data[loc]).lower()
+                    delay_count = int(raw_data[loc + 1])
 
                     # get all the delays
-                    delay_loc = 2
+                    loc += 2
                     for delay in range(0, delay_count):
-                        speed_model = tmp_data[delay_loc]
+                        speed_model = raw_data[loc]
                         delay_btype = clean_bname(btype)
                         delay_btype_orig = delay_btype
                         # all the bel names seem to start with "bel_d_"
@@ -463,11 +462,11 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                         if sequential is not None:
                             if bel_output is None and bel_clock is None or \
                                bel_output is None and bel_clock == bel_input:
-                                delay_loc += 6
+                                loc += 6
                                 continue
                         else:
                             if bel_input is None or bel_output is None:
-                                delay_loc += 6
+                                loc += 6
                                 continue
 
                         delay_btype = speed_model
@@ -517,13 +516,12 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
 
                         # each timing entry reports 5 delays
                         for d in range(0, 5):
-                            (t, v) = tmp_data[d + 1 + delay_loc].split(':')
+                            (t, v) = raw_data[d + 1 + loc].split(':')
                             timings[slice][bel_location][delay_btype][
                                 speed_model_orig][t] = v
 
                         # 5 delay values + name
-                        delay_loc += 6
-                    loc += delay_loc
+                        loc += 6
     return timings
 
 
