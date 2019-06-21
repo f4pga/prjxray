@@ -227,6 +227,33 @@ def remove_pin_from_model(pin, model):
         return "_".join(list(filter(None, model.replace(pin, '').split('_'))))
 
 
+def extract_properties(tile, site, bel, properties, model):
+
+    if tile not in properties:
+        return None
+    if site not in properties[tile]:
+        return None
+    if bel not in properties[tile][site]:
+        return None
+
+    model_properties = dict()
+
+    for prop in properties[tile][site][bel]:
+        if prop in model_properties:
+            continue
+        if instance_in_model(prop.lower(), model):
+            # if there is property there must be value
+            # value always follow the property
+            for value in properties[tile][site][bel][prop]:
+                value = value.replace(',', '')
+                prop_val_str = "_".join([prop, value])
+                if instance_in_model(prop_val_str.lower(), model):
+                    model_properties[prop] = value
+                    break
+
+    return model_properties
+
+
 def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
 
     timings = dict()
@@ -294,6 +321,18 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                         speed_model_clean = speed_model
                         if speed_model.startswith(delay_btype):
                             speed_model_clean = speed_model[len(delay_btype):]
+
+                        # remove properties from the model
+                        speed_model_properties = extract_properties(
+                            slice, site_name, delay_btype_orig, properties,
+                            speed_model_clean)
+                        if speed_model_properties is not None:
+                            for prop in speed_model_properties:
+                                # properties values in the model always follow properties name
+                                prop_string = "_".join(
+                                    [prop, speed_model_properties[prop]])
+                                speed_model_clean = remove_pin_from_model(
+                                    prop_string.lower(), speed_model_clean)
 
                         # Get pin alias map
                         pin_aliases = pin_alias_map.get(delay_btype, None)
@@ -370,18 +409,6 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                             )][bel_clock_orig_pin]['direction'] == 'IN':
                                 bel_input = bel_clock
 
-                        # check if the input is not a BEL property
-                        if bel_input is None:
-                            # if there is anything not yet decoded
-                            if len(speed_model_clean.split("_")) > 1:
-                                for prop in properties[slice][site_name][
-                                        delay_btype_orig]:
-                                    if prop.lower() in speed_model_clean:
-                                        bel_input = prop
-                                        speed_model_clean = remove_pin_from_model(
-                                            prop.lower(), speed_model_clean)
-                                        break
-
                         # if we still don't have the input check if the input
                         # is wider than 1 bit and timing defined for the whole
                         # port
@@ -417,9 +444,17 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                             orig_pin.lower(),
                                             speed_model_clean)
 
+                        # check if the input is not a BEL property
+                        if bel_input is None:
+                            # if there is anything not yet decoded
+                            if len(speed_model_clean.split("_")) > 1:
+                                if len(speed_model_properties.keys()) == 1:
+                                    bel_input = list(
+                                        speed_model_properties.keys())[0]
+
                         # if we still don't have input, give up
                         if bel_input is None:
-                            delay_loc += 6
+                            loc += 6
                             continue
 
                         # restore speed model name
@@ -436,6 +471,11 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                                 continue
 
                         delay_btype = speed_model
+                        # add properties to the delay_btype
+                        for prop in sorted(speed_model_properties):
+                            prop_string = "_".join(
+                                [prop, speed_model_properties[prop]])
+                            delay_btype += "_" + prop_string
                         extra_ports = None
 
                         if slice not in timings:
