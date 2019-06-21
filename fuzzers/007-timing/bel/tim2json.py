@@ -16,7 +16,7 @@ def check_sequential(speed_model):
         'recovery': 'recovery'
     }
     tmp = speed_model.split('_')
-    for keyword in timing_keywords:
+    for keyword in sorted(timing_keywords):
         if keyword in tmp:
             # return found keyword and it's map in SDF
             return [keyword, timing_keywords[keyword]]
