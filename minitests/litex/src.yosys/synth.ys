@@ -1,0 +1,3 @@
+read_verilog top.v
+read_verilog VexRiscv_Linux.v
+synth_xilinx -edif top.edif
