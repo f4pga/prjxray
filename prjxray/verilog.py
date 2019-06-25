@@ -35,21 +35,25 @@ endmodule
 ''' % (DIN_N, DOUT_N))
 
 
-def instance(mod, name, ports, params={}, sort=True):
+def instance(mod, name, ports, params={}, sort=True, string_buffer=sys.stdout):
     # TODO: make this print nicer
     tosort = sorted if sort else lambda x: x
-    print('    %s' % mod)
+    print('    %s' % mod, file=string_buffer)
     if len(params):
-        print('        #(')
+        print('        #(', file=string_buffer)
         for i, (paramk, paramv) in enumerate(tosort(params.items())):
             comma = '' if i == len(params) - 1 else ','
-            print('            .%s(%s)%s' % (paramk, paramv, comma))
-        print('        )')
-    print('        %s (' % name)
+            print(
+                '            .%s(%s)%s' % (paramk, paramv, comma),
+                file=string_buffer)
+        print('        )', file=string_buffer)
+    print('        %s (' % name, file=string_buffer)
     for i, (portk, portv) in enumerate(tosort(ports.items())):
         comma = '' if i == len(ports) - 1 else ','
-        print('            .%s(%s)%s' % (portk, portv, comma))
-    print('        );')
+        print(
+            '            .%s(%s)%s' % (portk, portv, comma),
+            file=string_buffer)
+    print('        );', file=string_buffer)
 
 
 def quote(s):
