@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import copy
 import json
+import os
 from utils import xjson
 '''
 Historically we grouped data into "segments"
@@ -317,6 +318,91 @@ def propagate_IOB_SING(database, tiles_by_grid):
         }
 
 
+def propagate_IOI_SING(database, tiles_by_grid):
+    """
+    The IOI_SING, similarly to IOB_SING, are half tiles at top and bottom of every
+    IO column.
+
+    The tile contains half of the sites that are present in the full IOI,
+    namely one ILOGIC, OLOGIC and IDELAY.
+    """
+
+    seen_iois = set()
+    for tile in database:
+        if tile in seen_iois:
+            continue
+
+        if database[tile]["type"] not in ["LIOI3", "RIOI3"]:
+            continue
+
+        while True:
+            prev_tile = tile
+            tile = tiles_by_grid[(
+                database[tile]['grid_x'], database[tile]['grid_y'] + 1)]
+            if '_SING' in database[tile]['type']:
+                break
+
+        bottom_tile = tile
+        seen_iois.add(bottom_tile)
+
+        bits = database[prev_tile]['bits']['CLB_IO_CLK']
+
+        while True:
+            tile = tiles_by_grid[(
+                database[tile]['grid_x'], database[tile]['grid_y'] - 1)]
+            seen_iois.add(tile)
+
+            if '_SING' in database[tile]['type']:
+                break
+
+            if 'CLB_IO_CLK' in database[tile]['bits']:
+                assert bits['baseaddr'] == database[tile]['bits'][
+                    'CLB_IO_CLK']['baseaddr']
+                assert bits['frames'] == database[tile]['bits']['CLB_IO_CLK'][
+                    'frames']
+                assert bits['words'] == database[tile]['bits']['CLB_IO_CLK'][
+                    'words']
+
+        top_tile = tile
+
+        database[top_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+        database[top_tile]['bits']['CLB_IO_CLK']['words'] = 2
+        database[top_tile]['bits']['CLB_IO_CLK']['offset'] = 99
+
+        database[bottom_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+        database[bottom_tile]['bits']['CLB_IO_CLK']['words'] = 2
+        database[bottom_tile]['bits']['CLB_IO_CLK']['offset'] = 0
+
+
+def propagate_IOI_Y9(database, tiles_by_grid):
+    """
+    There are IOI tiles (X0Y9 and X43Y9) that have the frame address 1 frame
+    higher than the rest, just like for some of the SING tiles.
+
+    """
+    arch = os.getenv('XRAY_DATABASE')
+    if arch in 'artix7':
+        tiles = ['RIOI3_X43Y9', 'LIOI3_X0Y9']
+    elif arch in 'kintex7':
+        tiles = ['LIOI3_X0Y9']
+    elif arch in 'zynq7':
+        tiles = ['RIOI3_X31Y9']
+    else:
+        assert False, "Unsupported architecture"
+
+    for tile in tiles:
+        prev_tile = tiles_by_grid[(
+            database[tile]['grid_x'], database[tile]['grid_y'] - 1)]
+        while database[prev_tile]["type"] != database[tile]["type"]:
+            prev_tile = tiles_by_grid[(
+                database[prev_tile]['grid_x'],
+                database[prev_tile]['grid_y'] - 1)]
+        bits = database[prev_tile]['bits']['CLB_IO_CLK']
+        database[tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+        database[tile]['bits']['CLB_IO_CLK']['words'] = 4
+        database[tile]['bits']['CLB_IO_CLK']['offset'] = 18
+
+
 def run(json_in_fn, json_out_fn, verbose=False):
     # Load input files
     database = json.load(open(json_in_fn, "r"))
@@ -326,6 +412,8 @@ def run(json_in_fn, json_out_fn, verbose=False):
     propagate_INT_bits_in_column(database, tiles_by_grid)
     propagate_rebuf(database, tiles_by_grid)
     propagate_IOB_SING(database, tiles_by_grid)
+    propagate_IOI_SING(database, tiles_by_grid)
+    propagate_IOI_Y9(database, tiles_by_grid)
 
     # Save
     xjson.pprint(open(json_out_fn, "w"), database)
