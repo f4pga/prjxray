@@ -51,57 +51,152 @@ def bits_str(bits):
     return ' '.join(sorted(list(bits)))
 
 
-def zero_groups(tag, bits, zero_db, strict=True, verbose=False):
-    """
-    See if a line occurs within a bit group
-    If it does, add 0 bits
+class ZeroGroups(object):
+    def __init__(self, zero_db):
+        self.groups = []
+        self.bit_to_group = {}
+        self.tag_to_groups = {}
+        self.zero_tag_to_group = {}
+        self.parse_zero_db(zero_db)
 
-    Ex: 01_02 04_05
-    Means find a line that has either of these bits
-    If either of them occurs, default bits in that set to zero
+    def print_groups(self):
+        print('Zero groups:')
+        for bits in self.groups:
+            print(bits_str(bits))
 
-    Ex: 01_02 04_05|07_08 10_11
-    If any bits from the first group occur,
-    default bits in the second group to zero
+        print('Zero tags:')
+        for tag in self.zero_tag_to_group:
+            print(tag, bits_str(self.zero_tag_to_group[tag]))
 
-    Ex: 01_02 04_05,ALL_ZERO
-    ALL_ZERO is an enum that is part of the group but is all 0
-    It must have 0 candidates
+    def parse_zero_db(self, zero_db):
+        """ Convert zero db format into data structure
 
-    strict: assert that the size of the given group is the size of the given mask
-    """
-    for zdb in zero_db:
-        allzero_tag = None
-        if "," in zdb:
-            zdb, allzero_tag = zdb.split(",")
+        Zero db format examples:
 
-        if "|" in zdb:
-            a, b = zdb.split("|")
-            a = a.split()
-            b = b.split()
-        else:
-            a = zdb.split()
-            b = a
+        Ex: 01_02 04_05
+        Means find a line that has either of these bits
+        If either of them occurs, default bits in that set to zero
 
-        bitmatch = False
-        for bit in a:
-            if bit in bits:
-                bitmatch = True
+        Ex: 01_02 04_05|07_08 10_11
+        If any bits from the first group occur,
+        default bits in the second group to zero
 
-        if not (bitmatch or allzero_tag == tag):
-            continue
+        Ex: 01_02 04_05,ALL_ZERO
+        ALL_ZERO is an enum that is part of the group but is all 0
+        It must have 0 candidates
 
-        bits_orig = set(bits)
-        for bit in b:
-            if bit not in bits:
+        Ex: CLB.SLICE_X0.CLKINV ^ CLB.SLICE_X0.NOCLKINV
+        CLB.SLICE_X0.NOCLKINV is all bits in CLB.SLICE_X0.CLKINV unset
+
+        Ex: A | B ^ C
+        C is all bits in (A)|(B) unset
+
+
+        """
+        for zdb in zero_db:
+
+            if "^" in zdb:
+                self.groups.append(set())
+                zero_group = self.groups[-1]
+
+                other_tags, allzero_tag = zdb.split('^')
+                allzero_tag = allzero_tag.strip()
+
+                for tag in other_tags.split():
+                    self.tag_to_groups[tag.strip()] = [zero_group]
+
+                self.zero_tag_to_group[allzero_tag] = zero_group
+                continue
+
+            allzero_tag = None
+            if "," in zdb:
+                zdb, allzero_tag = zdb.split(",")
+
+            if "|" in zdb:
+                a, b = zdb.split("|")
+                a = a.split()
+                b = b.split()
+
+                self.groups.append(set(b))
+                zero_group = self.groups[-1]
+            else:
+                a = zdb.split()
+                self.groups.append(set(a))
+                zero_group = self.groups[-1]
+
+            if allzero_tag is not None:
+                self.zero_tag_to_group[allzero_tag] = zero_group
+
+            for bit in a:
+                self.bit_to_group[bit] = zero_group
+
+    def add_tag_bits(self, tag, bits):
+        if tag in self.zero_tag_to_group:
+            return
+
+        group_ids = set()
+        groups = []
+
+        if tag in self.tag_to_groups:
+            assert len(self.tag_to_groups[tag]) == 1
+
+            self.tag_to_groups[tag][0] |= bits
+
+            for bit in bits:
+                if bit in self.bit_to_group:
+                    # Make sure each bit only belongs to one group
+                    assert id(self.bit_to_group[bit]) == id(
+                        self.tag_to_groups[tag])
+                else:
+                    self.bit_to_group[bit] = self.tag_to_groups[tag]
+
+            group_ids.add(id(self.tag_to_groups[tag]))
+            groups = self.tag_to_groups[tag]
+
+        for bit in bits:
+            if bit in self.bit_to_group:
+                if id(self.bit_to_group[bit]) not in group_ids:
+                    group_ids.add(id(self.bit_to_group[bit]))
+                    groups.append(self.bit_to_group[bit])
+
+        self.tag_to_groups[tag] = groups
+
+    def add_bits_from_zero_groups(self, tag, bits, strict=True, verbose=False):
+        """ Add bits from a zero group, if needed
+
+        Arguments
+        ---------
+        tag : str
+            Tag being to examine for zero group
+        bits : set of str
+            Set of bits set on this tag
+        strict : bool
+            Assert that the size of the given group is the size of the given
+            mask.
+        verbose : bool
+            Print to stdout grouping being made
+        """
+
+        tag_is_masked = tag in self.tag_to_groups
+        tag_is_zero = tag in self.zero_tag_to_group
+
+        # Should not have a tag that is both masked and a zero tag.
+        assert not (tag_is_masked and tag_is_zero)
+
+        if tag_is_masked:
+            for b in self.tag_to_groups[tag]:
+                bits_orig = set(bits)
+                for bit in b:
+                    if bit not in bits:
+                        bits.add("!" + bit)
+
+                verbose and print(
+                    "Grouped %s: %s => %s" %
+                    (tag, bits_str(bits_orig), bits_str(bits)))
+
+        if tag_is_zero:
+            for bit in self.zero_tag_to_group[tag]:
                 bits.add("!" + bit)
-        verbose and print(
-            "Grouped %s: %s => %s" %
-            (tag, bits_str(bits_orig), bits_str(bits)))
-        if a == b and strict:
-            assert len(bits) == len(
-                a), "Mask size %u != DB entry size %u: %s" % (
-                    len(a), len(bits), bits_str(bits))
 
 
 def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
@@ -111,11 +206,15 @@ def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
     If an entry has any of the
     '''
 
+    zero_groups = ZeroGroups(zero_db)
+
+    lines = []
     new_lines = set()
     changes = 0
 
     llast = None
     drops = 0
+
     with open(fn_in, "r") as f:
         for line in f:
             # Hack: skip duplicate lines
@@ -124,53 +223,64 @@ def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
             if line == llast:
                 continue
 
+            lines.append(line)
+
             tag, bits, mode, _ = util.parse_db_line(line)
-            # an enum that needs masking
-            # check below asserts that a mask was actually applied
-            if mode and mode != "<0 candidates>" and not strict:
+
+            if bits is not None and mode is None:
+                zero_groups.add_tag_bits(tag, bits)
+
+    if verbose:
+        zero_groups.print_groups()
+
+    for line in lines:
+        tag, bits, mode, _ = util.parse_db_line(line)
+        # an enum that needs masking
+        # check below asserts that a mask was actually applied
+        if mode and mode != "<0 candidates>" and not strict:
+            verbose and print("WARNING: dropping unresolved line: %s" % line)
+            drops += 1
+            continue
+
+        assert mode not in (
+            "<const0>",
+            "<const1>"), "Entries must be resolved. line: %s" % (line, )
+
+        if mode == "always":
+            new_line = line
+        else:
+            if mode:
+                assert mode == "<0 candidates>", line
+                bits = set()
+            else:
+                bits = set(bits)
+            """
+            This appears to be a large range of one hot interconnect bits
+            They are immediately before the first CLB real bits
+            """
+            if clb_int:
+                zero_range(tag, bits, 22, 25)
+            zero_groups.add_bits_from_zero_groups(
+                tag, bits, strict=strict, verbose=verbose)
+
+            if strict:
+                assert len(bits) > 0, 'Line {} found no bits.'.format(line)
+            elif len(bits) == 0:
                 verbose and print(
                     "WARNING: dropping unresolved line: %s" % line)
                 drops += 1
                 continue
 
-            assert mode not in (
-                "<const0>",
-                "<const1>"), "Entries must be resolved. line: %s" % (line, )
+            new_line = " ".join([tag] + sorted(bits))
 
-            if mode == "always":
-                new_line = line
-            else:
-                if mode:
-                    assert mode == "<0 candidates>", line
-                    bits = set()
-                else:
-                    bits = set(bits)
-                """
-                This appears to be a large range of one hot interconnect bits
-                They are immediately before the first CLB real bits
-                """
-                if clb_int:
-                    zero_range(tag, bits, 22, 25)
-                zero_groups(tag, bits, zero_db, strict=strict, verbose=verbose)
+        if re.match(r'.*<.*>.*', new_line):
+            print("Original line: %s" % line)
+            assert 0, "Failed to remove line mode: %s" % (new_line)
 
-                if strict:
-                    assert len(bits) > 0, 'Line {} found no bits.'.format(line)
-                elif len(bits) == 0:
-                    verbose and print(
-                        "WARNING: dropping unresolved line: %s" % line)
-                    drops += 1
-                    continue
-
-                new_line = " ".join([tag] + sorted(bits))
-
-            if re.match(r'.*<.*>.*', new_line):
-                print("Original line: %s" % line)
-                assert 0, "Failed to remove line mode: %s" % (new_line)
-
-            if new_line != line:
-                changes += 1
-            new_lines.add(new_line)
-            llast = line
+        if new_line != line:
+            changes += 1
+        new_lines.add(new_line)
+        llast = line
 
     if drops:
         print("WARNING: %s dropped %s unresolved lines" % (fn_in, drops))

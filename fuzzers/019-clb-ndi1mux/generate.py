@@ -25,8 +25,11 @@ for l in f:
     b31 = int(b31)
     a31 = int(a31)
     segmk.add_site_tag(loc, "ALUT.DI1MUX.AI", 1 ^ a31)
+    segmk.add_site_tag(loc, "ALUT.DI1MUX.BDI1_BMC31", a31)
     segmk.add_site_tag(loc, "BLUT.DI1MUX.BI", 1 ^ b31)
+    segmk.add_site_tag(loc, "BLUT.DI1MUX.DI_CMC31", b31)
     segmk.add_site_tag(loc, "CLUT.DI1MUX.CI", 1 ^ c31)
+    segmk.add_site_tag(loc, "CLUT.DI1MUX.DI_DMC31", c31)
 
 segmk.compile()
 segmk.write()
