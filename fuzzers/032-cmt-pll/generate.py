@@ -8,10 +8,10 @@ from prjxray import verilog
 
 def bus_tags(segmk, ps, site):
     for reg, invert in [
-            ('RST', 1),
-            ('PWRDWN', 1),
-            ('CLKINSEL', 0),
-            ]:
+        ('RST', 1),
+        ('PWRDWN', 1),
+        ('CLKINSEL', 0),
+    ]:
         opt = 'IS_{}_INVERTED'.format(reg)
 
         if invert:
@@ -21,9 +21,8 @@ def bus_tags(segmk, ps, site):
 
     for opt in ['ZHOLD', 'BUF_IN', 'EXTERNAL', 'INTERNAL']:
         segmk.add_site_tag(
-                site,
-                'COMPENSATION.' + opt,
-                verilog.unquote(ps['COMPENSATION']) == opt)
+            site, 'COMPENSATION.' + opt,
+            verilog.unquote(ps['COMPENSATION']) == opt)
 
     for param in ['CLKFBOUT_MULT']:
         paramadj = int(ps[param])
@@ -41,14 +40,14 @@ def bus_tags(segmk, ps, site):
             segmk.add_site_tag(site, '%s[%u]' % (param, i), bitstr[i])
 
     for param, bits in [
-            ('CLKOUT0_DIVIDE', 7),
-            ('CLKOUT1_DIVIDE', 7),
-            ('CLKOUT2_DIVIDE', 7),
-            ('CLKOUT3_DIVIDE', 7),
-            ('CLKOUT4_DIVIDE', 7),
-            ('CLKOUT5_DIVIDE', 7),
-            ('DIVCLK_DIVIDE', 6),
-            ]:
+        ('CLKOUT0_DIVIDE', 7),
+        ('CLKOUT1_DIVIDE', 7),
+        ('CLKOUT2_DIVIDE', 7),
+        ('CLKOUT3_DIVIDE', 7),
+        ('CLKOUT4_DIVIDE', 7),
+        ('CLKOUT5_DIVIDE', 7),
+        ('DIVCLK_DIVIDE', 6),
+    ]:
         # 1-128 => 0-127 for actual 7 bit value
         paramadj = int(ps[param])
         if paramadj < 4:
@@ -58,8 +57,9 @@ def bus_tags(segmk, ps, site):
         for i in range(bits):
             segmk.add_site_tag(site, '%s[%u]' % (param, i), bitstr[i])
 
-    segmk.add_site_tag(site, 'STARTUP_WAIT',
-            verilog.unquote(ps['STARTUP_WAIT']) == 'TRUE')
+    segmk.add_site_tag(
+        site, 'STARTUP_WAIT',
+        verilog.unquote(ps['STARTUP_WAIT']) == 'TRUE')
 
 
 def run():
@@ -72,7 +72,6 @@ def run():
     for l in f:
         j = json.loads(l)
         bus_tags(segmk, j, j['site'])
-
 
     segmk.compile()
     segmk.write()

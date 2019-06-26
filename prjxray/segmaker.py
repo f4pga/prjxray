@@ -339,7 +339,8 @@ class Segmaker:
             -LIOB33 => IOB33
             '''
             tile_type_norm = re.sub("(_TOP|_BOT|LL|LM)?_[LR]$", "", tile_type)
-            tile_type_norm = re.sub("_TOP_[LR]_UPPER", "_UPPER", tile_type_norm)
+            tile_type_norm = re.sub(
+                "_TOP_[LR]_UPPER", "_UPPER", tile_type_norm)
 
             if tile_type_norm in ['LIOB33', 'RIOB33']:
                 tile_type_norm = 'IOB33'

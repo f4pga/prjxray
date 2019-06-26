@@ -18,6 +18,7 @@ def gen_sites():
             if site_type in ['PLLE2_ADV']:
                 yield site_name
 
+
 def main():
     f = open('params.jl', 'w')
     f.write('module,loc,params\n')
@@ -26,30 +27,47 @@ def main():
 
     for site in sorted(gen_sites()):
         params = {
-            "site": site,
-            "IS_RST_INVERTED": random.randint(0, 1),
-            "IS_PWRDWN_INVERTED": random.randint(0, 1),
-            "IS_CLKINSEL_INVERTED": random.randint(0, 1),
-            "CLKFBOUT_MULT": random.randint(2, 4),
-            "CLKOUT0_DIVIDE": random.randint(1, 128),
-            "CLKOUT1_DIVIDE": random.randint(1, 128),
-            "CLKOUT2_DIVIDE": random.randint(1, 128),
-            "CLKOUT3_DIVIDE": random.randint(1, 128),
-            "CLKOUT4_DIVIDE": random.randint(1, 128),
-            "CLKOUT5_DIVIDE": random.randint(1, 128),
-            "DIVCLK_DIVIDE": random.randint(1, 5),
-            "CLKOUT0_DUTY_CYCLE": "0.500",
-            "STARTUP_WAIT": verilog.quote('TRUE' if random.randint(0, 1) else 'FALSE'),
-            "COMPENSATION": verilog.quote(random.choice((
-                'ZHOLD',
-                'BUF_IN',
-                'EXTERNAL',
-                'INTERNAL',
+            "site":
+            site,
+            "IS_RST_INVERTED":
+            random.randint(0, 1),
+            "IS_PWRDWN_INVERTED":
+            random.randint(0, 1),
+            "IS_CLKINSEL_INVERTED":
+            random.randint(0, 1),
+            "CLKFBOUT_MULT":
+            random.randint(2, 4),
+            "CLKOUT0_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT1_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT2_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT3_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT4_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT5_DIVIDE":
+            random.randint(1, 128),
+            "DIVCLK_DIVIDE":
+            random.randint(1, 5),
+            "CLKOUT0_DUTY_CYCLE":
+            "0.500",
+            "STARTUP_WAIT":
+            verilog.quote('TRUE' if random.randint(0, 1) else 'FALSE'),
+            "COMPENSATION":
+            verilog.quote(
+                random.choice((
+                    'ZHOLD',
+                    'BUF_IN',
+                    'EXTERNAL',
+                    'INTERNAL',
                 ))),
         }
         f.write('%s\n' % (json.dumps(params)))
 
-        print("""
+        print(
+            """
 
     wire clkfbout_mult_{site};
     wire clkout0_{site};
@@ -136,6 +154,7 @@ def main():
     print('endmodule')
 
     f.close()
+
 
 if __name__ == "__main__":
     main()
