@@ -1,13 +1,13 @@
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=clk_bufg
 PIPLIST_TCL=$(FUZDIR)/clk_bufg_pip_list.tcl
-TODO_RE=".*"
+TODO_RE=".*\.CLK_BUFG_(BOT|TOP)_R_CK_MUXED[0-9]+"
 
-MAKETODO_FLAGS=--sides "bot_r,top_r" --pip-type ${PIP_TYPE} --seg-type clk_bufg --re $(TODO_RE) --exclude-re ".*\.CLK_BUFG_(BOT|TOP)_R_CK_MUXED[0-9]+"
+MAKETODO_FLAGS=--sides "bot_r,top_r" --pip-type ${PIP_TYPE} --seg-type clk_bufg --re $(TODO_RE)
 N = 50
 
 # These PIPs all appear to be either a 1 bit solutions.
-SEGMATCH_FLAGS=-c 2
+SEGMATCH_FLAGS=-c 1
 SPECIMENS_DEPS=build/cmt_regions.csv
 A_PIPLIST=clk_bufg_bot_r.txt
 
