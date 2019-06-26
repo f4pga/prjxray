@@ -1,3 +1,4 @@
 # Clock Management Tile (CMT) - Phase Lock Loop (PLL) Fuzzer
 
-FIXME: Add description.
+Bits that are part of the dynamic configration register interface (see APPNOTE
+XAPP888) are handled specially.
