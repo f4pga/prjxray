@@ -29,6 +29,27 @@ def main():
         params = {
             "site":
             site,
+            "dclk_conn": random.choice((
+                "0",
+                "clk",
+                )),
+            "dwe_conn": random.choice((
+                "",
+                "1",
+                "0",
+                "dwe_" + site,
+                "den_" + site,
+                )),
+            "den_conn": random.choice((
+                "",
+                "1",
+                "0",
+                "den_" + site,
+                )),
+            "daddr4_conn": random.choice((
+                "0",
+                "dwe_" + site,
+                )),
             "IS_RST_INVERTED":
             random.randint(0, 1),
             "IS_PWRDWN_INVERTED":
@@ -63,11 +84,29 @@ def main():
                     'EXTERNAL',
                     'INTERNAL',
                 ))),
+            "BANDWIDTH":
+            verilog.quote(
+                random.choice((
+                    'OPTIMIZED',
+                    'HIGH',
+                    'LOW',
+                ))),
         }
         f.write('%s\n' % (json.dumps(params)))
 
         print(
             """
+
+    wire den_{site};
+    wire dwe_{site};
+
+    LUT1 den_lut_{site} (
+        .O(den_{site})
+    );
+
+    LUT1 dwe_lut_{site} (
+        .O(dwe_{site})
+    );
 
     wire clkfbout_mult_{site};
     wire clkout0_{site};
@@ -91,7 +130,8 @@ def main():
             .DIVCLK_DIVIDE({DIVCLK_DIVIDE}),
             .STARTUP_WAIT({STARTUP_WAIT}),
             .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
-            .COMPENSATION({COMPENSATION})
+            .COMPENSATION({COMPENSATION}),
+            .BANDWIDTH({BANDWIDTH})
     ) pll_{site} (
             .CLKFBOUT(clkfbout_mult_{site}),
             .CLKOUT0(clkout0_{site}),
@@ -107,13 +147,13 @@ def main():
             .CLKIN1(clk),
             .CLKIN2(),
             .CLKINSEL(),
-            .DCLK(),
-            .DEN(),
-            .DWE(),
+            .DCLK({dclk_conn}),
+            .DEN({den_conn}),
+            .DWE({dwe_conn}),
             .PWRDWN(),
             .RST(),
             .DI(),
-            .DADDR());
+            .DADDR({{7{{ {daddr4_conn} }} }}));
 
     (* KEEP, DONT_TOUCH *)
     FDRE reg_clkfbout_mult_{site} (

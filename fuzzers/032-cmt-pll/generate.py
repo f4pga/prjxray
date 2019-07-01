@@ -6,7 +6,20 @@ from prjxray.segmaker import Segmaker
 from prjxray import verilog
 
 
+def bitfilter(frame, word):
+    if frame == 25 and word == 3121:
+        return False
+
+    return True
+
+
 def bus_tags(segmk, ps, site):
+    for k in ps:
+        segmk.add_site_tag(site, 'param_' + k + '_' + str(ps[k]), 1)
+
+    segmk.add_site_tag(site, 'DWE_CONNECTED', 
+            ps['dwe_conn'].startswith('dwe_') or ps['dwe_conn'].startswith('den_'))
+
     for reg, invert in [
         ('RST', 1),
         ('PWRDWN', 1),
@@ -19,10 +32,38 @@ def bus_tags(segmk, ps, site):
         else:
             segmk.add_site_tag(site, 'INV_' + reg, ps[opt])
 
+
+    for opt in ['OPTIMIZED', 'HIGH', 'LOW']:
+        if verilog.unquote(ps['BANDWIDTH']) == opt:
+            segmk.add_site_tag(
+                site, 'BANDWIDTH.' + opt,
+                1)
+        elif verilog.unquote(ps['BANDWIDTH']) == 'LOW':
+            segmk.add_site_tag(
+                site, 'BANDWIDTH.' + opt,
+                0)
+
     for opt in ['ZHOLD', 'BUF_IN', 'EXTERNAL', 'INTERNAL']:
+        if site == "PLLE2_ADV_X0Y2" and opt == 'ZHOLD':
+            segmk.add_site_tag(
+                site, 'TOP.COMPENSATION.' + opt,
+                verilog.unquote(ps['COMPENSATION']) == opt)
+        else:
+            segmk.add_site_tag(
+                site, 'COMPENSATION.' + opt,
+                verilog.unquote(ps['COMPENSATION']) == opt)
         segmk.add_site_tag(
-            site, 'COMPENSATION.' + opt,
-            verilog.unquote(ps['COMPENSATION']) == opt)
+            site, 'COMPENSATION.Z_' + opt,
+            verilog.unquote(ps['COMPENSATION']) != opt)
+
+        match = "TRUE" == verilog.unquote(ps['STARTUP_WAIT']) and \
+                opt == verilog.unquote(ps['COMPENSATION'])
+        segmk.add_site_tag(site, "STARTUP_WAIT_AND_" + opt,
+                match)
+
+    segmk.add_site_tag(
+            site, 'COMPENSATION.BUF_IN_OR_EXTERNAL',
+            verilog.unquote(ps['COMPENSATION']) in ['BUF_IN', 'EXTERNAL'])
 
     for param in ['CLKFBOUT_MULT']:
         paramadj = int(ps[param])
@@ -73,7 +114,7 @@ def run():
         j = json.loads(l)
         bus_tags(segmk, j, j['site'])
 
-    segmk.compile()
+    segmk.compile(bitfilter=bitfilter)
     segmk.write()
 
 
