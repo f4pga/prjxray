@@ -4,7 +4,9 @@ REGISTER_LAYOUT = {
     'CLKOUT1': [
         ('LOW_TIME', 6),
         ('HIGH_TIME', 6),
-        ('RESERVED', 1),
+        # This bit is the output enable bit, which is being detected as a pip
+        # bit, which is roughly correct.  Leave this bit as a pip bit.
+        (None, 1),
         ('PHASE_MUX', 3),
     ],
     'CLKOUT2': [
@@ -82,12 +84,12 @@ REGISTER_MAP.append(('LOCKREG1', 'LOCKREG1'))
 REGISTER_MAP.append(('LOCKREG2', 'LOCKREG2'))
 REGISTER_MAP.append(('LOCKREG3', 'LOCKREG3'))
 
-for _ in range(0x28 - 0x1A + 1):
+for _ in range(0x28 - 0x1A - 1):
     REGISTER_MAP.append(None)
 
 REGISTER_MAP.append(('POWER_REG', 'POWER_REG'))
 
-for _ in range(0x4E - 0x28 + 1):
+for _ in range(0x4E - 0x28 - 1):
     REGISTER_MAP.append(None)
 
 # 0x4E - 0x4F
@@ -149,6 +151,9 @@ def passthrough_non_register_segbits(seg_in):
                 print(l.strip())
                 continue
 
+            if feature_parts[2] == 'BANDWIDTH':
+                continue
+
             if '[' not in feature_parts[2]:
                 print(l.strip())
                 continue
@@ -184,7 +189,7 @@ def output_registers(bit_offset):
     """
     reg = RegisterAddress(frame_offsets=[28, 29], bit_offset=bit_offset)
 
-    for register in REGISTER_MAP:
+    for idx, register in enumerate(REGISTER_MAP):
         if register is None:
             for _ in range(16):
                 reg.next_bit()
@@ -196,35 +201,45 @@ def output_registers(bit_offset):
 
         simple_layout = len(layout_bits[0]) == 2
 
-        for bit in range(16):
-            if register_name != layout or layout in ['CLKOUT1', 'CLKOUT2']:
-                print(
-                    'CMT_UPPER_T.PLLE2.{}_{}[{}] {}'.format(
-                        register_name, layout, bit, reg.next_bit()))
-            else:
-                print(
-                    'CMT_UPPER_T.PLLE2.{}[{}] {}'.format(
-                        register_name, bit, reg.next_bit()))
-
-        if False:
+        if True:
             bit_count = 0
             if simple_layout:
                 for field, width in layout_bits:
                     for bit in range(width):
+                        bit_count += 1
+
+                        if field is None:
+                            reg.next_bit()
+                            continue
+
                         print(
                             'CMT_UPPER_T.PLLE2.{}_{}_{}[{}] {}'.format(
                                 register_name, layout, field, bit,
                                 reg.next_bit()))
-                        bit_count += 1
             else:
                 for field, width, start_bit in layout_bits:
                     for bit in range(width):
+                        bit_count += 1
+
+                        if field is None:
+                            reg.next_bit()
+                            continue
+
                         print(
                             'CMT_UPPER_T.PLLE2.{}[{}] {}'.format(
                                 field, start_bit + bit, reg.next_bit()))
-                        bit_count += 1
 
             assert bit_count == 16
+        else:
+            for bit in range(16):
+                if register_name != layout or layout in ['CLKOUT1', 'CLKOUT2']:
+                    print(
+                        'CMT_UPPER_T.PLLE2.{}_{}[{}] {}'.format(
+                            register_name, layout, bit, reg.next_bit()))
+                else:
+                    print(
+                        'CMT_UPPER_T.PLLE2.{}[{}] {}'.format(
+                            register_name, bit, reg.next_bit()))
 
 
 def main():
