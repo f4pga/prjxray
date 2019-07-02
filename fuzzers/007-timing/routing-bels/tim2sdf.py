@@ -42,11 +42,13 @@ def read_raw_timings(fin, site):
             if celltype not in timings['cells']:
                 timings['cells'][celltype] = dict()
 
-            if site not in timings['cells'][celltype]:
-                timings['cells'][celltype][site] = dict()
+            cellsite = site + '/' + interconn_output.upper()
 
-            if speed_model not in timings['cells'][celltype][site]:
-                timings['cells'][celltype][site][speed_model] = dict()
+            if cellsite not in timings['cells'][celltype]:
+                timings['cells'][celltype][cellsite] = dict()
+
+            if speed_model not in timings['cells'][celltype][cellsite]:
+                timings['cells'][celltype][cellsite][speed_model] = dict()
 
             delays = dict()
             # each timing entry reports 5 delays
@@ -70,12 +72,13 @@ def read_raw_timings(fin, site):
             if speed_model.endswith('diff'):
                 iport['port'] = "_".join(speed_model_split[1:])
                 iport['port_edge'] = None
-                timings['cells'][celltype][site][
+                timings['cells'][celltype][cellsite][
                     speed_model] = utils.add_device(iport, paths)
             else:
-                timings['cells'][celltype][site][
+                timings['cells'][celltype][cellsite][
                     speed_model] = utils.add_interconnect(iport, oport, paths)
-            timings['cells'][celltype][site][speed_model]['is_absolute'] = True
+            timings['cells'][celltype][cellsite][speed_model][
+                'is_absolute'] = True
 
     return timings
 
