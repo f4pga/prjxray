@@ -30,7 +30,7 @@ $(YOSYS):
 
 ifeq ($(SYNTH), yosys)
 %.edif: %.v $(YOSYS)
-	$(YOSYS) -p "read_verilog $< ; synth_xilinx -flatten -nosrl -edif $@"  -l $@.log
+	$(YOSYS) -p "read_verilog $< ; synth_xilinx -flatten -nosrl; write_edif -pvector bra -attrprop $@"  -l $@.log
 
 else ifeq ($(SYNTH), vivado)
 %.edif: %.v $(YOSYS)
