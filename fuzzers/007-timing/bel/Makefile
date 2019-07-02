@@ -3,10 +3,10 @@ all: build/sdf.ok
 clean:
 	rm -rf build
 
-build/bel_timings.txt:
+build/run.ok:
 	bash runme.sh
 
-build/fixup_timings: build/bel_timings.txt
+build/fixup_timings: build/run.ok
 	python3 fixup_timings_txt.py --txtin build/bel_timings.txt --txtout build/bel_timings.txt --site RAMBFIFO36E1 --slice BRAM_L --type timings
 	python3 fixup_timings_txt.py --txtin build/bel_timings.txt --txtout build/bel_timings.txt --site RAMBFIFO36E1 --slice BRAM_R --type timings
 	python3 fixup_timings_txt.py --txtin build/bel_pins.txt --txtout build/bel_pins.txt --site RAMBFIFO36E1 --slice BRAM_L --type pins

@@ -3,13 +3,13 @@ all: build/slicel.sdf build/slicem.sdf
 clean:
 	rm -rf build
 
-build/slicel.sdf: build/slicel.txt
+build/slicel.sdf: build/run.ok
 	python3 tim2sdf.py --timings build/slicel.txt --site SLICEL --sdf build/slicel.sdf
 
-build/slicem.sdf: build/slicem.txt
+build/slicem.sdf: build/run.ok
 	python3 tim2sdf.py --timings build/slicem.txt --site SLICEM --sdf build/slicem.sdf
 
-build/slicel.txt build/slicem.txt:
+build/run.ok:
 	bash runme.sh
 
 cleandb:

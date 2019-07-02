@@ -3,7 +3,6 @@ SLICEM_SDFS = bel/build/CLBLL_L.sdf bel/build/CLBLL_R.sdf bel/build/CLBLM_L.sdf 
 
 run: all
 all: pushdb
-	touch run.ok
 
 clean:
 	cd bel && $(MAKE) clean
