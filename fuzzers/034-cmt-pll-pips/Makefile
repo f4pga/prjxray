@@ -1,7 +1,7 @@
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=cmt_top
 PIPLIST_TCL=$(FUZDIR)/cmt_top_upper_t.tcl
-TODO_RE=".*"
+TODO_RE=".*\.CMT_TOP_R_UPPER_T_PLLE2_CLK_[^_]+_INT"
 
 MAKETODO_FLAGS=--sides "r_upper_t,l_upper_t" --pip-type ${PIP_TYPE} --seg-type cmt_top --re $(TODO_RE)
 N = 50
