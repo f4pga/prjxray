@@ -23,7 +23,12 @@ def main():
     f = open('params.jl', 'w')
     f.write('module,loc,params\n')
 
-    print('module top(input clk);')
+    print(
+        """module top(input clk);
+
+    (* KEEP, DONT_TOUCH *)
+    LUT1 dummy();
+            """)
 
     for site in sorted(gen_sites()):
         params = {

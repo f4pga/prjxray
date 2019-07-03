@@ -10,8 +10,11 @@ set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 
 create_clock -period 10.00 [get_ports clk]
 
+set net [get_nets clk_IBUF]
+if { [llength $net] > 0 } {
+    set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
+}
 
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 # Disable MMCM frequency etc sanity checks
 set_property IS_ENABLED 0 [get_drc_checks {PDRC-29}]
 set_property IS_ENABLED 0 [get_drc_checks {PDRC-30}]
