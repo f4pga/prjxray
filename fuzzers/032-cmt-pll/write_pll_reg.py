@@ -4,9 +4,7 @@ REGISTER_LAYOUT = {
     'CLKOUT1': [
         ('LOW_TIME', 6),
         ('HIGH_TIME', 6),
-        # This bit is the output enable bit, which is being detected as a pip
-        # bit, which is roughly correct.  Leave this bit as a pip bit.
-        (None, 1),
+        ('OUTPUT_ENABLE', 1),
         ('PHASE_MUX', 3),
     ],
     'CLKOUT2': [
@@ -60,10 +58,19 @@ REGISTER_LAYOUT = {
     ],
     'POWER_REG': [
         ('POWER_REG', 16),
-    ]
+    ],
 }
 
+BASE_OFFSET = 0x00
 REGISTER_MAP = []
+
+REGISTER_MAP.append(None)
+REGISTER_MAP.append(None)
+
+for idx in range(3):
+    REGISTER_MAP.append(None)
+
+REGISTER_MAP.append(None)
 
 # 0x06 - 0x15
 for output in ['CLKOUT5', 'CLKOUT0', 'CLKOUT1', 'CLKOUT2', 'CLKOUT3',
@@ -96,16 +103,23 @@ for _ in range(0x4E - 0x28 - 1):
 REGISTER_MAP.append(('FILTREG1', 'FILTREG1'))
 REGISTER_MAP.append(('FILTREG2', 'FILTREG2'))
 
+for _ in range(0x20):
+    REGISTER_MAP.append(None)
+
 
 class RegisterAddress(object):
     def __init__(self, frame_offsets, bit_offset):
         self.frame_index = 0
         self.frame_offsets = frame_offsets
         self.bit_offset = bit_offset
+        self.bits_used = set()
 
-    def next_bit(self):
+    def next_bit(self, used=True):
         output = '{}_{}'.format(
             self.frame_offsets[self.frame_index], self.bit_offset)
+
+        if used:
+            self.bits_used.add(output)
 
         self.frame_index += 1
         if self.frame_index >= len(self.frame_offsets):
@@ -130,6 +144,7 @@ def passthrough_non_register_segbits(seg_in):
     base_offset_register = 'CMT_UPPER_T.PLLE2.CLKOUT5_DIVIDE[1]'
 
     bit_offset = None
+    in_use = None
     with open(seg_in, 'r') as f:
         for l in f:
             if l.startswith(base_offset_register):
@@ -140,8 +155,13 @@ def passthrough_non_register_segbits(seg_in):
 
                 assert frame_offset == 28
                 assert bit_index > 3
-                bit_offset = bit_index - 3
+                bit_offset = bit_index - 3 - 16 * 3
 
+                continue
+
+            if 'IN_USE' in l:
+                assert in_use is None
+                in_use = l.strip()
                 continue
 
             parts = l.split()
@@ -177,10 +197,11 @@ def passthrough_non_register_segbits(seg_in):
             print(l.strip())
 
     assert bit_offset is not None
-    return bit_offset
+    assert in_use is not None
+    return bit_offset, in_use
 
 
-def output_registers(bit_offset):
+def output_registers(bit_offset, in_use):
     """ Output segbits for the known PLL register space.
 
     The first bit offset in the register space is required to generate this
@@ -192,7 +213,7 @@ def output_registers(bit_offset):
     for idx, register in enumerate(REGISTER_MAP):
         if register is None:
             for _ in range(16):
-                reg.next_bit()
+                reg.next_bit(used=False)
             continue
 
         layout, register_name = register
@@ -209,7 +230,7 @@ def output_registers(bit_offset):
                         bit_count += 1
 
                         if field is None:
-                            reg.next_bit()
+                            reg.next_bit(used=False)
                             continue
 
                         print(
@@ -222,7 +243,7 @@ def output_registers(bit_offset):
                         bit_count += 1
 
                         if field is None:
-                            reg.next_bit()
+                            reg.next_bit(used=False)
                             continue
 
                         print(
@@ -241,6 +262,11 @@ def output_registers(bit_offset):
                         'CMT_UPPER_T.PLLE2.{}[{}] {}'.format(
                             register_name, bit, reg.next_bit()))
 
+    parts = in_use.split()
+    feature = parts[0]
+    bits = [p for p in parts[1:] if p not in reg.bits_used]
+    print('{} {}'.format(feature, ' '.join(bits)))
+
 
 def main():
     parser = argparse.ArgumentParser(description="")
@@ -249,9 +275,9 @@ def main():
 
     args = parser.parse_args()
 
-    bit_offset = passthrough_non_register_segbits(args.seg_in)
+    bit_offset, in_use = passthrough_non_register_segbits(args.seg_in)
 
-    output_registers(bit_offset)
+    output_registers(bit_offset, in_use)
 
 
 if __name__ == "__main__":

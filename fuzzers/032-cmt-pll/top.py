@@ -29,27 +29,43 @@ def main():
         params = {
             "site":
             site,
-            "dclk_conn": random.choice((
+            'active':
+            random.random() > .2,
+            "clkin1_conn":
+            random.choice((
+                "clkfbout_mult_BUFG_" + site,
+                "clk",
+            )),
+            "clkin2_conn":
+            random.choice((
+                "clkfbout_mult_BUFG_" + site,
+                "clk",
+            )),
+            "dclk_conn":
+            random.choice((
                 "0",
                 "clk",
-                )),
-            "dwe_conn": random.choice((
+            )),
+            "dwe_conn":
+            random.choice((
                 "",
                 "1",
                 "0",
                 "dwe_" + site,
                 "den_" + site,
-                )),
-            "den_conn": random.choice((
+            )),
+            "den_conn":
+            random.choice((
                 "",
                 "1",
                 "0",
                 "den_" + site,
-                )),
-            "daddr4_conn": random.choice((
+            )),
+            "daddr4_conn":
+            random.choice((
                 "0",
                 "dwe_" + site,
-                )),
+            )),
             "IS_RST_INVERTED":
             random.randint(0, 1),
             "IS_PWRDWN_INVERTED":
@@ -85,14 +101,33 @@ def main():
                     'INTERNAL',
                 ))),
             "BANDWIDTH":
-            verilog.quote(
-                random.choice((
-                    'OPTIMIZED',
-                    'HIGH',
-                    'LOW',
-                ))),
+            verilog.quote(random.choice((
+                'OPTIMIZED',
+                'HIGH',
+                'LOW',
+            ))),
         }
+
+        if verilog.unquote(params['COMPENSATION']) == 'ZHOLD':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    "",
+                    "clkfbout_mult_BUFG_" + site,
+                ))
+        elif verilog.unquote(params['COMPENSATION']) == 'INTERNAL':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    "",
+                    "clkfbout_mult_" + site,
+                ))
+        else:
+            params['clkfbin_conn'] = random.choice(
+                ("", "clk", "clkfbout_mult_BUFG_" + site))
+
         f.write('%s\n' % (json.dumps(params)))
+
+        if not params['active']:
+            continue
 
         print(
             """
@@ -109,6 +144,7 @@ def main():
     );
 
     wire clkfbout_mult_{site};
+    wire clkfbout_mult_BUFG_{site};
     wire clkout0_{site};
     wire clkout1_{site};
     wire clkout2_{site};
@@ -131,7 +167,9 @@ def main():
             .STARTUP_WAIT({STARTUP_WAIT}),
             .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
             .COMPENSATION({COMPENSATION}),
-            .BANDWIDTH({BANDWIDTH})
+            .BANDWIDTH({BANDWIDTH}),
+            .CLKIN1_PERIOD(10.0),
+            .CLKIN2_PERIOD(10.0)
     ) pll_{site} (
             .CLKFBOUT(clkfbout_mult_{site}),
             .CLKOUT0(clkout0_{site}),
@@ -143,9 +181,9 @@ def main():
             .DRDY(),
             .LOCKED(),
             .DO(),
-            .CLKFBIN(),
-            .CLKIN1(clk),
-            .CLKIN2(),
+            .CLKFBIN({clkfbin_conn}),
+            .CLKIN1({clkin1_conn}),
+            .CLKIN2({clkin2_conn}),
             .CLKINSEL(),
             .DCLK({dclk_conn}),
             .DEN({den_conn}),
@@ -154,6 +192,12 @@ def main():
             .RST(),
             .DI(),
             .DADDR({{7{{ {daddr4_conn} }} }}));
+
+    (* KEEP, DONT_TOUCH *)
+    BUFG bufg_{site} (
+        .I(clkfbout_mult_{site}),
+        .O(clkfbout_mult_BUFG_{site})
+    );
 
     (* KEEP, DONT_TOUCH *)
     FDRE reg_clkfbout_mult_{site} (
