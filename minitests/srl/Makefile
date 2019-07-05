@@ -52,6 +52,9 @@ endif
         $< >$@ \
         || (rm -f $@ && exit 1)
 
+%.unique.fasm: %.fasm
+	@sort -u $< >$@
+
 %.bits: %.bit
 	$(XRAY_BITREAD) -part_file $(XRAY_DIR)/database/artix7/$(PART).yaml -o $@ -z -y $<
 
