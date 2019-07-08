@@ -62,7 +62,8 @@ for l in f:
 # create 0-tags for all sources on the remaining (unused) MUXes
 for loc, muxes in cache.items():
     for which in muxes:
-        for src in "F7 F8 CY O5 XOR 5Q".split():
+        for src in "F7 F8 CY O5 XOR 5Q AMC31".split():
+            if src == "AMC31" and which is not "D": continue
             if src == "F7" and which not in "AC": continue
             if src == "F8" and which not in "B": continue
             if src == "5Q": src = which + "5Q"
@@ -74,6 +75,10 @@ def bitfilter(frame_idx, bit_idx):
     # locations of A5MA, B5MA, C5MA, D5MA bits. because of the way we generate specimens
     # in this fuzzer we get some aliasing with those bits, so we have to manually exclude
     # them. (Maybe FIXME: read the bit locations from the database files)
+
+    # Since the SRL32 is enabled along with DOUTMUX.AMC31, bits related to
+    # SRL32 features are masked out.
+
     if (frame_idx, bit_idx) in [
         (30, 55),
         (31, 55),  # D5MA
@@ -83,6 +88,8 @@ def bitfilter(frame_idx, bit_idx):
         (31, 19),  # B5MA
         (30, 9),
         (31, 8),  # A5MA
+        (30, 16),  # ALUT.SRL
+        (1, 23),  # WEMUX.CE
     ]:
         return False
 
