@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+import os, sys
 from prjxray import util
 
 
@@ -21,9 +21,9 @@ def run(fn_ins, fn_out, strict=False, track_origin=False, verbose=False):
             if tag in tags:
                 orig_bits, orig_line, orig_origin = tags[tag]
                 if orig_bits != bits:
-                    print("WARNING: got duplicate tag %s" % (tag, ))
-                    print("  Orig line: %s" % orig_line)
-                    print("  New line : %s" % line)
+                    print("WARNING: got duplicate tag %s" % (tag, ), file=sys.stderr)
+                    print("  Orig line: %s" % orig_line, file=sys.stderr)
+                    print("  New line : %s" % line, file=sys.stderr)
                     assert not strict, "strict: got duplicate tag"
                 origin = os.path.basename(os.getcwd())
                 if track_origin and orig_origin != origin:
@@ -31,9 +31,9 @@ def run(fn_ins, fn_out, strict=False, track_origin=False, verbose=False):
             if bits in bitss:
                 orig_tag, orig_line = bitss[bits]
                 if orig_tag != tag:
-                    print("WARNING: got duplicate bits %s" % (bits, ))
-                    print("  Orig line: %s" % orig_line)
-                    print("  New line : %s" % line)
+                    print("WARNING: got duplicate bits %s" % (bits, ), file=sys.stderr)
+                    print("  Orig line: %s" % orig_line, file=sys.stderr)
+                    print("  New line : %s" % line, file=sys.stderr)
                     assert not strict, "strict: got duplicate bits"
 
             if track_origin and origin is None:
