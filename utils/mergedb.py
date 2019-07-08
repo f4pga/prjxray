@@ -21,7 +21,9 @@ def run(fn_ins, fn_out, strict=False, track_origin=False, verbose=False):
             if tag in tags:
                 orig_bits, orig_line, orig_origin = tags[tag]
                 if orig_bits != bits:
-                    print("WARNING: got duplicate tag %s" % (tag, ), file=sys.stderr)
+                    print(
+                        "WARNING: got duplicate tag %s" % (tag, ),
+                        file=sys.stderr)
                     print("  Orig line: %s" % orig_line, file=sys.stderr)
                     print("  New line : %s" % line, file=sys.stderr)
                     assert not strict, "strict: got duplicate tag"
@@ -31,7 +33,9 @@ def run(fn_ins, fn_out, strict=False, track_origin=False, verbose=False):
             if bits in bitss:
                 orig_tag, orig_line = bitss[bits]
                 if orig_tag != tag:
-                    print("WARNING: got duplicate bits %s" % (bits, ), file=sys.stderr)
+                    print(
+                        "WARNING: got duplicate bits %s" % (bits, ),
+                        file=sys.stderr)
                     print("  Orig line: %s" % orig_line, file=sys.stderr)
                     print("  New line : %s" % line, file=sys.stderr)
                     assert not strict, "strict: got duplicate bits"
