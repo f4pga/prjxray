@@ -75,9 +75,8 @@ def main():
 
             muxed_src = re.match(
                 '^CLK_BUFG_(TOP|BOT)_R_CK_MUXED', src) is not None
-
             if pnum == 1 or pdir == 0 or \
-                muxed_src:
+               not muxed_src:
                 ignpip.add((src, dst))
 
     for tile, pips_srcs_dsts in tiledata.items():

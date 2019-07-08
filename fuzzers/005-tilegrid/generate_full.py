@@ -356,12 +356,17 @@ def propagate_IOI_SING(database, tiles_by_grid):
                 break
 
             if 'CLB_IO_CLK' in database[tile]['bits']:
-                assert bits['baseaddr'] == database[tile]['bits'][
-                    'CLB_IO_CLK']['baseaddr']
-                assert bits['frames'] == database[tile]['bits']['CLB_IO_CLK'][
-                    'frames']
-                assert bits['words'] == database[tile]['bits']['CLB_IO_CLK'][
-                    'words']
+                if tile.startswith("LIOI") or tile.startswith("RIOI"):
+                    assert bits['baseaddr'] == database[tile]['bits'][
+                        'CLB_IO_CLK']['baseaddr']
+                    assert bits['frames'] == database[tile]['bits'][
+                        'CLB_IO_CLK']['frames'], "{}:{} == {}".format(
+                            tile, bits['frames'],
+                            database[tile]['bits']['CLB_IO_CLK']['frames'])
+                    assert bits['words'] == database[tile]['bits'][
+                        'CLB_IO_CLK']['words'], "{}: {} != {}".format(
+                            tile, bits['words'],
+                            database[tile]['bits']['CLB_IO_CLK']['words'])
 
         top_tile = tile
 

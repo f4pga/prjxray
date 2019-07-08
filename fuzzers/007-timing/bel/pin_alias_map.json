@@ -12,6 +12,22 @@
          }
     },
     "rambfifo36e1" : {
+         "REGCEAREGCEL" : {
+             "names" : ["regceal"],
+             "is_property_related" : false
+         },
+         "REGCEAREGCEU" : {
+             "names" : ["regceau"],
+             "is_property_related" : false
+         },
+         "RSTREGARSTREGL" : {
+             "names" : ["rstregal"],
+             "is_property_related" : false
+         },
+         "RSTREGARSTREGU" : {
+             "names" : ["rstregau"],
+             "is_property_related" : false
+         },
          "RSTRAMARSTRAMLRST" : {
              "names" : ["rstramarstl"],
              "is_property_related" : false
@@ -54,6 +70,22 @@
          },
          "DOPBDOP0" : {
              "names" : ["dopbdopl", "dopbdopu"],
+             "is_property_related" : false
+         },
+         "DIADI0" : {
+             "names" : ["diadil", "diadiu"],
+             "is_property_related" : false
+         },
+         "DIBDI0" : {
+             "names" : ["dibdil", "dibdiu"],
+             "is_property_related" : false
+         },
+         "DIPADIP0" : {
+             "names" : ["dipadipl", "dipadipu"],
+             "is_property_related" : false
+         },
+         "DIPBDIP0" : {
+             "names" : ["dipbdipl", "dipbdipu"],
              "is_property_related" : false
          }
     }
