@@ -5,7 +5,7 @@ database: build/segbits_cmt_top_upper_t.db
 
 build/segbits_cmt_top_upper_t.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -c 150 -o build/segbits_cmt_top_upper_t.rdb \
-		$(shell find ${FUZDIR} -name "segdata_cmt_top_*_upper_t.txt")
+		$(shell find build -name "segdata_cmt_top_*_upper_t.txt")
 
 build/segbits_cmt_top_upper_t.db: build/segbits_cmt_top_upper_t.rdb write_pll_reg.py
 	python3 write_pll_reg.py \
