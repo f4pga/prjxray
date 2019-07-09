@@ -114,6 +114,12 @@ case "$1" in
 	riob33)
 		sed < "$2" > "$tmp1" -e 's/^IOB33\./RIOB33./' ;;
 
+	cmt_top_r_upper_t)
+		sed < "$2" > "$tmp1" -e 's/^CMT_UPPER_T\./CMT_TOP_R_UPPER_T./' ;;
+
+	cmt_top_l_upper_t)
+		sed < "$2" > "$tmp1" -e 's/^CMT_UPPER_T\./CMT_TOP_L_UPPER_T./' ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true

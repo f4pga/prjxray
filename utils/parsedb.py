@@ -20,8 +20,8 @@ def run(fnin, fnout=None, strict=False, verbose=False):
             if mode != "always":
                 assert not mode, "strict: got ill defined line: %s" % (line, )
             if tag in tags:
-                print("Original line: %s" % tags[tag])
-                print("New line: %s" % line)
+                print("Original line: %s" % tags[tag], file=sys.stderr)
+                print("New line: %s" % line, file=sys.stderr)
                 assert 0, "strict: got duplicate tag %s" % (tag, )
             assert bits not in bitss, "strict: got duplicate bits %s: %s %s" % (
                 bits, tag, bitss[bits])

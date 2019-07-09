@@ -36,7 +36,9 @@ DB_SIMPLE_L=$(addprefix segbits_,$(SEGBITS_L))
 DB_SIMPLE_R=$(addprefix segbits_,$(SEGBITS_R))
 DB_SIMPLE=\
     $(addsuffix _l, $(DB_SIMPLE_LR) $(DB_SIMPLE_L)) \
-    $(addsuffix _r, $(DB_SIMPLE_LR) $(DB_SIMPLE_R))
+    $(addsuffix _r, $(DB_SIMPLE_LR) $(DB_SIMPLE_R)) \
+    segbits_cmt_top_l_upper_t \
+    segbits_cmt_top_r_upper_t \
 
 BLOCK_RAM_EXTRA_FOR=\
       mask_bram \

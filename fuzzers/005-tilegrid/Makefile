@@ -18,6 +18,7 @@ TILEGRID_TDB_DEPENDENCIES += monitor_int/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clk_hrow/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += clk_bufg/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += hclk_cmt/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += pll/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += hclk_ioi/build/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
@@ -26,7 +27,6 @@ ifeq (${XRAY_DATABASE}, zynq7)
 TILEGRID_TDB_DEPENDENCIES += ps7_int/build/segbits_tilegrid.tdb
 else
 # Artix7/Kintex7 only
-TILEGRID_TDB_DEPENDENCIES += pll/build/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += mmcm/build/segbits_tilegrid.tdb
 endif
 
