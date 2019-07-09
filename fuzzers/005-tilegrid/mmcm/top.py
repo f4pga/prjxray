@@ -2,6 +2,7 @@ import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
+from prjxray import verilog
 from prjxray.db import Database
 
 
@@ -60,7 +61,7 @@ module top(input clk, stb, di, output do);
 
         print(
             '''
-    (* KEEP, DONT_TOUCH *)
+    (* KEEP, DONT_TOUCH, LOC=%s *)
     MMCME2_ADV #(/*.LOC("%s"),*/ .CLKOUT1_DIVIDE(%u)) dut_%s(
             .CLKFBOUT(),
             .CLKFBOUTB(),
@@ -95,7 +96,7 @@ module top(input clk, stb, di, output do);
             .PSINCDEC(),
             .PWRDWN(),
             .RST());
-''' % (site_name, CLKOUT1_DIVIDE, site_name))
+''' % (verilog.quote(site_name), site_name, CLKOUT1_DIVIDE, site_name))
 
     print("endmodule")
     write_params(params)
