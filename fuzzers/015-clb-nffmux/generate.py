@@ -59,12 +59,25 @@ for l in f:
 # create 0-tags for all sources on the remaining (unused) MUXes
 for loc, muxes in cache.items():
     for which in muxes:
-        for src in "F7 F8 CY O5 AX XOR O6".split():
+        for src in "F7 F8 CY O5 AX XOR O6 MC31".split():
+            if src == "MC31" and which is not "D": continue
             if src == "F7" and which not in "AC": continue
             if src == "F8" and which not in "B": continue
             if src == "AX": src = which + "X"
             tag = "%sFFMUX.%s" % (which, src)
             segmk.add_site_tag(loc, tag, 0)
 
-segmk.compile(bitfilter=util.bitfilter_clb_mux)
+def bitfilter(frame_idx, bit_idx):
+    
+    # Since the SRL32 is enabled along with DFFMUX.MC31, bits related to
+    # SRL32 features are masked out.
+    if (frame_idx, bit_idx) in [
+        (30, 16),  # ALUT.SRL
+        ( 1, 23),  # WEMUX.CE
+    ]:
+        return False
+
+    return util.bitfilter_clb_mux(frame_idx, bit_idx)
+
+segmk.compile(bitfilter=bitfilter)
 segmk.write()
