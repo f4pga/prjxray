@@ -1,4 +1,8 @@
+# Specimen count
 N := 4
-CLB_DBFIXUP=Y
-include ../clb.mk
+
+# A grep regex for SLICEM features to be skipped for SLICELs
+SLICEM_FEATURES ?= "DOUTMUX.MC31"
+
+include ../clb_ext.mk
 

@@ -9,7 +9,6 @@ INCREMENT = os.getenv('CLBN', 0)
 CLBN = 400 + int(INCREMENT)
 print('//Requested CLBs: %s' % str(CLBN))
 
-
 def gen_slicels():
     for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
         ['SLICEL']):
@@ -20,7 +19,6 @@ def gen_slicems():
     for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
         ['SLICEM']):
         yield site_name
-
 
 DIN_N = CLBN * 8
 DOUT_N = CLBN * 8
@@ -40,7 +38,7 @@ for i in range(CLBN):
 
     if use_slicem:
         loc = next(slicems)
-        variants = ['CY', 'F78', 'O5', 'XOR', 'B5Q', 'AMC31']
+        variants = ['CY', 'F78', 'O5', 'XOR', 'B5Q', 'MC31']
     else:
         loc = next(slicels)
         variants = ['CY', 'F78', 'O5', 'XOR', 'B5Q']
@@ -49,8 +47,8 @@ for i in range(CLBN):
     modules = ['clb_NOUTMUX_' + x for x in variants]
     module = random.choice(modules)
 
-    if module == 'clb_NOUTMUX_AMC31':
-        n = 3  # Only DOUTMUX has AMC31 input
+    if module == 'clb_NOUTMUX_MC31':
+        n = 3  # Only DOUTMUX has MC31 input
     elif module == 'clb_NOUTMUX_F78':
         n = random.randint(0, 2)
     else:
@@ -83,7 +81,7 @@ module myLUT8 (input clk, input [7:0] din,
         //Otherwise this FF drops out
         //output wire [3:0] n5ff_q);
         output wire ff_q,
-        output wire amc31);
+        output wire mc31);
 
     parameter N=-1;
     parameter LOC="SLICE_FIXME";
@@ -157,7 +155,7 @@ module myLUT8 (input clk, input [7:0] din,
         .D(din[5]),
 		.A(din[4:0]),
 		.Q(lutno6[0]),
-        .Q31(amc31));
+        .Q31(mc31));
 
     assign lutno5[0] = din[6];
 
@@ -313,7 +311,7 @@ module clb_NOUTMUX_B5Q (input clk, input [7:0] din, output [7:0] dout);
             .ff_q(dout[0]));
 endmodule
 
-module clb_NOUTMUX_AMC31 (input clk, input [7:0] din, output [7:0] dout);
+module clb_NOUTMUX_MC31 (input clk, input [7:0] din, output [7:0] dout);
     parameter LOC="SLICE_FIXME";
     parameter N=0; // Dummy
 
@@ -322,6 +320,6 @@ module clb_NOUTMUX_AMC31 (input clk, input [7:0] din, output [7:0] dout);
             .lut8o(),
             .caro(), .carco(),
             .bo5(), .bo6(),
-            .ff_q(), .amc31(dout[0]));
+            .ff_q(), .mc31(dout[0]));
 endmodule
 ''')
