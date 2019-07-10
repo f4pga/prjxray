@@ -58,6 +58,8 @@ def use_iserdese2(p, luts, connects):
     p['IS_CLK_INVERTED'] = random.randint(0, 1)
     p['IS_CLKB_INVERTED'] = random.randint(0, 1)
     p['IS_OCLK_INVERTED'] = random.randint(0, 1)
+    p['IS_OCLKB_INVERTED'] = random.randint(0, 1)
+    p['IS_CLKDIV_INVERTED'] = random.randint(0, 1)
     p['IS_D_INVERTED'] = random.randint(0, 1)
     p['INTERFACE_TYPE'] = verilog.quote(
         random.choice(
@@ -163,6 +165,30 @@ def use_iserdese2(p, luts, connects):
     else:
         p['ofb_connections'] = ''
 
+    if random.randint(0, 1):
+        clknet = luts.get_next_output_net()
+    else:
+        clknet = random.choice((
+            'clk_BUFG1',
+            'clk_BUFG2',
+        ))
+
+    if random.randint(0, 1):
+        clkbnet = luts.get_next_output_net()
+    else:
+        clkbnet = random.choice((
+            'clk_BUFG1',
+            'clk_BUFG2',
+        ))
+
+    if random.randint(0, 1):
+        oclknet = luts.get_next_output_net()
+    else:
+        oclknet = random.choice((
+            'clk_BUFG1',
+            'clk_BUFG2',
+        ))
+
     print(
         '''
     (* KEEP, DONT_TOUCH, LOC = "{ilogic_loc}" *)
@@ -182,6 +208,8 @@ def use_iserdese2(p, luts, connects):
         .IS_CLK_INVERTED({IS_CLK_INVERTED}),
         .IS_CLKB_INVERTED({IS_CLKB_INVERTED}),
         .IS_OCLK_INVERTED({IS_OCLK_INVERTED}),
+        .IS_OCLKB_INVERTED({IS_OCLKB_INVERTED}),
+        .IS_CLKDIV_INVERTED({IS_CLKDIV_INVERTED}),
         .IS_D_INVERTED({IS_D_INVERTED}),
         .OFB_USED({OFB_USED}),
         .NUM_CE({NUM_CE}),
@@ -198,9 +226,9 @@ def use_iserdese2(p, luts, connects):
         .Q1({q1net}),
         .CLKDIV(0)
     );'''.format(
-            clknet=luts.get_next_output_net(),
-            clkbnet=luts.get_next_output_net(),
-            oclknet=luts.get_next_output_net(),
+            clknet=clknet,
+            clkbnet=clkbnet,
+            oclknet=oclknet,
             onet=luts.get_next_input_net(),
             q1net=luts.get_next_input_net(),
             shiftout1net=luts.get_next_input_net(),
@@ -385,6 +413,18 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
     wire [`N_DI-1:0] di_buf;
     wire [`N_DI-1:0] do_buf;
     wire [`N_DI-1:0] t;
+
+    wire clk_BUFG1;
+    wire clk_BUFG2;
+
+    (* KEEP, DONT_TOUCH  *)
+    BUFG bufg1(
+        .O(clk_BUFG1)
+        );
+    (* KEEP, DONT_TOUCH  *)
+    BUFG bufg2(
+        .O(clk_BUFG2)
+        );
     '''.format(n_di=idx))
 
     # Always output a LUT6 to make placer happy.
