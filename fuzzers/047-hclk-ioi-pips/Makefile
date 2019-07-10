@@ -2,8 +2,10 @@ export FUZDIR=$(shell pwd)
 PIP_TYPE?=hclk_ioi3
 PIPLIST_TCL=$(FUZDIR)/hclk_ioi3_pip_list.tcl
 TODO_RE=".*"
+# FIXME Modify fuzzer to solve PIPs that drive the BUFIO and BUFR from ILOGIC clock or through the IOI tile.
+EXCLUDE_RE=".*\.HCLK_IOI_((RCLK_IMUX[0-3])|(I2IOCLK))"
 
-MAKETODO_FLAGS= --sides "" --pip-type ${PIP_TYPE} --seg-type ${PIP_TYPE} --re $(TODO_RE)
+MAKETODO_FLAGS= --sides "" --pip-type ${PIP_TYPE} --seg-type ${PIP_TYPE} --re $(TODO_RE) --exclude-re $(EXCLUDE_RE)
 N = 50
 
 SEGMATCH_FLAGS=-c 3 -m 15 -M 45
