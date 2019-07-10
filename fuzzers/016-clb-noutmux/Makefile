@@ -1,5 +1,5 @@
 # Specimen count
-N := 4
+N := 5
 
 # A grep regex for SLICEM features to be skipped for SLICELs
 SLICEM_FEATURES ?= "DOUTMUX.MC31"

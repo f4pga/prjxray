@@ -6,7 +6,7 @@ from prjxray import verilog
 # INCREMENT is the amount of additional CLBN to be instantiated in the design.
 # This makes the fuzzer compilation more robust against failures.
 INCREMENT = os.getenv('CLBN', 0)
-CLBN = 400 + int(INCREMENT)
+CLBN = 600 + int(INCREMENT)
 print('//Requested CLBs: %s' % str(CLBN))
 
 def gen_slicels():
