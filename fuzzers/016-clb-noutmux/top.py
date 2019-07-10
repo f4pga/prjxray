@@ -6,13 +6,19 @@ from prjxray import verilog
 # INCREMENT is the amount of additional CLBN to be instantiated in the design.
 # This makes the fuzzer compilation more robust against failures.
 INCREMENT = os.getenv('CLBN', 0)
-CLBN = 400 + int(INCREMENT)
+CLBN = 600 + int(INCREMENT)
 print('//Requested CLBs: %s' % str(CLBN))
 
 
-def gen_slices():
+def gen_slicels():
     for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
-        ['SLICEL', 'SLICEM']):
+        ['SLICEL']):
+        yield site_name
+
+
+def gen_slicems():
+    for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
+        ['SLICEM']):
         yield site_name
 
 
@@ -23,21 +29,32 @@ verilog.top_harness(DIN_N, DOUT_N)
 
 f = open('params.csv', 'w')
 f.write('module,loc,n\n')
-slices = gen_slices()
+slicels = gen_slicels()
+slicems = gen_slicems()
 print(
     'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
     (DIN_N - 1, DOUT_N - 1))
 for i in range(CLBN):
+
+    use_slicem = (i % 2) == 0
+
+    if use_slicem:
+        loc = next(slicems)
+        variants = ['CY', 'F78', 'O5', 'XOR', 'B5Q', 'MC31']
+    else:
+        loc = next(slicels)
+        variants = ['CY', 'F78', 'O5', 'XOR', 'B5Q']
+
     # Don't have an O6 example
-    modules = ['clb_NOUTMUX_' + x for x in ['CY', 'F78', 'O5', 'XOR', 'B5Q']]
+    modules = ['clb_NOUTMUX_' + x for x in variants]
     module = random.choice(modules)
 
-    if module == 'clb_NOUTMUX_F78':
+    if module == 'clb_NOUTMUX_MC31':
+        n = 3  # Only DOUTMUX has MC31 input
+    elif module == 'clb_NOUTMUX_F78':
         n = random.randint(0, 2)
     else:
         n = random.randint(0, 3)
-    #n = 0
-    loc = next(slices)
 
     print('    %s' % module)
     print('            #(.LOC("%s"), .N(%d))' % (loc, n))
@@ -64,10 +81,13 @@ module myLUT8 (input clk, input [7:0] din,
         output bo5, output bo6,
         //Note: b5ff_q requires the mux and will conflict with other wires
         //Otherwise this FF drops out
-        output wire ff_q);
         //output wire [3:0] n5ff_q);
+        output wire ff_q,
+        output wire mc31);
+
     parameter N=-1;
     parameter LOC="SLICE_FIXME";
+    parameter ALUT_SRL=0;
 
     wire [3:0] caro_all;
     assign caro = caro_all[N];
@@ -126,7 +146,24 @@ module myLUT8 (input clk, input [7:0] din,
 		.O5(lutno5[1]),
 		.O6(lutno6[1]));
 
-	(* LOC=LOC, BEL="A6LUT", KEEP, DONT_TOUCH *)
+    generate if (ALUT_SRL != 0) begin
+    
+    (* LOC=LOC, BEL="A6LUT", KEEP, DONT_TOUCH *)
+	SRLC32E #(
+		.INIT(64'h8000_1CE0_0000_0001)
+	) srla (
+        .CLK(clk),
+        .CE(din[6]),
+        .D(din[5]),
+		.A(din[4:0]),
+		.Q(lutno6[0]),
+        .Q31(mc31));
+
+    assign lutno5[0] = din[6];
+
+    end else begin
+	
+    (* LOC=LOC, BEL="A6LUT", KEEP, DONT_TOUCH *)
 	LUT6_2 #(
 		.INIT(64'h8000_1CE0_0000_0001)
 	) luta (
@@ -138,6 +175,8 @@ module myLUT8 (input clk, input [7:0] din,
 		.I5(din[5]),
 		.O5(lutno5[0]),
 		.O6(lutno6[0]));
+
+    end endgenerate
 
     //Outputs do not have to be used, will stay without them
 	(* LOC=LOC, KEEP, DONT_TOUCH *)
@@ -272,5 +311,17 @@ module clb_NOUTMUX_B5Q (input clk, input [7:0] din, output [7:0] dout);
             .caro(), .carco(),
             .bo5(), .bo6(),
             .ff_q(dout[0]));
+endmodule
+
+module clb_NOUTMUX_MC31 (input clk, input [7:0] din, output [7:0] dout);
+    parameter LOC="SLICE_FIXME";
+    parameter N=0; // Dummy
+
+    myLUT8 #(.LOC(LOC), .N(0), .ALUT_SRL(1))
+            myLUT8(.clk(clk), .din(din),
+            .lut8o(),
+            .caro(), .carco(),
+            .bo5(), .bo6(),
+            .ff_q(), .mc31(dout[0]));
 endmodule
 ''')
