@@ -67,17 +67,19 @@ for loc, muxes in cache.items():
             tag = "%sFFMUX.%s" % (which, src)
             segmk.add_site_tag(loc, tag, 0)
 
+
 def bitfilter(frame_idx, bit_idx):
-    
+
     # Since the SRL32 is enabled along with DFFMUX.MC31, bits related to
     # SRL32 features are masked out.
     if (frame_idx, bit_idx) in [
         (30, 16),  # ALUT.SRL
-        ( 1, 23),  # WEMUX.CE
+        (1, 23),  # WEMUX.CE
     ]:
         return False
 
     return util.bitfilter_clb_mux(frame_idx, bit_idx)
+
 
 segmk.compile(bitfilter=bitfilter)
 segmk.write()

@@ -87,9 +87,9 @@ def bitfilter(frame_idx, bit_idx):
         (30, 19),
         (31, 19),  # B5MA
         (30, 9),
-        (31, 8),   # A5MA
+        (31, 8),  # A5MA
         (30, 16),  # ALUT.SRL
-        ( 1, 23),  # WEMUX.CE
+        (1, 23),  # WEMUX.CE
     ]:
         return False
 

@@ -9,15 +9,18 @@ INCREMENT = os.getenv('CLBN', 0)
 CLBN = 600 + int(INCREMENT)
 print('//Requested CLBs: %s' % str(CLBN))
 
+
 def gen_slicels():
     for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
         ['SLICEL']):
         yield site_name
 
+
 def gen_slicems():
     for _tile_name, site_name, _site_type in util.get_roi().gen_sites(
         ['SLICEM']):
         yield site_name
+
 
 DIN_N = CLBN * 8
 DOUT_N = CLBN * 8
@@ -37,7 +40,7 @@ for i in range(CLBN):
 
     if use_slicem:
         loc = next(slicems)
-        variants = ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR', 'MC31'] 
+        variants = ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR', 'MC31']
     else:
         loc = next(slicels)
         variants = ['AX', 'CY', 'F78', 'O5', 'O6', 'XOR']
