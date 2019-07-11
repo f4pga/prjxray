@@ -153,7 +153,7 @@ if {$part eq "xc7a50tfgg484-1"} {
         # Arty A7 switch, button, and LED
         # https://reference.digilentinc.com/reference/programmable-logic/arty/reference-manual?redirect=1
         # 4 switches then 4 buttons
-        set sw_but "A8 C11 C10 A10  D9 C9 B9 B8"
+        set sw_but "A8 C11 C10 A10  C9 B9 B8 D9"
         # 4 LEDs then 4 RGB LEDs (green only)
         set leds "H5 J5 T9 T10  F6 J4 J2 H6"
 
