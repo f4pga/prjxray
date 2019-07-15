@@ -11,22 +11,6 @@ from prjxray.db import Database
 
 # =============================================================================
 
-#todo_file_name = "../todo.txt"
-
-#def make_todo():
-    
-#    if os.path.isfile(file_name):
-#        return 
-
-#    with open(file_name, "w") as fp:
-#        fp.write("IDELAY_TYPE\n")
-#        fp.write("IDELAY_VALUE\n")
-#        fp.write("DELAY_SRC\n")
-#        fp.write("HIGH_PERFORMANCE_MODE\n")
-#        fp.write("SIGNAL_PATTERN\n")
-#        fp.write("CINVCTRL_SEL\n")
-#        fp.write("PIPE_SEL\n")
-
 def get_loc(name):
     m = re.match("^\S+_X([0-9]+)Y([0-9]+)$", name)
     assert m != None
@@ -76,13 +60,6 @@ def run():
     
     # Get all [LR]IOI3 tiles
     tiles = list(gen_sites())
-   
-#    N = 1
-#    tiles = tiles[:N] # HACK
-
-#    for t in tiles:
-#        print(t)
-#    exit(-1)
 
     # Header
     print("// Tile count: %d" % len(tiles))
@@ -154,7 +131,7 @@ IDELAYCTRL idelayctrl();
 
 endmodule
 
-
+(* KEEP, DONT_TOUCH *)
 module mod(
   input  wire I,
   output wire O

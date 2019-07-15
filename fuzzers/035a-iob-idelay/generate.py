@@ -35,11 +35,6 @@ for params in data:
     for x in delay_srcs:
         segmk.add_site_tag(loc, "DELAY_SRC_%s" % x, int(value == x)) 
 
-#    # Signal pattern
-#    value = verilog.unquote(params["SIGNAL_PATTERN"])
-#    for x in signal_patterns:
-#        segmk.add_site_tag(loc, "SIGNAL_PATTERN_%s" % x, int(value == x)) 
-
     value = verilog.unquote(params["HIGH_PERFORMANCE_MODE"])
     segmk.add_site_tag(loc, "HIGH_PERFORMANCE_MODE", int(value == "TRUE")) 
 
