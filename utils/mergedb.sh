@@ -114,6 +114,12 @@ case "$1" in
 	riob33)
 		sed < "$2" > "$tmp1" -e 's/^IOB33\./RIOB33./' ;;
 
+	lioi3)
+		sed < "$2" > "$tmp1" -e 's/^IOI3\./LIOI3./' ;;
+
+	rioi3)
+		sed < "$2" > "$tmp1" -e 's/^IOI3\./RIOI3./' ;;
+
 	cmt_top_r_upper_t)
 		sed < "$2" > "$tmp1" -e 's/^CMT_UPPER_T\./CMT_TOP_R_UPPER_T./' ;;
 
