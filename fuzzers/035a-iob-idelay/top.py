@@ -11,13 +11,18 @@ from prjxray.db import Database
 
 # =============================================================================
 
+
 def get_loc(name):
     m = re.match("^\S+_X([0-9]+)Y([0-9]+)$", name)
     assert m != None
 
     x = int(m.group(1))
     y = int(m.group(2))
-    return (x, y,)
+    return (
+        x,
+        y,
+    )
+
 
 def gen_sites():
     db = Database(util.get_db_root())
@@ -36,20 +41,22 @@ def gen_sites():
     tile_list.sort(key=key)
 
     for iob_tile_name in tile_list:
-        iob_gridinfo = grid.gridinfo_at_loc(grid.loc_of_tilename(iob_tile_name))
+        iob_gridinfo = grid.gridinfo_at_loc(
+            grid.loc_of_tilename(iob_tile_name))
 
         # Find IOI tile adjacent to IOB
         for suffix in ["IOI3", "IOI3_TBYTESRC", "IOI3_TBYTETERM"]:
             try:
                 ioi_tile_name = iob_tile_name.replace("IOB33", suffix)
-                ioi_gridinfo = grid.gridinfo_at_loc(grid.loc_of_tilename(ioi_tile_name))
+                ioi_gridinfo = grid.gridinfo_at_loc(
+                    grid.loc_of_tilename(ioi_tile_name))
                 break
             except KeyError:
                 pass
 
         #idelay = [k for k,v in ioi_gridinfo.sites.items() if v == "IDELAYE2"][0]
-        iob33s = [k for k,v in iob_gridinfo.sites.items() if v == "IOB33S"][0]
-        iob33m = [k for k,v in iob_gridinfo.sites.items() if v == "IOB33M"][0]
+        iob33s = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33S"][0]
+        iob33m = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33M"][0]
         idelay_s = iob33s.replace("IOB", "IDELAY")
         idelay_m = iob33m.replace("IOB", "IDELAY")
 
@@ -57,14 +64,15 @@ def gen_sites():
 
 
 def run():
-    
+
     # Get all [LR]IOI3 tiles
     tiles = list(gen_sites())
 
     # Header
     print("// Tile count: %d" % len(tiles))
     print("// Seed: '%s'" % os.getenv("SEED"))
-    print('''
+    print(
+        '''
 module top (
   input  wire [{N}:0] di,
   output wire [{N}:0] do
@@ -88,13 +96,21 @@ wire [{N}:0] do_buf;
             idelay = sites[3]
 
         params = {
-            "LOC": "\"" + idelay + "\"",
-            "IDELAY_TYPE": "\"" + random.choice(["FIXED", "VARIABLE", "VAR_LOAD", "VAR_LOAD_PIPE"]) + "\"",
-            "IDELAY_VALUE": random.randint(0, 31),
-            "DELAY_SRC": "\"" + random.choice(["IDATAIN", "DATAIN"]) + "\"",
-            "HIGH_PERFORMANCE_MODE": "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
-            "CINVCTRL_SEL": "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
-            "PIPE_SEL": "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
+            "LOC":
+            "\"" + idelay + "\"",
+            "IDELAY_TYPE":
+            "\"" + random.choice(
+                ["FIXED", "VARIABLE", "VAR_LOAD", "VAR_LOAD_PIPE"]) + "\"",
+            "IDELAY_VALUE":
+            random.randint(0, 31),
+            "DELAY_SRC":
+            "\"" + random.choice(["IDATAIN", "DATAIN"]) + "\"",
+            "HIGH_PERFORMANCE_MODE":
+            "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
+            "CINVCTRL_SEL":
+            "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
+            "PIPE_SEL":
+            "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
         }
 
         if params["IDELAY_TYPE"] != "\"VAR_LOAD_PIPE\"":
@@ -115,7 +131,8 @@ wire [{N}:0] do_buf;
         print('IBUF ibuf_%03d (.I(di[%3d]), .O(di_buf[%3d]));' % (i, i, i))
         print('(* LOC="%s", KEEP, DONT_TOUCH *)' % iob_o)
         print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
-        print('mod #(%s) mod_%03d (.I(di_buf[%3d]), .O(do_buf[%3d]));' %
+        print(
+            'mod #(%s) mod_%03d (.I(di_buf[%3d]), .O(do_buf[%3d]));' %
             (param_str, i, i, i))
 
         data.append(params)
@@ -124,7 +141,8 @@ wire [{N}:0] do_buf;
     with open("params.json", "w") as fp:
         json.dump(data, fp, sort_keys=True, indent=1)
 
-    print('''
+    print(
+        '''
 // IDELAYCTRL
 (* KEEP, DONT_TOUCH *)
 IDELAYCTRL idelayctrl();
@@ -189,5 +207,6 @@ LUT6 #(.INIT(32'hDEADBEEF)) lut (
 
 endmodule
     ''')
+
 
 run()
