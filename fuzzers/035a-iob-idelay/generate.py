@@ -45,6 +45,14 @@ for params in data:
     value = verilog.unquote(params["PIPE_SEL"])
     segmk.add_site_tag(loc, "PIPE_SEL", int(value == "TRUE"))
 
+    if "IS_C_INVERTED" in params:
+        segmk.add_site_tag(loc, "IS_C_INVERTED", int(params["IS_C_INVERTED"]))
+
+    segmk.add_site_tag(
+        loc, "IS_DATAIN_INVERTED", int(params["IS_DATAIN_INVERTED"]))
+    segmk.add_site_tag(
+        loc, "IS_IDATAIN_INVERTED", int(params["IS_IDATAIN_INVERTED"]))
+
 
 def bitfilter(frame_idx, bit_idx):
     return True

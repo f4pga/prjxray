@@ -54,7 +54,6 @@ def gen_sites():
             except KeyError:
                 pass
 
-        #idelay = [k for k,v in ioi_gridinfo.sites.items() if v == "IDELAYE2"][0]
         iob33s = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33S"][0]
         iob33m = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33M"][0]
         idelay_s = iob33s.replace("IOB", "IDELAY")
@@ -74,9 +73,13 @@ def run():
     print(
         '''
 module top (
+  (* CLOCK_BUFFER_TYPE = "NONE" *)
+  input  wire clk,
   input  wire [{N}:0] di,
   output wire [{N}:0] do
 );
+
+wire clk_buf = clk;
 
 wire [{N}:0] di_buf;
 wire [{N}:0] do_buf;
@@ -111,6 +114,12 @@ wire [{N}:0] do_buf;
             "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
             "PIPE_SEL":
             "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
+            "IS_C_INVERTED":
+            random.randint(0, 1),
+            "IS_DATAIN_INVERTED":
+            random.randint(0, 1),
+            "IS_IDATAIN_INVERTED":
+            random.randint(0, 1),
         }
 
         if params["IDELAY_TYPE"] != "\"VAR_LOAD_PIPE\"":
@@ -122,7 +131,8 @@ wire [{N}:0] do_buf;
         if params["IDELAY_TYPE"] == "\"VAR_LOAD_PIPE\"":
             params["IDELAY_VALUE"] = 0
 
-        # SIGNAL_PATTERN and HIGH_PERFORMANCE_MODE have no bits
+        if params["IDELAY_TYPE"] == "\"FIXED\"":
+            params["IS_C_INVERTED"] = 0
 
         param_str = ",".join(".%s(%s)" % (k, v) for k, v in params.items())
 
@@ -132,8 +142,8 @@ wire [{N}:0] do_buf;
         print('(* LOC="%s", KEEP, DONT_TOUCH *)' % iob_o)
         print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
         print(
-            'mod #(%s) mod_%03d (.I(di_buf[%3d]), .O(do_buf[%3d]));' %
-            (param_str, i, i, i))
+            'mod #(%s) mod_%03d (.clk(clk_buf), .I(di_buf[%3d]), .O(do_buf[%3d]));'
+            % (param_str, i, i, i))
 
         data.append(params)
 
@@ -151,6 +161,7 @@ endmodule
 
 (* KEEP, DONT_TOUCH *)
 module mod(
+  input  wire clk,
   input  wire I,
   output wire O
 );
@@ -163,6 +174,9 @@ parameter HIGH_PERFORMANCE_MODE = "TRUE";
 parameter SIGNAL_PATTERN = "DATA";
 parameter CINVCTRL_SEL = "FALSE";
 parameter PIPE_SEL = "FALSE";
+parameter IS_C_INVERTED = 0;
+parameter IS_DATAIN_INVERTED = 0;
+parameter IS_IDATAIN_INVERTED = 0;
 
 wire x;
 
@@ -175,11 +189,14 @@ IDELAYE2 #(
   .HIGH_PERFORMANCE_MODE(HIGH_PERFORMANCE_MODE),
   .SIGNAL_PATTERN(SIGNAL_PATTERN),
   .CINVCTRL_SEL(CINVCTRL_SEL),
-  .PIPE_SEL(PIPE_SEL)
+  .PIPE_SEL(PIPE_SEL),
+  .IS_C_INVERTED(IS_C_INVERTED),
+  .IS_DATAIN_INVERTED(IS_DATAIN_INVERTED),
+  .IS_IDATAIN_INVERTED(IS_IDATAIN_INVERTED)
 )
 idelay
 (
-  .C(),
+  .C(clk),
   .REGRST(),
   .LD(),
   .CE(),

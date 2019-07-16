@@ -8,6 +8,7 @@ set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 set_param tcl.collectionResultDisplayLimit 0
 
 set_property IS_ENABLED 0 [get_drc_checks {NSTD-1}]
+set_property IS_ENABLED 0 [get_drc_checks {UCIO-1}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-81}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-84}]
