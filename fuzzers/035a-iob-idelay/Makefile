@@ -11,10 +11,10 @@ build/segbits_xiob33.db: build/segbits_xiob33.rdb
 	${XRAY_MASKMERGE} build/mask_xiob33.db $$(find -name segdata_*.txt)
 
 pushdb:
-	${XRAY_MERGEDB} liob33 build/segbits_xiob33.db
-	${XRAY_MERGEDB} riob33 build/segbits_xiob33.db
-	${XRAY_MERGEDB} mask_liob33 build/mask_xiob33.db
-	${XRAY_MERGEDB} mask_riob33 build/mask_xiob33.db
+	${XRAY_MERGEDB} lioi3 build/segbits_xiob33.db
+	${XRAY_MERGEDB} rioi3 build/segbits_xiob33.db
+	${XRAY_MERGEDB} mask_lioi3 build/mask_xiob33.db
+	${XRAY_MERGEDB} mask_rioi3 build/mask_xiob33.db
 
 .PHONY: database pushdb
 
