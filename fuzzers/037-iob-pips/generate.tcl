@@ -217,31 +217,26 @@ proc run {} {
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
-    set_property IS_ENABLED 0 [get_drc_checks {PDRC-25}]
-    set_property IS_ENABLED 0 [get_drc_checks {PDRC-39}]
+    set_property IS_ENABLED 0 [get_drc_checks {AVAL-74}]
+    set_property IS_ENABLED 0 [get_drc_checks {PDRC-26}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-4}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-5}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-13}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-98}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-99}]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-123}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-115}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-144}]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-1576}]
-    set_property IS_ENABLED 0 [get_drc_checks {AVAL-74}]
-    set_property IS_ENABLED 0 [get_drc_checks {AVAL-81}]
-    set_property IS_ENABLED 0 [get_drc_checks {DRC INBB-1}]
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets]
 
     place_design
+    write_checkpoint -force design_before_route.dcp
     route_design
     write_checkpoint -force design_before.dcp
 
-    route_todo
+    #route_todo
     route_design
     write_checkpoint -force design_after.dcp
-
-    set_property SEVERITY {Warning} [get_drc_checks UCIO-1]
-    set_property SEVERITY {Warning} [get_drc_checks NSTD-1]
 
     write_bitstream -force design.bit
     write_pip_txtdata design.txt

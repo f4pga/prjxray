@@ -1,21 +1,15 @@
-import json
-import io
 import os
 import random
 import math
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
-from prjxray import lut_maker
 from prjxray import verilog
+from prjxray import lut_maker
 from prjxray.db import Database
 
 NOT_INCLUDED_TILES = ['LIOI3_SING', 'RIOI3_SING']
 
 SITE_TYPES = ['OLOGICE3', 'ILOGICE3']
-
-REGIONAL_CLOCK_BUFFERS = ['BUFHCE', 'BUFIO']
-GLOBAL_CLOCK_BUFFERS = ['BUFGCTRL']
-CLOCK_BUFFERS = REGIONAL_CLOCK_BUFFERS + GLOBAL_CLOCK_BUFFERS
 
 MAX_REG_CLK_BUF = 2
 MAX_GLB_CLK_BUF = 24
@@ -42,292 +36,267 @@ def read_site_to_cmt():
             yield (site, cmt)
 
 
-def gen_sites(site_types):
-    '''
-    Generates all sites belonging to `site_types` of
-    a desired `tile`
-    '''
+def gen_sites():
+    ''' Return dict of ISERDES/OSERDES locations. '''
     db = Database(util.get_db_root())
     grid = db.grid()
 
+    xy_fun = util.create_xy_fun('\S+')
+
     tiles = grid.tiles()
 
-    #Randomize tiles
-    tiles_list = list(tiles)
-    random.shuffle(tiles_list)
-
-    for tile_name in tiles:
+    for tile_name in sorted(tiles):
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
         tile_type = gridinfo.tile_type
 
+        tile = {
+                'tile': tile_name,
+                'tile_type': tile_type,
+                'ioi_sites': {}
+                }
+
         for site_name, site_type in gridinfo.sites.items():
-            if site_type in site_types:
-                yield tile_type, tile_name, site_type, site_name
+            if site_type in SITE_TYPES:
+                xy = xy_fun(site_name)
+                if xy not in tile['ioi_sites']:
+                    tile['ioi_sites'][xy] = {}
+
+                tile['ioi_sites'][xy][site_type] = site_name
+
+        yield tile
 
 
-def generate_mmcm(site_to_cmt, clock_region):
-    mmcm_clocks = None
+class ClockSources(object):
+    def __init__(self):
+        self.site_to_cmt = dict(read_site_to_cmt())
 
-    for _, _, _, site in gen_sites('MMCME2_ADV'):
-        mmcm_region = site_to_cmt[site]
+        self.leaf_gclks = {}
+        self.ioclks = {}
+        self.rclks = {}
+        self.selected_leaf_gclks = {}
+        self.lut_maker = lut_maker.LutMaker()
 
-        if mmcm_region == clock_region:
-            mmcm_clocks = [
-                'mmcm_clock_{site}_{idx}'.format(site=site, idx=idx)
-                for idx in range(3)
-            ]
+        for cmt in set(self.site_to_cmt.values()):
+            self.leaf_gclks[cmt] = []
+            self.ioclks[cmt] = []
+            self.rclks[cmt] = []
 
-            print(
-                """
-        wire {c0}, {c1}, {c2};
-        (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-        MMCME2_ADV mmcm_{site} (
-        .CLKOUT0({c0}),
-        .CLKOUT1({c1}),
-        .CLKOUT2({c2})
-        );""".format(
+    def init_clocks(self):
+        """ Initialize all IOI clock sources. """
+        for site, cmt in self.site_to_cmt.items():
+            clk = 'clk_' + site
+            if 'BUFHCE' in site:
+                print("""
+            wire {clk};
+            (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+            BUFH bufh_{site}(
+                .O({clk})
+                );
+                """.format(
+                    clk=clk,
                     site=site,
-                    c0=mmcm_clocks[0],
-                    c1=mmcm_clocks[1],
-                    c2=mmcm_clocks[2]))
+                    ))
 
-    if not mmcm_clocks:
-        return None
+                self.leaf_gclks[cmt].append(clk)
 
-    return mmcm_clocks
+            if 'BUFIO' in site:
+                print("""
+            wire {clk};
+            (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+            BUFIO bufio_{site}(
+                .O({clk})
+                );
+                """.format(
+                    clk=clk,
+                    site=site,
+                    ))
 
+                self.ioclks[cmt].append(clk)
 
-def generate_glb_clk_buf(clock_regions, mmcm_clocks_dict):
-    clk_buf_count = 0
+            if 'BUFR' in site:
+                print("""
+            wire {clk};
+            (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+            BUFR bufr_{site}(
+                .O({clk})
+                );
+                """.format(
+                    clk=clk,
+                    site=site,
+                    ))
 
-    clock_signals = []
-
-    for tile_type, _, site_type, site_name in gen_sites(GLOBAL_CLOCK_BUFFERS):
-
-        if clk_buf_count >= MAX_GLB_CLK_BUF:
-            break
-
-        clock_signal = "buf_clk_{site}".format(site=site_name)
-
-        if site_type == 'BUFGCTRL':
-            mmcm_clocks = []
-
-            for clock_region in clock_regions:
-                # BUFGCTRL must have the clock coming from the same fabric row
-                if ('Y0' in clock_region and tile_type == 'CLK_BUFG_BOT_R'
-                    ) or ('Y0' not in clock_region
-                          and tile_type == 'CLK_BUFG_TOP_R'):
-                    mmcm_clocks = mmcm_clocks_dict[clock_region]
-                    break
-
-            assert mmcm_clocks, "No clock can be produced. Buffer not instantiated"
-
-            print(
-                '''
-    wire {clk_out};
-
-    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    BUFG buf_{site} (.I({clk_in}), .O({clk_out}));'''.format(
-                    clk_in=random.choice(mmcm_clocks),
-                    clk_out=clock_signal,
-                    site=site_name))
-
-        else:
-            assert False, "The site is somehow corrupted"
-
-        clk_buf_count += 1
-
-        clock_signals.append(clock_signal)
-
-    return clock_signals
+                self.rclks[cmt].append(clk)
 
 
-def generate_reg_clk_buf(site_to_cmt, clock_region, mmcm_clocks, buf_type):
-    clk_buf_count = 0
-    clock_signals = []
+        # Choose 6 leaf_gclks to be used in each CMT.
+        for cmt in self.leaf_gclks:
+            self.selected_leaf_gclks[cmt] = random.choices(self.leaf_gclks[cmt], k=6)
 
-    for tile_type, _, site_type, site_name in gen_sites(
-            REGIONAL_CLOCK_BUFFERS):
-        buf_region = site_to_cmt[site_name]
+    def get_clock(self, site, allow_ioclks, allow_rclks, allow_fabric=True, allow_empty=True):
+        cmt = self.site_to_cmt[site]
+        choices = []
+        if allow_fabric:
+            choices.append('lut')
 
-        if clk_buf_count >= MAX_REG_CLK_BUF:
-            break
+        if allow_empty:
+            choices.append('')
 
-        if buf_type != site_type:
-            continue
+        choices.extend(self.selected_leaf_gclks[cmt])
+        if allow_ioclks:
+            choices.extend(self.ioclks[cmt])
 
-        if buf_region != clock_region:
-            continue
+        if allow_rclks:
+            choices.extend(self.rclks[cmt])
 
-        clock_signal = "buf_clk_{site}".format(site=site_name)
-
-        if site_type == 'BUFR':
-            print(
-                '''
-    wire {clk_out};
-
-    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    BUFR buf_{site} (.I({clk_in}), .O({clk_out}));'''.format(
-                    clk_in=random.choice(mmcm_clocks),
-                    clk_out=clock_signal,
-                    site=site_name))
-
-        elif site_type == 'BUFIO':
-            print(
-                '''
-    wire {clk_out};
-
-    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    BUFIO buf_{site} (.I({clk_in}), .O({clk_out}));'''.format(
-                    clk_in=random.choice(mmcm_clocks),
-                    clk_out=clock_signal,
-                    site=site_name))
-
-        elif site_type == 'BUFHCE':
-            print(
-                '''
-    wire {clk_out};
-
-    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    BUFH buf_{site} (.I({clk_in}), .O({clk_out}));'''.format(
-                    clk_in=random.choice(mmcm_clocks),
-                    clk_out=clock_signal,
-                    site=site_name))
-
-        else:
-            assert False, "The site is somehow corrupted"
-
-        clk_buf_count += 1
-
-        clock_signals.append(clock_signal)
-
-    return clock_signals
+        clock = random.choice(choices)
+        is_lut = False
+        if clock == "lut":
+            clock = self.lut_maker.get_next_output_net()
+            is_lut = True
+        return clock, is_lut
 
 
-def get_clock_signal(clock_signals, clock_types):
-    '''
-    Get a unique clock signals for a specific tile.
-    '''
-    global CUR_CLK
-
-    clock_signal_string = ''
-    is_first_clock = True
-
-    for clock_type in clock_types:
-        if random.choice([True, True, False]):
-            continue
-
-        clock_signal = clock_signals[CUR_CLK]
-        if is_first_clock:
-            clock_signal_string += '''
-        .{}({})'''.format(clock_type, clock_signal)
-        else:
-            clock_signal_string += ''',
-        .{}({})'''.format(clock_type, clock_signal)
-
-        is_first_clock = False
-
-        CUR_CLK = (CUR_CLK + 1) % MAX_GLB_CLK_BUF
-
-    return clock_signal_string
-
+def add_port(ports, port, signal):
+    ports.append('.{}({})'.format(port, signal))
 
 def run():
-
-    global CUR_CLK
-    # One buffer type for each specimen
-    buf_type = random.choice(GLOBAL_CLOCK_BUFFERS)
-
-    site_location = random.choice(['TOP', 'BOT'])
-
-    site_to_cmt = dict(read_site_to_cmt())
-    clock_regions = list(dict.fromkeys(site_to_cmt.values()))
-
     print("module top();")
 
-    clock_mmcm_dict = {}
-    clock_signals_dict = {}
-    site_types_dict = {}
+    clocks = ClockSources()
+    clocks.init_clocks()
 
-    # Generate MMCM Clock generator
-    for clock_region in clock_regions:
-        mmcm_clocks = generate_mmcm(site_to_cmt, clock_region)
+    """
 
-        if mmcm_clocks:
-            clock_mmcm_dict[clock_region] = mmcm_clocks
-            clock_signals_dict[clock_region] = []
+    ISERDESE2 clock sources:
 
-            if buf_type in REGIONAL_CLOCK_BUFFERS:
-                clock_signals_dict[clock_region] = generate_reg_clk_buf(
-                    site_to_cmt, clock_region, mmcm_clocks, buf_type)
-        else:
-            clock_regions.remove(clock_region)
+    CLK/CLKB:
+     - Allows LEAF_GCLK, IOCLKS, RCLKS and fabric
+     - Dedicated pips
 
-    if buf_type in GLOBAL_CLOCK_BUFFERS:
-        clock_signals = generate_glb_clk_buf(clock_regions, clock_mmcm_dict)
+    CLKDIV:
+     - No dedicated pips, uses fabric clock in.
 
-        for clock_region in clock_regions:
-            clock_signals_dict[clock_region] = clock_signals
-            site_types_dict[clock_region] = random.choice(SITE_TYPES)
+    CLKDIVP:
+     - Has pips, MIG only, PHASER or fabric.
 
-    half_column_used_clocks = {}
+    OCLK/OCLKB:
+     - Allows LEAF_GCLK, IOCLKS, RCLKS and fabric
+     - Must match OSERDESE2:CLK/CLKB
 
-    for tile_type, tile_name, site_type, site_name in gen_sites(SITE_TYPES):
-        if tile_type in NOT_INCLUDED_TILES:
+     OSERDESE2 clock sources:
+
+     CLKDIV/CLKDIVB:
+      - Allows LEAF_GCLK and RCLKS and fabric
+      - Dedicated pips
+
+     CLKDIVF/CLKDIVFB:
+      - Allows LEAF_GCLK and RCLKS and fabric
+      - No explicit port, follows CLKDIV/CLKDIVB?
+      """
+
+    output = []
+
+    for tile in gen_sites():
+        if tile['tile_type'] in NOT_INCLUDED_TILES:
             continue
 
-        if random.choice([True, True, False]):
-            continue
 
-        site_region = site_to_cmt[site_name]
+        for xy in tile['ioi_sites']:
+            use_iserdes = random.randint(0, 1)
+            use_oserdes = random.randint(0, 1)
 
-        if site_type != site_types_dict[site_region]:
-            continue
+            ilogic_site = tile['ioi_sites'][xy]['ILOGICE3']
+            ologic_site = tile['ioi_sites'][xy]['OLOGICE3']
 
-        clock_signals = clock_signals_dict[site_region]
+            if use_oserdes:
+                oclk, _ = clocks.get_clock(
+                        ologic_site,
+                        allow_ioclks=True,
+                        allow_rclks=True)
 
-        bot_or_top = get_location(site_name, 1)
+                oclkb = oclk
+            else:
+                oclk, is_lut = clocks.get_clock(
+                        ilogic_site,
+                        allow_ioclks=True,
+                        allow_rclks=True)
 
-        half_column = '{}_{}'.format(site_region, get_location(tile_name, 25))
+                if random.randint(0, 1):
+                    oclkb = oclk
+                else:
+                    oclkb, _ = clocks.get_clock(
+                            ilogic_site,
+                            allow_ioclks=True,
+                            allow_rclks=True,
+                            allow_fabric=not is_lut)
 
-        if half_column not in half_column_used_clocks:
-            half_column_used_clocks[half_column] = {
-                'TOP': {
-                    'ILOGIC':
-                    get_clock_signal(clock_signals, ['CLK', 'CLKB', 'CLKDIV']),
-                    'OLOGIC':
-                    get_clock_signal(clock_signals, ['CLK', 'CLKDIV'])
-                },
-                'BOT': {
-                    'ILOGIC':
-                    get_clock_signal(clock_signals, ['CLK', 'CLKB', 'CLKDIV']),
-                    'OLOGIC':
-                    get_clock_signal(clock_signals, ['CLK', 'CLKDIV'])
-                }
-            }
+            if use_iserdes:
+                DATA_RATE = random.choice(['DDR', 'SDR'])
+                ports = []
 
-        if site_type == 'ILOGICE3':
-            print(
-                '''
-    (* KEEP, DONT_TOUCH, LOC = "{site_name}" *)
-    ISERDESE2 #(
-        .DATA_RATE("SDR")
-    ) iserdes_{site_name} ({clk});'''.format(
-                    site_name=site_name,
-                    clk=half_column_used_clocks[half_column][bot_or_top]
-                    ['ILOGIC']))
-        elif site_type == 'OLOGICE3':
-            print(
-                '''
-    (* KEEP, DONT_TOUCH, LOC = "{site_name}" *)
-    OSERDESE2 #(
-        .DATA_RATE_OQ("SDR"),
-        .DATA_RATE_TQ("SDR")
-    ) oserdes_{site_name} ({clk});'''.format(
-                    site_name=site_name,
-                    clk=half_column_used_clocks[half_column][bot_or_top]
-                    ['OLOGIC']))
+                clk, is_lut = clocks.get_clock(
+                    ilogic_site,
+                    allow_ioclks=True,
+                    allow_rclks=True,
+                    allow_empty=DATA_RATE=='SDR')
+                if random.randint(0, 1):
+                    clkb = clk
+                else:
+                    clkb, _ = clocks.get_clock(
+                            ilogic_site,
+                            allow_ioclks=True,
+                            allow_rclks=True,
+                            allow_empty=DATA_RATE=='SDR')
+
+                add_port(ports, 'CLK', clk)
+                add_port(ports, 'CLKB', clkb)
+                add_port(ports, 'OCLK', oclk)
+                add_port(ports, 'OCLKB', oclkb)
+
+                output.append("""
+            (* KEEP, DONT_TOUCH, LOC="{site}" *)
+            ISERDESE2 #(
+                .DATA_RATE({DATA_RATE}),
+                .INTERFACE_TYPE("MEMORY_QDR"),
+                .IS_CLK_INVERTED({IS_CLK_INVERTED}),
+                .IS_CLKB_INVERTED({IS_CLKB_INVERTED})
+            ) iserdes_{site}(
+                {ports});""".format(
+                    site=ilogic_site,
+                    ports=',\n'.join(ports),
+                    DATA_RATE=verilog.quote(DATA_RATE),
+                    IS_CLK_INVERTED=random.randint(0, 1),
+                    IS_CLKB_INVERTED=random.randint(0, 1),
+                    ))
+
+            if use_oserdes:
+                ports = []
+
+                add_port(ports, 'CLKDIV', clocks.get_clock(
+                        ologic_site,
+                        allow_ioclks=False,
+                        allow_rclks=True,
+                        )[0])
+
+                add_port(ports, 'CLK', oclk)
+
+                output.append("""
+            (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+            OSERDESE2 #(
+                .DATA_RATE_OQ("SDR"),
+                .DATA_RATE_TQ("SDR")
+            ) oserdes_{site} (
+                {ports});""".format(
+                    site=ologic_site,
+                    ports=',\n'.join(ports),
+                    ))
+
+    for s in clocks.lut_maker.create_wires_and_luts():
+        print(s)
+
+    for s in output:
+        print(s)
 
     print("endmodule")
 

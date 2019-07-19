@@ -7,7 +7,7 @@ TODO_RE="[LR]IOI3\.(IOI_([IO]LOGIC[01]_CLK(DIV|B)?)|(IOI_OCLK_[01]))\.IOI_LEAF_G
 MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE)
 N = 40
 
-SEGMATCH_FLAGS=-c 2 -m 15 -M 30
+SEGMATCH_FLAGS=-c -1 -m 15 -M 30
 SPECIMENS_DEPS=build/cmt_regions.csv
 
 include ../pip_loop.mk

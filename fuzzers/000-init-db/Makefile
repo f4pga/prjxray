@@ -22,6 +22,8 @@ SEGBITS=\
       dsp \
       hclk \
       int \
+      ioi \
+      ioi3 \
 
 SEGBITS_R=\
       clk_bufg_top \

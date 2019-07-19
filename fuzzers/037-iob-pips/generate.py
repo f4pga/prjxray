@@ -6,7 +6,7 @@ import os.path
 
 
 def bitfilter(frame, word):
-    if frame < 26:
+    if frame < 28:
         return False
     return True
 
@@ -91,7 +91,7 @@ def main():
                 pass
             elif (src, dst) in tiledata[tile]["pips"]:
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
-            elif (src, dst) not in tiledata[tile]["pips"]:
+            elif dst not in tiledata[tile]["dsts"]:
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
         internal_feedback = False
