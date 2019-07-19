@@ -34,11 +34,7 @@ def gen_sites():
             continue
         tile_list.append(tile_name)
 
-    def key(name):
-        x, y = get_loc(name)
-        return y + x * 10000
-
-    tile_list.sort(key=key)
+    tile_list.sort(key=get_loc)
 
     for iob_tile_name in tile_list:
         iob_gridinfo = grid.gridinfo_at_loc(
