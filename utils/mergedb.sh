@@ -144,12 +144,6 @@ case "$1" in
 	hclk_ioi3)
 		cp "$2" "$tmp1" ;;
 
-	ioi3_l)
-		sed < "$2" > "$tmp1" -e 's/^IOI3\./LIOI3./' ;;
-
-	ioi3_r)
-		sed < "$2" > "$tmp1" -e 's/^IOI3\./RIOI3./' ;;
-
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true

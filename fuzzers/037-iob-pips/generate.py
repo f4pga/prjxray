@@ -19,7 +19,7 @@ def main():
     ignpip = set()
 
     with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
-                           'ioi3', 'ioi3_l.txt')) as f:
+                           'ioi3', 'lioi3.txt')) as f:
         for l in f:
             tile_type, dst, src = l.strip().split('.')
             if tile_type not in pipdata:
@@ -28,7 +28,7 @@ def main():
             pipdata[tile_type].append((src, dst))
 
     with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
-                           'ioi3', 'ioi3_r.txt')) as f:
+                           'ioi3', 'rioi3.txt')) as f:
         for l in f:
             tile_type, dst, src = l.strip().split('.')
             if tile_type not in pipdata:

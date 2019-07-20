@@ -35,9 +35,5 @@ create_project -force -part $::env(XRAY_PART) design design
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
-# Cleaning ioi3.txt pip file
-set fp [open ioi3.txt w]
-close $fp
-
-print_tile_pips LIOI3 ioi3_l.txt
-print_tile_pips RIOI3 ioi3_r.txt
+print_tile_pips LIOI3 lioi3.txt
+print_tile_pips RIOI3 rioi3.txt

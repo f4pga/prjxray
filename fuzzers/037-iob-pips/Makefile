@@ -2,12 +2,15 @@ export FUZDIR=$(shell pwd)
 PIP_TYPE?=ioi3
 PIPLIST_TCL=$(FUZDIR)/ioi3_pip_list.tcl
 
-TODO_RE="[LR]IOI3\.(IOI_([IO]LOGIC[01]_CLK(DIV|B)?)|(IOI_OCLK_[01]))\.IOI_LEAF_GCLK[0-9]"
+TODO_RE="[LR]IOI3\.(IOI_([IO]LOGIC[01]_CLK(DIV|B)?)|(IOI_OCLK_[01]))\..*"
+EXCLUDE_RE=".*\..*\.(?=IOI_((PHASER)|(OCLK)|(IMUX22_1))).*"
 
-MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE)
+MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE) --sides "xr,xl" --exclude-re $(EXCLUDE_RE)
 N = 40
 
-SEGMATCH_FLAGS=-c -1 -m 15 -M 30
+A_PIPLIST=lioi3.txt
+
+SEGMATCH_FLAGS=-c -1 -m 20 -M 50
 SPECIMENS_DEPS=build/cmt_regions.csv
 
 include ../pip_loop.mk
@@ -27,22 +30,21 @@ database: ${RDBS}
 	cp build/segbits_ioi3_x.rdb build/$(ITER)/segbits_ioi3_x.rdb
 	cp build/segbits_ioi3_x.db build/$(ITER)/segbits_ioi3_x.db
 
-
-	${XRAY_MASKMERGE} build/mask_xioi3.db \
-		$(shell find build -name segdata_ioi3_l.txt) \
-		$(shell find build -name segdata_ioi3_r.txt)
-
 	# Clobber existing .db to eliminate potential conflicts
 	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
-	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} ioi3_l build/segbits_ioi3_x.db
-	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} ioi3_r build/segbits_ioi3_x.db
+	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} lioi3 build/segbits_ioi3_x.db
+	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} rioi3 build/segbits_ioi3_x.db
 
 build/cmt_regions.csv: output_cmt.tcl
 	mkdir -p build
 	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
 
-pushdb:
+pushdb: database
 	${XRAY_MERGEDB} lioi3 build/segbits_ioi3_x.db
 	${XRAY_MERGEDB} rioi3 build/segbits_ioi3_x.db
+	${XRAY_MERGEDB} lioi3_tbytesrc build/segbits_ioi3_x.db
+	${XRAY_MERGEDB} rioi3_tbytesrc build/segbits_ioi3_x.db
+	${XRAY_MERGEDB} lioi3_tbyteterm build/segbits_ioi3_x.db
+	${XRAY_MERGEDB} rioi3_tbyteterm build/segbits_ioi3_x.db
 
 .PHONY: database pushdb

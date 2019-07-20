@@ -11,21 +11,6 @@ NOT_INCLUDED_TILES = ['LIOI3_SING', 'RIOI3_SING']
 
 SITE_TYPES = ['OLOGICE3', 'ILOGICE3']
 
-MAX_REG_CLK_BUF = 2
-MAX_GLB_CLK_BUF = 24
-CUR_CLK = 0
-MAX_ATTEMPTS = 50
-
-
-def get_location(tile_name, divisor):
-    y_location = int(tile_name.split("Y")[-1])
-
-    if math.floor(y_location / divisor) % 2 == 0:
-        # Location is on the bottom of the row/tile
-        return "BOT"
-    else:
-        return "TOP"
-
 
 def read_site_to_cmt():
     """ Yields clock sources and which CMT they route within. """
@@ -50,11 +35,7 @@ def gen_sites():
         gridinfo = grid.gridinfo_at_loc(loc)
         tile_type = gridinfo.tile_type
 
-        tile = {
-                'tile': tile_name,
-                'tile_type': tile_type,
-                'ioi_sites': {}
-                }
+        tile = {'tile': tile_name, 'tile_type': tile_type, 'ioi_sites': {}}
 
         for site_name, site_type in gridinfo.sites.items():
             if site_type in SITE_TYPES:
@@ -87,53 +68,62 @@ class ClockSources(object):
         for site, cmt in self.site_to_cmt.items():
             clk = 'clk_' + site
             if 'BUFHCE' in site:
-                print("""
+                print(
+                    """
             wire {clk};
             (* KEEP, DONT_TOUCH, LOC = "{site}" *)
             BUFH bufh_{site}(
                 .O({clk})
                 );
                 """.format(
-                    clk=clk,
-                    site=site,
+                        clk=clk,
+                        site=site,
                     ))
 
                 self.leaf_gclks[cmt].append(clk)
 
             if 'BUFIO' in site:
-                print("""
+                print(
+                    """
             wire {clk};
             (* KEEP, DONT_TOUCH, LOC = "{site}" *)
             BUFIO bufio_{site}(
                 .O({clk})
                 );
                 """.format(
-                    clk=clk,
-                    site=site,
+                        clk=clk,
+                        site=site,
                     ))
 
                 self.ioclks[cmt].append(clk)
 
             if 'BUFR' in site:
-                print("""
+                print(
+                    """
             wire {clk};
             (* KEEP, DONT_TOUCH, LOC = "{site}" *)
             BUFR bufr_{site}(
                 .O({clk})
                 );
                 """.format(
-                    clk=clk,
-                    site=site,
+                        clk=clk,
+                        site=site,
                     ))
 
                 self.rclks[cmt].append(clk)
 
-
         # Choose 6 leaf_gclks to be used in each CMT.
         for cmt in self.leaf_gclks:
-            self.selected_leaf_gclks[cmt] = random.choices(self.leaf_gclks[cmt], k=6)
+            self.selected_leaf_gclks[cmt] = random.sample(
+                self.leaf_gclks[cmt], 6)
 
-    def get_clock(self, site, allow_ioclks, allow_rclks, allow_fabric=True, allow_empty=True):
+    def get_clock(
+            self,
+            site,
+            allow_ioclks,
+            allow_rclks,
+            allow_fabric=True,
+            allow_empty=True):
         cmt = self.site_to_cmt[site]
         choices = []
         if allow_fabric:
@@ -160,12 +150,12 @@ class ClockSources(object):
 def add_port(ports, port, signal):
     ports.append('.{}({})'.format(port, signal))
 
+
 def run():
     print("module top();")
 
     clocks = ClockSources()
     clocks.init_clocks()
-
     """
 
     ISERDESE2 clock sources:
@@ -201,7 +191,6 @@ def run():
         if tile['tile_type'] in NOT_INCLUDED_TILES:
             continue
 
-
         for xy in tile['ioi_sites']:
             ilogic_site_type = random.choice([None, 'ISERDESE2', 'IDDR'])
             use_oserdes = random.randint(0, 1)
@@ -211,62 +200,59 @@ def run():
 
             if use_oserdes:
                 oclk, _ = clocks.get_clock(
-                        ologic_site,
-                        allow_ioclks=True,
-                        allow_rclks=True)
+                    ologic_site, allow_ioclks=True, allow_rclks=True)
 
                 oclkb = oclk
             else:
                 oclk, is_lut = clocks.get_clock(
-                        ilogic_site,
-                        allow_ioclks=True,
-                        allow_rclks=True)
+                    ilogic_site, allow_ioclks=True, allow_rclks=True)
 
                 if random.randint(0, 1):
                     oclkb = oclk
                 else:
                     oclkb, _ = clocks.get_clock(
-                            ilogic_site,
-                            allow_ioclks=True,
-                            allow_rclks=True,
-                            allow_fabric=not is_lut)
+                        ilogic_site,
+                        allow_ioclks=True,
+                        allow_rclks=True,
+                        allow_fabric=not is_lut)
 
             DATA_RATE = random.choice(['DDR', 'SDR'])
             clk, is_lut = clocks.get_clock(
                 ilogic_site,
                 allow_ioclks=True,
                 allow_rclks=True,
-                allow_empty=DATA_RATE=='SDR')
+                allow_empty=DATA_RATE == 'SDR')
             if False:
                 clkb = clk
             else:
                 clkb = clk
                 while clkb == clk:
                     clkb, _ = clocks.get_clock(
-                            ilogic_site,
-                            allow_ioclks=True,
-                            allow_rclks=True,
-                            allow_empty=False)
+                        ilogic_site,
+                        allow_ioclks=True,
+                        allow_rclks=True,
+                        allow_empty=False)
 
             if ilogic_site_type is None:
                 pass
             elif ilogic_site_type == 'ISERDESE2':
-                INTERFACE_TYPE = random.choice([
-                    'MEMORY',
-                    'MEMORY_DDR3',
-                    'MEMORY_QDR',
-                    'NETWORKING',
-                    'OVERSAMPLE',
+                INTERFACE_TYPE = random.choice(
+                    [
+                        'MEMORY',
+                        'MEMORY_DDR3',
+                        'MEMORY_QDR',
+                        'NETWORKING',
+                        'OVERSAMPLE',
                     ])
                 ports = []
-
 
                 add_port(ports, 'CLK', clk)
                 add_port(ports, 'CLKB', clkb)
                 add_port(ports, 'OCLK', oclk)
                 add_port(ports, 'OCLKB', oclkb)
 
-                output.append("""
+                output.append(
+                    """
             (* KEEP, DONT_TOUCH, LOC="{site}" *)
             ISERDESE2 #(
                 .DATA_RATE({DATA_RATE}),
@@ -283,27 +269,28 @@ def run():
                 .SRVAL_Q4({SRVAL_Q4})
             ) iserdes_{site}(
                 {ports});""".format(
-                    site=ilogic_site,
-                    ports=',\n'.join(ports),
-                    DATA_RATE=verilog.quote(DATA_RATE),
-                    INTERFACE_TYPE=verilog.quote(INTERFACE_TYPE),
-                    IS_CLK_INVERTED=random.randint(0, 1),
-                    IS_CLKB_INVERTED=random.randint(0, 1),
-                    INIT_Q1=random.randint(0, 1),
-                    INIT_Q2=random.randint(0, 1),
-                    INIT_Q3=random.randint(0, 1),
-                    INIT_Q4=random.randint(0, 1),
-                    SRVAL_Q1=random.randint(0, 1),
-                    SRVAL_Q2=random.randint(0, 1),
-                    SRVAL_Q3=random.randint(0, 1),
-                    SRVAL_Q4=random.randint(0, 1),
+                        site=ilogic_site,
+                        ports=',\n'.join(ports),
+                        DATA_RATE=verilog.quote(DATA_RATE),
+                        INTERFACE_TYPE=verilog.quote(INTERFACE_TYPE),
+                        IS_CLK_INVERTED=random.randint(0, 1),
+                        IS_CLKB_INVERTED=random.randint(0, 1),
+                        INIT_Q1=random.randint(0, 1),
+                        INIT_Q2=random.randint(0, 1),
+                        INIT_Q3=random.randint(0, 1),
+                        INIT_Q4=random.randint(0, 1),
+                        SRVAL_Q1=random.randint(0, 1),
+                        SRVAL_Q2=random.randint(0, 1),
+                        SRVAL_Q3=random.randint(0, 1),
+                        SRVAL_Q4=random.randint(0, 1),
                     ))
             elif ilogic_site_type == 'IDDR':
                 ports = []
                 add_port(ports, 'C', clk)
                 add_port(ports, 'CB', clkb)
 
-                output.append("""
+                output.append(
+                    """
             (* KEEP, DONT_TOUCH, LOC="{site}" *)
             IDDR_2CLK #(
                 .INIT_Q1({INIT_Q1}),
@@ -311,11 +298,11 @@ def run():
                 .SRTYPE({SRTYPE})
             ) iserdes_{site}(
                 {ports});""".format(
-                    site=ilogic_site,
-                    ports=',\n'.join(ports),
-                    INIT_Q1=random.randint(0, 1),
-                    INIT_Q2=random.randint(0, 1),
-                    SRTYPE=verilog.quote(random.choice(['ASYNC','SYNC'])),
+                        site=ilogic_site,
+                        ports=',\n'.join(ports),
+                        INIT_Q1=random.randint(0, 1),
+                        INIT_Q2=random.randint(0, 1),
+                        SRTYPE=verilog.quote(random.choice(['ASYNC', 'SYNC'])),
                     ))
             else:
                 assert False, ilogic_site_type
@@ -323,23 +310,26 @@ def run():
             if use_oserdes:
                 ports = []
 
-                add_port(ports, 'CLKDIV', clocks.get_clock(
+                add_port(
+                    ports, 'CLKDIV',
+                    clocks.get_clock(
                         ologic_site,
                         allow_ioclks=False,
                         allow_rclks=True,
-                        )[0])
+                    )[0])
 
                 add_port(ports, 'CLK', oclk)
 
-                output.append("""
+                output.append(
+                    """
             (* KEEP, DONT_TOUCH, LOC = "{site}" *)
             OSERDESE2 #(
                 .DATA_RATE_OQ("SDR"),
                 .DATA_RATE_TQ("SDR")
             ) oserdes_{site} (
                 {ports});""".format(
-                    site=ologic_site,
-                    ports=',\n'.join(ports),
+                        site=ologic_site,
+                        ports=',\n'.join(ports),
                     ))
 
     for s in clocks.lut_maker.create_wires_and_luts():

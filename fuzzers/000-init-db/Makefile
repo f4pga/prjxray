@@ -22,8 +22,6 @@ SEGBITS=\
       dsp \
       hclk \
       int \
-      ioi \
-      ioi3 \
 
 SEGBITS_R=\
       clk_bufg_top \
@@ -41,6 +39,10 @@ DB_SIMPLE=\
     $(addsuffix _r, $(DB_SIMPLE_LR) $(DB_SIMPLE_R)) \
     segbits_cmt_top_l_upper_t \
     segbits_cmt_top_r_upper_t \
+	segbits_lioi3 \
+	segbits_rioi3 \
+	segbits_liob33 \
+	segbits_riob33
 
 BLOCK_RAM_EXTRA_FOR=\
       mask_bram \
