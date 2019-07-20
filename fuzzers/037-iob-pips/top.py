@@ -203,7 +203,7 @@ def run():
 
 
         for xy in tile['ioi_sites']:
-            use_iserdes = random.randint(0, 1)
+            ilogic_site_type = random.choice([None, 'ISERDESE2', 'IDDR'])
             use_oserdes = random.randint(0, 1)
 
             ilogic_site = tile['ioi_sites'][xy]['ILOGICE3']
@@ -231,23 +231,35 @@ def run():
                             allow_rclks=True,
                             allow_fabric=not is_lut)
 
-            if use_iserdes:
-                DATA_RATE = random.choice(['DDR', 'SDR'])
-                ports = []
-
-                clk, is_lut = clocks.get_clock(
-                    ilogic_site,
-                    allow_ioclks=True,
-                    allow_rclks=True,
-                    allow_empty=DATA_RATE=='SDR')
-                if random.randint(0, 1):
-                    clkb = clk
-                else:
+            DATA_RATE = random.choice(['DDR', 'SDR'])
+            clk, is_lut = clocks.get_clock(
+                ilogic_site,
+                allow_ioclks=True,
+                allow_rclks=True,
+                allow_empty=DATA_RATE=='SDR')
+            if False:
+                clkb = clk
+            else:
+                clkb = clk
+                while clkb == clk:
                     clkb, _ = clocks.get_clock(
                             ilogic_site,
                             allow_ioclks=True,
                             allow_rclks=True,
-                            allow_empty=DATA_RATE=='SDR')
+                            allow_empty=False)
+
+            if ilogic_site_type is None:
+                pass
+            elif ilogic_site_type == 'ISERDESE2':
+                INTERFACE_TYPE = random.choice([
+                    'MEMORY',
+                    'MEMORY_DDR3',
+                    'MEMORY_QDR',
+                    'NETWORKING',
+                    'OVERSAMPLE',
+                    ])
+                ports = []
+
 
                 add_port(ports, 'CLK', clk)
                 add_port(ports, 'CLKB', clkb)
@@ -258,17 +270,55 @@ def run():
             (* KEEP, DONT_TOUCH, LOC="{site}" *)
             ISERDESE2 #(
                 .DATA_RATE({DATA_RATE}),
-                .INTERFACE_TYPE("MEMORY_QDR"),
+                .INTERFACE_TYPE({INTERFACE_TYPE}),
                 .IS_CLK_INVERTED({IS_CLK_INVERTED}),
-                .IS_CLKB_INVERTED({IS_CLKB_INVERTED})
+                .IS_CLKB_INVERTED({IS_CLKB_INVERTED}),
+                .INIT_Q1({INIT_Q1}),
+                .INIT_Q2({INIT_Q2}),
+                .INIT_Q3({INIT_Q3}),
+                .INIT_Q4({INIT_Q4}),
+                .SRVAL_Q1({SRVAL_Q1}),
+                .SRVAL_Q2({SRVAL_Q2}),
+                .SRVAL_Q3({SRVAL_Q3}),
+                .SRVAL_Q4({SRVAL_Q4})
             ) iserdes_{site}(
                 {ports});""".format(
                     site=ilogic_site,
                     ports=',\n'.join(ports),
                     DATA_RATE=verilog.quote(DATA_RATE),
+                    INTERFACE_TYPE=verilog.quote(INTERFACE_TYPE),
                     IS_CLK_INVERTED=random.randint(0, 1),
                     IS_CLKB_INVERTED=random.randint(0, 1),
+                    INIT_Q1=random.randint(0, 1),
+                    INIT_Q2=random.randint(0, 1),
+                    INIT_Q3=random.randint(0, 1),
+                    INIT_Q4=random.randint(0, 1),
+                    SRVAL_Q1=random.randint(0, 1),
+                    SRVAL_Q2=random.randint(0, 1),
+                    SRVAL_Q3=random.randint(0, 1),
+                    SRVAL_Q4=random.randint(0, 1),
                     ))
+            elif ilogic_site_type == 'IDDR':
+                ports = []
+                add_port(ports, 'C', clk)
+                add_port(ports, 'CB', clkb)
+
+                output.append("""
+            (* KEEP, DONT_TOUCH, LOC="{site}" *)
+            IDDR_2CLK #(
+                .INIT_Q1({INIT_Q1}),
+                .INIT_Q2({INIT_Q2}),
+                .SRTYPE({SRTYPE})
+            ) iserdes_{site}(
+                {ports});""".format(
+                    site=ilogic_site,
+                    ports=',\n'.join(ports),
+                    INIT_Q1=random.randint(0, 1),
+                    INIT_Q2=random.randint(0, 1),
+                    SRTYPE=verilog.quote(random.choice(['ASYNC','SYNC'])),
+                    ))
+            else:
+                assert False, ilogic_site_type
 
             if use_oserdes:
                 ports = []
