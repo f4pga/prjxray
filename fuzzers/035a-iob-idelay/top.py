@@ -12,18 +12,6 @@ from prjxray.db import Database
 # =============================================================================
 
 
-def get_loc(name):
-    m = re.match("^\S+_X([0-9]+)Y([0-9]+)$", name)
-    assert m != None
-
-    x = int(m.group(1))
-    y = int(m.group(2))
-    return (
-        x,
-        y,
-    )
-
-
 def gen_sites():
     db = Database(util.get_db_root())
     grid = db.grid()
@@ -34,7 +22,8 @@ def gen_sites():
             continue
         tile_list.append(tile_name)
 
-    tile_list.sort(key=get_loc)
+    get_xy = util.create_xy_fun('[LR]IOB33_')
+    tile_list.sort(key=get_xy)
 
     for iob_tile_name in tile_list:
         iob_gridinfo = grid.gridinfo_at_loc(
