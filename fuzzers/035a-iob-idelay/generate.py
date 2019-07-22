@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 
-from prjxray.segmaker import Segmaker
+from prjxray.segmaker import Segmaker, add_site_group_zero
 from prjxray import util
 from prjxray import verilog
 
@@ -22,14 +22,16 @@ for params in data:
     value = verilog.unquote(params["IDELAY_TYPE"])
     value = value.replace(
         "_PIPE", "")  # VAR_LOAD and VAR_LOAD_PIPE are the same
-    for x in idelay_types:
-        segmk.add_site_tag(loc, "IDELAY_TYPE_%s" % x, int(value == x))
+    add_site_group_zero(
+        segmk, loc, "IDELAY_TYPE_", idelay_types, "FIXED", value)
 
     # Delay value
     value = int(params["IDELAY_VALUE"])
     for i in range(5):
         segmk.add_site_tag(
             loc, "IDELAY_VALUE[%01d]" % i, ((value >> i) & 1) != 0)
+        segmk.add_site_tag(
+            loc, "ZIDELAY_VALUE[%01d]" % i, ((value >> i) & 1) == 0)
 
     # Delay source
     value = verilog.unquote(params["DELAY_SRC"])
@@ -47,6 +49,7 @@ for params in data:
 
     if "IS_C_INVERTED" in params:
         segmk.add_site_tag(loc, "IS_C_INVERTED", int(params["IS_C_INVERTED"]))
+        segmk.add_site_tag(loc, "ZINV_C", 1 ^ int(params["IS_C_INVERTED"]))
 
     segmk.add_site_tag(
         loc, "IS_DATAIN_INVERTED", int(params["IS_DATAIN_INVERTED"]))
