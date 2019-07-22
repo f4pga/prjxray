@@ -1,5 +1,3 @@
-set_param general.maxThreads 1
-
 create_project -force -part $::env(XRAY_PART) design design
 read_verilog top.v
 synth_design -top top
@@ -10,6 +8,7 @@ set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 set_param tcl.collectionResultDisplayLimit 0
 
 set_property IS_ENABLED 0 [get_drc_checks {NSTD-1}]
+set_property IS_ENABLED 0 [get_drc_checks {NDRV-1}]
 set_property IS_ENABLED 0 [get_drc_checks {UCIO-1}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-98}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-109}]
