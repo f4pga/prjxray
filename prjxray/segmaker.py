@@ -311,6 +311,9 @@ class Segmaker:
                     'SLICE': name_slice,
                     'RAMB18': name_bram18,
                     'IOB': name_y0y1,
+                    'IDELAY': name_y0y1,
+                    'ILOGIC': name_y0y1,
+                    'OLOGIC': name_y0y1,
                 }.get(site_prefix, name_default)()
                 self.verbose and print(
                     'site %s w/ %s prefix => tag %s' %
@@ -337,6 +340,7 @@ class Segmaker:
             -CENTER_INTER_R => CENTER_INTER
             -CLK_HROW_TOP_R => CLK_HROW
             -LIOB33 => IOB33
+            -LIOI3 => IOI3
             '''
             tile_type_norm = re.sub("(_TOP|_BOT|LL|LM)?_[LR]$", "", tile_type)
             tile_type_norm = re.sub(
@@ -344,6 +348,13 @@ class Segmaker:
 
             if tile_type_norm in ['LIOB33', 'RIOB33']:
                 tile_type_norm = 'IOB33'
+
+            if tile_type_norm in ['LIOI3', 'RIOI3']:
+                tile_type_norm = 'IOI3'
+            if tile_type_norm in ['LIOI3_TBYTESRC', 'RIOI3_TBYTESRC']:
+                tile_type_norm = 'IOI3'
+            if tile_type_norm in ['LIOI3_TBYTETERM', 'RIOI3_TBYTETERM']:
+                tile_type_norm = 'IOI3'
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:
