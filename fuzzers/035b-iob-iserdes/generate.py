@@ -12,8 +12,10 @@ segmk = Segmaker("design.bits")
 with open("params.json", "r") as fp:
     data = json.load(fp)
 
-iface_types = ["NETWORKING", "OVERSAMPLE", "MEMORY", "MEMORY_DDR3", "MEMORY_QDR"]
-data_rates  = ["SDR", "DDR"]
+iface_types = [
+    "NETWORKING", "OVERSAMPLE", "MEMORY", "MEMORY_DDR3", "MEMORY_QDR"
+]
+data_rates = ["SDR", "DDR"]
 data_widths = [2, 3, 4, 5, 6, 7, 8, 10, 14]
 
 # Output tags
@@ -33,7 +35,7 @@ for params in data:
         segmk.add_site_tag(loc, "ISERDES.IN_USE", 0)
 
         segmk.add_site_tag(loc, "ISERDES.MODE.MASTER", 0)
-        segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE",  0)
+        segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE", 0)
 
         for i in iface_types:
             if i == "NETWORKING":
@@ -48,10 +50,10 @@ for params in data:
         segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 0)
         segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
 
-        for i in range(1, 4+1):
+        for i in range(1, 4 + 1):
             segmk.add_site_tag(loc, "IFF.ZINIT_Q%d" % i, 0)
 
-        for i in range(1, 4+1):
+        for i in range(1, 4 + 1):
             segmk.add_site_tag(loc, "IFF.ZSRVAL_Q%d" % i, 0)
 
         segmk.add_site_tag(loc, "ZINV_D", 0)
@@ -75,15 +77,15 @@ for params in data:
             value = verilog.unquote(params["SERDES_MODE"])
             if value == "MASTER":
                 segmk.add_site_tag(loc, "ISERDES.MODE.MASTER", 1)
-                segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE",  0)
+                segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE", 0)
             if value == "SLAVE":
                 segmk.add_site_tag(loc, "ISERDES.MODE.MASTER", 0)
-                segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE",  1)
+                segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE", 1)
 
         iface_type = verilog.unquote(params["INTERFACE_TYPE"])
-        data_rate  = verilog.unquote(params["DATA_RATE"])
+        data_rate = verilog.unquote(params["DATA_RATE"])
         data_width = int(params["DATA_WIDTH"])
-        
+
         for i in iface_types:
             for j in data_rates:
                 for k in data_widths:
@@ -103,23 +105,28 @@ for params in data:
                 segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 0)
                 segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 1)
 
-        for i in range(1, 4+1):
+        for i in range(1, 4 + 1):
             if ("INIT_Q%d" % i) in params:
-                segmk.add_site_tag(loc, "IFF.ZINIT_Q%d" % i, not params["INIT_Q%d" % i])
+                segmk.add_site_tag(
+                    loc, "IFF.ZINIT_Q%d" % i, not params["INIT_Q%d" % i])
 
-        for i in range(1, 4+1):
+        for i in range(1, 4 + 1):
             if ("SRVAL_Q%d" % i) in params:
-                segmk.add_site_tag(loc, "IFF.ZSRVAL_Q%d" % i, not params["SRVAL_Q%d" % i])
+                segmk.add_site_tag(
+                    loc, "IFF.ZSRVAL_Q%d" % i, not params["SRVAL_Q%d" % i])
 
         if "IS_D_INVERTED" in params:
-            segmk.add_site_tag(loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
+            segmk.add_site_tag(
+                loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
 
         if "DYN_CLKDIV_INV_EN" in params:
             value = verilog.unquote(params["DYN_CLKDIV_INV_EN"])
-            segmk.add_site_tag(loc, "ISERDES.DYN_CLKDIV_INV_EN", int(value == "TRUE"))
+            segmk.add_site_tag(
+                loc, "ISERDES.DYN_CLKDIV_INV_EN", int(value == "TRUE"))
         if "DYN_CLK_INV_EN" in params:
             value = verilog.unquote(params["DYN_CLK_INV_EN"])
-            segmk.add_site_tag(loc, "ISERDES.DYN_CLK_INV_EN", int(value == "TRUE"))
+            segmk.add_site_tag(
+                loc, "ISERDES.DYN_CLK_INV_EN", int(value == "TRUE"))
 
         # This parameter actually controls muxes used both in ILOGIC and
         # ISERDES mode.
@@ -157,7 +164,11 @@ for params in data:
 
 # Write segments and tags for later check
 with open("tags.json", "w") as fp:
-    tags = {loc_to_tile_site_map[l]: {k: int(v) for k, v in d.items()} for l, d in segmk.site_tags.items()}
+    tags = {
+        loc_to_tile_site_map[l]: {k: int(v)
+                                  for k, v in d.items()}
+        for l, d in segmk.site_tags.items()
+    }
     json.dump(tags, fp, sort_keys=True, indent=1)
 
 
@@ -165,6 +176,7 @@ def bitfilter(frame_idx, bit_idx):
     if frame_idx < 25 or frame_idx > 31:
         return False
     return True
+
 
 segmk.compile(bitfilter=bitfilter)
 segmk.write()

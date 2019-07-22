@@ -13,7 +13,7 @@ from prjxray.db import Database
 # =============================================================================
 
 
-def gen_sites():    
+def gen_sites():
     db = Database(util.get_db_root())
     grid = db.grid()
 
@@ -78,44 +78,65 @@ wire [{N}:0] do_buf;
 
         # Bottom site
         if random.randint(0, 1):
-            iob_i  = sites[1]
-            iob_o  = sites[3]
+            iob_i = sites[1]
+            iob_o = sites[3]
             ilogic = sites[2]
         # Top site
         else:
-            iob_i  = sites[3]
-            iob_o  = sites[1]
+            iob_i = sites[3]
+            iob_o = sites[1]
             ilogic = sites[4]
 
         # Site params
         params = {
-            "_LOC": verilog.quote(ilogic),
-            "IS_USED": int(random.randint(0, 10) > 0), # Make it used more often
-            "INIT_Q1": random.randint(0, 1),
-            "INIT_Q2": random.randint(0, 1),
-            "INIT_Q3": random.randint(0, 1),
-            "INIT_Q4": random.randint(0, 1),
-            "SRVAL_Q1": random.randint(0, 1),
-            "SRVAL_Q2": random.randint(0, 1),
-            "SRVAL_Q3": random.randint(0, 1),
-            "SRVAL_Q4": random.randint(0, 1),
-            "NUM_CE": random.randint(1, 2),
+            "_LOC":
+            verilog.quote(ilogic),
+            "IS_USED":
+            int(random.randint(0, 10) > 0),  # Make it used more often
+            "INIT_Q1":
+            random.randint(0, 1),
+            "INIT_Q2":
+            random.randint(0, 1),
+            "INIT_Q3":
+            random.randint(0, 1),
+            "INIT_Q4":
+            random.randint(0, 1),
+            "SRVAL_Q1":
+            random.randint(0, 1),
+            "SRVAL_Q2":
+            random.randint(0, 1),
+            "SRVAL_Q3":
+            random.randint(0, 1),
+            "SRVAL_Q4":
+            random.randint(0, 1),
+            "NUM_CE":
+            random.randint(1, 2),
             # The following one shows negative correlation (0 - not inverted)
-            "IS_D_INVERTED": random.randint(0, 1),
+            "IS_D_INVERTED":
+            random.randint(0, 1),
             # No bits were found for parameters below
-              #"IS_OCLKB_INVERTED": random.randint(0, 1),
-              #"IS_OCLK_INVERTED": random.randint(0, 1),
-              #"IS_CLKDIVP_INVERTED": random.randint(0, 1),
-              #"IS_CLKDIV_INVERTED": random.randint(0, 1),
-              #"IS_CLKB_INVERTED": random.randint(0, 1),
-              #"IS_CLK_INVERTED": random.randint(0, 1),
-            "DYN_CLKDIV_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
-            "DYN_CLK_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
-            "IOBDELAY": verilog.quote(random.choice(["NONE", "IBUF", "IFD", "BOTH"])),
-            "OFB_USED": verilog.quote(random.choice(["TRUE"] + ["FALSE"]*9)), # Force more FALSEs
+            #"IS_OCLKB_INVERTED": random.randint(0, 1),
+            #"IS_OCLK_INVERTED": random.randint(0, 1),
+            #"IS_CLKDIVP_INVERTED": random.randint(0, 1),
+            #"IS_CLKDIV_INVERTED": random.randint(0, 1),
+            #"IS_CLKB_INVERTED": random.randint(0, 1),
+            #"IS_CLK_INVERTED": random.randint(0, 1),
+            "DYN_CLKDIV_INV_EN":
+            verilog.quote(random.choice(["TRUE", "FALSE"])),
+            "DYN_CLK_INV_EN":
+            verilog.quote(random.choice(["TRUE", "FALSE"])),
+            "IOBDELAY":
+            verilog.quote(random.choice(["NONE", "IBUF", "IFD", "BOTH"])),
+            "OFB_USED":
+            verilog.quote(
+                random.choice(["TRUE"] + ["FALSE"] * 9)),  # Force more FALSEs
         }
 
-        iface_type = random.choice(["NETWORKING", "OVERSAMPLE", "MEMORY", "MEMORY_DDR3", "MEMORY_QDR"])
+        iface_type = random.choice(
+            [
+                "NETWORKING", "OVERSAMPLE", "MEMORY", "MEMORY_DDR3",
+                "MEMORY_QDR"
+            ])
         data_rate = random.choice(["SDR", "DDR"])
         serdes_mode = random.choice(["MASTER", "SLAVE"])
 
@@ -138,7 +159,7 @@ wire [{N}:0] do_buf;
         if verilog.unquote(params["OFB_USED"]) == "TRUE":
             params["IOBDELAY"] = verilog.quote("NONE")
 
-        # Instantiate cell            
+        # Instantiate cell
         param_str = ",".join(".%s(%s)" % (k, v) for k, v in params.items())
 
         print('')
