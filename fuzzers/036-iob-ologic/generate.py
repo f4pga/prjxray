@@ -18,16 +18,6 @@ def handle_data_width(segmk, d):
             d['DATA_WIDTH'] == opt)
 
 
-def handle_data_rate(segmk, d):
-    if 'DATA_WIDTH' not in d:
-        return
-
-    for opt in ['SDR', 'DDR']:
-        segmk.add_site_tag(
-            d['site'], 'OSERDESE.DATA_RATE.{}'.format(opt),
-            verilog.unquote(d['DATA_RATE_OQ']) == opt)
-
-
 def main():
     print("Loading tags")
     segmk = Segmaker("design.bits")
@@ -39,7 +29,6 @@ def main():
             site = d['site']
 
             handle_data_width(segmk, d)
-            handle_data_rate(segmk, d)
 
             if d['use_oserdese2']:
                 if 'SRTYPE' in d:
