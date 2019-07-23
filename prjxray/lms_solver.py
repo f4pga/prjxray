@@ -4,7 +4,7 @@ This script solves the fuzzing problem through least-mean-square solution of
 an overdetermined linear equation system.
 
 The advantages of this method are:
-- Ability to detect negative correlations (tags whic require clearing bits)
+- Ability to detect negative correlations (tags which require clearing bits)
 - Can detect partial correlation tag <-> bit. This happens if for a small
   number of specimens a tag is said to be "1" but in fact it is not due to
   the way Vivado interprets requested features and encodes them into bitstream.
