@@ -69,6 +69,40 @@ def use_oserdese2(p, luts, connects):
     p['TRISTATE_WIDTH'] = tristate_width
     p['OSERDES_MODE'] = verilog.quote(random.choice(('MASTER', 'SLAVE')))
 
+    if p['io']:
+        p['TFB'] = '.TFB(tfb_{site}),'.format(**p)
+        p['TQ'] = '.TQ({twire}),'.format(**p)
+        p['t1net'] = luts.get_next_output_net()
+        p['t2net'] = luts.get_next_output_net()
+        p['t3net'] = luts.get_next_output_net()
+        p['t4net'] = luts.get_next_output_net()
+        p['tcenet'] = luts.get_next_output_net()
+
+        for idx in range(4):
+            p['IS_T{}_INVERTED'.format(idx + 1)] = random.randint(0, 1)
+    else:
+        p['TFB'] = '.TFB(),'
+        p['TQ'] = '.TQ(),'
+        p['t1net'] = ''
+        p['t2net'] = ''
+        p['t3net'] = ''
+        p['t4net'] = ''
+        p['tcenet'] = ''
+
+        for idx in range(4):
+            p['IS_T{}_INVERTED'.format(idx + 1)] = 0
+
+    p['SRVAL_OQ'] = random.randint(0, 1)
+    p['SRVAL_TQ'] = random.randint(0, 1)
+    p['INIT_OQ'] = random.randint(0, 1)
+    p['INIT_TQ'] = random.randint(0, 1)
+
+    for idx in range(8):
+        p['IS_D{}_INVERTED'.format(idx + 1)] = random.randint(0, 1)
+
+    p['IS_CLK_INVERTED'] = random.randint(0, 1)
+    p['IS_CLKDIV_INVERTED'] = random.randint(0, 1)
+
     print(
         '''
     (* KEEP, DONT_TOUCH, LOC = "{ologic_loc}" *)
@@ -77,11 +111,29 @@ def use_oserdese2(p, luts, connects):
         .DATA_RATE_TQ({DATA_RATE_TQ}),
         .DATA_RATE_OQ({DATA_RATE_OQ}),
         .DATA_WIDTH({DATA_WIDTH}),
-        .TRISTATE_WIDTH({TRISTATE_WIDTH})
+        .TRISTATE_WIDTH({TRISTATE_WIDTH}),
+        .SRVAL_OQ({SRVAL_OQ}),
+        .SRVAL_TQ({SRVAL_TQ}),
+        .INIT_OQ({INIT_OQ}),
+        .INIT_TQ({INIT_TQ}),
+        .IS_T1_INVERTED({IS_T1_INVERTED}),
+        .IS_T2_INVERTED({IS_T2_INVERTED}),
+        .IS_T3_INVERTED({IS_T3_INVERTED}),
+        .IS_T4_INVERTED({IS_T4_INVERTED}),
+        .IS_D1_INVERTED({IS_D1_INVERTED}),
+        .IS_D2_INVERTED({IS_D2_INVERTED}),
+        .IS_D3_INVERTED({IS_D3_INVERTED}),
+        .IS_D4_INVERTED({IS_D4_INVERTED}),
+        .IS_D5_INVERTED({IS_D5_INVERTED}),
+        .IS_D6_INVERTED({IS_D6_INVERTED}),
+        .IS_D7_INVERTED({IS_D7_INVERTED}),
+        .IS_D8_INVERTED({IS_D8_INVERTED}),
+        .IS_CLK_INVERTED({IS_CLK_INVERTED}),
+        .IS_CLKDIV_INVERTED({IS_CLKDIV_INVERTED})
     ) oserdese2_{site} (
         .OQ({owire}),
-        .TFB(tfb_{site}),
-        .TQ({twire}),
+        {TFB}
+        {TQ}
         .CLK({clknet}),
         .CLKDIV({clkdivnet}),
         .D1({d1net}),
@@ -111,11 +163,6 @@ def use_oserdese2(p, luts, connects):
             d6net=luts.get_next_output_net(),
             d7net=luts.get_next_output_net(),
             d8net=luts.get_next_output_net(),
-            t1net=luts.get_next_output_net(),
-            t2net=luts.get_next_output_net(),
-            t3net=luts.get_next_output_net(),
-            t4net=luts.get_next_output_net(),
-            tcenet=luts.get_next_output_net(),
             ocenet=luts.get_next_output_net(),
             ofb_wire=luts.get_next_input_net(),
             **p),
@@ -125,18 +172,30 @@ def use_oserdese2(p, luts, connects):
 def use_direct_and_oddr(p, luts, connects):
     p['oddr_mux_config'] = random.choice((
         'direct',
+        'lut',
         'none',
     ))
 
-    p['tddr_mux_config'] = random.choice((
-        'direct',
-        'none',
-    ))
+    if p['io']:
+        if p['oddr_mux_config'] != 'lut':
+            p['tddr_mux_config'] = random.choice((
+                'direct',
+                'lut',
+                'none',
+            ))
+        else:
+            p['tddr_mux_config'] = random.choice((
+                'lut',
+                'none',
+            ))
+    else:
+        p['tddr_mux_config'] = 'none'
 
     # toddr and oddr share the same clk
     clknet = luts.get_next_output_net()
+    p['IS_CLK_INVERTED'] = 0
 
-    if p['tddr_mux_config'] != 'none':
+    if p['tddr_mux_config'] == 'direct':
         p['TINIT'] = random.randint(0, 1)
         p['TSRTYPE'] = verilog.quote(random.choice(('SYNC', 'ASYNC')))
         p['TDDR_CLK_EDGE'] = verilog.quote('OPPOSITE_EDGE')
@@ -150,7 +209,8 @@ def use_direct_and_oddr(p, luts, connects):
     ODDR #(
         .INIT({TINIT}),
         .SRTYPE({TSRTYPE}),
-        .DDR_CLK_EDGE({TDDR_CLK_EDGE})
+        .DDR_CLK_EDGE({TDDR_CLK_EDGE}),
+        .IS_C_INVERTED({IS_CLK_INVERTED})
     ) toddr_{site} (
         .C({cnet}),
         .D1({d1net}),
@@ -171,12 +231,18 @@ def use_direct_and_oddr(p, luts, connects):
             '''
     assign {twire} = tddr_d_{site};'''.format(**p, ),
             file=connects)
+    elif p['tddr_mux_config'] == 'lut':
+        print(
+            '''
+    assign {twire} = {lut};'''.format(lut=luts.get_next_output_net(), **p),
+            file=connects)
+        pass
     elif p['tddr_mux_config'] == 'none':
         pass
     else:
         assert False, p['tddr_mux_config']
 
-    if p['oddr_mux_config'] != 'none':
+    if p['oddr_mux_config'] == 'direct':
         p['QINIT'] = random.randint(0, 1)
         p['SRTYPE'] = verilog.quote(random.choice(('SYNC', 'ASYNC')))
         p['ODDR_CLK_EDGE'] = verilog.quote(
@@ -191,7 +257,8 @@ def use_direct_and_oddr(p, luts, connects):
     ODDR #(
         .INIT({QINIT}),
         .SRTYPE({SRTYPE}),
-        .DDR_CLK_EDGE({ODDR_CLK_EDGE})
+        .DDR_CLK_EDGE({ODDR_CLK_EDGE}),
+        .IS_C_INVERTED({IS_CLK_INVERTED})
     ) oddr_{site} (
         .C({cnet}),
         .D1({d1net}),
@@ -212,6 +279,12 @@ def use_direct_and_oddr(p, luts, connects):
             '''
     assign {owire} = oddr_d_{site};'''.format(**p, ),
             file=connects)
+    elif p['oddr_mux_config'] == 'lut':
+        print(
+            '''
+    assign {owire} = {lut};'''.format(lut=luts.get_next_output_net(), **p),
+            file=connects)
+        pass
     elif p['oddr_mux_config'] == 'none':
         pass
     else:
@@ -240,6 +313,9 @@ def run():
 
     tile_params = []
     params = []
+
+    ndio = 0
+    ndo = 0
     for idx, (tile, site) in enumerate(gen_sites()):
         if idx == 0:
             continue
@@ -254,10 +330,18 @@ def run():
         p['DRIVE'] = random.choice(drives)
         p['SLEW'] = verilog.quote(random.choice(slews))
 
-        p['pad_wire'] = 'dio[{}]'.format(idx - 1)
+        p['io'] = random.randint(0, 1)
         p['owire'] = 'do_buf[{}]'.format(idx - 1)
-        p['iwire'] = 'di_buf[{}]'.format(idx - 1)
-        p['twire'] = 't[{}]'.format(idx - 1)
+
+        if p['io']:
+            p['pad_wire'] = 'dio[{}]'.format(ndio)
+            ndio += 1
+
+            p['iwire'] = 'di_buf[{}]'.format(idx - 1)
+            p['twire'] = 't[{}]'.format(idx - 1)
+        else:
+            p['pad_wire'] = 'do[{}]'.format(ndo)
+            ndo += 1
 
         params.append(p)
         tile_params.append(
@@ -270,13 +354,14 @@ def run():
 
     print(
         '''
-`define N_DI {n_di}
+`define N_DO {n_do}
+`define N_DIO {n_dio}
 
-module top(input clk, inout wire [`N_DI-1:0] dio);
-    wire [`N_DI-1:0] di_buf;
-    wire [`N_DI-1:0] do_buf;
-    wire [`N_DI-1:0] t;
-    '''.format(n_di=idx))
+module top(input clk, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
+    wire [(`N_DIO+`N_DO)-1:0] di_buf;
+    wire [(`N_DIO+`N_DO)-1:0] do_buf;
+    wire [(`N_DIO+`N_DO)-1:0] t;
+    '''.format(n_dio=ndio, n_do=ndo))
 
     # Always output a LUT6 to make placer happy.
     print(
@@ -286,8 +371,9 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
         ''')
 
     for p in params:
-        print(
-            '''
+        if p['io']:
+            print(
+                '''
         wire oddr_d_{site};
 
         (* KEEP, DONT_TOUCH, LOC = "{site}" *)
@@ -300,7 +386,21 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
             .T({twire})
             );
             '''.format(**p),
-            file=connects)
+                file=connects)
+        else:
+            print(
+                '''
+        wire oddr_d_{site};
+
+        (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+        OBUF #(
+            .IOSTANDARD({IOSTANDARD})
+        ) obuf_{site} (
+            .O({pad_wire}),
+            .I({owire})
+            );
+            '''.format(**p),
+                file=connects)
 
         p['use_oserdese2'] = random.randint(0, 1)
         if p['use_oserdese2']:
