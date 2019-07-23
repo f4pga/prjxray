@@ -8,7 +8,7 @@ import json
 
 
 def bitfilter(frame, word):
-    if frame < 26:
+    if frame < 38:
         return False
 
     return True
