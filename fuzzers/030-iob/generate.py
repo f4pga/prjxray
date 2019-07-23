@@ -15,6 +15,8 @@ def bitfilter(frame, word):
 
 
 def mk_drive_opt(iostandard, drive):
+    if drive is None:
+        drive = '_FIXED'
     return '{}.DRIVE.I{}'.format(iostandard, drive)
 
 
@@ -37,13 +39,15 @@ def drives_for_iostandard(iostandard):
         drives = [4, 8, 12, 16, 24]
     elif iostandard == 'LVCMOS12':
         drives = [4, 8, 12]
+    elif iostandard == 'SSTL135':
+        return ['_FIXED']
     else:
         drives = [4, 8, 12, 16]
 
     return drives
 
 
-STEPDOWN_IOSTANDARDS = ['LVCMOS12', 'LVCMOS15', 'LVCMOS18']
+STEPDOWN_IOSTANDARDS = ['LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135']
 
 
 def main():
@@ -54,10 +58,10 @@ def main():
     di[0],IOB_X0Y107,LIOB33_X0Y107,A21,PULLDOWN
     di[10],IOB_X0Y147,LIOB33_X0Y147,F14,PULLUP
     '''
-    with open('params.jl', 'r') as f:
+    with open('params.json', 'r') as f:
         design = json.load(f)
 
-        for d in design:
+        for d in design['tiles']:
             site = d['site']
 
             if skip_broken_tiles(d):
@@ -65,44 +69,31 @@ def main():
 
             iostandard = verilog.unquote(d['IOSTANDARD'])
 
-            stepdown = iostandard in STEPDOWN_IOSTANDARDS
-            segmk.add_site_tag(site, '_'.join(STEPDOWN_IOSTANDARDS), stepdown)
+            segmk.add_site_tag(
+                site, '_'.join(STEPDOWN_IOSTANDARDS) + '.STEPDOWN',
+                iostandard in STEPDOWN_IOSTANDARDS)
 
             if d['type'] is None:
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
-                for drive in drives_for_iostandard(iostandard):
-                    segmk.add_site_tag(
-                        site, '{}.DRIVE.I{}.IN_OUT_COMMON'.format(
-                            iostandard, drive), 0)
+                segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 0)
             elif d['type'] == 'IBUF':
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
-                for drive in drives_for_iostandard(iostandard):
-                    segmk.add_site_tag(
-                        site, '{}.DRIVE.I{}.IN_OUT_COMMON'.format(
-                            iostandard, drive), 1)
+                segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
             elif d['type'] == 'OBUF':
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                for drive in drives_for_iostandard(iostandard):
-                    if drive == d['DRIVE']:
-                        segmk.add_site_tag(
-                            site, '{}.DRIVE.I{}.IN_OUT_COMMON'.format(
-                                iostandard, drive), 1)
-                    else:
-                        segmk.add_site_tag(
-                            site, '{}.DRIVE.I{}.IN_OUT_COMMON'.format(
-                                iostandard, drive), 0)
             elif d['type'] == 'IOBUF_INTERMDISABLE':
                 segmk.add_site_tag(site, 'INOUT', 1)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
+                segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
 
             if d['type'] is not None:
@@ -126,13 +117,16 @@ def main():
 
                     drive_opts.add(mk_drive_opt(opt, drive_opt))
 
+            drive_opts.add(mk_drive_opt("SSTL135", None))
+
             segmaker.add_site_group_zero(
                 segmk, site, '', drive_opts, mk_drive_opt('LVCMOS25', '12'),
                 mk_drive_opt(iostandard, d['DRIVE']))
 
-            segmaker.add_site_group_zero(
-                segmk, site, "SLEW.", ("SLOW", "FAST"), "FAST",
-                verilog.unquote(d['SLEW']))
+            for opt in ["SLOW", "FAST"]:
+                segmk.add_site_tag(
+                    site, iostandard + ".SLEW." + opt, opt == verilog.unquote(
+                        d['SLEW']))
 
             if 'ibufdisable_wire' in d:
                 segmk.add_site_tag(

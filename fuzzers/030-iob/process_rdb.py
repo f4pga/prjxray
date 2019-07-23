@@ -66,127 +66,129 @@ def main():
     iostandard_lines = []
     with open(args.input_rdb) as f:
         for l in f:
-            if ('.LVCMOS' in l or '.LVTTL' in l) and 'IOB_' in l:
+            if ('.SSTL135' in l or '.LVCMOS' in l
+                    or '.LVTTL' in l) and 'IOB_' in l:
                 iostandard_lines.append(l)
             else:
                 print(l.strip())
 
-    common_in_only_bits = {
-        'IOB_Y0': set(),
-        'IOB_Y1': set(),
-    }
-    for l in iostandard_lines:
-        if 'IN_OUT_COMMON' in l:
-            common_in_only_bits[get_site(l)] |= parse_bits(l)
-
-    for site in sorted(common_in_only_bits):
-        print(
-            'IOB33.{}.IN_ONLY'.format(site), ' '.join(
-                common_in_only_bits[site]))
-
-    iostandard_in = {}
-    outs = {}
-    drives = {}
-    in_use = {}
+    sites = {}
 
     for l in iostandard_lines:
-        name = get_name(l)
+        feature = get_name(l)
+        feature_parts = feature.split('.')
         site = get_site(l)
-        iostandard = name.split('.')[2]
+        iostandard = feature_parts[2]
 
-        if name.endswith('.IN_USE'):
-            in_use[(site, iostandard)] = parse_bits(l)
+        bits = parse_bits(l)
+        bits = filter_bits(site, bits)
 
-    for l in iostandard_lines:
-        name = get_name(l)
-        site = get_site(l)
-        iostandard = name.split('.')[2]
+        if site not in sites:
+            sites[site] = {}
 
-        if name.endswith('.IN'):
-            in_bits = parse_bits(l) | in_use[(site, iostandard)]
+        group = feature_parts[3]
+        if group not in sites[site]:
+            sites[site][group] = {}
 
-            if in_bits not in iostandard_in:
-                iostandard_in[in_bits] = []
+        if group in ['DRIVE', 'SLEW']:
+            enum = feature_parts[4]
+            sites[site][group][(iostandard, enum)] = bits
+        elif group in ['IN', 'IN_ONLY', 'IN_USE', 'OUT', 'STEPDOWN']:
+            sites[site][group][(iostandard, None)] = bits
+        else:
+            assert False, group
 
-            iostandard_in[in_bits].append((site, iostandard))
+    for site in sites:
+        for iostandard, enum in sites[site]['DRIVE']:
+            sites[site]['DRIVE'][(iostandard, enum)] |= sites[site]['OUT'][(
+                iostandard, None)]
 
-        if name.endswith('.OUT'):
-            outs[(site,
-                  iostandard)] = parse_bits(l) | in_use[(site, iostandard)]
-
-        if '.DRIVE.' in name and '.IN_OUT_COMMON' not in name:
-            drive = name.split('.')[-1]
-            if (site, iostandard) not in drives:
-                drives[(site, iostandard)] = {}
-
-            if drive not in drives[(site, iostandard)]:
-                drives[(site, iostandard)][drive] = {}
-
-            drives[(site, iostandard)][drive] = filter_bits(
-                site, parse_bits(l))
-
-    common_in_bits = {
-        'IOB_Y0': set(),
-        'IOB_Y1': set(),
-    }
-
-    for bits in sorted(iostandard_in.keys()):
-        sites, standards = zip(*iostandard_in[bits])
-
-        site = set(sites)
-
-        assert len(site) == 1, site
-        site = site.pop()
-
-        common_in_bits[site] |= bits
-
-    for bits in sorted(iostandard_in.keys()):
-        sites, standards = zip(*iostandard_in[bits])
-
-        site = set(sites)
-
-        assert len(site) == 1, site
-        site = site.pop()
-
-        neg_bits = set('!' + bit for bit in (common_in_bits[site] - bits))
-
-        print(
-            'IOB33.{}.{}.IN'.format(site, '_'.join(standards)),
-            ' '.join(bits | neg_bits))
-
-    iodrives = {}
+        for iostandard, enum in sites[site]['IN']:
+            sites[site]['IN_ONLY'][(iostandard, enum)] -= sites[site]['IN'][(
+                iostandard, enum)]
 
     common_bits = {}
+    for site in sites:
+        for group in sites[site]:
+            if (site, group) not in common_bits:
+                common_bits[(site, group)] = set()
 
-    for site, iostandard in drives:
-        for drive in drives[(site, iostandard)]:
-            combined_bits = drives[(site, iostandard)][drive] | outs[(
-                site, iostandard)]
+            for bits in sites[site][group].values():
+                common_bits[(site, group)] |= bits
 
-            if site not in common_bits:
-                common_bits[site] = set(common_in_only_bits[site])
+    slew_in_drives = {}
 
-            common_bits[site] |= combined_bits
+    for site in sites:
+        common_bits[(site, 'DRIVE')] -= common_bits[(site, 'SLEW')]
+        common_bits[(site, 'DRIVE')] -= common_bits[(site, 'STEPDOWN')]
+        common_bits[(site, 'IN_ONLY')] |= common_bits[(site, 'DRIVE')]
+        common_bits[(site, 'IN_ONLY')] -= common_bits[(site, 'STEPDOWN')]
 
-            if combined_bits not in iodrives:
-                iodrives[combined_bits] = []
+        for iostandard, enum in sites[site]['DRIVE']:
+            slew_in_drive = common_bits[
+                (site, 'SLEW')] & sites[site]['DRIVE'][(iostandard, enum)]
+            if slew_in_drive:
+                if (site, iostandard) not in slew_in_drives:
+                    slew_in_drives[(site, iostandard)] = set()
 
-            iodrives[combined_bits].append((site, iostandard, drive))
+                slew_in_drives[(site, iostandard)] |= slew_in_drive
+                sites[site]['DRIVE'][(iostandard, enum)] -= slew_in_drive
 
-    for bits in iodrives:
-        sites, standards, drives = zip(*iodrives[bits])
+            sites[site]['DRIVE'][(iostandard,
+                                  enum)] -= common_bits[(site, 'STEPDOWN')]
 
-        site = set(sites)
+    for site, iostandard in slew_in_drives:
+        for _, enum in sites[site]['SLEW']:
+            sites[site]['SLEW'][(iostandard,
+                                 enum)] |= slew_in_drives[(site, iostandard)]
 
-        assert len(site) == 1, site
-        site = site.pop()
+    for site in sites:
+        del sites[site]['OUT']
+        del sites[site]['IN_USE']
 
-        neg_bits = set('!' + bit for bit in (common_bits[site] - bits))
+    for site in sites:
+        for group in sites[site]:
+            common_groups = {}
 
-        print(
-            'IOB33.{}.{}.DRIVE.{}'.format(
-                site, '_'.join(sorted(set(standards))), '_'.join(
-                    sorted(set(drives)))), ' '.join(bits | neg_bits))
+            # Merge features that are identical.
+            #
+            # For example:
+            #
+            #  IOB33.IOB_Y1.LVCMOS15.IN 38_42 39_41
+            #  IOB33.IOB_Y1.LVCMOS18.IN 38_42 39_41
+            #
+            # Must be grouped.
+            for (iostandard, enum), bits in sites[site][group].items():
+                if bits not in common_groups:
+                    common_groups[bits] = {
+                        'IOSTANDARDS': set(),
+                        'enums': set(),
+                    }
+
+                common_groups[bits]['IOSTANDARDS'].add(iostandard)
+                if enum is not None:
+                    common_groups[bits]['enums'].add(enum)
+
+            for bits, v in common_groups.items():
+                if v['enums']:
+                    feature = 'IOB33.{site}.{iostandards}.{group}.{enums}'.format(
+                        site=site,
+                        iostandards='_'.join(sorted(v['IOSTANDARDS'])),
+                        group=group,
+                        enums='_'.join(sorted(v['enums'])),
+                    )
+                else:
+                    feature = 'IOB33.{site}.{iostandards}.{group}'.format(
+                        site=site,
+                        iostandards='_'.join(sorted(v['IOSTANDARDS'])),
+                        group=group,
+                    )
+
+                neg_bits = frozenset(
+                    '!{}'.format(b)
+                    for b in (common_bits[(site, group)] - bits))
+                print(
+                    '{} {}'.format(feature, ' '.join(sorted(bits | neg_bits))))
 
 
 if __name__ == "__main__":

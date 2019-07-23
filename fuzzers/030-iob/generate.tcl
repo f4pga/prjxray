@@ -75,12 +75,25 @@ proc loc_pins {} {
     }
 }
 
+proc set_vref {} {
+    set fp [open "iobank_vref.csv" r]
+    for {gets $fp line} {$line != ""} {gets $fp line} {
+        set parts [split $line ","]
+        set iobank [lindex $parts 0]
+        set vref [lindex $parts 1]
+        puts "setting $iobank ([get_iobanks $iobank]) to INTERNAL_VREF $vref"
+        set_property INTERNAL_VREF $vref [get_iobanks $iobank]
+    }
+}
+
 proc run {} {
     create_project -force -part $::env(XRAY_PART) design design
     read_verilog top.v
     synth_design -top top
 
     loc_pins
+    set_vref
+
 
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]

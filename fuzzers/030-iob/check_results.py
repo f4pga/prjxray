@@ -24,11 +24,11 @@ def process_parts(parts):
     if parts[0] == 'INOUT':
         yield 'type', 'IOBUF_INTERMDISABLE'
 
-    if parts[0] == 'IN_ONLY':
+    if parts[-1] == 'IN_ONLY':
         yield 'type', 'IBUF'
 
-    if parts[0] == 'SLEW':
-        yield 'SLEW', verilog.quote(parts[1])
+    if len(parts) > 2 and parts[-2] == 'SLEW':
+        yield 'SLEW', verilog.quote(parts[-1])
 
     if parts[0] == 'PULLTYPE':
         yield 'PULLTYPE', verilog.quote(parts[1])
@@ -38,7 +38,11 @@ def process_parts(parts):
 
     if len(parts) > 1 and parts[1] == 'DRIVE':
         yield 'IOSTANDARDS', parts[0].split('_')
-        yield 'DRIVES', parts[2].split('_')
+
+        if parts[2] == 'I_FIXED':
+            yield 'DRIVES', [None]
+        else:
+            yield 'DRIVES', parts[2].split('_')
 
 
 def create_sites_from_fasm(root):
@@ -67,7 +71,7 @@ def create_sites_from_fasm(root):
                 sites[key]['type'] = None
             else:
                 assert 'IOSTANDARDS' in sites[key], sites[key]
-                assert 'DRIVES' in sites[key]
+                assert 'DRIVES' in sites[key], sites[key]
                 sites[key]['type'] = "OBUF"
 
     return sites
@@ -76,10 +80,10 @@ def create_sites_from_fasm(root):
 def process_specimen(root):
     sites = create_sites_from_fasm(root)
 
-    with open(os.path.join(root, 'params.jl')) as f:
+    with open(os.path.join(root, 'params.json')) as f:
         params = json.load(f)
 
-    for p in params:
+    for p in params['tiles']:
         tile = p['tile']
         site = p['site']
         site_y = int(site[site.find('Y') + 1:]) % 2
@@ -96,7 +100,7 @@ def process_specimen(root):
         site_from_fasm = sites[(tile, site_key)]
 
         assert p['type'] == site_from_fasm['type'], (
-            tile, site_key, p, site_from_fasm)
+            tile, site_key, p['type'], site_from_fasm['type'])
 
         if p['type'] is None:
             continue
@@ -104,16 +108,28 @@ def process_specimen(root):
         assert p['PULLTYPE'] == site_from_fasm['PULLTYPE'], (
             tile, site_key, p, site_from_fasm)
 
+        assert 'IOSTANDARDS' in site_from_fasm, (root, tile, site)
+
         assert verilog.unquote(
             p['IOSTANDARD']) in site_from_fasm['IOSTANDARDS'], (
-                tile, site_key, p, site_from_fasm)
+                p['IOSTANDARD'],
+                site_from_fasm['IOSTANDARDS'],
+            )
 
         if p['type'] != 'IBUF':
             assert p['SLEW'] == site_from_fasm['SLEW'], (
                 tile, site_key, p, site_from_fasm)
 
-            assert 'I{}'.format(p['DRIVE']) in site_from_fasm['DRIVES'], (
-                tile, site_key, p, site_from_fasm)
+            assert 'DRIVES' not in p, p
+            assert 'DRIVES' in site_from_fasm, (
+                tile, site, p['type'], site_from_fasm)
+
+            if p['DRIVE'] is None:
+                assert None in site_from_fasm['DRIVES'], (
+                    tile, site_key, p['DRIVE'], site_from_fasm['DRIVES'])
+            else:
+                assert 'I{}'.format(p['DRIVE']) in site_from_fasm['DRIVES'], (
+                    tile, site_key, p['DRIVE'], site_from_fasm['DRIVES'])
 
 
 def main():
