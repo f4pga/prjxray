@@ -12,9 +12,17 @@ build/segbits_xiob33.db: build/segbits_xiob33.rdb
 
 pushdb:
 	${XRAY_MERGEDB} lioi3 build/segbits_xiob33.db
+	${XRAY_MERGEDB} lioi3_tbytesrc build/segbits_xiob33.db
+	${XRAY_MERGEDB} lioi3_tbyteterm build/segbits_xiob33.db
 	${XRAY_MERGEDB} rioi3 build/segbits_xiob33.db
+	${XRAY_MERGEDB} rioi3_tbytesrc build/segbits_xiob33.db
+	${XRAY_MERGEDB} rioi3_tbyteterm build/segbits_xiob33.db
 	${XRAY_MERGEDB} mask_lioi3 build/mask_xiob33.db
+	${XRAY_MERGEDB} mask_lioi3_tbytesrc build/mask_xiob33.db
+	${XRAY_MERGEDB} mask_lioi3_tbyteterm build/mask_xiob33.db
 	${XRAY_MERGEDB} mask_rioi3 build/mask_xiob33.db
+	${XRAY_MERGEDB} mask_rioi3_tbytesrc build/mask_xiob33.db
+	${XRAY_MERGEDB} mask_rioi3_tbyteterm build/mask_xiob33.db
 
 .PHONY: database pushdb
 
