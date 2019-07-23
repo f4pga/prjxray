@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 
 import sys, os, argparse
 from sdf_timing import sdfparse
