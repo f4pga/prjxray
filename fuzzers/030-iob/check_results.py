@@ -76,10 +76,10 @@ def create_sites_from_fasm(fasm_file):
                     sites[key]['type'] = ['IOBUF', 'IOBUF_INTERMDISABLE']
                 else:
                     sites[key]['type'] = [
-                            "OBUF",
-                            "OBUFDS_DUAL_BUF",
-                            "OBUFTDS_DUAL_BUF",
-                            ]
+                        "OBUF",
+                        "OBUFDS_DUAL_BUF",
+                        "OBUFTDS_DUAL_BUF",
+                    ]
 
     return sites
 
@@ -131,9 +131,9 @@ def process_specimen(fasm_file, params_json):
                 iostandard = iostandard[5:]
 
             assert iostandard in site_from_fasm['IOSTANDARDS'], (
-                    p['IOSTANDARD'],
-                    site_from_fasm['IOSTANDARDS'],
-                )
+                p['IOSTANDARD'],
+                site_from_fasm['IOSTANDARDS'],
+            )
 
             if p['type'] != 'IBUF':
                 if verilog.unquote(p['SLEW']) == '':
@@ -159,10 +159,13 @@ def process_specimen(fasm_file, params_json):
                     else:
                         # Check that drive is at default
                         assert 'I12' in site_from_fasm['DRIVES'], (
-                            tile, site_key, p['DRIVE'], site_from_fasm['DRIVES'])
+                            tile, site_key, p['DRIVE'],
+                            site_from_fasm['DRIVES'])
                 else:
-                    assert 'I{}'.format(p['DRIVE']) in site_from_fasm['DRIVES'], (
-                        tile, site_key, p['DRIVE'], site_from_fasm['DRIVES'])
+                    assert 'I{}'.format(
+                        p['DRIVE']) in site_from_fasm['DRIVES'], (
+                            tile, site_key, p['DRIVE'],
+                            site_from_fasm['DRIVES'])
 
 
 def scan_specimens():
@@ -170,8 +173,8 @@ def scan_specimens():
         if os.path.basename(root).startswith('specimen_'):
             print('Processing', os.path.basename(root))
             process_specimen(
-                    fasm_file=os.path.join(root, 'design.fasm'),
-                    params_json=os.path.join(root, 'params.json'))
+                fasm_file=os.path.join(root, 'design.fasm'),
+                params_json=os.path.join(root, 'params.json'))
 
     print('No errors found!')
 

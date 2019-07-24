@@ -1,29 +1,29 @@
 proc write_iobuf_report {filename} {
     set fp [open $filename w]
     puts $fp "{ \"tiles\": \["
-    foreach port [get_ports] {
-        set net [get_nets -of $port]
-        if { $net == "" } {
-            continue
+        foreach port [get_ports] {
+            set net [get_nets -of $port]
+            if { $net == "" } {
+                continue
+            }
+
+            set cell [get_cells -of $net]
+            set site [get_sites -of $cell]
+            set tile [get_tiles -of $site]
+
+            puts $fp "{"
+                puts $fp "\"port\": \"$port\","
+                puts $fp "\"pad_wire\": \"$net\","
+                puts $fp "\"cell\": \"$cell\","
+                puts $fp "\"site\": \"$site\","
+                puts $fp "\"tile\": \"$tile\","
+                puts $fp "\"type\": \"[get_property REF_NAME $cell]\","
+                puts $fp "\"IOSTANDARD\": \"\\\"[get_property IOSTANDARD $cell]\\\"\","
+                puts $fp "\"PULLTYPE\": \"\\\"[get_property PULLTYPE $cell]\\\"\","
+                puts $fp "\"DRIVE\": \"[get_property DRIVE $cell]\","
+                puts $fp "\"SLEW\": \"\\\"[get_property SLEW $cell]\\\"\","
+            puts $fp "},"
         }
-
-        set cell [get_cells -of $net]
-        set site [get_sites -of $cell]
-        set tile [get_tiles -of $site]
-
-        puts $fp "{"
-        puts $fp "\"port\": \"$port\","
-        puts $fp "\"pad_wire\": \"$net\","
-        puts $fp "\"cell\": \"$cell\","
-        puts $fp "\"site\": \"$site\","
-        puts $fp "\"tile\": \"$tile\","
-        puts $fp "\"type\": \"[get_property REF_NAME $cell]\","
-        puts $fp "\"IOSTANDARD\": \"\\\"[get_property IOSTANDARD $cell]\\\"\","
-        puts $fp "\"PULLTYPE\": \"\\\"[get_property PULLTYPE $cell]\\\"\","
-        puts $fp "\"DRIVE\": \"[get_property DRIVE $cell]\","
-        puts $fp "\"SLEW\": \"\\\"[get_property SLEW $cell]\\\"\","
-        puts $fp "},"
-    }
     puts $fp "\]}"
     close $fp
 }
