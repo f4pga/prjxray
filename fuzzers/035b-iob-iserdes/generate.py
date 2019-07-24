@@ -42,13 +42,11 @@ for param_list in data:
 
             for i in iface_types:
                 if i == "NETWORKING":
-                    for j in data_rates:
-                        for k in data_widths:
-                            tag = "ISERDES.%s.%s.%s" % (i, j, k)
-                            segmk.add_site_tag(loc, tag, 0)
+                    for j in data_widths:
+                        tag = "ISERDES.%s.%s" % (i, j)
+                        segmk.add_site_tag(loc, tag, 0)
                 else:
-                    for j in data_rates:
-                        segmk.add_site_tag(loc, "ISERDES.%s.%s.4" % (i, j), 0)
+                    segmk.add_site_tag(loc, "ISERDES.%s.4" % i, 0)
 
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 0)
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
@@ -94,15 +92,16 @@ for param_list in data:
             data_rate = verilog.unquote(params["DATA_RATE"])
             data_width = int(params["DATA_WIDTH"])
 
-            for i in iface_types:
-                for j in data_rates:
-                    for k in data_widths:
-                        tag = "ISERDES.%s.%s.%s" % (i, j, k)
+            segmk.add_site_tag(loc, "ISERDES.SDR", int(data_rate == "SDR"))
+            segmk.add_site_tag(loc, "ISERDES.DDR", int(data_rate == "DDR"))
 
-                        if i == iface_type:
-                            if j == data_rate:
-                                if k == data_width:
-                                    segmk.add_site_tag(loc, tag, 1)
+            for i in iface_types:
+                for j in data_widths:
+                    tag = "ISERDES.%s.%s" % (i, j)
+
+                    if i == iface_type:
+                        if j == data_width:
+                            segmk.add_site_tag(loc, tag, 1)
 
             if "NUM_CE" in params:
                 value = params["NUM_CE"]
