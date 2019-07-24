@@ -90,6 +90,7 @@ def process_specimen(fasm_file, params_json):
     with open(params_json) as f:
         params = json.load(f)
 
+    count = 0
     for p in params['tiles']:
         tile = p['tile']
         for site in p['site'].split(' '):
@@ -167,6 +168,10 @@ def process_specimen(fasm_file, params_json):
                             tile, site_key, p['DRIVE'],
                             site_from_fasm['DRIVES'])
 
+            count += 1
+
+    return count
+
 
 def scan_specimens():
     for root, dirs, files in os.walk('build'):
@@ -190,7 +195,8 @@ def main():
     if not args.fasm and not args.params:
         scan_specimens()
     else:
-        process_specimen(fasm_file=args.fasm, params_json=args.params)
+        count = process_specimen(fasm_file=args.fasm, params_json=args.params)
+        print('No errors found in {} IO sites'.format(count))
 
 
 if __name__ == "__main__":
