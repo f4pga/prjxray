@@ -1,4 +1,5 @@
 all: build/slicel.sdf build/slicem.sdf
+	touch build/sdf.ok
 
 clean:
 	rm -rf build
