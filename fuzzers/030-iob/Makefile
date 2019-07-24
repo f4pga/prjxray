@@ -6,7 +6,7 @@ database: build/segbits_xiob33.db
 
 build/iobanks.txt: write_io_banks.tcl
 	mkdir -p build
-	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/write_io_banks.tcl
+	cd build/ && ${XRAY_VIVADO} -mode batch -source ../write_io_banks.tcl
 
 build/segbits_xiob33.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -c 12 -o build/segbits_xiob33.rdb $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
