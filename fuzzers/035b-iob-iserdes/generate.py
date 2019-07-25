@@ -30,7 +30,7 @@ for param_list in data:
 
         #loc_to_tile_site_map[loc] = params["TILE"] + ".IOB_X0Y%d" % (y % 2)
 
-        # Serdes not used at all
+        # Site not used at all
         if not params["IS_USED"]:
 
             segmk.add_site_tag(loc, "ISERDES.SHIFTOUT_USED", 0)
@@ -62,15 +62,17 @@ for param_list in data:
             segmk.add_site_tag(loc, "ISERDES.DYN_CLKDIV_INV_EN", 0)
             segmk.add_site_tag(loc, "ISERDES.DYN_CLK_INV_EN", 0)
 
-            segmk.add_site_tag(loc, "IFFDELMUXE3.0", 1)
-            segmk.add_site_tag(loc, "IFFDELMUXE3.1", 0)
-            segmk.add_site_tag(loc, "IDELMUXE3.0", 1)
-            segmk.add_site_tag(loc, "IDELMUXE3.1", 0)
+            segmk.add_site_tag(loc, "IFFDELMUXE3.0", 0)
+            segmk.add_site_tag(loc, "IFFDELMUXE3.1", 1)
+            segmk.add_site_tag(loc, "IDELMUXE3.0", 0)
+            segmk.add_site_tag(loc, "IDELMUXE3.1", 1)
 
             segmk.add_site_tag(loc, "ISERDES.OFB_USED", 0)
 
-        # Serdes used
-        else:
+            segmk.add_site_tag(loc, "IFF.IN_USE", 0)
+
+        # Site used as ISERDESE2
+        elif verilog.unquote(params["BEL_TYPE"]) == "ISERDESE2":
 
             segmk.add_site_tag(loc, "ISERDES.IN_USE", 1)
 
@@ -169,6 +171,50 @@ for param_list in data:
                 value = verilog.unquote(params["OFB_USED"])
                 if value == "TRUE":
                     segmk.add_site_tag(loc, "ISERDES.OFB_USED", 1)
+
+        # Site used as IDDR
+        elif verilog.unquote(params["BEL_TYPE"]) == "IDDR":
+
+            segmk.add_site_tag(loc, "IFF.IN_USE", 1)
+
+            if "DDR_CLK_EDGE" in params:
+                value = verilog.unquote(params["DDR_CLK_EDGE"])
+                segmk.add_site_tag(loc, "IFF.DDR_CLK_EDGE.OPPOSITE_EDGE", int(value == "OPPOSITE_EDGE"))
+                segmk.add_site_tag(loc, "IFF.DDR_CLK_EDGE.SAME_EDGE", int(value == "SAME_EDGE"))
+                segmk.add_site_tag(loc, "IFF.DDR_CLK_EDGE.SAME_EDGE_PIPELINED", int(value == "SAME_EDGE_PIPELINED"))
+
+            if "SRTYPE" in params:
+                value = verilog.unquote(params["SRTYPE"])
+                if value == "ASYNC":
+                    segmk.add_site_tag(loc, "IFF.SRTYPE.ASYNC", 1)
+                    segmk.add_site_tag(loc, "IFF.SRTYPE.SYNC",  0)
+                if value == "SYNC":
+                    segmk.add_site_tag(loc, "IFF.SRTYPE.ASYNC", 0)
+                    segmk.add_site_tag(loc, "IFF.SRTYPE.SYNC",  1)
+
+            if "IDELMUX" in params:
+                if params["IDELMUX"] == 1:
+                    segmk.add_site_tag(loc, "IDELMUXE3.0", 1)
+                    segmk.add_site_tag(loc, "IDELMUXE3.1", 0)
+                else:
+                    segmk.add_site_tag(loc, "IDELMUXE3.0", 0)
+                    segmk.add_site_tag(loc, "IDELMUXE3.1", 1)
+
+            if "IFFDELMUX" in params:
+                if params["IFFDELMUX"] == 1:
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 1)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 0)
+                else:
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 0)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 1)
+
+            segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 1)
+            segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
+
+        # Should not happen
+        else:
+            print("Unknown BEL_TYPE '{}'".format(params["BEL_TYPE"]))
+            exit(-1)
 
 # Write segments and tags for later check
 #with open("tags.json", "w") as fp:
