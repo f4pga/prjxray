@@ -249,6 +249,26 @@ if {$part eq "xc7a50tfgg484-1"} {
             set pin [lindex $outs $i]
             set net2pin(dout[$i]) $pin
         }
+    } elseif {$pincfg eq "BASYS3-X1Y0-SWBUT"} {
+        # Slide switches
+        set ins "V2 W2"
+        set outs "V3 W3"
+
+        # 100 MHz CLK onboard
+        set pin "W5"
+        set net2pin(clk) $pin
+
+        # DIN
+        for {set i 0} {$i < $DIN_N} {incr i} {
+            set pin [lindex $ins $i]
+            set net2pin(din[$i]) $pin
+        }
+
+        # DOUT
+        for {set i 0} {$i < $DOUT_N} {incr i} {
+            set pin [lindex $outs $i]
+            set net2pin(dout[$i]) $pin
+        }
     } else {
         error "Unsupported config $pincfg"
     }
