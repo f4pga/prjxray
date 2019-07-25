@@ -210,17 +210,21 @@ def run(
             continue
 
         if side == "xl":
-            filename = "l{}".format(pip_type)
+            segfile = "l{}".format(seg_type)
+            pipfile = "l{}".format(pip_type)
         elif side == "xr":
-            filename = "r{}".format(pip_type)
+            segfile = "r{}".format(seg_type)
+            pipfile = "r{}".format(pip_type)
         elif side == "l" or side == "r":
-            filename = "{}_{}".format(pip_type, side)
+            segfile = "{}_{}".format(seg_type, side)
+            pipfile = "{}_{}".format(pip_type, side)
         else:
-            filename = "{}".format(pip_type)
+            segfile = "{}".format(seg_type)
+            pipfile = "{}".format(pip_type)
 
         maketodo(
-            "%s/%s.txt" % (pip_dir, filename),
-            "%s/segbits_%s.db" % (db_dir, filename),
+            "%s/%s.txt" % (pip_dir, pipfile),
+            "%s/segbits_%s.db" % (db_dir, segfile),
             intre,
             exclude_re=exclude_re,
             balance_wire_re=balance_wire_re,
