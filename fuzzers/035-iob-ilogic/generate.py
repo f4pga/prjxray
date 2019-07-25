@@ -24,7 +24,7 @@ def handle_data_width(segmk, d):
 
     for opt in [2, 3, 4, 5, 6, 7, 8, 10, 14]:
         segmk.add_site_tag(
-            d['site'], 'ISERDES.DATA_WIDTH.{}'.format(opt),
+            d['site'], 'ISERDES.DATA_WIDTH.W{}'.format(opt),
             d['DATA_WIDTH'] == opt)
 
 
@@ -159,34 +159,34 @@ def main():
                             verilog.unquote(d['DDR_CLK_EDGE']) == opt)
 
             if d['iddr_mux_config'] == 'direct':
-                segmk.add_site_tag(site, 'IFFDELMUXE3.0', 0)
-                segmk.add_site_tag(site, 'IFFDELMUXE3.1', 1)
-                segmk.add_site_tag(site, 'IFFDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P0', 0)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P1', 1)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P2', 0)
             elif d['iddr_mux_config'] == 'idelay':
-                segmk.add_site_tag(site, 'IFFDELMUXE3.0', 1)
-                segmk.add_site_tag(site, 'IFFDELMUXE3.1', 0)
-                segmk.add_site_tag(site, 'IFFDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P0', 1)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P1', 0)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P2', 0)
             elif d['iddr_mux_config'] == 'none':
-                segmk.add_site_tag(site, 'IFFDELMUXE3.0', 0)
-                segmk.add_site_tag(site, 'IFFDELMUXE3.1', 0)
-                segmk.add_site_tag(site, 'IFFDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P0', 0)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P1', 0)
+                segmk.add_site_tag(site, 'IFFDELMUXE3.P2', 0)
             else:
                 assert False, d['mux_config']
 
             if d['mux_config'] == 'direct':
-                segmk.add_site_tag(site, 'IDELMUXE3.0', 0)
-                segmk.add_site_tag(site, 'IDELMUXE3.1', 1)
-                segmk.add_site_tag(site, 'IDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IDELMUXE3.P0', 0)
+                segmk.add_site_tag(site, 'IDELMUXE3.P1', 1)
+                segmk.add_site_tag(site, 'IDELMUXE3.P2', 0)
 
             elif d['mux_config'] == 'idelay':
-                segmk.add_site_tag(site, 'IDELMUXE3.0', 1)
-                segmk.add_site_tag(site, 'IDELMUXE3.1', 0)
-                segmk.add_site_tag(site, 'IDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IDELMUXE3.P0', 1)
+                segmk.add_site_tag(site, 'IDELMUXE3.P1', 0)
+                segmk.add_site_tag(site, 'IDELMUXE3.P2', 0)
 
             elif d['mux_config'] == 'none':
-                segmk.add_site_tag(site, 'IDELMUXE3.0', 0)
-                segmk.add_site_tag(site, 'IDELMUXE3.1', 0)
-                segmk.add_site_tag(site, 'IDELMUXE3.2', 0)
+                segmk.add_site_tag(site, 'IDELMUXE3.P0', 0)
+                segmk.add_site_tag(site, 'IDELMUXE3.P1', 0)
+                segmk.add_site_tag(site, 'IDELMUXE3.P2', 0)
             else:
                 assert False, d['mux_config']
 

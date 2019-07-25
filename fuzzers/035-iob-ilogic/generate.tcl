@@ -86,6 +86,7 @@ proc run {} {
     set_property CONFIG_VOLTAGE 3.3 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-105}]
     set_property IS_ENABLED 0 [get_drc_checks {PDRC-26}]
 
     write_checkpoint -force design_pre_place.dcp

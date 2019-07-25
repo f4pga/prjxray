@@ -189,6 +189,13 @@ def use_iserdese2(p, luts, connects):
             'clk_BUFG2',
         ))
 
+    clkdiv = random.choice(('0', ))
+
+    if random.randint(0, 1):
+        clknet = '0'
+        clkbnet = '0'
+        oclknet = '0'
+
     print(
         '''
     (* KEEP, DONT_TOUCH, LOC = "{ilogic_loc}" *)
@@ -224,8 +231,9 @@ def use_iserdese2(p, luts, connects):
         .OCLK({oclknet}),
         .O({onet}),
         .Q1({q1net}),
-        .CLKDIV(0)
+        .CLKDIV({clkdiv})
     );'''.format(
+            clkdiv=clkdiv,
             clknet=clknet,
             clkbnet=clkbnet,
             oclknet=oclknet,
