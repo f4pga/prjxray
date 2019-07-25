@@ -103,6 +103,16 @@ def use_oserdese2(p, luts, connects):
     p['IS_CLK_INVERTED'] = random.randint(0, 1)
     p['IS_CLKDIV_INVERTED'] = random.randint(0, 1)
 
+    clk_connections = ''
+    p['CLK_USED'] = random.randint(0, 1)
+    p['CLKDIV_USED'] = random.randint(0, 1)
+    if p['CLK_USED']:
+        clk_connections += '''
+        .CLK({}),'''.format(luts.get_next_output_net())
+    if p['CLKDIV_USED']:
+        clk_connections += '''
+        .CLKDIV({}),'''.format(luts.get_next_output_net())
+
     print(
         '''
     (* KEEP, DONT_TOUCH, LOC = "{ologic_loc}" *)
@@ -134,8 +144,7 @@ def use_oserdese2(p, luts, connects):
         .OQ({owire}),
         {TFB}
         {TQ}
-        .CLK({clknet}),
-        .CLKDIV({clkdivnet}),
+        {clk_connections}
         .D1({d1net}),
         .D2({d2net}),
         .D3({d3net}),
@@ -152,8 +161,7 @@ def use_oserdese2(p, luts, connects):
         .T4({t4net}),
         .TCE({tcenet})
         );'''.format(
-            clknet=luts.get_next_output_net(),
-            clkdivnet=luts.get_next_output_net(),
+            clk_connections=clk_connections,
             rstnet=luts.get_next_output_net(),
             d1net=luts.get_next_output_net(),
             d2net=luts.get_next_output_net(),
