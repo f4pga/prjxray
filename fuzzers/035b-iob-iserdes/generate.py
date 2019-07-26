@@ -85,7 +85,7 @@ for param_list in data:
 #            segmk.add_site_tag(loc, "IFF.SUSED", 0)
 #            segmk.add_site_tag(loc, "IFF.RUSED", 0)
 
-# Site used as ISERDESE2
+        # Site used as ISERDESE2
         elif verilog.unquote(params["BEL_TYPE"]) == "ISERDESE2":
 
             segmk.add_site_tag(loc, "IDDR_OR_ISERDES.IN_USE", 1)
@@ -110,9 +110,6 @@ for param_list in data:
             data_rate = verilog.unquote(params["DATA_RATE"])
             data_width = int(params["DATA_WIDTH"])
 
-            #segmk.add_site_tag(loc, "ISERDES.SDR", int(data_rate == "SDR"))
-            #segmk.add_site_tag(loc, "ISERDES.DDR", int(data_rate == "DDR"))
-
             for i in iface_types:
                 if i == "NETWORKING":
                     for j in data_rates:
@@ -125,7 +122,7 @@ for param_list in data:
                                         segmk.add_site_tag(loc, tag, 1)
                 else:
                     if i == iface_type:
-                        segmk.add_site_tag(loc, "ISERDES.%s.DDR.4" % i, 0)
+                        segmk.add_site_tag(loc, "ISERDES.%s.DDR.4" % i, 1)
 
             if "NUM_CE" in params:
                 value = params["NUM_CE"]
@@ -174,25 +171,21 @@ for param_list in data:
             if "IOBDELAY" in params:
                 value = verilog.unquote(params["IOBDELAY"])
                 if value == "NONE":
-                    #segmk.add_site_tag(loc, "IOBDELAY_NONE", 1)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
                     segmk.add_site_tag(loc, "IDELMUXE3.P0", 0)
                     segmk.add_site_tag(loc, "IDELMUXE3.P1", 1)
                 if value == "IBUF":
-                    #segmk.add_site_tag(loc, "IOBDELAY_IBUF", 1)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
                     segmk.add_site_tag(loc, "IDELMUXE3.P0", 1)
                     segmk.add_site_tag(loc, "IDELMUXE3.P1", 0)
                 if value == "IFD":
-                    #segmk.add_site_tag(loc, "IOBDELAY_IFD" , 1)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 1)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 0)
                     segmk.add_site_tag(loc, "IDELMUXE3.P0", 0)
                     segmk.add_site_tag(loc, "IDELMUXE3.P1", 1)
                 if value == "BOTH":
-                    #segmk.add_site_tag(loc, "IOBDELAY_BOTH", 1)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 1)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 0)
                     segmk.add_site_tag(loc, "IDELMUXE3.P0", 1)
@@ -251,7 +244,7 @@ for param_list in data:
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
 
-            segmk.add_site_tag(loc, "ZINV_D", 0)
+            #segmk.add_site_tag(loc, "ZINV_D", 1)
 
             #            if "CE1USED" in params:
             #                segmk.add_site_tag(loc, "CE1USED", params["CE1USED"])

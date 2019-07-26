@@ -194,7 +194,7 @@ IDELAYCTRL idelayctrl();
         tile_name = sites[0]
 
         # Use site
-        if random.randint(0, 9) > 0:  # Use more often
+        if random.randint(0, 19) > 0:  # Use more often
 
             # Top sites
             if random.randint(0, 1):
@@ -208,7 +208,7 @@ IDELAYCTRL idelayctrl();
             # Generate cell
             bel_types = ["IDDR", "ISERDESE2"]
             bel_type = bel_types[int(
-                random.randint(0, 4) > 0)]  # ISERDES more often
+                random.randint(0, 19) > 0)]  # ISERDES more often
             if bel_type == "ISERDESE2":
                 params = gen_iserdes(this_sites["ILOGIC"])
             if bel_type == "IDDR":

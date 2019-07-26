@@ -1,4 +1,4 @@
-N := 50
+N := 60
 include ../fuzzer.mk
 
 database: build/segbits_xiob33.db
