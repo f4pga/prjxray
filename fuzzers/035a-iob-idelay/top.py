@@ -55,33 +55,49 @@ def run():
     # Header
     print("// Tile count: %d" % len(tiles))
     print("// Seed: '%s'" % os.getenv("SEED"))
+
+    ninputs = 0
+    di_idx = []
+    for i, sites in enumerate(tiles):
+        if random.randint(0, 1):
+            di_idx.append(ninputs)
+            ninputs += 1
+        else:
+            di_idx.append(None)
+
     print(
         '''
 module top (
   (* CLOCK_BUFFER_TYPE = "NONE" *)
   input  wire clk,
-  input  wire [{N}:0] di,
-  output wire [{N}:0] do
+  input  wire [{N}:0] di
 );
 
 wire clk_buf = clk;
 
 wire [{N}:0] di_buf;
-wire [{N}:0] do_buf;
-    '''.format(**{"N": len(tiles) - 1}))
+    '''.format(N=ninputs - 1))
 
     # LOCes IOBs
     data = []
-    for i, sites in enumerate(tiles):
+    for i, (sites, ibuf_idx) in enumerate(zip(tiles, di_idx)):
 
         if random.randint(0, 1):
             iob_i = sites[0]
             iob_o = sites[2]
             idelay = sites[1]
+            other_idelay = sites[3]
         else:
             iob_i = sites[2]
             iob_o = sites[0]
             idelay = sites[3]
+            other_idelay = sites[1]
+
+        use_ibuf = ibuf_idx is not None
+
+        DELAY_SRC = random.choice(["IDATAIN", "DATAIN"])
+        if not use_ibuf:
+            DELAY_SRC = 'DATAIN'
 
         params = {
             "LOC":
@@ -92,7 +108,7 @@ wire [{N}:0] do_buf;
             "IDELAY_VALUE":
             random.randint(0, 31),
             "DELAY_SRC":
-            "\"" + random.choice(["IDATAIN", "DATAIN"]) + "\"",
+            "\"" + DELAY_SRC + "\"",
             "HIGH_PERFORMANCE_MODE":
             "\"" + random.choice(["TRUE", "FALSE"]) + "\"",
             "CINVCTRL_SEL":
@@ -121,14 +137,21 @@ wire [{N}:0] do_buf;
 
         param_str = ",".join(".%s(%s)" % (k, v) for k, v in params.items())
 
-        print('')
-        print('(* LOC="%s", KEEP, DONT_TOUCH *)' % iob_i)
-        print('IBUF ibuf_%03d (.I(di[%3d]), .O(di_buf[%3d]));' % (i, i, i))
-        print('(* LOC="%s", KEEP, DONT_TOUCH *)' % iob_o)
-        print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
-        print(
-            'mod #(%s) mod_%03d (.clk(clk_buf), .I(di_buf[%3d]), .O(do_buf[%3d]));'
-            % (param_str, i, i, i))
+        if use_ibuf:
+            print('')
+            print('(* LOC="%s", KEEP, DONT_TOUCH *)' % iob_i)
+            print(
+                'IBUF ibuf_%03d (.I(di[%3d]), .O(di_buf[%3d]));' %
+                (ibuf_idx, ibuf_idx, ibuf_idx))
+            print(
+                'mod #(%s) mod_%03d (.clk(clk_buf), .I(di_buf[%3d]));' %
+                (param_str, i, ibuf_idx))
+        else:
+            print('mod #(%s) mod_%03d (.clk(clk_buf), .I());' % (param_str, i))
+
+        params['IBUF_IN_USE'] = use_ibuf
+        params["IDELAY_IN_USE"] = idelay
+        params["IDELAY_NOT_IN_USE"] = other_idelay
 
         data.append(params)
 
@@ -147,8 +170,7 @@ endmodule
 (* KEEP, DONT_TOUCH *)
 module mod(
   input  wire clk,
-  input  wire I,
-  output wire O
+  input  wire I
 );
 
 parameter LOC = "";
@@ -164,6 +186,10 @@ parameter IS_DATAIN_INVERTED = 0;
 parameter IS_IDATAIN_INVERTED = 0;
 
 wire x;
+wire lut;
+
+(* KEEP, DONT_TOUCH *)
+LUT2 l( .O(lut) );
 
 // IDELAY
 (* LOC=LOC, KEEP, DONT_TOUCH *)
@@ -189,22 +215,10 @@ idelay
   .CINVCTRL(),
   .CNTVALUEIN(),
   .IDATAIN(I),
-  .DATAIN(),
+  .DATAIN(lut),
   .LDPIPEEN(),
   .DATAOUT(x),
   .CNTVALUEOUT()
-);
-
-// A LUT
-(* KEEP, DONT_TOUCH *)
-LUT6 #(.INIT(32'hDEADBEEF)) lut (
-  .I0(x),
-  .I1(x),
-  .I2(x),
-  .I3(x),
-  .I4(x),
-  .I5(x),
-  .O(O)
 );
 
 endmodule
