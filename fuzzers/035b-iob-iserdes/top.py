@@ -74,17 +74,18 @@ def gen_iserdes(loc):
         "SRVAL_Q3": random.randint(0, 1),
         "SRVAL_Q4": random.randint(0, 1),
         "NUM_CE": random.randint(1, 2),
+
         # The following one shows negative correlation (0 - not inverted)
         "IS_D_INVERTED": random.randint(0, 1),
+
         # No bits were found for parameters below
-        #"IS_OCLKB_INVERTED": random.randint(0, 1),
-        #"IS_OCLK_INVERTED": random.randint(0, 1),
-        #"IS_CLKDIVP_INVERTED": random.randint(0, 1),
-        #"IS_CLKDIV_INVERTED": random.randint(0, 1),
-        #"IS_CLKB_INVERTED":
-        #random.randint(0, 1),
-        #"IS_CLK_INVERTED":
-        #random.randint(0, 1),
+        "IS_OCLKB_INVERTED": random.randint(0, 1),
+        "IS_OCLK_INVERTED": random.randint(0, 1),
+        "IS_CLKDIVP_INVERTED": random.randint(0, 1),
+        "IS_CLKDIV_INVERTED": random.randint(0, 1),
+        "IS_CLKB_INVERTED": random.randint(0, 1),
+        "IS_CLK_INVERTED": random.randint(0, 1),
+
         "DYN_CLKDIV_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
         "DYN_CLK_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
         "IOBDELAY": verilog.quote(

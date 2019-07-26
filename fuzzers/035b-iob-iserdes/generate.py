@@ -66,8 +66,8 @@ for param_list in data:
             for i in range(1, 4 + 1):
                 segmk.add_site_tag(loc, "IFF.ZSRVAL_Q%d" % i, 0)
 
-            segmk.add_site_tag(loc, "ISERDES.IS_CLKB_INVERTED", 1)
-            segmk.add_site_tag(loc, "ISERDES.IS_CLK_INVERTED", 0)
+#            segmk.add_site_tag(loc, "ISERDES.IS_CLKB_INVERTED", 0)
+#            segmk.add_site_tag(loc, "ISERDES.IS_CLK_INVERTED", 1)
 
             segmk.add_site_tag(loc, "ISERDES.DYN_CLKDIV_INV_EN", 0)
             segmk.add_site_tag(loc, "ISERDES.DYN_CLK_INV_EN", 0)
@@ -78,10 +78,6 @@ for param_list in data:
             segmk.add_site_tag(loc, "IDELMUXE3.P1", 1)
 
             segmk.add_site_tag(loc, "ISERDES.OFB_USED", 0)
-
-#            segmk.add_site_tag(loc, "CE1USED", 0)
-#            segmk.add_site_tag(loc, "IFF.SUSED", 0)
-#            segmk.add_site_tag(loc, "IFF.RUSED", 0)
 
         # Site used as ISERDESE2
         elif verilog.unquote(params["BEL_TYPE"]) == "ISERDESE2":
@@ -144,14 +140,14 @@ for param_list in data:
             if "IS_D_INVERTED" in params:
                 segmk.add_site_tag(loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
 
-            if "IS_CLKB_INVERTED" in params:
-                segmk.add_site_tag(
-                    loc, "ISERDES.IS_CLKB_INVERTED",
-                    params["IS_CLKB_INVERTED"])
+#            if "IS_CLKB_INVERTED" in params:
+#                segmk.add_site_tag(
+#                    loc, "ISERDES.IS_CLKB_INVERTED",
+#                    params["IS_CLKB_INVERTED"])
 
-            if "IS_CLK_INVERTED" in params:
-                segmk.add_site_tag(
-                    loc, "ISERDES.IS_CLK_INVERTED", params["IS_CLK_INVERTED"])
+#            if "IS_CLK_INVERTED" in params:
+#                segmk.add_site_tag(
+#                    loc, "ISERDES.IS_CLK_INVERTED", params["IS_CLK_INVERTED"])
 
             if "DYN_CLKDIV_INV_EN" in params:
                 value = verilog.unquote(params["DYN_CLKDIV_INV_EN"])
@@ -211,10 +207,6 @@ for param_list in data:
                     loc, "IFF.DDR_CLK_EDGE.SAME_EDGE_PIPELINED",
                     int(value == "SAME_EDGE_PIPELINED"))
 
-                # A test
-                segmk.add_site_tag(loc, "ISERDES.IS_CLKB_INVERTED", 1)
-                segmk.add_site_tag(loc, "ISERDES.IS_CLK_INVERTED", 0)
-
             if "SRTYPE" in params:
                 value = verilog.unquote(params["SRTYPE"])
                 if value == "ASYNC":
@@ -239,14 +231,6 @@ for param_list in data:
                 else:
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
-
-            #            if "CE1USED" in params:
-            #                segmk.add_site_tag(loc, "CE1USED", params["CE1USED"])
-
-            #            if "SR_MODE" in params:
-            #                value = verilog.unquote(params["SR_MODE"])
-            #                segmk.add_site_tag(loc, "IFF.SUSED", int(value == "SET"))
-            #                segmk.add_site_tag(loc, "IFF.RUSED", int(value == "RST"))
 
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 1)
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
