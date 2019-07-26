@@ -1,10 +1,15 @@
 N := 50
+SPECIMENS_DEPS := build/iobanks.txt
 include ../fuzzer.mk
 
 database: build/segbits_xiob33.db
 
+build/iobanks.txt: write_io_banks.tcl
+	mkdir -p build
+	cd build/ && ${XRAY_VIVADO} -mode batch -source ../write_io_banks.tcl
+
 build/segbits_xiob33.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 7 -o build/segbits_xiob33.rdb $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
+	${XRAY_SEGMATCH} -c 12 -o build/segbits_xiob33.rdb $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
 
 build/segbits_xiob33.db: build/segbits_xiob33.rdb process_rdb.py bits.dbf
 	python3 process_rdb.py build/segbits_xiob33.rdb > build/segbits_xiob33_processed.rdb

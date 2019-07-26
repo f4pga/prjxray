@@ -45,14 +45,22 @@ def run():
     io_idx = 0
 
     iostandards = [
-        'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'LVCMOS25', 'LVCMOS33', 'LVTTL'
+        'LVCMOS12',
+        'LVCMOS15',
+        'LVCMOS18',
+        'LVCMOS25',
+        'LVCMOS33',
+        'LVTTL',
+        'SSTL135',
     ]
     iostandard = random.choice(iostandards)
 
     if iostandard in ['LVTTL', 'LVCMOS18']:
         drives = [4, 8, 12, 16, 24]
-    elif iostandard == 'LVCMOS12':
+    elif iostandard in ['LVCMOS12']:
         drives = [4, 8, 12]
+    elif iostandard == 'SSTL135':
+        drives = None
     else:
         drives = [4, 8, 12, 16]
 
@@ -64,7 +72,26 @@ def run():
     connects = io.StringIO()
 
     tile_params = []
-    params = []
+    params = {
+        "tiles": [],
+        'INTERNAL_VREF': {},
+    }
+
+    with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
+        iobanks = [int(l.strip()) for l in f]
+
+    params['iobanks'] = iobanks
+
+    if iostandard in ['SSTL135']:
+        for iobank in iobanks:
+            params['INTERNAL_VREF'][iobank] = random.choice(
+                (
+                    .600,
+                    .675,
+                    .75,
+                    .90,
+                ))
+
     any_idelay = False
     for tile, site in gen_sites():
         p = {}
@@ -93,7 +120,10 @@ def run():
         elif p['type'] == 'OBUF':
             p['pad_wire'] = 'do[{}]'.format(o_idx)
             p['iwire'] = luts.get_next_output_net()
-            p['DRIVE'] = random.choice(drives)
+            if drives is not None:
+                p['DRIVE'] = random.choice(drives)
+            else:
+                p['DRIVE'] = None
             p['SLEW'] = verilog.quote(random.choice(slews))
 
             o_idx += 1
@@ -101,7 +131,10 @@ def run():
             p['pad_wire'] = 'dio[{}]'.format(io_idx)
             p['iwire'] = luts.get_next_output_net()
             p['owire'] = luts.get_next_input_net()
-            p['DRIVE'] = random.choice(drives)
+            if drives is not None:
+                p['DRIVE'] = random.choice(drives)
+            else:
+                p['DRIVE'] = None
             p['SLEW'] = verilog.quote(random.choice(slews))
             p['tristate_wire'] = random.choice(
                 ('0', luts.get_next_output_net()))
@@ -111,7 +144,11 @@ def run():
                 ('0', luts.get_next_output_net()))
             io_idx += 1
 
-        params.append(p)
+        if 'DRIVE' in p:
+            if p['DRIVE'] is not None:
+                p['DRIVE_STR'] = '.DRIVE({}),'.format(p['DRIVE'])
+            else:
+                p['DRIVE_STR'] = ''
 
         if p['type'] is not None:
             tile_params.append(
@@ -119,8 +156,13 @@ def run():
                     tile, site, p['pad_wire'], iostandard, p['DRIVE'],
                     verilog.unquote(p['SLEW']) if p['SLEW'] else None,
                     verilog.unquote(p['PULLTYPE'])))
+        params['tiles'].append(p)
 
     write_params(tile_params)
+
+    with open('iobank_vref.csv', 'w') as f:
+        for iobank, vref in params['INTERNAL_VREF'].items():
+            f.write('{},{}\n'.format(iobank, vref))
 
     print(
         '''
@@ -141,7 +183,7 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
         (* KEEP, DONT_TOUCH *)
         LUT6 dummy_lut();''')
 
-    for p in params:
+    for p in params['tiles']:
         if p['type'] is None:
             continue
         elif p['type'] == 'IBUF':
@@ -173,7 +215,7 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
         (* KEEP, DONT_TOUCH *)
         OBUF #(
             .IOSTANDARD({IOSTANDARD}),
-            .DRIVE({DRIVE}),
+            {DRIVE_STR}
             .SLEW({SLEW})
         ) ibuf_{site} (
             .O({pad_wire}),
@@ -186,7 +228,7 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
         (* KEEP, DONT_TOUCH *)
         IOBUF_INTERMDISABLE #(
             .IOSTANDARD({IOSTANDARD}),
-            .DRIVE({DRIVE}),
+            {DRIVE_STR}
             .SLEW({SLEW})
         ) ibuf_{site} (
             .IO({pad_wire}),
@@ -205,7 +247,7 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
 
     print("endmodule")
 
-    with open('params.jl', 'w') as f:
+    with open('params.json', 'w') as f:
         json.dump(params, f, indent=2)
 
 
