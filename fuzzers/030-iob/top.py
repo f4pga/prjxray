@@ -22,9 +22,13 @@ def gen_sites():
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
 
+        sites = {}
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['IOB33S', 'IOB33M']:
-                yield tile_name, site_name
+                sites[site_type] = site_name
+
+        if sites:
+            yield tile_name, sites
 
 
 def write_params(params):
@@ -53,6 +57,11 @@ def run():
         'LVTTL',
         'SSTL135',
     ]
+
+    diff_map = {
+        "SSTL135": ["DIFF_SSTL135"],
+    }
+
     iostandard = random.choice(iostandards)
 
     if iostandard in ['LVTTL', 'LVCMOS18']:
@@ -93,70 +102,136 @@ def run():
                 ))
 
     any_idelay = False
-    for tile, site in gen_sites():
-        p = {}
-        p['tile'] = tile
-        p['site'] = site
-        p['type'] = random.choice(tile_types)
-        p['IOSTANDARD'] = verilog.quote(iostandard)
-        p['PULLTYPE'] = verilog.quote(random.choice(pulls))
+    for tile, sites in gen_sites():
+        site_bels = {}
+        for site_type in sites:
+            if site_type.endswith('M'):
+                if iostandard in diff_map:
+                    site_bels[site_type] = random.choice(
+                        tile_types + ['IBUFDS', 'OBUFDS', 'OBUFTDS'])
+                else:
+                    site_bels[site_type] = random.choice(tile_types)
+                is_m_diff = site_bels[site_type] is not None and site_bels[
+                    site_type].endswith('DS')
+            else:
+                site_bels[site_type] = random.choice(tile_types)
 
-        if p['type'] is None:
-            p['pad_wire'] = None
-        elif p['type'] == 'IBUF':
-            p['pad_wire'] = 'di[{}]'.format(i_idx)
-            p['IDELAY_ONLY'] = random.randint(0, 1)
-            if not p['IDELAY_ONLY']:
+        if is_m_diff:
+            site_bels['IOB33S'] = None
+
+        for site_type, site in sites.items():
+            p = {}
+            p['tile'] = tile
+            p['site'] = site
+            p['type'] = site_bels[site_type]
+
+            if p['type'] is not None and p['type'].endswith('DS'):
+                iostandard_site = random.choice(diff_map[iostandard])
+                p['pair_site'] = sites['IOB33S']
+            else:
+                iostandard_site = iostandard
+
+            p['IOSTANDARD'] = verilog.quote(iostandard_site)
+            p['PULLTYPE'] = verilog.quote(random.choice(pulls))
+
+            if p['type'] is None:
+                p['pad_wire'] = None
+            elif p['type'] == 'IBUF':
+                p['pad_wire'] = 'di[{}]'.format(i_idx)
+                p['IDELAY_ONLY'] = random.randint(0, 1)
+                if not p['IDELAY_ONLY']:
+                    p['owire'] = luts.get_next_input_net()
+                else:
+                    any_idelay = True
+                    p['owire'] = 'idelay_{site}'.format(**p)
+
+                p['DRIVE'] = None
+                p['SLEW'] = None
+                p['IBUF_LOW_PWR'] = random.randint(0, 1)
+
+                i_idx += 1
+            elif p['type'] == 'IBUFDS':
+                p['pad_wire'] = 'di[{}]'.format(i_idx)
+                i_idx += 1
+                p['bpad_wire'] = 'di[{}]'.format(i_idx)
+                i_idx += 1
+
+                p['IDELAY_ONLY'] = random.randint(0, 1)
+                p['DIFF_TERM'] = random.randint(0, 1)
+                if not p['IDELAY_ONLY']:
+                    p['owire'] = luts.get_next_input_net()
+                else:
+                    any_idelay = True
+                    p['owire'] = 'idelay_{site}'.format(**p)
+
+                p['DRIVE'] = None
+                p['SLEW'] = None
+                p['IBUF_LOW_PWR'] = random.randint(0, 1)
+
+            elif p['type'] == 'OBUF':
+                p['pad_wire'] = 'do[{}]'.format(o_idx)
+                p['iwire'] = luts.get_next_output_net()
+                if drives is not None:
+                    p['DRIVE'] = random.choice(drives)
+                else:
+                    p['DRIVE'] = None
+                p['SLEW'] = verilog.quote(random.choice(slews))
+
+                o_idx += 1
+            elif p['type'] == 'OBUFDS':
+                p['pad_wire'] = 'do[{}]'.format(o_idx)
+                o_idx += 1
+                p['bpad_wire'] = 'do[{}]'.format(o_idx)
+                o_idx += 1
+                p['iwire'] = luts.get_next_output_net()
+                if drives is not None:
+                    p['DRIVE'] = random.choice(drives)
+                else:
+                    p['DRIVE'] = None
+                p['SLEW'] = verilog.quote(random.choice(slews))
+            elif p['type'] == 'OBUFTDS':
+                p['pad_wire'] = 'do[{}]'.format(o_idx)
+                o_idx += 1
+                p['bpad_wire'] = 'do[{}]'.format(o_idx)
+                o_idx += 1
+                p['tristate_wire'] = random.choice(
+                    ('0', luts.get_next_output_net()))
+                p['iwire'] = luts.get_next_output_net()
+                if drives is not None:
+                    p['DRIVE'] = random.choice(drives)
+                else:
+                    p['DRIVE'] = None
+                p['SLEW'] = verilog.quote(random.choice(slews))
+            elif p['type'] == 'IOBUF_INTERMDISABLE':
+                p['pad_wire'] = 'dio[{}]'.format(io_idx)
+                p['iwire'] = luts.get_next_output_net()
                 p['owire'] = luts.get_next_input_net()
-            else:
-                any_idelay = True
-                p['owire'] = 'idelay_{site}'.format(**p)
+                if drives is not None:
+                    p['DRIVE'] = random.choice(drives)
+                else:
+                    p['DRIVE'] = None
+                p['SLEW'] = verilog.quote(random.choice(slews))
+                p['tristate_wire'] = random.choice(
+                    ('0', luts.get_next_output_net()))
+                p['ibufdisable_wire'] = random.choice(
+                    ('0', luts.get_next_output_net()))
+                p['intermdisable_wire'] = random.choice(
+                    ('0', luts.get_next_output_net()))
+                io_idx += 1
 
-            p['DRIVE'] = None
-            p['SLEW'] = None
-            p['IBUF_LOW_PWR'] = random.randint(0, 1)
+            if 'DRIVE' in p:
+                if p['DRIVE'] is not None:
+                    p['DRIVE_STR'] = '.DRIVE({}),'.format(p['DRIVE'])
+                else:
+                    p['DRIVE_STR'] = ''
 
-            i_idx += 1
-        elif p['type'] == 'OBUF':
-            p['pad_wire'] = 'do[{}]'.format(o_idx)
-            p['iwire'] = luts.get_next_output_net()
-            if drives is not None:
-                p['DRIVE'] = random.choice(drives)
-            else:
-                p['DRIVE'] = None
-            p['SLEW'] = verilog.quote(random.choice(slews))
-
-            o_idx += 1
-        elif p['type'] == 'IOBUF_INTERMDISABLE':
-            p['pad_wire'] = 'dio[{}]'.format(io_idx)
-            p['iwire'] = luts.get_next_output_net()
-            p['owire'] = luts.get_next_input_net()
-            if drives is not None:
-                p['DRIVE'] = random.choice(drives)
-            else:
-                p['DRIVE'] = None
-            p['SLEW'] = verilog.quote(random.choice(slews))
-            p['tristate_wire'] = random.choice(
-                ('0', luts.get_next_output_net()))
-            p['ibufdisable_wire'] = random.choice(
-                ('0', luts.get_next_output_net()))
-            p['intermdisable_wire'] = random.choice(
-                ('0', luts.get_next_output_net()))
-            io_idx += 1
-
-        if 'DRIVE' in p:
-            if p['DRIVE'] is not None:
-                p['DRIVE_STR'] = '.DRIVE({}),'.format(p['DRIVE'])
-            else:
-                p['DRIVE_STR'] = ''
-
-        if p['type'] is not None:
-            tile_params.append(
-                (
-                    tile, site, p['pad_wire'], iostandard, p['DRIVE'],
-                    verilog.unquote(p['SLEW']) if p['SLEW'] else None,
-                    verilog.unquote(p['PULLTYPE'])))
-        params['tiles'].append(p)
+            if p['type'] is not None:
+                tile_params.append(
+                    (
+                        tile, site, p['pad_wire'], iostandard_site, p['DRIVE'],
+                        verilog.unquote(p['SLEW']) if p['SLEW'] else None,
+                        verilog.unquote(p['PULLTYPE'])))
+            params['tiles'].append(p)
 
     write_params(tile_params)
 
@@ -209,6 +284,31 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
             );""".format(**p),
                     file=connects)
 
+        elif p['type'] == 'IBUFDS':
+            print(
+                '''
+        wire idelay_{site};
+
+        (* KEEP, DONT_TOUCH *)
+        IBUFDS #(
+            .IBUF_LOW_PWR({IBUF_LOW_PWR}),
+            .DIFF_TERM({DIFF_TERM}),
+            .IOSTANDARD({IOSTANDARD})
+        ) ibuf_{site} (
+            .I({pad_wire}),
+            .IB({bpad_wire}),
+            .O({owire})
+            );'''.format(**p),
+                file=connects)
+            if p['IDELAY_ONLY']:
+                print(
+                    """
+        (* KEEP, DONT_TOUCH *)
+        IDELAYE2 idelay_site_{site} (
+            .IDATAIN(idelay_{site})
+            );""".format(**p),
+                    file=connects)
+
         elif p['type'] == 'OBUF':
             print(
                 '''
@@ -217,8 +317,37 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
             .IOSTANDARD({IOSTANDARD}),
             {DRIVE_STR}
             .SLEW({SLEW})
-        ) ibuf_{site} (
+        ) obuf_{site} (
             .O({pad_wire}),
+            .I({iwire})
+            );'''.format(**p),
+                file=connects)
+        elif p['type'] == 'OBUFDS':
+            print(
+                '''
+        (* KEEP, DONT_TOUCH *)
+        OBUFDS #(
+            .IOSTANDARD({IOSTANDARD}),
+            {DRIVE_STR}
+            .SLEW({SLEW})
+        ) obufds_{site} (
+            .O({pad_wire}),
+            .OB({bpad_wire}),
+            .I({iwire})
+            );'''.format(**p),
+                file=connects)
+        elif p['type'] == 'OBUFTDS':
+            print(
+                '''
+        (* KEEP, DONT_TOUCH *)
+        OBUFTDS #(
+            .IOSTANDARD({IOSTANDARD}),
+            {DRIVE_STR}
+            .SLEW({SLEW})
+        ) obufds_{site} (
+            .O({pad_wire}),
+            .OB({bpad_wire}),
+            .T({tristate_wire}),
             .I({iwire})
             );'''.format(**p),
                 file=connects)

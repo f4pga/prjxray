@@ -21,7 +21,7 @@ def get_site(l):
 
 def parse_bits(l):
     parts = l.strip().split(' ')
-    if parts[1] == '<0':
+    if parts[1] in ['<0', '<const0>']:
         return frozenset()
     else:
         return frozenset(parts[1:])
@@ -93,7 +93,8 @@ def main():
         if group in ['DRIVE', 'SLEW']:
             enum = feature_parts[4]
             sites[site][group][(iostandard, enum)] = bits
-        elif group in ['IN', 'IN_ONLY', 'IN_USE', 'OUT', 'STEPDOWN']:
+        elif group in ['IN', 'IN_DIFF', 'IN_ONLY', 'IN_USE', 'OUT',
+                       'STEPDOWN']:
             sites[site][group][(iostandard, None)] = bits
         else:
             assert False, group
@@ -124,6 +125,9 @@ def main():
         common_bits[(site, 'IN_ONLY')] |= common_bits[(site, 'DRIVE')]
         common_bits[(site, 'IN_ONLY')] -= common_bits[(site, 'STEPDOWN')]
 
+        common_bits[(site, 'IN')] |= common_bits[(site, 'IN_DIFF')]
+        common_bits[(site, 'IN_DIFF')] |= common_bits[(site, 'IN')]
+
         for iostandard, enum in sites[site]['DRIVE']:
             slew_in_drive = common_bits[
                 (site, 'SLEW')] & sites[site]['DRIVE'][(iostandard, enum)]
@@ -143,8 +147,20 @@ def main():
                                  enum)] |= slew_in_drives[(site, iostandard)]
 
     for site in sites:
+        for iostandard, enum in sites[site]['DRIVE']:
+            sites[site]['DRIVE'][(iostandard, enum)] |= sites[site]['IN_USE'][(
+                iostandard, None)]
+
+        for iostandard, enum in sites[site]['IN']:
+            if sites[site]['IN_DIFF'][(iostandard, enum)]:
+                sites[site]['IN_DIFF'][(iostandard, enum)] |= \
+                        sites[site]['IN'][(iostandard, enum)]
+
+    for site in sites:
         del sites[site]['OUT']
         del sites[site]['IN_USE']
+
+    allow_zero = ['SLEW']
 
     for site in sites:
         for group in sites[site]:
@@ -183,6 +199,9 @@ def main():
                         iostandards='_'.join(sorted(v['IOSTANDARDS'])),
                         group=group,
                     )
+
+                if not bits and group not in allow_zero:
+                    continue
 
                 neg_bits = frozenset(
                     '!{}'.format(b)
