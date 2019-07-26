@@ -37,6 +37,8 @@ def main():
 
             handle_data_width(segmk, d)
 
+            segmk.add_site_tag(site, 'OSERDESE.IN_USE', d['use_oserdese2'])
+
             if d['use_oserdese2']:
                 segmk.add_site_tag(site, 'OQUSED', 1)
                 if 'SRTYPE' in d:
@@ -60,9 +62,11 @@ def main():
                     segmk.add_site_tag(site, 'Z' + opt, 1 ^ d[opt])
 
                 for opt in ['CLK', 'CLKDIV']:
-                    k = 'IS_{}_INVERTED'.format(opt)
-                    segmk.add_site_tag(site, k, d[k])
-                    segmk.add_site_tag(site, 'ZINV_{}'.format(opt), 1 ^ d[k])
+                    if d['{}_USED'.format(opt)]:
+                        k = 'IS_{}_INVERTED'.format(opt)
+                        segmk.add_site_tag(site, k, d[k])
+                        segmk.add_site_tag(
+                            site, 'ZINV_{}'.format(opt), 1 ^ d[k])
 
                 for idx in range(4):
                     k = 'IS_T{}_INVERTED'.format(idx + 1)
