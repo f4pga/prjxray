@@ -69,8 +69,6 @@ for param_list in data:
             segmk.add_site_tag(loc, "ISERDES.IS_CLKB_INVERTED", 1)
             segmk.add_site_tag(loc, "ISERDES.IS_CLK_INVERTED", 0)
 
-            segmk.add_site_tag(loc, "ZINV_D", 1)
-
             segmk.add_site_tag(loc, "ISERDES.DYN_CLKDIV_INV_EN", 0)
             segmk.add_site_tag(loc, "ISERDES.DYN_CLK_INV_EN", 0)
 
@@ -144,9 +142,7 @@ for param_list in data:
                         loc, "IFF.ZSRVAL_Q%d" % i, not params["SRVAL_Q%d" % i])
 
             if "IS_D_INVERTED" in params:
-                if not params["CHAINED"]:
-                    segmk.add_site_tag(
-                        loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
+                segmk.add_site_tag(loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
 
             if "IS_CLKB_INVERTED" in params:
                 segmk.add_site_tag(
@@ -243,8 +239,6 @@ for param_list in data:
                 else:
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
                     segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
-
-            #segmk.add_site_tag(loc, "ZINV_D", 1)
 
             #            if "CE1USED" in params:
             #                segmk.add_site_tag(loc, "CE1USED", params["CE1USED"])
