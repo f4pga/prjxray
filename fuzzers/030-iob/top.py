@@ -62,6 +62,19 @@ def run():
         "SSTL135": ["DIFF_SSTL135"],
     }
 
+    IN_TERM_ALLOWED = [
+        'SSTL15',
+        'SSTL15_R',
+        'SSTL18',
+        'SSTL18_R',
+        'SSTL135',
+        'SSTL135_R',
+        'HSTL_I'
+        'HSTL_I_18'
+        'HSTL_II',
+        'HSTL_II_18',
+    ]
+
     iostandard = random.choice(iostandards)
 
     if iostandard in ['LVTTL', 'LVCMOS18']:
@@ -149,6 +162,15 @@ def run():
                 p['SLEW'] = None
                 p['IBUF_LOW_PWR'] = random.randint(0, 1)
 
+                if iostandard in IN_TERM_ALLOWED:
+                    p['IN_TERM'] = random.choice(
+                        (
+                            'NONE',
+                            'UNTUNED_SPLIT_40',
+                            'UNTUNED_SPLIT_50',
+                            'UNTUNED_SPLIT_60',
+                        ))
+
                 i_idx += 1
             elif p['type'] == 'IBUFDS':
                 p['pad_wire'] = 'di[{}]'.format(i_idx)
@@ -228,9 +250,15 @@ def run():
             if p['type'] is not None:
                 tile_params.append(
                     (
-                        tile, site, p['pad_wire'], iostandard_site, p['DRIVE'],
+                        tile,
+                        site,
+                        p['pad_wire'],
+                        iostandard_site,
+                        p['DRIVE'],
                         verilog.unquote(p['SLEW']) if p['SLEW'] else None,
-                        verilog.unquote(p['PULLTYPE'])))
+                        verilog.unquote(p['PULLTYPE']),
+                        p['IN_TERM'] if 'IN_TERM' in p else None,
+                    ))
             params['tiles'].append(p)
 
     write_params(tile_params)

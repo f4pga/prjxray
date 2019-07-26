@@ -85,6 +85,13 @@ def main():
                 site, '_'.join(STEPDOWN_IOSTANDARDS) + '.STEPDOWN',
                 iostandard in STEPDOWN_IOSTANDARDS)
 
+            if 'IN_TERM' in d:
+                segmaker.add_site_group_zero(
+                    segmk, site, 'IN_TERM.', [
+                        'NONE', 'UNTUNED_SPLIT_40', 'UNTUNED_SPLIT_50',
+                        'UNTUNED_SPLIT_60'
+                    ], 'NONE', d['IN_TERM'])
+
             if d['type'] is None:
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 0)
