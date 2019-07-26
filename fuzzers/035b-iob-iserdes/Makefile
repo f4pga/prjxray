@@ -1,12 +1,10 @@
-N := 20
+N := 50
 include ../fuzzer.mk
 
 database: build/segbits_xiob33.db
 
 build/segbits_xiob33.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -c 20 -m 1 -M 1 -o build/segbits_xiob33.rdb $$(find -name segdata_*.txt)
-	#python3 ~/Work/segmask.py -i build/segbits_xiob33.rdb -o build/segbits_xiob33_msk.rdb -m IN_USE
-	#python3 ~/Work/lms_solver.py -o build/segbits_xiob33_msk.rdb -m IN_USE $$(find -name segdata_*.txt)
 
 build/segbits_xiob33.db: build/segbits_xiob33.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@

@@ -15,11 +15,17 @@ with open("params.json", "r") as fp:
 iface_types = [
     "NETWORKING", "OVERSAMPLE", "MEMORY", "MEMORY_DDR3", "MEMORY_QDR"
 ]
+
 data_rates = ["SDR", "DDR"]
-data_widths = [2, 3, 4, 5, 6, 7, 8, 10, 14]
+
+data_widths = {
+    "SDR": [2, 3, 4, 5, 6, 7, 8],
+    "DDR": [4, 6, 8, 10, 14],
+}
+
+loc_to_tile_site_map = {}
 
 # Output tags
-#loc_to_tile_site_map = {}
 for param_list in data:
     for params in param_list:
         loc = verilog.unquote(params["SITE_LOC"])
@@ -28,25 +34,28 @@ for param_list in data:
         get_xy = util.create_xy_fun('IOB_')
         x, y = get_xy(loc)
 
-        #loc_to_tile_site_map[loc] = params["TILE"] + ".IOB_X0Y%d" % (y % 2)
+        loc_to_tile_site_map[loc] = params["TILE_NAME"] + ".IOB_Y%d" % (y % 2)
 
         # Site not used at all
         if not params["IS_USED"]:
 
             segmk.add_site_tag(loc, "ISERDES.SHIFTOUT_USED", 0)
-            
+
+            segmk.add_site_tag(loc, "IDDR_OR_ISERDES.IN_USE", 0)
             segmk.add_site_tag(loc, "ISERDES.IN_USE", 0)
+            segmk.add_site_tag(loc, "IFF.IN_USE", 0)
 
             segmk.add_site_tag(loc, "ISERDES.MODE.MASTER", 0)
             segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE", 0)
 
             for i in iface_types:
                 if i == "NETWORKING":
-                    for j in data_widths:
-                        tag = "ISERDES.%s.%s" % (i, j)
-                        segmk.add_site_tag(loc, tag, 0)
+                    for j in data_rates:
+                        for k in data_widths[j]:
+                            tag = "ISERDES.%s.%s.%s" % (i, j, k)
+                            segmk.add_site_tag(loc, tag, 0)
                 else:
-                    segmk.add_site_tag(loc, "ISERDES.%s.4" % i, 0)
+                    segmk.add_site_tag(loc, "ISERDES.%s.DDR.4" % i, 0)
 
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 0)
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
@@ -57,28 +66,35 @@ for param_list in data:
             for i in range(1, 4 + 1):
                 segmk.add_site_tag(loc, "IFF.ZSRVAL_Q%d" % i, 0)
 
-            segmk.add_site_tag(loc, "ZINV_D", 0)
+            segmk.add_site_tag(loc, "ISERDES.IS_CLKB_INVERTED", 1)
+            segmk.add_site_tag(loc, "ISERDES.IS_CLK_INVERTED", 0)
+
+            segmk.add_site_tag(loc, "ZINV_D", 1)
 
             segmk.add_site_tag(loc, "ISERDES.DYN_CLKDIV_INV_EN", 0)
             segmk.add_site_tag(loc, "ISERDES.DYN_CLK_INV_EN", 0)
 
-            segmk.add_site_tag(loc, "IFFDELMUXE3.0", 0)
-            segmk.add_site_tag(loc, "IFFDELMUXE3.1", 1)
-            segmk.add_site_tag(loc, "IDELMUXE3.0", 0)
-            segmk.add_site_tag(loc, "IDELMUXE3.1", 1)
+            segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
+            segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
+            segmk.add_site_tag(loc, "IDELMUXE3.P0", 0)
+            segmk.add_site_tag(loc, "IDELMUXE3.P1", 1)
 
             segmk.add_site_tag(loc, "ISERDES.OFB_USED", 0)
 
-            segmk.add_site_tag(loc, "IFF.IN_USE", 0)
+#            segmk.add_site_tag(loc, "CE1USED", 0)
+#            segmk.add_site_tag(loc, "IFF.SUSED", 0)
+#            segmk.add_site_tag(loc, "IFF.RUSED", 0)
 
-        # Site used as ISERDESE2
+# Site used as ISERDESE2
         elif verilog.unquote(params["BEL_TYPE"]) == "ISERDESE2":
 
+            segmk.add_site_tag(loc, "IDDR_OR_ISERDES.IN_USE", 1)
+            segmk.add_site_tag(loc, "IFF.IN_USE", 0)
             segmk.add_site_tag(loc, "ISERDES.IN_USE", 1)
 
             if "SHIFTOUT_USED" in params:
                 if params["CHAINED"]:
-                    value = params["SHIFTOUT_USED"]                
+                    value = params["SHIFTOUT_USED"]
                     segmk.add_site_tag(loc, "ISERDES.SHIFTOUT_USED", value)
 
             if "SERDES_MODE" in params:
@@ -94,16 +110,22 @@ for param_list in data:
             data_rate = verilog.unquote(params["DATA_RATE"])
             data_width = int(params["DATA_WIDTH"])
 
-            segmk.add_site_tag(loc, "ISERDES.SDR", int(data_rate == "SDR"))
-            segmk.add_site_tag(loc, "ISERDES.DDR", int(data_rate == "DDR"))
+            #segmk.add_site_tag(loc, "ISERDES.SDR", int(data_rate == "SDR"))
+            #segmk.add_site_tag(loc, "ISERDES.DDR", int(data_rate == "DDR"))
 
             for i in iface_types:
-                for j in data_widths:
-                    tag = "ISERDES.%s.%s" % (i, j)
+                if i == "NETWORKING":
+                    for j in data_rates:
+                        for k in data_widths[j]:
+                            tag = "ISERDES.%s.%s.%s" % (i, j, k)
 
+                            if i == iface_type:
+                                if j == data_rate:
+                                    if k == data_width:
+                                        segmk.add_site_tag(loc, tag, 1)
+                else:
                     if i == iface_type:
-                        if j == data_width:
-                            segmk.add_site_tag(loc, tag, 1)
+                        segmk.add_site_tag(loc, "ISERDES.%s.DDR.4" % i, 0)
 
             if "NUM_CE" in params:
                 value = params["NUM_CE"]
@@ -129,6 +151,15 @@ for param_list in data:
                     segmk.add_site_tag(
                         loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
 
+            if "IS_CLKB_INVERTED" in params:
+                segmk.add_site_tag(
+                    loc, "ISERDES.IS_CLKB_INVERTED",
+                    params["IS_CLKB_INVERTED"])
+
+            if "IS_CLK_INVERTED" in params:
+                segmk.add_site_tag(
+                    loc, "ISERDES.IS_CLK_INVERTED", params["IS_CLK_INVERTED"])
+
             if "DYN_CLKDIV_INV_EN" in params:
                 value = verilog.unquote(params["DYN_CLKDIV_INV_EN"])
                 segmk.add_site_tag(
@@ -144,69 +175,91 @@ for param_list in data:
                 value = verilog.unquote(params["IOBDELAY"])
                 if value == "NONE":
                     #segmk.add_site_tag(loc, "IOBDELAY_NONE", 1)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 0)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 1)
-                    segmk.add_site_tag(loc, "IDELMUXE3.0", 0)
-                    segmk.add_site_tag(loc, "IDELMUXE3.1", 1)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P0", 0)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P1", 1)
                 if value == "IBUF":
                     #segmk.add_site_tag(loc, "IOBDELAY_IBUF", 1)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 0)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 1)
-                    segmk.add_site_tag(loc, "IDELMUXE3.0", 1)
-                    segmk.add_site_tag(loc, "IDELMUXE3.1", 0)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P0", 1)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P1", 0)
                 if value == "IFD":
                     #segmk.add_site_tag(loc, "IOBDELAY_IFD" , 1)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 1)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 0)
-                    segmk.add_site_tag(loc, "IDELMUXE3.0", 0)
-                    segmk.add_site_tag(loc, "IDELMUXE3.1", 1)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 1)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 0)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P0", 0)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P1", 1)
                 if value == "BOTH":
                     #segmk.add_site_tag(loc, "IOBDELAY_BOTH", 1)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 1)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 0)
-                    segmk.add_site_tag(loc, "IDELMUXE3.0", 1)
-                    segmk.add_site_tag(loc, "IDELMUXE3.1", 0)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 1)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 0)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P0", 1)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P1", 0)
 
             if "OFB_USED" in params:
                 value = verilog.unquote(params["OFB_USED"])
-                if value == "TRUE":
-                    segmk.add_site_tag(loc, "ISERDES.OFB_USED", 1)
+                segmk.add_site_tag(
+                    loc, "ISERDES.OFB_USED", int(value == "TRUE"))
 
         # Site used as IDDR
         elif verilog.unquote(params["BEL_TYPE"]) == "IDDR":
 
+            segmk.add_site_tag(loc, "IDDR_OR_ISERDES.IN_USE", 1)
             segmk.add_site_tag(loc, "IFF.IN_USE", 1)
+            segmk.add_site_tag(loc, "ISERDES.IN_USE", 0)
 
             if "DDR_CLK_EDGE" in params:
                 value = verilog.unquote(params["DDR_CLK_EDGE"])
-                segmk.add_site_tag(loc, "IFF.DDR_CLK_EDGE.OPPOSITE_EDGE", int(value == "OPPOSITE_EDGE"))
-                segmk.add_site_tag(loc, "IFF.DDR_CLK_EDGE.SAME_EDGE", int(value == "SAME_EDGE"))
-                segmk.add_site_tag(loc, "IFF.DDR_CLK_EDGE.SAME_EDGE_PIPELINED", int(value == "SAME_EDGE_PIPELINED"))
+                segmk.add_site_tag(
+                    loc, "IFF.DDR_CLK_EDGE.OPPOSITE_EDGE",
+                    int(value == "OPPOSITE_EDGE"))
+                segmk.add_site_tag(
+                    loc, "IFF.DDR_CLK_EDGE.SAME_EDGE",
+                    int(value == "SAME_EDGE"))
+                segmk.add_site_tag(
+                    loc, "IFF.DDR_CLK_EDGE.SAME_EDGE_PIPELINED",
+                    int(value == "SAME_EDGE_PIPELINED"))
+
+                # A test
+                segmk.add_site_tag(loc, "ISERDES.IS_CLKB_INVERTED", 1)
+                segmk.add_site_tag(loc, "ISERDES.IS_CLK_INVERTED", 0)
 
             if "SRTYPE" in params:
                 value = verilog.unquote(params["SRTYPE"])
                 if value == "ASYNC":
                     segmk.add_site_tag(loc, "IFF.SRTYPE.ASYNC", 1)
-                    segmk.add_site_tag(loc, "IFF.SRTYPE.SYNC",  0)
+                    segmk.add_site_tag(loc, "IFF.SRTYPE.SYNC", 0)
                 if value == "SYNC":
                     segmk.add_site_tag(loc, "IFF.SRTYPE.ASYNC", 0)
-                    segmk.add_site_tag(loc, "IFF.SRTYPE.SYNC",  1)
+                    segmk.add_site_tag(loc, "IFF.SRTYPE.SYNC", 1)
 
             if "IDELMUX" in params:
                 if params["IDELMUX"] == 1:
-                    segmk.add_site_tag(loc, "IDELMUXE3.0", 1)
-                    segmk.add_site_tag(loc, "IDELMUXE3.1", 0)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P0", 1)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P1", 0)
                 else:
-                    segmk.add_site_tag(loc, "IDELMUXE3.0", 0)
-                    segmk.add_site_tag(loc, "IDELMUXE3.1", 1)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P0", 0)
+                    segmk.add_site_tag(loc, "IDELMUXE3.P1", 1)
 
             if "IFFDELMUX" in params:
                 if params["IFFDELMUX"] == 1:
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 1)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 0)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 1)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 0)
                 else:
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.0", 0)
-                    segmk.add_site_tag(loc, "IFFDELMUXE3.1", 1)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
+                    segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
+
+            segmk.add_site_tag(loc, "ZINV_D", 0)
+
+            #            if "CE1USED" in params:
+            #                segmk.add_site_tag(loc, "CE1USED", params["CE1USED"])
+
+            #            if "SR_MODE" in params:
+            #                value = verilog.unquote(params["SR_MODE"])
+            #                segmk.add_site_tag(loc, "IFF.SUSED", int(value == "SET"))
+            #                segmk.add_site_tag(loc, "IFF.RUSED", int(value == "RST"))
 
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 1)
             segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
@@ -217,13 +270,16 @@ for param_list in data:
             exit(-1)
 
 # Write segments and tags for later check
-#with open("tags.json", "w") as fp:
-#    tags = {
-#        loc_to_tile_site_map[l]: {k: int(v)
-#                                  for k, v in d.items()}
-#        for l, d in segmk.site_tags.items()
-#    }
-#    json.dump(tags, fp, sort_keys=True, indent=1)
+def_tags = {t: 0 for d in segmk.site_tags.values() for t in d.keys()}
+
+with open("tags.json", "w") as fp:
+    tags = {}
+    for l, d in segmk.site_tags.items():
+        d1 = dict(def_tags)
+        d1.update({k: int(v) for k, v in d.items()})
+        tags[loc_to_tile_site_map[l]] = d1
+
+    json.dump(tags, fp, sort_keys=True, indent=1)
 
 
 def bitfilter(frame_idx, bit_idx):

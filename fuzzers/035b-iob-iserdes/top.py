@@ -44,75 +44,57 @@ def gen_sites():
         iob33m = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33M"][0]
 
         top_sites = {
-            "IOB":    iob33m,
+            "IOB": iob33m,
             "ILOGIC": iob33m.replace("IOB", "ILOGIC"),
             "IDELAY": iob33m.replace("IOB", "IDELAY"),
         }
 
         bot_sites = {
-            "IOB":    iob33s,
+            "IOB": iob33s,
             "ILOGIC": iob33s.replace("IOB", "ILOGIC"),
             "IDELAY": iob33s.replace("IOB", "IDELAY"),
         }
 
         yield iob_tile_name, top_sites, bot_sites
 
+
 def gen_iserdes(loc):
 
     # Site params
     params = {
-        "SITE_LOC":
-        verilog.quote(loc),
-        "IS_USED":
-        int(random.randint(0, 10) > 0),  # Make it used more often
-        "USE_IDELAY":
-        random.randint(0, 1),
-        "BEL_TYPE":
-        verilog.quote("ISERDESE2"),
-        "INIT_Q1":
-        random.randint(0, 1),
-        "INIT_Q2":
-        random.randint(0, 1),
-        "INIT_Q3":
-        random.randint(0, 1),
-        "INIT_Q4":
-        random.randint(0, 1),
-        "SRVAL_Q1":
-        random.randint(0, 1),
-        "SRVAL_Q2":
-        random.randint(0, 1),
-        "SRVAL_Q3":
-        random.randint(0, 1),
-        "SRVAL_Q4":
-        random.randint(0, 1),
-        "NUM_CE":
-        random.randint(1, 2),
+        "SITE_LOC": verilog.quote(loc),
+        "USE_IDELAY": random.randint(0, 1),
+        "BEL_TYPE": verilog.quote("ISERDESE2"),
+        "INIT_Q1": random.randint(0, 1),
+        "INIT_Q2": random.randint(0, 1),
+        "INIT_Q3": random.randint(0, 1),
+        "INIT_Q4": random.randint(0, 1),
+        "SRVAL_Q1": random.randint(0, 1),
+        "SRVAL_Q2": random.randint(0, 1),
+        "SRVAL_Q3": random.randint(0, 1),
+        "SRVAL_Q4": random.randint(0, 1),
+        "NUM_CE": random.randint(1, 2),
         # The following one shows negative correlation (0 - not inverted)
-        "IS_D_INVERTED":
-        random.randint(0, 1),
+        "IS_D_INVERTED": random.randint(0, 1),
         # No bits were found for parameters below
         #"IS_OCLKB_INVERTED": random.randint(0, 1),
         #"IS_OCLK_INVERTED": random.randint(0, 1),
         #"IS_CLKDIVP_INVERTED": random.randint(0, 1),
         #"IS_CLKDIV_INVERTED": random.randint(0, 1),
-        #"IS_CLKB_INVERTED": random.randint(0, 1),
-        #"IS_CLK_INVERTED": random.randint(0, 1),
-        "DYN_CLKDIV_INV_EN":
-        verilog.quote(random.choice(["TRUE", "FALSE"])),
-        "DYN_CLK_INV_EN":
-        verilog.quote(random.choice(["TRUE", "FALSE"])),
-        "IOBDELAY":
-        verilog.quote(random.choice(["NONE", "IBUF", "IFD", "BOTH"])),
-        "OFB_USED":
-        verilog.quote(
+        #"IS_CLKB_INVERTED":
+        #random.randint(0, 1),
+        #"IS_CLK_INVERTED":
+        #random.randint(0, 1),
+        "DYN_CLKDIV_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
+        "DYN_CLK_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
+        "IOBDELAY": verilog.quote(
+            random.choice(["NONE", "IBUF", "IFD", "BOTH"])),
+        "OFB_USED": verilog.quote(
             random.choice(["TRUE"] + ["FALSE"] * 9)),  # Force more FALSEs
     }
 
     iface_type = random.choice(
-        [
-            "NETWORKING", "OVERSAMPLE", "MEMORY", "MEMORY_DDR3",
-            "MEMORY_QDR"
-        ])
+        ["NETWORKING", "OVERSAMPLE", "MEMORY", "MEMORY_DDR3", "MEMORY_QDR"])
     data_rate = random.choice(["SDR", "DDR"])
     serdes_mode = random.choice(["MASTER", "SLAVE"])
 
@@ -135,6 +117,9 @@ def gen_iserdes(loc):
     if verilog.unquote(params["OFB_USED"]) == "TRUE":
         params["IOBDELAY"] = verilog.quote("NONE")
 
+    if serdes_mode == "SLAVE":
+        params["IS_CLK_INVERTED"] = 0
+
     return params
 
 
@@ -144,8 +129,6 @@ def gen_iddr(loc):
     params = {
         "SITE_LOC":
         verilog.quote(loc),
-        "IS_USED":
-        int(random.randint(0, 10) > 0),  # Make it used more often
         "USE_IDELAY":
         random.randint(0, 1),
         "BEL_TYPE":
@@ -157,17 +140,24 @@ def gen_iddr(loc):
         "SRTYPE":
         verilog.quote(random.choice(["ASYNC", "SYNC"])),
         "DDR_CLK_EDGE":
-        verilog.quote(random.choice(["OPPOSITE_EDGE", "SAME_EDGE", "SAME_EDGE_PIPELINED"])),
+        verilog.quote(
+            random.choice(
+                ["OPPOSITE_EDGE", "SAME_EDGE", "SAME_EDGE_PIPELINED"])),
+        "CE1USED":
+        random.randint(0, 1),
+        "SR_MODE":
+        verilog.quote(random.choice(["NONE", "SET", "RST"])),
     }
 
     if params["USE_IDELAY"]:
-        params["IDELMUX"]   = random.randint(0, 1)
+        params["IDELMUX"] = random.randint(0, 1)
         params["IFFDELMUX"] = random.randint(0, 1)
     else:
-        params["IDELMUX"]   = 0
+        params["IDELMUX"] = 0
         params["IFFDELMUX"] = 0
 
     return params
+
 
 def run():
 
@@ -184,6 +174,8 @@ module top (
   input  wire clk1,
   (* CLOCK_BUFFER_TYPE = "NONE" *)
   input  wire clk2,
+  input  wire ce,
+  input  wire rst,
   input  wire [{N}:0] di,
   output wire [{N}:0] do
 );
@@ -201,100 +193,77 @@ IDELAYCTRL idelayctrl();
     for i, sites in enumerate(tiles):
         tile_name = sites[0]
 
-#        # Single ISERDES
-#        if random.randint(0, 5) >= 1:
+        # Use site
+        if random.randint(0, 9) > 0:  # Use more often
 
-        # Top sites
-        if random.randint(0, 1):
-            this_sites  = sites[1]
-            other_sites = sites[2]
+            # Top sites
+            if random.randint(0, 1):
+                this_sites = sites[1]
+                other_sites = sites[2]
+            # Bottom sites
+            else:
+                this_sites = sites[2]
+                other_sites = sites[1]
 
-        # Bottom site
+            # Generate cell
+            bel_types = ["IDDR", "ISERDESE2"]
+            bel_type = bel_types[int(
+                random.randint(0, 4) > 0)]  # ISERDES more often
+            if bel_type == "ISERDESE2":
+                params = gen_iserdes(this_sites["ILOGIC"])
+            if bel_type == "IDDR":
+                params = gen_iddr(this_sites["ILOGIC"])
+
+            params["IDELAY_LOC"] = verilog.quote(this_sites["IDELAY"])
+            params["IS_USED"] = 1
+
+            # Instantiate the cell
+            print('')
+            print('// This : ' + " ".join(this_sites.values()))
+            print('// Other: ' + " ".join(other_sites.values()))
+            print('(* LOC="%s", KEEP, DONT_TOUCH *)' % this_sites["IOB"])
+            print('IBUF ibuf_%03d (.I(di[%3d]), .O(di_buf[%3d]));' % (i, i, i))
+            print('(* LOC="%s", KEEP, DONT_TOUCH *)' % other_sites["IOB"])
+            print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
+
+            param_str = ",".join(".%s(%s)" % (k, v) for k, v in params.items())
+            print(
+                'ilogic_single #(%s) ilogic_%03d (.clk1(clk1), .clk2(clk2), .ce(ce), .rst(rst), .I(di_buf[%3d]), .O(do_buf[%3d]));'
+                % (param_str, i, i, i))
+
+            params["CHAINED"] = 0
+            params["TILE_NAME"] = tile_name
+
+            # Params for the second site
+            other_params = {
+                "TILE_NAME": tile_name,
+                "SITE_LOC": verilog.quote(other_sites["ILOGIC"]),
+                "IDELAY_LOC": verilog.quote(other_sites["IDELAY"]),
+                "IS_USED": 0,
+            }
+
+            # Append to data list
+            data.append([params, other_params])
+
+        # Don't use sites
         else:
-            this_sites  = sites[2]
-            other_sites = sites[1]
 
-        # Generate cell
-        bel_type = random.choice(["ISERDESE2", "IDDR"])
-        if bel_type == "ISERDESE2":
-            params = gen_iserdes(this_sites["ILOGIC"])
-        if bel_type == "IDDR":
-            params = gen_iddr(this_sites["ILOGIC"])
+            params_list = [
+                {
+                    "TILE_NAME": tile_name,
+                    "SITE_LOC": verilog.quote(sites[1]["ILOGIC"]),
+                    "IDELAY_LOC": verilog.quote(sites[1]["IDELAY"]),
+                    "IS_USED": 0,
+                },
+                {
+                    "TILE_NAME": tile_name,
+                    "SITE_LOC": verilog.quote(sites[2]["ILOGIC"]),
+                    "IDELAY_LOC": verilog.quote(sites[2]["IDELAY"]),
+                    "IS_USED": 0,
+                }
+            ]
 
-        params["IDELAY_LOC"] = verilog.quote(this_sites["IDELAY"])
-
-        # Instantiate the cell
-        print('')
-        print('// This : ' + " ".join(this_sites.values()))
-        print('// Other: ' + " ".join(other_sites.values()))
-        print('(* LOC="%s", KEEP, DONT_TOUCH *)' % this_sites["IOB"])
-        print('IBUF ibuf_%03d (.I(di[%3d]), .O(di_buf[%3d]));' % (i, i, i))
-        print('(* LOC="%s", KEEP, DONT_TOUCH *)' % other_sites["IOB"])
-        print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
-
-        param_str = ",".join(".%s(%s)" % (k, v) for k, v in params.items())
-        print('ilogic_single #(%s) ilogic_%03d (.clk1(clk1), .clk2(clk2), .I(di_buf[%3d]), .O(do_buf[%3d]));' % (param_str, i, i, i))
-
-        params["CHAINED"] = 0
-
-        # Params for the second site
-        other_params = {
-            "SITE_LOC": verilog.quote(other_sites["ILOGIC"]),
-            "IDELAY_LOC": verilog.quote(other_sites["IDELAY"]),
-            "IS_USED": 0,
-        }
-
-        # Append to data list
-        data.append([params, other_params])
-
-#        # Dual ISERDES chained
-#        else:
-#
-#            iob_i = sites[1]
-#            iob_o = sites[3]
-#            ilogic = [sites[2], sites[4]]
-#        
-#            # Generate cells
-#            params_m = gen_iserdes(ilogic[0])
-#            params_s = gen_iserdes(ilogic[1])
-#
-#            # Force relevant parameters
-#            params_m["SERDES_MODE"] = verilog.quote("MASTER")
-#            params_m["IS_USED"] = 1
-#
-#            params_m["INTERFACE_TYPE"] = verilog.quote("NETWORKING")
-#            params_m["DATA_RATE"] = verilog.quote("DDR")
-#            params_m["DATA_WIDTH"] = random.choice([10, 14])
-#
-#            params_s["SERDES_MODE"] = verilog.quote("SLAVE")
-#            params_s["IS_USED"] = 1
-#
-#            params_s["INTERFACE_TYPE"] = params_m["INTERFACE_TYPE"]
-#            params_s["DATA_RATE"] = params_m["DATA_RATE"]
-#            params_s["DATA_WIDTH"] = params_m["DATA_WIDTH"]
-#
-#            # Instantiate cells
-#            print('')
-#            print('(* LOC="%s", KEEP, DONT_TOUCH *)' % iob_i)
-#            print('IBUF ibuf_%03d (.I(di[%3d]), .O(di_buf[%3d]));' % (i, i, i))
-#            print('(* LOC="%s", KEEP, DONT_TOUCH *)' % iob_o)
-#            print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
-#
-#            print('wire o_%03d_m;' % i)
-#            print('wire o_%03d_s;' % i)
-#            print('wire [1:0] sh_%03d;' % i)
-#            print('assign do_buf[%3d] = |q_%03d_m || |q_%03d_s;' % (i, i, i))
-#            param_str = ",".join(".%s(%s)" % (k, v) for k, v in params_m.items())
-#            print('iserdes_single #(%s) iserdes_%03d_m (.clk1(clk1), .clk2(clk2), .I(di_buf[%3d]), .O(q_%03d_m), .shiftout(sh_%03d));' % (param_str, i, i, i, i))
-#            param_str = ",".join(".%s(%s)" % (k, v) for k, v in params_s.items())
-#            print('iserdes_single #(%s) iserdes_%03d_s (.clk1(clk1), .clk2(clk2), .O(q_%03d_s), .shiftin(sh_%03d));' % (param_str, i, i,  i))
-#
-#            params_m["SHIFTOUT_USED"] = 1
-#
-#            params_m["CHAINED"] = 1
-#            params_s["CHAINED"] = 1
-#
-#            data.append([params_m, params_s])
+            data.append(params_list)
 
     # Store params
     with open("params.json", "w") as fp:
@@ -308,6 +277,8 @@ endmodule
 module ilogic_single(
   input  wire clk1,
   input  wire clk2,
+  input  wire ce,
+  input  wire rst,
   input  wire I,
   output wire O,
   input  wire [1:0] shiftin,
@@ -347,8 +318,10 @@ parameter IOBDELAY = "NONE";
 parameter OFB_USED = "FALSE";
 parameter DDR_CLK_EDGE = "OPPOSITE_EDGE";
 parameter SRTYPE = "ASYNC";
+parameter CE1USED = 0;
+parameter SR_MODE = "NONE";
 
-wire [7:0] x;
+wire [8:0] x;
 wire ddly;
 
 (* KEEP, DONT_TOUCH *)
@@ -422,12 +395,13 @@ generate if (IS_USED && BEL_TYPE == "ISERDESE2") begin
   .CLK(clk1),
   .CLKB(clk2),
   .OCLK(),
+  .OCLKB(),
   .DYNCLKDIVSEL(),
   .CLKDIV(),
   .CLKDIVP(),
   .RST(),
   .BITSLIP(),
-  .O(),
+  .O(x[8]),
   .Q1(x[0]),
   .Q2(x[1]),
   .Q3(x[2]),
@@ -456,16 +430,16 @@ end else if (IS_USED && BEL_TYPE == "IDDR") begin
   iddr
   (
   .C(clk1),
-  .CE(),
+  .CE( (CE1USED) ? ce : 1'hx ),
   .D( (IFFDELMUX) ? ddly : I  ),
-  .S(),
-  .R(),
+  .S( (SR_MODE == "SET") ? rst : 1'd0 ),
+  .R( (SR_MODE == "RST") ? rst : 1'd0 ),
   .Q1(x[0]),
   .Q2(x[1])
   );
   
-  assign x[2] = (IDELMUX) ? ddly : I;
-  assign x[7:3] = 0;
+  assign x[8] = (IDELMUX) ? ddly : I;
+  assign x[7:2] = 0;
 
 end else begin
 
@@ -477,6 +451,7 @@ end else begin
   assign x[5] = I;
   assign x[6] = I;
   assign x[7] = I;
+  assign x[8] = I;
 
 end endgenerate
 
