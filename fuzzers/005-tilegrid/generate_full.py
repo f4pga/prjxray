@@ -373,10 +373,20 @@ def propagate_IOI_SING(database, tiles_by_grid):
         database[top_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
         database[top_tile]['bits']['CLB_IO_CLK']['words'] = 2
         database[top_tile]['bits']['CLB_IO_CLK']['offset'] = 99
+        database[top_tile]['bits']['CLB_IO_CLK']['alias'] = {
+            'type': database[prev_tile]['type'],
+            'start_offset': 0,
+            'sites': {}
+        }
 
         database[bottom_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
         database[bottom_tile]['bits']['CLB_IO_CLK']['words'] = 2
         database[bottom_tile]['bits']['CLB_IO_CLK']['offset'] = 0
+        database[bottom_tile]['bits']['CLB_IO_CLK']['alias'] = {
+            'type': database[prev_tile]['type'],
+            'start_offset': 2,
+            'sites': {}
+        }
 
 
 def propagate_IOI_Y9(database, tiles_by_grid):
