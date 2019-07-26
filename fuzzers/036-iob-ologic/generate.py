@@ -4,6 +4,9 @@ from prjxray.segmaker import Segmaker
 from prjxray import verilog
 import json
 
+# Set to true to enable additional tags useful for tracing bit toggles.
+DEBUG_FUZZER = False
+
 
 def bitfilter(frame, word):
     if frame < 30 or frame > 37:
@@ -21,7 +24,7 @@ def handle_data_width(segmk, d):
 
     for opt in [2, 3, 4, 5, 6, 7, 8, 10, 14]:
         segmk.add_site_tag(
-            d['site'], 'OSERDESE.DATA_WIDTH.{}'.format(opt),
+            d['site'], 'OSERDESE.DATA_WIDTH.W{}'.format(opt),
             d['DATA_WIDTH'] == opt)
 
 
@@ -41,11 +44,6 @@ def main():
 
             if d['use_oserdese2']:
                 segmk.add_site_tag(site, 'OQUSED', 1)
-                if 'SRTYPE' in d:
-                    for opt in ['ASYNC', 'SYNC']:
-                        segmk.add_site_tag(
-                            site, 'OSERDESE.SRTYPE.{}'.format(opt),
-                            verilog.unquote(d['SRTYPE']) == opt)
 
                 for opt in ['SDR', 'DDR']:
                     segmk.add_site_tag(
@@ -80,6 +78,17 @@ def main():
                     segmk.add_site_tag(
                         site, 'ZINV_D{}'.format(idx + 1), 1 ^ d[k])
 
+                for tristate_width in [1, 4]:
+                    segmk.add_site_tag(
+                        site,
+                        'OSERDES.TRISTATE_WIDTH.W{}'.format(tristate_width),
+                        d['TRISTATE_WIDTH'] == tristate_width)
+
+                for opt in ['MASTER', 'SLAVE']:
+                    segmk.add_site_tag(
+                        site, 'OSERDES.SERDES_MODE.{}'.format(opt),
+                        opt == verilog.unquote(d['OSERDES_MODE']))
+
             if d['oddr_mux_config'] == 'direct' and d[
                     'tddr_mux_config'] == 'direct':
                 for opt in ['OPPOSITE_EDGE', 'SAME_EDGE']:
@@ -94,6 +103,17 @@ def main():
                     site, 'TDDR.DDR_CLK_EDGE.ZINV',
                     d['ODDR_CLK_EDGE'] == d['TDDR_CLK_EDGE'])
 
+                if 'SRTYPE' in d:
+                    for opt in ['ASYNC', 'SYNC']:
+                        segmk.add_site_tag(
+                            site, 'OSERDESE.SRTYPE.{}'.format(opt),
+                            verilog.unquote(d['SRTYPE']) == opt)
+
+                for opt in ['ASYNC', 'SYNC']:
+                    segmk.add_site_tag(
+                        site, 'OSERDESE.TSRTYPE.{}'.format(opt),
+                        verilog.unquote(d['TSRTYPE']) == opt)
+
             if not d['use_oserdese2']:
                 if d['oddr_mux_config'] == 'lut':
                     segmk.add_site_tag(site, 'OMUX.D1', 1)
@@ -104,6 +124,12 @@ def main():
                     segmk.add_site_tag(site, 'OQUSED', 0)
 
             segmk.add_site_tag(site, 'TQUSED', d['io'])
+
+            if DEBUG_FUZZER:
+                for k in d:
+                    segmk.add_site_tag(
+                        site, 'param_' + k + '_' + str(d[k]).replace(
+                            ' ', '').replace('\n', ''), 1)
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write(allow_empty=True)
