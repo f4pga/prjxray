@@ -85,7 +85,6 @@ def gen_iserdes(loc):
         "IS_CLKDIV_INVERTED": random.randint(0, 1),
         "IS_CLKB_INVERTED": random.randint(0, 1),
         "IS_CLK_INVERTED": random.randint(0, 1),
-
         "DYN_CLKDIV_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
         "DYN_CLK_INV_EN": verilog.quote(random.choice(["TRUE", "FALSE"])),
         "IOBDELAY": verilog.quote(

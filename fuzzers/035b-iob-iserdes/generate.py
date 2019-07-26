@@ -138,7 +138,8 @@ for param_list in data:
                         loc, "IFF.ZSRVAL_Q%d" % i, not params["SRVAL_Q%d" % i])
 
             if "IS_D_INVERTED" in params:
-                segmk.add_site_tag(loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
+                segmk.add_site_tag(
+                    loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
 
 #            if "IS_CLKB_INVERTED" in params:
 #                segmk.add_site_tag(
