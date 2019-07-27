@@ -18,7 +18,10 @@ proc print_tile_pips {tile_type filename} {
                 continue
             }
 
-            if {[llength [get_nodes -uphill -of_objects $dst_node]] > 1} {
+            set dst_wire [regsub {.*/} $dst ""]
+            set dst_match [regexp {HCLK_IOI_CK_IGCLK[0-9]+} $dst_wire]
+
+            if {[llength [get_nodes -uphill -of_objects $dst_node]] > 1 || $dst_match} {
                 set pip_string "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
                 if ![dict exists $pips $pip_string] {
                     puts $fp $pip_string
