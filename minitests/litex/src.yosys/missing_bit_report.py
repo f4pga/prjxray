@@ -50,7 +50,7 @@ def main():
 
         if word == 50:
             group = 'HCLK_IOI'
-            offset = 50
+            offset = 45
         elif word < 50:
             group = 'IOI3'
             offset = ((word - INITIAL_OFFSET) // SIZE) * SIZE + INITIAL_OFFSET
