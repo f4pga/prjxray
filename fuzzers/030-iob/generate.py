@@ -185,6 +185,75 @@ def main():
                 segmk.add_site_tag(
                     site, 'INTERMDISABLE.I', d['intermdisable_wire'] != '0')
 
+    # Create map of iobank -> sites
+    iobanks = {}
+    with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
+        for l in f:
+            iob_site, iobank = l.strip().split(',')
+            iobank = int(iobank)
+
+            if iobank not in iobanks:
+                iobanks[iobank] = set()
+
+            iobanks[iobank].add(iob_site)
+
+    site_to_cmt = {}
+    site_to_tile = {}
+    tile_to_cmt = {}
+    cmt_to_idelay = {}
+    with open(os.path.join(os.getenv('FUZDIR'), 'build',
+                           'cmt_regions.csv')) as f:
+        for l in f:
+            site, tile, cmt = l.strip().split(',')
+            site_to_tile[site] = tile
+
+            site_to_cmt[site] = cmt
+            tile_to_cmt[tile] = cmt
+
+            # Given IDELAYCTRL's are only located in HCLK_IOI3 tiles, and
+            # there is only on HCLK_IOI3 tile per CMT, update
+            # CMT -> IDELAYCTRL / tile map.
+            if 'IDELAYCTRL' in site:
+                assert cmt not in cmt_to_idelay
+                cmt_to_idelay[cmt] = site, tile
+
+    # For each IOBANK with an active VREF set the feature
+    cmt_vref_active = set()
+    with open('iobank_vref.csv') as f:
+        for l in f:
+            iobank, vref = l.strip().split(',')
+            iobank = int(iobank)
+
+            cmt = None
+            for cmt_site in iobanks[iobank]:
+                if cmt_site in site_to_cmt:
+                    cmt = site_to_cmt[cmt_site]
+                    break
+
+            if cmt is None:
+                continue
+
+            cmt_vref_active.add(cmt)
+
+            _, hclk_cmt_tile = cmt_to_idelay[cmt]
+
+            opt = 'VREF.V_{:d}_MV'.format(int(float(vref) * 1000))
+            segmk.add_tile_tag(hclk_cmt_tile, opt, 1)
+
+    # For IOBANK's with no active VREF, clear all VREF options.
+    for cmt, (_, hclk_cmt_tile) in cmt_to_idelay.items():
+        if cmt in cmt_vref_active:
+            continue
+
+        for vref in (
+                .600,
+                .675,
+                .75,
+                .90,
+        ):
+            opt = 'VREF.V_{:d}_MV'.format(int(vref * 1000))
+            segmk.add_tile_tag(hclk_cmt_tile, opt, 0)
+
     segmk.compile(bitfilter=bitfilter)
     segmk.write(allow_empty=True)
 
