@@ -209,12 +209,22 @@ def run(
         if side == "r" and not r:
             continue
 
-        if side != "":
-            side = "_" + side
+        if side == "xl":
+            segfile = "l{}".format(seg_type)
+            pipfile = "l{}".format(pip_type)
+        elif side == "xr":
+            segfile = "r{}".format(seg_type)
+            pipfile = "r{}".format(pip_type)
+        elif side == "l" or side == "r":
+            segfile = "{}_{}".format(seg_type, side)
+            pipfile = "{}_{}".format(pip_type, side)
+        else:
+            segfile = "{}".format(seg_type)
+            pipfile = "{}".format(pip_type)
 
         maketodo(
-            "%s/%s%s.txt" % (pip_dir, pip_type, side),
-            "%s/segbits_%s%s.db" % (db_dir, seg_type, side),
+            "%s/%s.txt" % (pip_dir, pipfile),
+            "%s/segbits_%s.db" % (db_dir, segfile),
             intre,
             exclude_re=exclude_re,
             balance_wire_re=balance_wire_re,
