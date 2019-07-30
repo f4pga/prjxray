@@ -189,12 +189,14 @@ def use_iserdese2(p, luts, connects):
             'clk_BUFG2',
         ))
 
-    clkdiv = random.choice(('0', ))
+    clkdiv = random.choice(('clk_BUFG3', 'clk_BUFG4'))
 
-    if random.randint(0, 1):
+    p['DISABLE_CLOCKS'] = random.randint(0, 1)
+    if p['DISABLE_CLOCKS']:
         clknet = '0'
         clkbnet = '0'
         oclknet = '0'
+        clkdiv = '0'
 
     print(
         '''
@@ -424,6 +426,8 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
 
     wire clk_BUFG1;
     wire clk_BUFG2;
+    wire clk_BUFG3;
+    wire clk_BUFG4;
 
     (* KEEP, DONT_TOUCH  *)
     BUFG bufg1(
@@ -432,6 +436,14 @@ module top(input clk, inout wire [`N_DI-1:0] dio);
     (* KEEP, DONT_TOUCH  *)
     BUFG bufg2(
         .O(clk_BUFG2)
+        );
+    (* KEEP, DONT_TOUCH  *)
+    BUFG bufg3(
+        .O(clk_BUFG3)
+        );
+    (* KEEP, DONT_TOUCH  *)
+    BUFG bufg4(
+        .O(clk_BUFG4)
         );
     '''.format(n_di=idx))
 
