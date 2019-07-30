@@ -44,6 +44,7 @@ proc loc_pins {} {
         set drive [lindex $line 4]
         set slew [lindex $line 5]
         set pulltype [lindex $line 6]
+        set in_term [lindex $line 7]
 
         # Have: site
         # Want: pin for site
@@ -67,6 +68,10 @@ proc loc_pins {} {
 
         if {$slew != "None"} {
             lappend props SLEW $slew
+        }
+
+        if {$in_term != "None"} {
+            lappend props IN_TERM $in_term
         }
 
         puts $props

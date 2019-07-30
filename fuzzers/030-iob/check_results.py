@@ -22,8 +22,11 @@ import generate
 
 
 def process_parts(parts):
+    if len(parts) == 0:
+        return
+
     if parts[-1] == 'IN_ONLY':
-        yield 'type', ['IBUF']
+        yield 'type', ['IBUF', 'IBUFDS']
 
     if len(parts) > 2 and parts[-2] == 'SLEW':
         yield 'SLEW', verilog.quote(parts[-1])
@@ -34,6 +37,10 @@ def process_parts(parts):
     if len(parts) > 1 and parts[1] == 'IN':
         yield 'IOSTANDARDS', parts[0].split('_')
         yield 'IN', True
+
+    if len(parts) > 1 and parts[1] == 'IN_DIFF':
+        yield 'IOSTANDARDS', parts[0].split('_')
+        yield 'IN_DIFF', True
 
     if len(parts) > 1 and parts[1] == 'DRIVE':
         yield 'IOSTANDARDS', parts[0].split('_')
@@ -47,6 +54,8 @@ def process_parts(parts):
 def create_sites_from_fasm(fasm_file):
     sites = {}
 
+    diff_tiles = set()
+
     with open(fasm_file) as f:
         for l in f:
             if 'IOB33' not in l:
@@ -55,11 +64,19 @@ def create_sites_from_fasm(fasm_file):
             parts = l.strip().split('.')
             tile = parts[0]
             site = parts[1]
+
+            if 'OUT_DIFF' == site:
+                diff_tiles.add(tile)
+                continue
+
             if (tile, site) not in sites:
                 sites[(tile, site)] = {
                     'tile': tile,
                     'site_key': site,
                 }
+
+            if len(parts) > 3 and 'IN_DIFF' == parts[3]:
+                diff_tiles.add(tile)
 
             for key, value in process_parts(parts[2:]):
                 sites[(tile, site)][key] = value
@@ -67,7 +84,7 @@ def create_sites_from_fasm(fasm_file):
     for key in sites:
         if 'type' not in sites[key]:
             if 'IOSTANDARDS' not in sites[key]:
-                sites[key]['type'] = None
+                sites[key]['type'] = [None]
             else:
                 assert 'IOSTANDARDS' in sites[key], sites[key]
                 assert 'DRIVES' in sites[key], sites[key]
@@ -77,15 +94,17 @@ def create_sites_from_fasm(fasm_file):
                 else:
                     sites[key]['type'] = [
                         "OBUF",
+                        "OBUFDS",
+                        "OBUFTDS",
                         "OBUFDS_DUAL_BUF",
                         "OBUFTDS_DUAL_BUF",
                     ]
 
-    return sites
+    return sites, diff_tiles
 
 
 def process_specimen(fasm_file, params_json):
-    sites = create_sites_from_fasm(fasm_file)
+    sites, diff_tiles = create_sites_from_fasm(fasm_file)
 
     with open(params_json) as f:
         params = json.load(f)
@@ -107,8 +126,12 @@ def process_specimen(fasm_file, params_json):
 
             site_from_fasm = sites[(tile, site_key)]
 
-            assert p['type'] in site_from_fasm['type'], (
-                tile, site_key, p['type'], site_from_fasm['type'])
+            if site_y == 0 or tile not in diff_tiles:
+                assert p['type'] in site_from_fasm['type'], (
+                    tile, site_key, p['type'], site_from_fasm['type'])
+            else:
+                # Y1 on DIFF tiles is always none.
+                assert p['type'] is None, p
 
             if p['type'] is None:
                 continue
@@ -136,7 +159,7 @@ def process_specimen(fasm_file, params_json):
                 site_from_fasm['IOSTANDARDS'],
             )
 
-            if p['type'] != 'IBUF':
+            if p['type'] not in ['IBUF', 'IBUFDS']:
                 if verilog.unquote(p['SLEW']) == '':
                     # Default is None.
                     slew = verilog.quote('SLOW')
