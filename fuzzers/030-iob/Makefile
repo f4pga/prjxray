@@ -17,7 +17,7 @@ build/segbits_xiob33.db: build/segbits_xiob33.rdb process_rdb.py bits.dbf
 	${XRAY_MASKMERGE} build/mask_xiob33.db $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
 
 build/segbits_hclk_ioi3.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_hclk_ioi3.rdb $$(find -name segdata_hclk_ioi3.txt)
+	${XRAY_SEGMATCH} -c 4 -o build/segbits_hclk_ioi3.rdb $$(find -name segdata_hclk_ioi3.txt)
 
 build/segbits_hclk_ioi3.db: build/segbits_hclk_ioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db hclk_bits.dbf --seg-fn-in build/segbits_hclk_ioi3.rdb --seg-fn-out $@
