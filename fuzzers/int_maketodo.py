@@ -215,7 +215,7 @@ def run(
         elif side == "xr":
             segfile = "r{}".format(seg_type)
             pipfile = "r{}".format(pip_type)
-        elif side == "l" or side == "r":
+        elif side != "":
             segfile = "{}_{}".format(seg_type, side)
             pipfile = "{}_{}".format(pip_type, side)
         else:
