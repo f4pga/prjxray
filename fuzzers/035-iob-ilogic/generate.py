@@ -20,9 +20,9 @@ def handle_data_width(segmk, d):
         return
 
     if d['DATA_RATE'] == 'DDR':
-        data_width =[4, 6, 8, 10, 14]
+        data_width = [4, 6, 8, 10, 14]
     else:
-        data_width =[2, 3, 4, 5, 6, 7, 8]
+        data_width = [2, 3, 4, 5, 6, 7, 8]
 
     for opt in data_width:
         segmk.add_site_tag(
