@@ -14,6 +14,22 @@ proc make_io_pin_sites {} {
     return $io_pin_sites
 }
 
+proc get_random_unused_pin {} {
+    set cell_list [get_ports]
+    foreach pad [get_package_pins -filter "IS_GENERAL_PURPOSE == 1"] {
+        set pad_used 0
+        foreach cell $net_list {
+            set cell_pin [get_package_pins -of_objects [get_ports $cell]]
+                if { $cell_pin==$pad } {
+                   set pad_used 1
+                }
+        }
+        if { $pad_used == 0 } {
+            return $pad
+        }
+    }
+}
+
 proc load_pin_lines {} {
     # IOB_X0Y103 clk input
     # IOB_X0Y129 do[0] output
@@ -87,6 +103,7 @@ proc run {} {
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-144}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-161}]
 
     write_checkpoint -force design_pre_place.dcp
 

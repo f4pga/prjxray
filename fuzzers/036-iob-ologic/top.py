@@ -35,7 +35,7 @@ def write_params(params):
     open('params.csv', 'w').write(pinstr)
 
 
-def use_oserdese2(p, luts, connects):
+def use_oserdese2(p, luts, connects, clocks):
 
     p['oddr_mux_config'] = 'none'
     p['tddr_mux_config'] = 'none'
@@ -50,6 +50,9 @@ def use_oserdese2(p, luts, connects):
         'SDR',
         'DDR',
     )))
+
+    fast_clock = random.choice(clocks)
+    slow_clock = random.choice(clocks)
 
     if verilog.unquote(p['DATA_RATE_OQ']) == 'SDR':
         data_widths = [2, 3, 4, 5, 6, 7, 8]
@@ -108,10 +111,10 @@ def use_oserdese2(p, luts, connects):
     p['CLKDIV_USED'] = random.randint(0, 1)
     if p['CLK_USED']:
         clk_connections += '''
-        .CLK({}),'''.format(luts.get_next_output_net())
+        .CLK({}),'''.format(fast_clock)
     if p['CLKDIV_USED']:
         clk_connections += '''
-        .CLKDIV({}),'''.format(luts.get_next_output_net())
+        .CLKDIV({}),'''.format(slow_clock)
 
     print(
         '''
@@ -378,6 +381,88 @@ module top(input clk, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
         LUT6 dummy_lut();
         ''')
 
+    print(
+        '''
+        wire clk0_0, clk0_90, clk0_0_bg, clk_0_90_bg;
+        wire clk1_0, clk1_90, clk1_0_bg, clk_0_90_bg;
+        wire clk2_0, clk2_90, clk2_0_bg, clk_0_90_bg;
+        wire clkfb;
+        PLLE2_BASE #(
+            .BANDWIDTH("OPTIMIZED"),  // OPTIMIZED, HIGH, LOW
+            .CLKFBOUT_MULT(8),        // Multiply value for all CLKOUT, (2-64)
+            .CLKFBOUT_PHASE(0.0),     // Phase offset in degrees of CLKFB, (-360.000-360.000).
+            .CLKIN1_PERIOD(10.0),      // Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
+            // CLKOUT0_DIVIDE - CLKOUT5_DIVIDE: Divide amount for each CLKOUT (1-128)
+            .CLKOUT0_DIVIDE(1),
+            .CLKOUT1_DIVIDE(1),
+            .CLKOUT2_DIVIDE(2),
+            .CLKOUT3_DIVIDE(2),
+            .CLKOUT4_DIVIDE(4),
+            .CLKOUT5_DIVIDE(4),
+            // CLKOUT0_DUTY_CYCLE - CLKOUT5_DUTY_CYCLE: Duty cycle for each CLKOUT (0.001-0.999).
+            .CLKOUT0_DUTY_CYCLE(0.5),
+            .CLKOUT1_DUTY_CYCLE(0.5),
+            .CLKOUT2_DUTY_CYCLE(0.5),
+            .CLKOUT3_DUTY_CYCLE(0.5),
+            .CLKOUT4_DUTY_CYCLE(0.5),
+            .CLKOUT5_DUTY_CYCLE(0.5),
+            // CLKOUT0_PHASE - CLKOUT5_PHASE: Phase offset for each CLKOUT (-360.000-360.000).
+            .CLKOUT0_PHASE(0.0),
+            .CLKOUT1_PHASE(90.0),
+            .CLKOUT2_PHASE(0.0),
+            .CLKOUT3_PHASE(90.0),
+            .CLKOUT4_PHASE(0.0),
+            .CLKOUT5_PHASE(90.0),
+            .DIVCLK_DIVIDE(1),        // Master division value, (1-56)
+            .REF_JITTER1(0.0),        // Reference input jitter in UI, (0.000-0.999).
+            .STARTUP_WAIT("FALSE")    // Delay DONE until PLL Locks, ("TRUE"/"FALSE")
+       )
+       PLLE2_inst (
+            // Clock Outputs: 1-bit (each) output: User configurable clock outputs
+            .CLKOUT0(clk0_0),   // 1-bit output: CLKOUT0
+            .CLKOUT1(clk0_90),   // 1-bit output: CLKOUT1
+            .CLKOUT2(clk1_0),   // 1-bit output: CLKOUT2
+            .CLKOUT3(clk1_90),   // 1-bit output: CLKOUT3
+            .CLKOUT4(clk2_0),   // 1-bit output: CLKOUT4
+            .CLKOUT5(clk2_90),   // 1-bit output: CLKOUT5
+            // Feedback Clocks: 1-bit (each) output: Clock feedback ports
+            .CLKFBOUT(clkfb), // 1-bit output: Feedback clock
+            .LOCKED(),     // 1-bit output: LOCK
+            .CLKIN1(),     // 1-bit input: Input clock
+            // Control Ports: 1-bit (each) input: PLL control ports
+            .PWRDWN(1'b0),     // 1-bit input: Power-down
+            .RST(1'b0),           // 1-bit input: Reset
+            // Feedback Clocks: 1-bit (each) input: Clock feedback ports
+            .CLKFBIN(clkfb)    // 1-bit input: Feedback clock
+       );
+       BUFG clk0_0_BUFG (
+            .O(clk0_0_bg),
+            .I(clk0_0)
+       );
+       BUFG clk0_90_BUFG (
+            .O(clk0_90_bg),
+            .I(clk0_90)
+       );
+       BUFG clk1_0_BUFG (
+            .O(clk1_0_bg),
+            .I(clk1_0)
+       );
+       BUFG clk1_90_BUFG (
+            .O(clk1_90_bg),
+            .I(clk1_90)
+       );
+       BUFG clk2_0_BUFG (
+            .O(clk2_0_bg),
+            .I(clk2_0)
+       );
+       BUFG clk2_90_BUFG (
+            .O(clk2_90_bg),
+            .I(clk2_90)
+       );
+    ''')
+
+    clocks = ['clk0_0_bg', 'clk0_90_bg', 'clk1_0_bg', 'clk1_90_bg', 'clk2_0_bg', 'clk2_90_bg']
+
     for p in params:
         if p['io']:
             print(
@@ -412,7 +497,7 @@ module top(input clk, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
 
         p['use_oserdese2'] = random.randint(0, 1)
         if p['use_oserdese2']:
-            use_oserdese2(p, luts, connects)
+            use_oserdese2(p, luts, connects, clocks)
         else:
             use_direct_and_oddr(p, luts, connects)
 
