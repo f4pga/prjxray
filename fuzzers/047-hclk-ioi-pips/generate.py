@@ -63,9 +63,6 @@ def main():
                 tiledata[tile]["srcs"].add(dst)
                 tiledata[tile]["dsts"].add(src)
 
-            if pnum == 1 or pdir == 0:
-                ignpip.add((src, dst))
-
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]
         pips = pips_srcs_dsts["pips"]
