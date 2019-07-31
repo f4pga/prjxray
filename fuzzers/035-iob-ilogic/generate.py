@@ -19,13 +19,43 @@ def handle_data_width(segmk, d):
     if 'DATA_WIDTH' not in d:
         return
 
-    if d['DATA_RATE'] == 'DDR':
-        return
+    # It appears several widths end up with the same bitstream pattern.
+    # This groups those widths together for documentation.
+    widths = [
+        [2],
+        [3],
+        [4, 6],
+        [5, 7],
+        [8],
+        [10],
+        [14],
+    ]
 
-    for opt in [2, 3, 4, 5, 6, 7, 8, 10, 14]:
+    width_map = {}
+
+    for ws in widths:
+        for w in ws:
+            width_map[w] = 'W{}'.format('_'.join(map(str, ws)))
+
+    zero_opt = 2
+    W_OPT_ZERO = width_map[zero_opt]
+    if d['DATA_WIDTH'] == zero_opt:
         segmk.add_site_tag(
-            d['site'], 'ISERDES.DATA_WIDTH.W{}'.format(opt),
-            d['DATA_WIDTH'] == opt)
+            d['site'], 'ISERDES.DATA_WIDTH.{}'.format(W_OPT_ZERO), 1)
+
+        for opt in width_map.values():
+            if opt == W_OPT_ZERO:
+                continue
+
+            segmk.add_site_tag(
+                d['site'], 'ISERDES.DATA_WIDTH.{}'.format(opt), 0)
+    else:
+        w_opt = width_map[d['DATA_WIDTH']]
+        if w_opt != W_OPT_ZERO:
+            segmk.add_site_tag(
+                d['site'], 'ISERDES.DATA_WIDTH.{}'.format(W_OPT_ZERO), 0)
+            segmk.add_site_tag(
+                d['site'], 'ISERDES.DATA_WIDTH.{}'.format(w_opt), 1)
 
 
 def handle_data_rate(segmk, d):

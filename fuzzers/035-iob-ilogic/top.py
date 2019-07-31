@@ -221,6 +221,7 @@ def use_iserdese2(p, luts, connects):
         .OFB_USED({OFB_USED}),
         .NUM_CE({NUM_CE}),
         .DATA_RATE({DATA_RATE}),
+        .DATA_WIDTH({DATA_WIDTH}),
         .IOBDELAY({IOBDELAY})
     ) iserdese2_{site} (
         {ddly_connection}
