@@ -66,11 +66,12 @@ def main():
                         segmk.add_site_tag(
                             site, 'ZINV_{}'.format(opt), 1 ^ d[k])
 
-                for idx in range(4):
-                    k = 'IS_T{}_INVERTED'.format(idx + 1)
-                    segmk.add_site_tag(site, k, d[k])
-                    segmk.add_site_tag(
-                        site, 'ZINV_T{}'.format(idx + 1), 1 ^ d[k])
+                if d['io']:
+                    for idx in range(4):
+                        k = 'IS_T{}_INVERTED'.format(idx + 1)
+                        segmk.add_site_tag(site, k, d[k])
+                        segmk.add_site_tag(
+                            site, 'ZINV_T{}'.format(idx + 1), 1 ^ d[k])
 
                 for idx in range(8):
                     k = 'IS_D{}_INVERTED'.format(idx + 1)

@@ -121,7 +121,7 @@ def main():
                     segmk.add_site_tag(
                         site, 'IFF.ZSRVAL_Q4', not d['SRVAL_Q4'])
 
-                if 'IS_CLK_INVERTED' in d:
+                if 'IS_CLK_INVERTED' in d and not d['DISABLE_CLOCKS']:
                     if verilog.unquote(d['INTERFACE_TYPE']) == 'MEMORY_DDR3':
                         segmk.add_site_tag(
                             site, 'IFF.INV_CLK', d['IS_CLK_INVERTED'])
@@ -153,7 +153,7 @@ def main():
                                 d['IS_CLK_INVERTED']
                                 and d['IS_CLKB_INVERTED']))
 
-                if 'IS_OCLK_INVERTED' in d:
+                if 'IS_OCLK_INVERTED' in d and not d['DISABLE_CLOCKS']:
                     segmk.add_site_tag(
                         site, 'IFF.INV_OCLK', d['IS_OCLK_INVERTED'])
                     segmk.add_site_tag(
@@ -163,7 +163,8 @@ def main():
                     segmk.add_site_tag(
                         site, 'IFF.ZINV_OCLKB', not d['IS_OCLKB_INVERTED'])
 
-                if 'IS_CLKDIV_INVERTED' in d:
+                if 'IS_CLKDIV_INVERTED' in d and not d['DISABLE_CLOCKS'] and \
+                    verilog.unquote(d['INTERFACE_TYPE']) == 'MEMORY':
                     segmk.add_site_tag(
                         site, 'IFF.INV_CLKDIV', d['IS_CLKDIV_INVERTED'])
                     segmk.add_site_tag(
