@@ -61,6 +61,10 @@ def main():
 
                 for opt in ['CLK', 'CLKDIV']:
                     if d['{}_USED'.format(opt)]:
+                        for clk in ['clk_0_0', 'clk_0_90', 'clk_1_0', 'clk_1_90', 'clk_2_0', 'clk_2_90']:
+                            tag = '{}_{}'.format(opt, clk)
+                            segmk.add_site_tag(site, 'OSERDESE.{}'.format(tag), tag in d)
+
                         k = 'IS_{}_INVERTED'.format(opt)
                         segmk.add_site_tag(site, k, d[k])
                         segmk.add_site_tag(

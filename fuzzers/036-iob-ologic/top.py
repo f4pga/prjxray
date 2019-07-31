@@ -35,6 +35,11 @@ def write_params(params):
     open('params.csv', 'w').write(pinstr)
 
 
+def get_clk_details(clk1, clk2):
+    _, speed1, phase1 = clk1.split('_')
+    _, speed2, phase2 = clk2.split('_')
+
+
 def use_oserdese2(p, luts, connects, clocks):
 
     p['oddr_mux_config'] = 'none'
@@ -112,9 +117,13 @@ def use_oserdese2(p, luts, connects, clocks):
     if p['CLK_USED']:
         clk_connections += '''
         .CLK({}),'''.format(fast_clock)
+        p['CLK_{}'.format(fast_clock)] = 1
     if p['CLKDIV_USED']:
         clk_connections += '''
         .CLKDIV({}),'''.format(slow_clock)
+        p['CLKDIV_{}'.format(fast_clock)] = 1
+
+    p['SAME_CLK'] = p['CLK_USED'] and p['CLKDIV_USED'] and slow_clock == fast_clock
 
     print(
         '''
@@ -383,9 +392,9 @@ module top(input clk, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
 
     print(
         '''
-        wire clk0_0, clk0_90, clk0_0_bg, clk_0_90_bg;
-        wire clk1_0, clk1_90, clk1_0_bg, clk_0_90_bg;
-        wire clk2_0, clk2_90, clk2_0_bg, clk_0_90_bg;
+        wire clk0_0, clk0_90, clk_0_0, clk_0_90;
+        wire clk1_0, clk1_90, clk_1_0, clk_1_90;
+        wire clk2_0, clk2_90, clk_2_0, clk_2_90;
         wire clkfb;
         PLLE2_BASE #(
             .BANDWIDTH("OPTIMIZED"),  // OPTIMIZED, HIGH, LOW
@@ -436,32 +445,32 @@ module top(input clk, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
             .CLKFBIN(clkfb)    // 1-bit input: Feedback clock
        );
        BUFG clk0_0_BUFG (
-            .O(clk0_0_bg),
+            .O(clk_0_0),
             .I(clk0_0)
        );
        BUFG clk0_90_BUFG (
-            .O(clk0_90_bg),
+            .O(clk_0_90),
             .I(clk0_90)
        );
        BUFG clk1_0_BUFG (
-            .O(clk1_0_bg),
+            .O(clk_1_0),
             .I(clk1_0)
        );
        BUFG clk1_90_BUFG (
-            .O(clk1_90_bg),
+            .O(clk_1_90),
             .I(clk1_90)
        );
        BUFG clk2_0_BUFG (
-            .O(clk2_0_bg),
+            .O(clk_2_0),
             .I(clk2_0)
        );
        BUFG clk2_90_BUFG (
-            .O(clk2_90_bg),
+            .O(clk_2_90),
             .I(clk2_90)
        );
     ''')
 
-    clocks = ['clk0_0_bg', 'clk0_90_bg', 'clk1_0_bg', 'clk1_90_bg', 'clk2_0_bg', 'clk2_90_bg']
+    clocks = ['clk_0_0', 'clk_0_90', 'clk_1_0', 'clk_1_90', 'clk_2_0', 'clk_2_90']
 
     for p in params:
         if p['io']:
