@@ -69,10 +69,6 @@ def main():
                 tiledata[tile]["srcs"].add(dst)
                 tiledata[tile]["dsts"].add(src)
 
-            if pnum == 1 or pdir == 0:
-                print("Ignoring pip: {}".format(pip), file=log)
-                ignpip.add((src, dst))
-
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]
 
@@ -80,8 +76,6 @@ def main():
             tile_type = 'LIOI3'
         elif tile_type.startswith('RIOI3'):
             tile_type = 'RIOI3'
-
-        pips = pips_srcs_dsts["pips"]
 
         for src, dst in pipdata[tile_type]:
             if (src, dst) in ignpip:
@@ -92,9 +86,18 @@ def main():
             elif (src, dst) in tiledata[tile]["pips"]:
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
             elif dst not in tiledata[tile]["dsts"]:
-                segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
+                disable_pip = True
 
-        internal_feedback = False
+                if dst == 'IOI_OCLKM_0' and 'IOI_OCLK_0' in tiledata[tile][
+                        "dsts"]:
+                    disable_pip = False
+
+                if dst == 'IOI_OCLKM_1' and 'IOI_OCLK_1' in tiledata[tile][
+                        "dsts"]:
+                    disable_pip = False
+
+                if disable_pip:
+                    segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()

@@ -2,7 +2,6 @@ proc print_tile_pips {tile_type filename} {
     set fp [open $filename w]
     set pips [dict create]
     foreach tile [get_tiles -filter "TYPE == $tile_type"] {
-        puts "Dumping PIPs for tile $tile ($tile_type) to $filename."
         foreach pip [lsort [get_pips -of_objects  $tile]] {
             set src [get_wires -uphill -of_objects $pip]
             set dst [get_wires -downhill -of_objects $pip]
@@ -19,7 +18,10 @@ proc print_tile_pips {tile_type filename} {
                 continue
             }
 
-            if {[llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1} {
+            set src_wire [regsub {.*/} $src ""]
+            set src_match [regexp {IOI_OCLKM?_[01]} $src_wire]
+
+            if { [llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst]]] != 1 || $src_match } {
                 set pip_string "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
                 if ![dict exists $pips $pip_string] {
                     puts $fp $pip_string
