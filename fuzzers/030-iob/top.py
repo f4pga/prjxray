@@ -100,7 +100,7 @@ def run():
     }
 
     with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
-        iobanks = [int(l.strip()) for l in f]
+        iobanks = [int(l.strip().split(',')[1]) for l in f]
 
     params['iobanks'] = iobanks
 

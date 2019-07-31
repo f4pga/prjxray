@@ -2,7 +2,7 @@ N := 50
 SPECIMENS_DEPS := build/iobanks.txt
 include ../fuzzer.mk
 
-database: build/segbits_xiob33.db
+database: build/segbits_xiob33.db build/segbits_hclk_ioi3.db
 
 build/iobanks.txt: write_io_banks.tcl
 	mkdir -p build
@@ -16,6 +16,12 @@ build/segbits_xiob33.db: build/segbits_xiob33.rdb process_rdb.py bits.dbf
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in build/segbits_xiob33_processed.rdb --seg-fn-out $@
 	${XRAY_MASKMERGE} build/mask_xiob33.db $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
 
+build/segbits_hclk_ioi3.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o build/segbits_hclk_ioi3.rdb $$(find -name segdata_hclk_ioi3.txt)
+
+build/segbits_hclk_ioi3.db: build/segbits_hclk_ioi3.rdb
+	${XRAY_DBFIXUP} --db-root build --zero-db hclk_bits.dbf --seg-fn-in build/segbits_hclk_ioi3.rdb --seg-fn-out $@
+
 pushdb:
 ifneq (${XRAY_DATABASE}, zynq7)
 	${XRAY_MERGEDB} liob33 build/segbits_xiob33.db
@@ -23,6 +29,8 @@ ifneq (${XRAY_DATABASE}, zynq7)
 endif
 	${XRAY_MERGEDB} riob33 build/segbits_xiob33.db
 	${XRAY_MERGEDB} mask_riob33 build/mask_xiob33.db
+
+	${XRAY_MERGEDB} hclk_ioi3 build/segbits_hclk_ioi3.db
 
 .PHONY: database pushdb
 
