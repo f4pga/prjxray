@@ -19,6 +19,8 @@ def handle_data_width(segmk, d):
     if 'DATA_WIDTH' not in d:
         return
 
+    site = d['ilogic_loc']
+
     # It appears several widths end up with the same bitstream pattern.
     # This groups those widths together for documentation.
     widths = [
@@ -40,31 +42,30 @@ def handle_data_width(segmk, d):
     zero_opt = 2
     W_OPT_ZERO = width_map[zero_opt]
     if d['DATA_WIDTH'] == zero_opt:
-        segmk.add_site_tag(
-            d['site'], 'ISERDES.DATA_WIDTH.{}'.format(W_OPT_ZERO), 1)
+        segmk.add_site_tag(site, 'ISERDES.DATA_WIDTH.{}'.format(W_OPT_ZERO), 1)
 
         for opt in width_map.values():
             if opt == W_OPT_ZERO:
                 continue
 
-            segmk.add_site_tag(
-                d['site'], 'ISERDES.DATA_WIDTH.{}'.format(opt), 0)
+            segmk.add_site_tag(site, 'ISERDES.DATA_WIDTH.{}'.format(opt), 0)
     else:
         w_opt = width_map[d['DATA_WIDTH']]
         if w_opt != W_OPT_ZERO:
             segmk.add_site_tag(
-                d['site'], 'ISERDES.DATA_WIDTH.{}'.format(W_OPT_ZERO), 0)
-            segmk.add_site_tag(
-                d['site'], 'ISERDES.DATA_WIDTH.{}'.format(w_opt), 1)
+                site, 'ISERDES.DATA_WIDTH.{}'.format(W_OPT_ZERO), 0)
+            segmk.add_site_tag(site, 'ISERDES.DATA_WIDTH.{}'.format(w_opt), 1)
 
 
 def handle_data_rate(segmk, d):
     if 'DATA_WIDTH' not in d:
         return
 
+    site = d['ilogic_loc']
+
     for opt in ['SDR', 'DDR']:
         segmk.add_site_tag(
-            d['site'], 'ISERDES.DATA_RATE.{}'.format(opt),
+            site, 'ISERDES.DATA_RATE.{}'.format(opt),
             verilog.unquote(d['DATA_RATE']) == opt)
 
 
@@ -76,7 +77,7 @@ def main():
         design = json.load(f)
 
         for d in design:
-            site = d['site']
+            site = d['ilogic_loc']
 
             handle_data_width(segmk, d)
             handle_data_rate(segmk, d)
