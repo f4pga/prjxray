@@ -52,6 +52,25 @@ IBUF_LOW_PWR_SUPPORTED = ['SSTL135']
 
 
 def main():
+    # Create map of iobank -> sites
+    iobanks = {}
+    site_to_iobank = {}
+    iobank_iostandards = {}
+    with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
+        for l in f:
+            iob_site, iobank = l.strip().split(',')
+            iobank = int(iobank)
+
+            if iobank not in iobanks:
+                iobanks[iobank] = set()
+
+            iobanks[iobank].add(iob_site)
+            assert iob_site not in site_to_iobank
+            site_to_iobank[iob_site] = iobank
+
+    for iobank in iobanks:
+        iobank_iostandards[iobank] = set()
+
     print("Loading tags")
     segmk = Segmaker("design.bits")
     '''
@@ -80,6 +99,8 @@ def main():
             iostandard = verilog.unquote(d['IOSTANDARD'])
             if iostandard.startswith('DIFF_'):
                 iostandard = iostandard[5:]
+
+            iobank_iostandards[site_to_iobank[site]].add(iostandard)
 
             segmk.add_site_tag(
                 site, '_'.join(STEPDOWN_IOSTANDARDS) + '.STEPDOWN',
@@ -185,18 +206,6 @@ def main():
                 segmk.add_site_tag(
                     site, 'INTERMDISABLE.I', d['intermdisable_wire'] != '0')
 
-    # Create map of iobank -> sites
-    iobanks = {}
-    with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
-        for l in f:
-            iob_site, iobank = l.strip().split(',')
-            iobank = int(iobank)
-
-            if iobank not in iobanks:
-                iobanks[iobank] = set()
-
-            iobanks[iobank].add(iob_site)
-
     site_to_cmt = {}
     site_to_tile = {}
     tile_to_cmt = {}
@@ -239,6 +248,26 @@ def main():
 
             opt = 'VREF.V_{:d}_MV'.format(int(float(vref) * 1000))
             segmk.add_tile_tag(hclk_cmt_tile, opt, 1)
+
+    for iobank in iobank_iostandards:
+        if len(iobank_iostandards[iobank]) == 0:
+            continue
+
+        for cmt_site in iobanks[iobank]:
+            if cmt_site in site_to_cmt:
+                cmt = site_to_cmt[cmt_site]
+                break
+
+        if cmt is None:
+            continue
+
+        _, hclk_cmt_tile = cmt_to_idelay[cmt]
+
+        assert len(iobank_iostandards[iobank]) == 1, iobank_iostandards[iobank]
+
+        iostandard = list(iobank_iostandards[iobank])[0]
+        segmk.add_tile_tag(
+            hclk_cmt_tile, 'STEPDOWN', iostandard in STEPDOWN_IOSTANDARDS)
 
     # For IOBANK's with no active VREF, clear all VREF options.
     for cmt, (_, hclk_cmt_tile) in cmt_to_idelay.items():
