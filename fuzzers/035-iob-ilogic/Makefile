@@ -1,20 +1,28 @@
 N := 30
 include ../fuzzer.mk
 
-database: build/segbits_xiob33.db
+database: build/segbits_xioi3.db
 
-build/segbits_xiob33.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 6 -o build/segbits_xiob33.rdb $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
+build/segbits_xioi3.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -c 6 -o build/segbits_xioi3.rdb $$(find -name segdata_*)
 
-build/segbits_xiob33.db: build/segbits_xiob33.rdb
+build/segbits_xioi3.db: build/segbits_xioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
-	${XRAY_MASKMERGE} build/mask_xiob33.db $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
+	${XRAY_MASKMERGE} build/mask_xioi3.db $$(find -name segdata_*)
 
 pushdb:
-	${XRAY_MERGEDB} liob33 build/segbits_xiob33.db
-	${XRAY_MERGEDB} riob33 build/segbits_xiob33.db
-	${XRAY_MERGEDB} mask_liob33 build/mask_xiob33.db
-	${XRAY_MERGEDB} mask_riob33 build/mask_xiob33.db
+	${XRAY_MERGEDB} lioi3 build/segbits_xioi3.db
+	${XRAY_MERGEDB} lioi3_tbytesrc build/segbits_xioi3.db
+	${XRAY_MERGEDB} lioi3_tbyteterm build/segbits_xioi3.db
+	${XRAY_MERGEDB} rioi3 build/segbits_xioi3.db
+	${XRAY_MERGEDB} rioi3_tbytesrc build/segbits_xioi3.db
+	${XRAY_MERGEDB} rioi3_tbyteterm build/segbits_xioi3.db
+	${XRAY_MERGEDB} mask_lioi3 build/mask_xioi3.db
+	${XRAY_MERGEDB} mask_lioi3_tbytesrc build/mask_xioi3.db
+	${XRAY_MERGEDB} mask_lioi3_tbyteterm build/mask_xioi3.db
+	${XRAY_MERGEDB} mask_rioi3 build/mask_xioi3.db
+	${XRAY_MERGEDB} mask_rioi3_tbytesrc build/mask_xioi3.db
+	${XRAY_MERGEDB} mask_rioi3_tbyteterm build/mask_xioi3.db
 
 .PHONY: database pushdb
 
