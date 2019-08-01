@@ -2,15 +2,15 @@ export FUZDIR=$(shell pwd)
 PIP_TYPE?=ioi3
 PIPLIST_TCL=$(FUZDIR)/ioi3_pip_list.tcl
 
-TODO_RE="[LR]IOI3\.(IOI_([IO]LOGIC[01]_CLK(DIV|B)?)|(IOI_OCLK_[01]))\..*"
-EXCLUDE_RE=".*\..*\.(?=IOI_((PHASER)|(OCLK)|(IMUX22_1))).*"
+TODO_RE=".*"
+EXCLUDE_RE=".*((PHASER)|(CLKDIVF)|(CLKDIVP)|(CLKDIVB)|(IOI_ILOGIC[01]_O)|(IOI_OLOGIC[01]_CLKB?\.)|(IOI_IMUX_RC)|(IOI_OLOGIC[01]_[OT]FB)).*"
 
 MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE) --sides "xr,xl" --exclude-re $(EXCLUDE_RE)
 N = 40
 
 A_PIPLIST=lioi3.txt
 
-SEGMATCH_FLAGS=-c -1 -m 20 -M 50
+SEGMATCH_FLAGS=-c 6 -m 20 -M 50
 SPECIMENS_DEPS=build/cmt_regions.csv
 
 include ../pip_loop.mk

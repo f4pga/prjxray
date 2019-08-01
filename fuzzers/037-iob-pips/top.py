@@ -259,6 +259,8 @@ def run():
                 .INTERFACE_TYPE({INTERFACE_TYPE}),
                 .IS_CLK_INVERTED({IS_CLK_INVERTED}),
                 .IS_CLKB_INVERTED({IS_CLKB_INVERTED}),
+                .IS_OCLK_INVERTED({IS_OCLK_INVERTED}),
+                .IS_OCLKB_INVERTED({IS_OCLKB_INVERTED}),
                 .INIT_Q1({INIT_Q1}),
                 .INIT_Q2({INIT_Q2}),
                 .INIT_Q3({INIT_Q3}),
@@ -275,6 +277,8 @@ def run():
                         INTERFACE_TYPE=verilog.quote(INTERFACE_TYPE),
                         IS_CLK_INVERTED=random.randint(0, 1),
                         IS_CLKB_INVERTED=random.randint(0, 1),
+                        IS_OCLK_INVERTED=random.randint(0, 1),
+                        IS_OCLKB_INVERTED=random.randint(0, 1),
                         INIT_Q1=random.randint(0, 1),
                         INIT_Q2=random.randint(0, 1),
                         INIT_Q3=random.randint(0, 1),
@@ -324,10 +328,12 @@ def run():
                     """
             (* KEEP, DONT_TOUCH, LOC = "{site}" *)
             OSERDESE2 #(
+                .IS_CLK_INVERTED({IS_CLK_INVERTED}),
                 .DATA_RATE_OQ("SDR"),
                 .DATA_RATE_TQ("SDR")
             ) oserdes_{site} (
                 {ports});""".format(
+                        IS_CLK_INVERTED=random.randint(0, 1),
                         site=ologic_site,
                         ports=',\n'.join(ports),
                     ))
