@@ -82,6 +82,10 @@ def main():
             handle_data_rate(segmk, d)
 
             segmk.add_site_tag(site, 'ISERDES.IN_USE', d['use_iserdese2'])
+
+            if 'NUM_CE' in d:
+                segmk.add_site_tag(site, 'ISERDES.NUM_CE.N2', d['NUM_CE'] == 2)
+
             segmk.add_site_tag(
                 site, 'IDDR_OR_ISERDES.IN_USE', d['use_iserdese2']
                 or d['iddr_mux_config'] != 'none')
@@ -108,6 +112,16 @@ def main():
             if d['iddr_mux_config'] != 'none':
                 segmk.add_site_tag(site, 'IFF.ZINIT_Q1', not d['INIT_Q1'])
                 segmk.add_site_tag(site, 'IFF.ZINIT_Q2', not d['INIT_Q2'])
+
+                if 'DYN_CLKDIV_INV_EN' in d:
+                    segmk.add_site_tag(
+                        site, 'DYN_CLKDIV_INV_EN',
+                        verilog.unquote(d['DYN_CLKDIV_INV_EN']) == 'TRUE')
+
+                if 'DYN_CLK_INV_EN' in d:
+                    segmk.add_site_tag(
+                        site, 'DYN_CLK_INV_EN',
+                        verilog.unquote(d['DYN_CLK_INV_EN']) == 'TRUE')
 
                 if 'INIT_Q3' in d:
                     segmk.add_site_tag(site, 'IFF.ZINIT_Q3', not d['INIT_Q3'])
