@@ -19,13 +19,25 @@ def handle_data_width(segmk, d):
     if 'DATA_WIDTH' not in d:
         return
 
-    if d['DATA_RATE_OQ'] == 'DDR':
-        return
-
-    for opt in [2, 3, 4, 5, 6, 7, 8, 10, 14]:
+    for opt in [2, 3, 4, 5, 6, 7, 8]:
         segmk.add_site_tag(
             d['site'], 'OSERDESE.DATA_WIDTH.W{}'.format(opt),
             d['DATA_WIDTH'] == opt)
+
+    if verilog.unquote(d['DATA_RATE_OQ']) == 'DDR':
+        # DDR + WIDTH 6/8 have some overlapping bits, create a feature.
+        OVERLAPPING_WIDTHS = [6, 8]
+        segmk.add_site_tag(
+            d['site'], 'OSERDESE.DATA_WIDTH.DDR.W{}'.format(
+                '_'.join(map(str, OVERLAPPING_WIDTHS))),
+            d['DATA_WIDTH'] in OVERLAPPING_WIDTHS)
+    else:
+        # SDR + WIDTH 2/4/5/6 have some overlapping bits, create a feature.
+        OVERLAPPING_WIDTHS = [2, 4, 5, 6]
+        segmk.add_site_tag(
+            d['site'], 'OSERDESE.DATA_WIDTH.SDR.W{}'.format(
+                '_'.join(map(str, OVERLAPPING_WIDTHS))),
+            d['DATA_WIDTH'] in OVERLAPPING_WIDTHS)
 
 
 def main():
