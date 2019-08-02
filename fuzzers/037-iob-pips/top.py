@@ -210,11 +210,16 @@ def run():
                 if random.randint(0, 1):
                     oclkb = oclk
                 else:
-                    oclkb, _ = clocks.get_clock(
-                        ilogic_site,
-                        allow_ioclks=True,
-                        allow_rclks=True,
-                        allow_fabric=not is_lut)
+                    if random.randint(0, 1):
+                        oclkb, _ = clocks.get_clock(
+                            ilogic_site,
+                            allow_ioclks=True,
+                            allow_rclks=True,
+                            allow_fabric=not is_lut)
+                    else:
+                        # Explicitly provide IMUX stimulus to resolve IMUX pips
+                        oclk = random.randint(0, 1)
+                        oclkb = random.randint(0, 1)
 
             DATA_RATE = random.choice(['DDR', 'SDR'])
             clk, is_lut = clocks.get_clock(
@@ -226,12 +231,17 @@ def run():
                 clkb = clk
             else:
                 clkb = clk
-                while clkb == clk:
-                    clkb, _ = clocks.get_clock(
-                        ilogic_site,
-                        allow_ioclks=True,
-                        allow_rclks=True,
-                        allow_empty=False)
+                if random.randint(0, 1):
+                    while clkb == clk:
+                        clkb, _ = clocks.get_clock(
+                            ilogic_site,
+                            allow_ioclks=True,
+                            allow_rclks=True,
+                            allow_empty=False)
+                else:
+                    # Explicitly provide IMUX stimulus to resolve IMUX pips
+                    clk = random.randint(0, 1)
+                    clkb = random.randint(0, 1)
 
             if ilogic_site_type is None:
                 pass

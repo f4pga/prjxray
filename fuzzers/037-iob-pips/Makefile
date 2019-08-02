@@ -3,21 +3,28 @@ PIP_TYPE?=ioi3
 PIPLIST_TCL=$(FUZDIR)/ioi3_pip_list.tcl
 
 TODO_RE=".*"
-EXCLUDE_RE=".*((PHASER)|(CLKDIVF)|(CLKDIVP)|(CLKDIVB)|(IOI_ILOGIC[01]_O)|(IOI_OLOGIC[01]_CLKB?\.)|(IOI_IMUX_RC)|(IOI_OLOGIC[01]_[OT]FB)).*"
+EXCLUDE_RE=".*((PHASER)|(CLKDIVF)|(CLKDIVP)|(CLKDIVB)|(IOI_ILOGIC[01]_O)|(IOI_OLOGIC[01]_CLKB?\.)|(IOI_IMUX_RC)|(IOI_OLOGIC[01]_[OT]FB)|(OCLKM.*IMUX31)|(IOI_ILOGIC0_CLKB\.IOI_IMUX22_1)).*"
 
 MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE) --sides "xr,xl" --exclude-re $(EXCLUDE_RE)
 N = 40
 
 A_PIPLIST=lioi3.txt
 
-SEGMATCH_FLAGS=-c 6 -m 20 -M 50
 SPECIMENS_DEPS=build/cmt_regions.csv
 
 include ../pip_loop.mk
 
+SIX_BIT_PIPS="OLOGIC[01]_CLKDIV"
+
 build/segbits_ioi3_x.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o build/segbits_ioi3_x.rdb \
+	# Most pips are 3 bits, force a 3 bit solution
+	${XRAY_SEGMATCH} -c 3 -m 20 -M 50 -o build/segbits_ioi3_x_match_3.rdb \
 		$(shell find build -name segdata_lioi3*.txt) $(shell find build -name segdata_rioi3*.txt)
+	# Some are 6 bit solutions, solve for 6 bits and merge respectively
+	${XRAY_SEGMATCH} -c 6 -m 20 -M 50 -o build/segbits_ioi3_x_match_6.rdb \
+		$(shell find build -name segdata_lioi3*.txt) $(shell find build -name segdata_rioi3*.txt)
+	grep -v ${SIX_BIT_PIPS} build/segbits_ioi3_x_match_3.rdb  > build/segbits_ioi3_x.rdb
+	grep    ${SIX_BIT_PIPS} build/segbits_ioi3_x_match_6.rdb >> build/segbits_ioi3_x.rdb
 
 RDBS = build/segbits_ioi3_x.rdb
 
