@@ -38,6 +38,10 @@ def main():
             if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
                 clk_list[tile_type].add(src)
 
+            if dst.startswith('CLK_HROW_BOT_R_CK_BUFG_'):
+                if 'CASCIN' not in src:
+                    clk_list[tile_type].add(src)
+
     with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
                            'clk_hrow', 'clk_hrow_top_r.txt')) as f:
         for l in f:
@@ -54,6 +58,10 @@ def main():
 
             if dst.startswith('CLK_HROW_CK_MUX_OUT_'):
                 clk_list[tile_type].add(src)
+
+            if dst.startswith('CLK_HROW_TOP_R_CK_BUFG_'):
+                if 'CASCIN' not in src:
+                    clk_list[tile_type].add(src)
 
     print("Loading tags from design.txt.")
     with open("design.txt", "r") as f:
