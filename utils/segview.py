@@ -25,14 +25,14 @@ def tagmap(tag):
     tag = tag.replace("CLBLM_L", "CLB")
     tag = tag.replace("CLBLM_M", "CLB")
 
-    tag = tag.replace("SLICEL",  "SLICE")
-    tag = tag.replace("SLICEM",  "SLICE")
+    tag = tag.replace("SLICEL", "SLICE")
+    tag = tag.replace("SLICEM", "SLICE")
 
-    tag = tag.replace("LIOB33",  "IOB33")
-    tag = tag.replace("RIOB33",  "IOB33")
+    tag = tag.replace("LIOB33", "IOB33")
+    tag = tag.replace("RIOB33", "IOB33")
 
-    tag = tag.replace("LIOI3",  "IOI3")
-    tag = tag.replace("RIOI3",  "IOI3")
+    tag = tag.replace("LIOI3", "IOI3")
+    tag = tag.replace("RIOI3", "IOI3")
 
     # TODO: Add other tag mappings
 
@@ -53,7 +53,7 @@ def parse_bit(bit):
     return frm, bit, val
 
 
-def load_and_sort_segbits(file_name, tagmap = lambda tag: tag):
+def load_and_sort_segbits(file_name, tagmap=lambda tag: tag):
     """
     Loads a segbit file (.db or .rdb). Skips bits containing '<' or '>'
     """
@@ -88,7 +88,9 @@ def load_and_sort_segbits(file_name, tagmap = lambda tag: tag):
 
     return segbits
 
+
 # =============================================================================
+
 
 def make_header_lines(all_bits):
     """
@@ -102,7 +104,7 @@ def make_header_lines(all_bits):
     for i in range(bit_len):
         line = ""
         for j in range(len(all_bits)):
-            bstr  = bit_names[j].ljust(bit_len).replace("_", "|")
+            bstr = bit_names[j].ljust(bit_len).replace("_", "|")
             line += bstr[i]
         lines.append(line)
 
@@ -164,7 +166,7 @@ def main():
     # List of all features and all bits
     all_tags = set()
     all_bits = set()
-    
+
     for segbits in all_segbits:
         all_tags |= set(segbits.keys())
         for bits in segbits.values():
@@ -173,10 +175,10 @@ def main():
     all_tags = sorted(list(all_tags))
     all_bits = sorted(list(all_bits))
 
-    # Convert bit lists to bit vectors    
+    # Convert bit lists to bit vectors
     for segbits in all_segbits:
         for tag in segbits.keys():
-            vec = list([0]*len(all_bits))
+            vec = list([0] * len(all_bits))
             for i, bit in enumerate(all_bits):
                 if (bit[0], bit[1], 0) in segbits[tag]:
                     vec[i] = -1
@@ -184,10 +186,11 @@ def main():
                     vec[i] = +1
             segbits[tag] = vec
 
-
     # Make header and data lines
     header_lines = make_header_lines(all_bits)
-    data_lines = [make_data_lines(all_tags, all_bits, segbits) for segbits in all_segbits]
+    data_lines = [
+        make_data_lines(all_tags, all_bits, segbits) for segbits in all_segbits
+    ]
 
     # Display
     max_tag_len = max([len(tag) for tag in all_tags])
@@ -218,9 +221,8 @@ def main():
 
         print(line)
 
-# =============================================================================
 
+# =============================================================================
 
 if __name__ == "__main__":
     main()
-

@@ -33,10 +33,14 @@ def load_just_bits(file_name):
             if match is not None:
                 frm = int(match.group(2))
                 bit = int(match.group(3))
-            
-                bits.add((frm, bit,))
+
+                bits.add((
+                    frm,
+                    bit,
+                ))
 
     return bits
+
 
 # =============================================================================
 
@@ -61,7 +65,7 @@ def main():
             "\033[35m",
             "\033[36m",
         ]
-    
+
         colors = {
             "NONE": "\033[0m",
             "DUPLICATE": "\033[101;97m",
@@ -82,7 +86,7 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    
+
     parser.add_argument("files", nargs="*", type=str, help="Input files")
 
     args = parser.parse_args()
@@ -90,17 +94,17 @@ def main():
     # Load bits
     all_bits = []
     for i, f in enumerate(args.files):
-        bits = load_just_bits(f) 
+        bits = load_just_bits(f)
         all_bits.append(bits)
 
         cstr = bit_colors[i % len(bit_colors)]
-        bstr = "O" if len(args.files) == 1 else chr(65+i)
+        bstr = "O" if len(args.files) == 1 else chr(65 + i)
         print(cstr + bstr + colors["NONE"] + ": %s #%d" % (f, len(bits)))
 
     print("")
 
     max_frames = max([bit[0] for bits in all_bits for bit in bits]) + 1
-    max_bits   = max([bit[1] for bits in all_bits for bit in bits]) + 1
+    max_bits = max([bit[1] for bits in all_bits for bit in bits]) + 1
 
     # Header
     for r in range(3):
@@ -120,22 +124,21 @@ def main():
             bit_str = colors["NONE"] + "-"
             for i, bits in enumerate(all_bits):
                 cstr = bit_colors[i % len(bit_colors)]
-                bstr = "O" if len(args.files) == 1 else chr(65+i)
+                bstr = "O" if len(args.files) == 1 else chr(65 + i)
                 if (r, c) in bits:
                     if not got_bit:
                         bit_str = cstr + bstr
                     else:
                         bit_str = colors["DUPLICATE"] + "#" + colors["NONE"]
                     got_bit = True
- 
+
             line += bit_str
 
         line += colors["NONE"]
         print(line)
 
-# =============================================================================
 
+# =============================================================================
 
 if __name__ == "__main__":
     main()
-
