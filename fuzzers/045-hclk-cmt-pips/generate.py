@@ -12,6 +12,16 @@ def bitfilter(frame, word):
     return True
 
 
+IOCLK_MAP = {
+    'HCLK_IOI_I2IOCLK_TOP0': 'HCLK_CMT_CCIO0',
+    'HCLK_IOI_I2IOCLK_TOP1': 'HCLK_CMT_CCIO1',
+    'HCLK_IOI_I2IOCLK_BOT0': 'HCLK_CMT_CCIO2',
+    'HCLK_IOI_I2IOCLK_BOT1': 'HCLK_CMT_CCIO3',
+}
+
+IOCLK_SRCS = set(IOCLK_MAP.values())
+
+
 def main():
     segmk = Segmaker("design.bits")
 
@@ -44,13 +54,24 @@ def main():
             tile_ports[tile_type].add(src)
             tile_ports[tile_type].add(dst)
 
+    tile_to_cmt = {}
+    cmt_to_hclk_cmt = {}
+    with open(os.path.join(os.getenv('FUZDIR'), 'build',
+                           'cmt_regions.csv')) as f:
+        for l in f:
+            site, cmt, tile = l.strip().split(',')
+
+            tile_to_cmt[tile] = cmt
+
+            if tile.startswith('HCLK_CMT'):
+                cmt_to_hclk_cmt[cmt] = tile
+
+    active_ioclks = set()
+
     print("Loading tags from design.txt.")
     with open("design.txt", "r") as f:
         for line in f:
             tile, pip, src, dst, pnum, pdir = line.split()
-
-            if not tile.startswith('HCLK_CMT'):
-                continue
 
             pip_prefix, _ = pip.split(".")
             tile_from_pip, tile_type = pip_prefix.split('/')
@@ -59,6 +80,13 @@ def main():
             _, dst = dst.split("/")
             pnum = int(pnum)
             pdir = int(pdir)
+
+            if src in IOCLK_MAP:
+                active_ioclks.add(
+                    (cmt_to_hclk_cmt[tile_to_cmt[tile]], IOCLK_MAP[src]))
+
+            if not tile.startswith('HCLK_CMT'):
+                continue
 
             if tile not in tiledata:
                 tiledata[tile] = {
@@ -93,9 +121,16 @@ def main():
 
         for port in tile_ports[tile_type]:
             if port in tiledata[tile]["dsts"] or port in tiledata[tile]["srcs"]:
-                segmk.add_tile_tag(tile, "{}_ACTIVE".format(port), 1)
+                segmk.add_tile_tag(tile, "{}_USED".format(port), 1)
             else:
-                segmk.add_tile_tag(tile, "{}_ACTIVE".format(port), 0)
+                segmk.add_tile_tag(tile, "{}_USED".format(port), 0)
+
+        for ioclk in IOCLK_SRCS:
+            if ioclk in tiledata[tile]["srcs"] or (tile,
+                                                   ioclk) in active_ioclks:
+                segmk.add_tile_tag(tile, "{}_ACTIVE".format(ioclk), 1)
+            else:
+                segmk.add_tile_tag(tile, "{}_ACTIVE".format(ioclk), 0)
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()
