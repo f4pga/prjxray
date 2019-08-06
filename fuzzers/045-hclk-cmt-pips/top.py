@@ -15,7 +15,7 @@ def read_site_to_cmt():
     with open(os.path.join(os.getenv('FUZDIR'), 'build',
                            'cmt_regions.csv')) as f:
         for l in f:
-            site, cmt = l.strip().split(',')
+            site, cmt, _ = l.strip().split(',')
             yield (site, cmt)
 
 
@@ -206,15 +206,26 @@ def main():
         '// mmcm_pll_only {} mmcm_pll_dir {}'.format(
             mmcm_pll_only, mmcm_pll_dir))
 
+    have_iob_clocks = random.random() > .1
+
+    iob_clks = {}
     for tile_name in sorted(hclk_cmt_tiles):
         for _, site, volt in get_paired_iobs(db, grid, tile_name):
+            iob_clock = 'clock_IBUF_{site}'.format(site=site)
+
+            cmt = site_to_cmt[site]
+
+            if cmt not in iob_clks:
+                iob_clks[cmt] = ['']
+
+            iob_clks[cmt].append(iob_clock)
 
             ins.append('input clk_{site}'.format(site=site))
-            if check_allowed(mmcm_pll_dir, site_to_cmt[site]):
-                clock_sources.add_clock_source(
-                    'clock_IBUF_{site}'.format(site=site), site_to_cmt[site])
-            adv_clock_sources.add_clock_source(
-                'clock_IBUF_{site}'.format(site=site), site_to_cmt[site])
+
+            if have_iob_clocks:
+                if check_allowed(mmcm_pll_dir, cmt):
+                    clock_sources.add_clock_source(iob_clock, cmt)
+                adv_clock_sources.add_clock_source(iob_clock, cmt)
 
             print(
                 """
@@ -400,8 +411,9 @@ module top({inputs});
     wire O_{site};
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     BUFR bufr_{site} (
+        .I({I}),
         .O(O_{site})
-        );""".format(site=site))
+        );""".format(I=random.choice(iob_clks[site_to_cmt[site]]), site=site))
 
     for _, site in gen_sites('PLLE2_ADV'):
         for cin in ('cin1', 'cin2', 'clkfbin'):
