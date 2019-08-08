@@ -118,6 +118,10 @@ def maketodo(
 
     todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     verbose and print('%s: %u entries' % (pipfile, len(todos)))
+    if not todos:
+        verbose and print('%s: %u entries, done!' % (pipfile, len(todos)))
+        return
+
     verbose and print("pipfile todo sample: %s" % list(todos)[0])
 
     if 0 and verbose:
