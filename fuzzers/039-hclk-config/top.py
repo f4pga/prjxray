@@ -30,7 +30,9 @@ def gen_sites():
             continue
 
         ioi3 = grid.gridinfo_at_loc((loc.grid_x, loc.grid_y - 1))
-        assert 'IOI3' in ioi3.tile_type
+
+        if 'IOI3' not in ioi3.tile_type:
+            continue
 
         if ioi3.tile_type.startswith('R'):
             dx = 1
