@@ -113,18 +113,22 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 db-extras-artix7:
 	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers part_only
 	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers part_only
-	#+source minitests/roi_harness/basys3-swbut.sh && \
-	#	$(MAKE) -C minitests/roi_harness \
-	#		HARNESS_DIR=database/artix7/harness/basys3/swbut run
-	#+source minitests/roi_harness/arty-uart.sh && \
-	#	$(MAKE) -C minitests/roi_harness \
-	#		HARNESS_DIR=database/artix7/harness/arty-a7/uart run
-	#+source minitests/roi_harness/arty-pmod.sh && \
-	#	$(MAKE) -C minitests/roi_harness \
-	#		HARNESS_DIR=database/artix7/harness/arty-a7/pmod run
-	#+source minitests/roi_harness/arty-swbut.sh && \
-	#	$(MAKE) -C minitests/roi_harness \
-	#		HARNESS_DIR=database/artix7/harness/arty-a7/swbut run
+	+source minitests/roi_harness/basys3-swbut.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/basys3/swbut run copy
+	+source minitests/roi_harness/basys3-swbut.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			XRAY_ROIV=../roi_base_div2.v \
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/basys3/swbut_50 run copy
+	+source minitests/roi_harness/arty-uart.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/uart run copy
+	+source minitests/roi_harness/arty-pmod.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/pmod run copy
+	+source minitests/roi_harness/arty-swbut.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/swbut run copy
 
 db-extras-kintex7:
 	@true
