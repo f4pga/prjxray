@@ -18,4 +18,3 @@ run -all
 
 flush_vcd
 close_vcd
-

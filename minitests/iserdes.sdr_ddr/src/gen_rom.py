@@ -5,6 +5,7 @@ and received. The data is random.
 '''
 import random
 
+
 def main():
 
     template = """
@@ -47,19 +48,23 @@ endmodule
 """
 
     rom_size_bits = 5
-    rom_size = 2 ** rom_size_bits
+    rom_size = 2**rom_size_bits
     rom_width = 8
 
-    rom_data = [random.randint(0, 2 ** rom_width - 1) for i in range(rom_size)]
-    rom_data = "\n".join(["  rom[%4d] <= %d'd%d;" % (i, rom_width, d) for i, d in enumerate(rom_data)])
+    rom_data = [random.randint(0, 2**rom_width - 1) for i in range(rom_size)]
+    rom_data = "\n".join(
+        [
+            "  rom[%4d] <= %d'd%d;" % (i, rom_width, d)
+            for i, d in enumerate(rom_data)
+        ])
 
-    print(template.format(
-        rom_size_bits_minus_one=rom_size_bits - 1,
-        rom_size_minus_one=rom_size - 1,
-        rom_width_minus_one=rom_width - 1,
-        rom_data=rom_data
-    ))
+    print(
+        template.format(
+            rom_size_bits_minus_one=rom_size_bits - 1,
+            rom_size_minus_one=rom_size - 1,
+            rom_width_minus_one=rom_width - 1,
+            rom_data=rom_data))
+
 
 if __name__ == "__main__":
     main()
-
