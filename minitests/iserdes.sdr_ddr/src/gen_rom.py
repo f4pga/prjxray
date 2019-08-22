@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+'''
+This script generates a verilog ROM module that contains data to be transmitted
+and received. The data is random.
+'''
 import random
 
 def main():
@@ -47,11 +51,6 @@ endmodule
     rom_width = 8
 
     rom_data = [random.randint(0, 2 ** rom_width - 1) for i in range(rom_size)]
-
-#    rom_data = []
-#    for i in range(rom_size // 2):
-#        rom_data.extend([0x00, 0xFF])
-
     rom_data = "\n".join(["  rom[%4d] <= %d'd%d;" % (i, rom_width, d) for i, d in enumerate(rom_data)])
 
     print(template.format(
