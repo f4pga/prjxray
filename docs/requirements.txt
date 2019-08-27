@@ -5,5 +5,5 @@ sphinx-autobuild
 breathe
 recommonmark
 sphinx-markdown-tables
-sphinx_rtd_theme
+git+https://github.com/SymbiFlow/sphinx_symbiflow_theme
 sphinxcontrib-napoleon
