@@ -1,8 +1,9 @@
 # Guide to updating the Project X-Ray docs
 
 We welcome updates to the Project X-Ray docs. The docs are published on [Read
-the Docs](http://prjxray.readthedocs.io) and the source is on
-[GitHub](https://github.com/SymbiFlow/prjxray/tree/master/docs).
+the Docs](http://prjxray.readthedocs.io) and the source is on the [docs branch on GitHub](https://github.com/SymbiFlow/prjxray/tree/docs/docs).
+
+The reason for using the `docs` branch is to avoid running the full CI test suite which triggers when merging anything to `master`. Ultimately of course the `docs` branch needs to be synchronized with `master`, but this can be done in bulk.
 
 Updating the docs is a three-step process: Make your updates, test your updates,
 send a pull request.
@@ -24,7 +25,7 @@ effects of your changes on the page you've updated and on the docs as a whole.
 
 There are a few places on the web where you can view ReStructured Text rendered
 as HTML. For example:
-[https://livesphinx.herokuapp.com/](https://livesphinx.herokuapp.com/) 
+[https://livesphinx.herokuapp.com/](https://livesphinx.herokuapp.com/)
 
 ## Perform basic tests: make html and linkcheck
 
@@ -32,10 +33,10 @@ If your changes are quite simple, you can perform a few basic checks before
 sending a pull request. At minimum:
 
 -  Check that `make html` generates output without errors
--  Check that `make linkcheck` reports no warnings. 
--  When editing, `make livehtml` is helpful. 
+-  Check that `make linkcheck` reports no warnings.
+-  When editing, `make livehtml` is helpful.
 
-To make these checks work, you need to install Sphinx. We recommend `pipenv`. 
+To make these checks work, you need to install Sphinx. We recommend `pipenv`.
 
 Follow the steps below to install `pipenv` via `pip`, run `pipenv install` in
 the `docs` directory, then run `pipenv shell` to enter an environment where
@@ -52,12 +53,12 @@ Steps in detail, on Linux:
   guide](http://pipenv.readthedocs.io/en/latest/install/#installing-pipenv):
 
         pip install pipenv
- 
+
 1. Add pipenv to your path, as recommended in the
   [pipenv installation
   guide](http://pipenv.readthedocs.io/en/latest/install/#installing-pipenv). On
   Linux, add this in your `~/.profile` file:
- 
+
         export PATH=$PATH:~/.local/bin source ~/.profile
 
     Note: On OS X the path is different: `~/Library/Python/2.7/bin`
@@ -65,7 +66,7 @@ Steps in detail, on Linux:
 1. Go to the docs directory in the Project X-Ray repo:
 
         cd ~/github-repos/prjxray/docs
- 
+
 1. Run pipenv to install the Sphinx environment:
 
         pipenv install
@@ -110,7 +111,7 @@ Follow these steps to create your own staging doc site on Read the Docs (RtD):
    Reason for protecting your doc site: If you leave your doc site public, it
    will appear in web searches. That may be confusing for readers who are
    looking for the canonical Project X-Ray docs.
-1. Set RtD to build from your branch, rather than from master. This ensures
+1. Set RtD to build from your branch, rather than from `docs`. This ensures
    that the content you see on your doc site reflect your latest updates:
    -  On [your RtD dashboard](https://readthedocs.org/dashboard/),
       open **your project**, then go to **Admin > Advanced Settings.**
