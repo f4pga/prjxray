@@ -1,6 +1,6 @@
 # Minitests for IDELAY
 
-## 1. basys3_idelay_ext
+## 1. basys3_idelay_var
 
 A design for Basys3 board.
 
@@ -29,3 +29,7 @@ Consider the `JXADC` connector on the Basys3 board as seen when looking at the b
  - Pin8 - Signal output. Connect to Pin7.
 
 **The oscilloscope must have bandwidth of at least 100MHz.**
+
+## 1. basys3_idelay_const
+
+This design generates 32 independently shifted 50MHz square waves using constant delay IDELAY blocks. Delays between individual signals can be measured using an oscilloscope. Due to the fact that each delay step is about 100-150ps and the FPGA fabric + IOBs also introduce their own delays, actual delay values may be hard to measure.

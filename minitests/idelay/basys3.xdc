@@ -68,12 +68,12 @@ set_property PACKAGE_PIN R18 [get_ports jc10]
 
 set_property PACKAGE_PIN J3  [get_ports xadc1_p]
 set_property PACKAGE_PIN L3  [get_ports xadc2_p]
-#set_property PACKAGE_PIN M2  [get_ports xadc3_p]
-#set_property PACKAGE_PIN N2  [get_ports xadc4_p]
+set_property PACKAGE_PIN M2  [get_ports xadc3_p]
+set_property PACKAGE_PIN N2  [get_ports xadc4_p]
 set_property PACKAGE_PIN K3  [get_ports xadc1_n]
 set_property PACKAGE_PIN M3  [get_ports xadc2_n]
-#set_property PACKAGE_PIN M1  [get_ports xadc3_n]
-#set_property PACKAGE_PIN N1  [get_ports xadc4_n]
+set_property PACKAGE_PIN M1  [get_ports xadc3_n]
+set_property PACKAGE_PIN N1  [get_ports xadc4_n]
 
 foreach port [get_ports] {
     set_property IOSTANDARD LVTTL $port

@@ -14,37 +14,41 @@ output wire tx,
 input  wire [15:0] sw,
 output wire [15:0] led,
 
-output wire ja1,
-output wire ja2,
-output wire ja3,
-output wire ja4,
+input  wire ja1,
+input  wire ja2,
+input  wire ja3,
+input  wire ja4,
 input  wire ja7,
 input  wire ja8,
 input  wire ja9,
 input  wire ja10,
 
-output wire jb1,
-output wire jb2,
-output wire jb3,
-output wire jb4,
+input  wire jb1,
+input  wire jb2,
+input  wire jb3,
+input  wire jb4,
 input  wire jb7,
 input  wire jb8,
 input  wire jb9,
 input  wire jb10,
 
-output wire jc1,
-output wire jc2,
-output wire jc3,
-output wire jc4,
+input  wire jc1,
+input  wire jc2,
+input  wire jc3,
+input  wire jc4,
 input  wire jc7,
 input  wire jc8,
 input  wire jc9,
 input  wire jc10,
 
 output wire xadc1_p,
-input  wire xadc1_n,
 output wire xadc2_p,
-output wire xadc2_n
+input  wire xadc3_p,
+input  wire xadc4_p,
+input  wire xadc1_n,
+output wire xadc2_n,
+input  wire xadc3_n,
+input  wire xadc4_n
 );
 
 // ============================================================================
@@ -165,21 +169,6 @@ assign led[12] = dly_delay_out[1];
 assign led[13] = dly_delay_out[2];
 assign led[14] = dly_delay_out[3];
 assign led[15] = dly_delay_out[4];
-
-assign ja1  = 1'b0;
-assign ja2  = 1'b0;
-assign ja3  = 1'b0;
-assign ja4  = 1'b0;
-
-assign jb1  = 1'b0;
-assign jb2  = 1'b0;
-assign jb3  = 1'b0;
-assign jb4  = 1'b0;
-
-assign jc1  = 1'b0;
-assign jc2  = 1'b0;
-assign jc3  = 1'b0;
-assign jc4  = 1'b0;
 
 assign xadc2_p = O;
 assign xadc2_n = O;
