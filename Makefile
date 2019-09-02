@@ -34,7 +34,7 @@ build:
 
 # Run tests of code.
 # ------------------------
-TEST_EXCLUDE = $(foreach x,$(ALL_EXCLUDE) fuzzers minitests experiments,--ignore $(x))
+TEST_EXCLUDE = $(foreach x,$(ALL_EXCLUDE) docs fuzzers minitests experiments,--ignore $(x))
 
 test: test-py test-cpp
 	@true
