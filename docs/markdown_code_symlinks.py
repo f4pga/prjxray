@@ -1,7 +1,19 @@
 import logging
-import os
+import os, sys
+from os.path import splitext
+from docutils import nodes
+from sphinx import addnodes
+from sphinx.roles import XRefRole
+from sphinx.domains import Domain
+from sphinx.util.nodes import make_refnode
 
-from recommonmark import transform
+if sys.version_info < (3, 0):
+    from urlparse import urlparse, unquote
+else:
+    from urllib.parse import urlparse, unquote
+
+from recommonmark import parser
+
 """
 Allow linking of Markdown documentation from the source code tree into the Sphinx
 documentation tree.
@@ -12,7 +24,6 @@ than the place they are now linked too - this code fixes these paths up.
 We also want links from two Markdown documents found in the Sphinx docs to
 work, so that is also fixed up.
 """
-
 
 def path_contains(parent_path, child_path):
     """Check a path contains another path.
@@ -55,9 +66,21 @@ def relative(parent_dir, child_path):
     return os.path.relpath(child_path, start=parent_dir)
 
 
-class MarkdownCodeSymlinks(transform.AutoStructify, object):
+class PrjxrayDomain(Domain):
+    """
+    Extension of the Domain class to implement custom cross-reference links
+    solve methodology
+    """
+
+    name = 'prjxray'
+    label = 'Prjxray'
+
+    roles = {
+        'xref': XRefRole(),
+    }
+
     docs_root_dir = os.path.realpath(os.path.dirname(__file__))
-    code_root_dir = os.path.realpath(os.path.join(docs_root_dir, "..", ".."))
+    code_root_dir = os.path.realpath(os.path.join(docs_root_dir, ".."))
 
     mapping = {
         'docs2code': {},
@@ -81,6 +104,7 @@ Assertion error! Document already in mapping!
     New Value: {}
 Current Value: {}
 """.format(docs_rel, cls.mapping['docs2code'][docs_rel])
+
         assert code_rel not in cls.mapping['code2docs'], """\
 Assertion error! Document already in mapping!
     New Value: {}
@@ -94,6 +118,26 @@ Current Value: {}
     def find_links(cls):
         """Walk the docs dir and find links to docs in the code dir."""
         for root, dirs, files in os.walk(cls.docs_root_dir):
+            for dname in dirs:
+                dpath = os.path.abspath(os.path.join(root, dname))
+
+                if not os.path.islink(dpath):
+                    continue
+
+                link_path = os.path.join(root, os.readlink(dpath))
+                # Is link outside the code directory?
+                if not path_contains(cls.code_root_dir, link_path):
+                    continue
+
+                # Is link internal to the docs directory?
+                if path_contains(cls.docs_root_dir, link_path):
+                    continue
+
+                docs_rel = cls.relative_docs(dpath)
+                code_rel = cls.relative_code(link_path)
+
+                cls.add_mapping(docs_rel, code_rel)
+
             for fname in files:
                 fpath = os.path.abspath(os.path.join(root, fname))
 
@@ -113,66 +157,79 @@ Current Value: {}
                 code_rel = cls.relative_code(link_path)
 
                 cls.add_mapping(docs_rel, code_rel)
+
         import pprint
         pprint.pprint(cls.mapping)
 
-    @property
-    def url_resolver(self):
-        return self._url_resolver
+    @classmethod
+    def remove_extension(cls, path):
+        return filename
 
-    @url_resolver.setter
-    def url_resolver(self, value):
-        print(self, value)
-
-    # Resolve a link from one markdown to another document.
-    def _url_resolver(self, ourl):
-        """Resolve a URL found in a markdown file."""
-        assert self.docs_root_dir == os.path.realpath(self.root_dir), """\
-Configuration error! Document Root != Current Root
-Document Root: {}
- Current Root: {}
-""".format(self.docs_root_dir, self.root_dir)
-
-        src_path = os.path.abspath(self.document['source'])
-        src_dir = os.path.dirname(src_path)
-        dst_path = os.path.abspath(os.path.join(self.docs_root_dir, ourl))
-        dst_rsrc = os.path.relpath(dst_path, start=src_dir)
-
-        src_rdoc = self.relative_docs(src_path)
-
-        print
-        print("url_resolver")
-        print(src_path)
-        print(dst_path)
-        print(dst_rsrc)
-        print(src_rdoc)
-
-        # Is the source document a linked one?
-        if src_rdoc not in self.mapping['docs2code']:
-            # Don't do any rewriting on non-linked markdown.
-            url = ourl
-
-        # Is the destination also inside docs?
-        elif dst_rsrc not in self.mapping['code2docs']:
-            # Return a path to the GitHub repo.
-            url = "{}/blob/master/{}".format(
-                self.config['github_code_repo'], dst_rsrc)
+    # Overriden method to solve the cross-reference link
+    def resolve_xref(self, env, fromdocname, builder,
+                     typ, target, node, contnode):
+        if '#' in target:
+            todocname, targetid = target.split('#')
         else:
-            url = os.path.relpath(
-                os.path.join(
-                    self.docs_root_dir, self.mapping['code2docs'][dst_rsrc]),
-                start=src_dir)
-            base_url, ext = os.path.splitext(url)
-            assert ext in (".md",
-                           ".markdown"), ("Unknown extension {}".format(ext))
-            url = "{}.html".format(base_url)
+            todocname = target
+            targetid = ''
 
-        print("---")
-        print(ourl)
-        print(url)
-        print
-        return url
+        # Removing filename extension (e.g. contributing.md -> contributing)
+        todocname, _ = os.path.splitext(self.mapping['code2docs'][todocname])
 
+        newnode = make_refnode(builder, fromdocname, todocname, targetid, contnode[0])
+
+        print(newnode)
+        return newnode
+
+    def resolve_any_xref(self, env, fromdocname, builder,
+                         target, node, contnode):
+        res = self.resolve_xref(env, fromdocname, builder, 'xref', target, node, contnode)
+        return [('prjxray:xref', res)]
+
+class LinkParser(parser.CommonMarkParser, object):
+    def visit_link(self, mdnode):
+        ref_node = nodes.reference()
+
+        destination = mdnode.destination
+
+        ref_node.line = self._get_line(mdnode)
+        if mdnode.title:
+            ref_node['title'] = mdnode.title
+
+        url_check = urlparse(destination)
+        # If there's not a url scheme (e.g. 'https' for 'https:...' links),
+        # or there is a scheme but it's not in the list of known_url_schemes,
+        # then assume it's a cross-reference and pass it to Sphinx as an `:any:` ref.
+        known_url_schemes = self.config.get('known_url_schemes')
+        if known_url_schemes:
+            scheme_known = url_check.scheme in known_url_schemes
+        else:
+            scheme_known = bool(url_check.scheme)
+
+        is_dest_xref = url_check.fragment and destination[:1] != '#'
+
+        ref_node['refuri'] = destination
+        next_node = ref_node
+
+        # Adds pending-xref wrapper to unsolvable cross-references
+        if (is_dest_xref or not url_check.fragment) and not scheme_known:
+            wrap_node = addnodes.pending_xref(
+                reftarget=unquote(destination),
+                reftype='xref',
+                refdomain='prjxray',  # Added to enable cross-linking
+                refexplicit=True,
+                refwarn=True
+            )
+            # TODO also not correct sourcepos
+            wrap_node.line = self._get_line(mdnode)
+            if mdnode.title:
+                wrap_node['title'] = mdnode.title
+            wrap_node.append(ref_node)
+            next_node = wrap_node
+
+        self.current_node.append(next_node)
+        self.current_node = ref_node
 
 if __name__ == "__main__":
     import doctest

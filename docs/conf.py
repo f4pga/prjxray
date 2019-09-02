@@ -24,7 +24,7 @@ import recommonmark
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-from markdown_code_symlinks import MarkdownCodeSymlinks
+from markdown_code_symlinks import LinkParser, PrjxrayDomain
 
 # -- General configuration ------------------------------------------------
 
@@ -52,7 +52,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 source_suffix = ['.rst', '.md']
 source_parsers = {
-    '.md': 'recommonmark.parser.CommonMarkParser',
+    '.md': 'markdown_code_symlinks.LinkParser',
 }
 
 # The master toctree document.
@@ -196,9 +196,9 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 
 def setup(app):
-    MarkdownCodeSymlinks.find_links()
+    PrjxrayDomain.find_links()
+    app.add_domain(PrjxrayDomain)
     app.add_config_value(
         'recommonmark_config', {
             'github_code_repo': 'https://github.com/SymbiFlow/prjxray',
         }, True)
-    app.add_transform(MarkdownCodeSymlinks)
