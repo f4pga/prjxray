@@ -13,7 +13,6 @@ else:
     from urllib.parse import urlparse, unquote
 
 from recommonmark import parser
-
 """
 Allow linking of Markdown documentation from the source code tree into the Sphinx
 documentation tree.
@@ -24,6 +23,7 @@ than the place they are now linked too - this code fixes these paths up.
 We also want links from two Markdown documents found in the Sphinx docs to
 work, so that is also fixed up.
 """
+
 
 def path_contains(parent_path, child_path):
     """Check a path contains another path.
@@ -166,8 +166,8 @@ Current Value: {}
         return filename
 
     # Overriden method to solve the cross-reference link
-    def resolve_xref(self, env, fromdocname, builder,
-                     typ, target, node, contnode):
+    def resolve_xref(
+            self, env, fromdocname, builder, typ, target, node, contnode):
         if '#' in target:
             todocname, targetid = target.split('#')
         else:
@@ -177,15 +177,18 @@ Current Value: {}
         # Removing filename extension (e.g. contributing.md -> contributing)
         todocname, _ = os.path.splitext(self.mapping['code2docs'][todocname])
 
-        newnode = make_refnode(builder, fromdocname, todocname, targetid, contnode[0])
+        newnode = make_refnode(
+            builder, fromdocname, todocname, targetid, contnode[0])
 
         print(newnode)
         return newnode
 
-    def resolve_any_xref(self, env, fromdocname, builder,
-                         target, node, contnode):
-        res = self.resolve_xref(env, fromdocname, builder, 'xref', target, node, contnode)
+    def resolve_any_xref(
+            self, env, fromdocname, builder, target, node, contnode):
+        res = self.resolve_xref(
+            env, fromdocname, builder, 'xref', target, node, contnode)
         return [('prjxray:xref', res)]
+
 
 class LinkParser(parser.CommonMarkParser, object):
     def visit_link(self, mdnode):
@@ -219,8 +222,7 @@ class LinkParser(parser.CommonMarkParser, object):
                 reftype='xref',
                 refdomain='prjxray',  # Added to enable cross-linking
                 refexplicit=True,
-                refwarn=True
-            )
+                refwarn=True)
             # TODO also not correct sourcepos
             wrap_node.line = self._get_line(mdnode)
             if mdnode.title:
@@ -230,6 +232,7 @@ class LinkParser(parser.CommonMarkParser, object):
 
         self.current_node.append(next_node)
         self.current_node = ref_node
+
 
 if __name__ == "__main__":
     import doctest
