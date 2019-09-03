@@ -1,5 +1,7 @@
 `default_nettype none
 
+// ============================================================================
+
 module error_counter #
 (
 parameter COUNT_WIDTH = 24,

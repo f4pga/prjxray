@@ -1,3 +1,5 @@
+// ============================================================================
+
 module iserdes_idelay_histogram #
 (
 parameter UART_PRESCALER = 868,  // UART prescaler
