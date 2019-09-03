@@ -180,7 +180,6 @@ Current Value: {}
         newnode = make_refnode(
             builder, fromdocname, todocname, targetid, contnode[0])
 
-        print(newnode)
         return newnode
 
     def resolve_any_xref(
