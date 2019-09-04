@@ -1,1 +1,0 @@
-../../../minitests/fixedpnr/README.md
