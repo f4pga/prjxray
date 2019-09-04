@@ -24,7 +24,7 @@ import recommonmark
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-from markdown_code_symlinks import LinkParser, PrjxrayDomain
+from markdown_code_symlinks import LinkParser, MarkdownSymlinksDomain
 
 # -- General configuration ------------------------------------------------
 
@@ -196,9 +196,12 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 
 def setup(app):
-    PrjxrayDomain.find_links()
-    app.add_domain(PrjxrayDomain)
+    github_code_repo = 'https://github.com/SymbiFlow/prjxray/'
+
+    MarkdownSymlinksDomain.find_links()
+    MarkdownSymlinksDomain.add_github_repo(github_code_repo, 'blob/master/')
+    app.add_domain(MarkdownSymlinksDomain)
     app.add_config_value(
         'recommonmark_config', {
-            'github_code_repo': 'https://github.com/SymbiFlow/prjxray',
+            'github_code_repo': github_code_repo,
         }, True)

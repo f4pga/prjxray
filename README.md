@@ -130,7 +130,7 @@ do.
 There are also "minitests" which are designs which can be viewed by a human in
 Vivado to better understand how to generate more useful designs.
 
-### [Experiments](https://github.com/SymbiFlow/prjxray/blob/master/experiments)
+### [Experiments](experiments)
 
 Experiments are like "minitests" except are only useful for a short period of
 time. Files are committed here to allow people to see how we are trying to
@@ -146,21 +146,21 @@ Fuzzers are the scripts which generate the large number of bitstream.
 They are called "fuzzers" because they follow an approach similar to the
 [idea of software testing through fuzzing](https://en.wikipedia.org/wiki/Fuzzing).
 
-### [Tools](https://github.com/SymbiFlow/prjxray/blob/master/tools) & [Libs](https://github.com/SymbiFlow/prjxray/blob/master/libs)
+### [Tools](tools) & [Libs](libs)
 
 Tools & libs are useful tools (and libraries) for converting the resulting
 bitstreams into various formats.
 
 Binaries in the tools directory are considered more mature and stable then
-those in the [utils](https://github.com/SymbiFlow/prjxray/blob/master/utils) directory and could be actively used in other
+those in the [utils](utils) directory and could be actively used in other
 projects.
 
-### [Utils](https://github.com/SymbiFlow/prjxray/blob/master/utils)
+### [Utils](utils)
 
 Utils are various tools which are still highly experimental. These tools should
 only be used inside this repository.
 
-### [Third Party](https://github.com/SymbiFlow/prjxray/blob/master/third_party)
+### [Third Party](third_party)
 
 Third party contains code not developed as part of Project X-Ray.
 
@@ -168,7 +168,7 @@ Third party contains code not developed as part of Project X-Ray.
 # Database
 
 Running the all fuzzers in order will produce a database which documents the
-bitstream format in the [database](https://github.com/SymbiFlow/prjxray/blob/master/database) directory.
+bitstream format in the [database](database) directory.
 
 As running all these fuzzers can take significant time,
 [Tim 'mithro' Ansell <me@mith.ro>](https://github.com/mithro) has graciously

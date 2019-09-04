@@ -66,14 +66,14 @@ def relative(parent_dir, child_path):
     return os.path.relpath(child_path, start=parent_dir)
 
 
-class PrjxrayDomain(Domain):
+class MarkdownSymlinksDomain(Domain):
     """
     Extension of the Domain class to implement custom cross-reference links
     solve methodology
     """
 
-    name = 'prjxray'
-    label = 'Prjxray'
+    name = 'markdown_symlinks'
+    label = 'MarkdownSymlinks'
 
     roles = {
         'xref': XRefRole(),
@@ -86,6 +86,9 @@ class PrjxrayDomain(Domain):
         'docs2code': {},
         'code2docs': {},
     }
+
+    github_repo_url = ""
+    github_repo_branch = ""
 
     @classmethod
     def relative_code(cls, url):
@@ -162,8 +165,10 @@ Current Value: {}
         pprint.pprint(cls.mapping)
 
     @classmethod
-    def remove_extension(cls, path):
-        return filename
+    def add_github_repo(cls, github_repo_url, github_repo_branch):
+        """Initialize the github repository to update links correctly."""
+        cls.github_repo_url = github_repo_url
+        cls.github_repo_branch = github_repo_branch
 
     # Overriden method to solve the cross-reference link
     def resolve_xref(
@@ -174,11 +179,18 @@ Current Value: {}
             todocname = target
             targetid = ''
 
-        # Removing filename extension (e.g. contributing.md -> contributing)
-        todocname, _ = os.path.splitext(self.mapping['code2docs'][todocname])
+        if todocname not in self.mapping['code2docs']:
+            # Could be a link to a repository's code tree directory/file
+            todocname = '{}{}{}'.format(self.github_repo_url, self.github_repo_branch, todocname)
 
-        newnode = make_refnode(
-            builder, fromdocname, todocname, targetid, contnode[0])
+            newnode = nodes.reference('', '', internal=True, refuri=todocname)
+            newnode.append(contnode[0])
+        else:
+            # Removing filename extension (e.g. contributing.md -> contributing)
+            todocname, _ = os.path.splitext(self.mapping['code2docs'][todocname])
+
+            newnode = make_refnode(
+                builder, fromdocname, todocname, targetid, contnode[0])
 
         return newnode
 
@@ -186,7 +198,7 @@ Current Value: {}
             self, env, fromdocname, builder, target, node, contnode):
         res = self.resolve_xref(
             env, fromdocname, builder, 'xref', target, node, contnode)
-        return [('prjxray:xref', res)]
+        return [('markdown_symlinks:xref', res)]
 
 
 class LinkParser(parser.CommonMarkParser, object):
@@ -219,7 +231,7 @@ class LinkParser(parser.CommonMarkParser, object):
             wrap_node = addnodes.pending_xref(
                 reftarget=unquote(destination),
                 reftype='xref',
-                refdomain='prjxray',  # Added to enable cross-linking
+                refdomain='markdown_symlinks',  # Added to enable cross-linking
                 refexplicit=True,
                 refwarn=True)
             # TODO also not correct sourcepos
