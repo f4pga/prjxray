@@ -9,4 +9,4 @@ git+https://github.com/SymbiFlow/sphinx_symbiflow_theme
 sphinxcontrib-napoleon
 
 # Markdown cross-reference solver library
-git+https://github.com/SymbiFlow/markdown-code-symlinks
+git+https://github.com/SymbiFlow/sphinxcontrib-markdown-symlinks
