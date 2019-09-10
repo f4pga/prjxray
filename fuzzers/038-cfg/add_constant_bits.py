@@ -1,3 +1,17 @@
+"""
+Add bits that are considered always on to the db file.
+
+This script is Zynq specific.
+
+There are three bits that are present in all Zynq bitstreams.
+The investigation that was done to reach this conclusion is captured on GH
+(https://github.com/SymbiFlow/prjxray/issues/746)
+In brief, these bits seem to be bitstream properties related,
+but no evidence of this could be found.
+Due to the fact that the base address of these bits is the same as for the
+CFG_CENTER_MID tile it has been decided to append the bits to its db file.
+"""
+
 import sys
 
 constant_bits = {
