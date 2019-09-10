@@ -135,11 +135,9 @@ db-extras-kintex7:
 
 db-extras-zynq7:
 	+source minitests/roi_harness/zybo-swbut.sh && $(MAKE) -C fuzzers part_only
-	# TODO(#746): Zybo harness is missing some bits, disable automatic harness
-	# generation.
-	#+source minitests/roi_harness/zybo-swbut.sh && \
-	#	$(MAKE) -C minitests/roi_harness \
-	#		HARNESS_DIR=database/artix7/harness/zybo/swbut run
+	+source minitests/roi_harness/zybo-swbut.sh && \
+		$(MAKE) -C minitests/roi_harness \
+			HARNESS_DIR=database/artix7/harness/zybo/swbut run
 
 db-check:
 	@true
