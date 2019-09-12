@@ -2,32 +2,48 @@
 
 // ============================================================================
 
-module trx_path #
+module iserdes_sdr_ddr_test #
 (
-parameter WIDTH = 8,
-parameter MODE  = "SDR"
+parameter DATA_WIDTH = 8,
+parameter DATA_RATE  = "SDR"
 )
 (
 // Clock and reset
 input  wire CLK,
 input  wire RST,
 
-// Input and output pins
-output wire O_CLK,
-output wire O_DAT,
-input  wire I_DAT,
+// Data pin
+inout  wire IO_DAT,
 
 // Error indicator
-output wire ERROR
+output wire O_ERROR
+);
+
+// ============================================================================
+// IOB
+wire iob_o;
+wire iob_i;
+
+OBUFT obuf
+(
+.I      (iob_o),
+.T      (1'b0),
+.O      (IO_DAT)
+);
+
+IBUF ibuf
+(
+.I      (IO_DAT),
+.O      (iob_i)
 );
 
 // ============================================================================
 
 wire tx_stb;
-wire [WIDTH-1:0] tx_dat;
+wire [DATA_WIDTH-1:0] tx_dat;
 
 wire rx_stb;
-wire [WIDTH-1:0] rx_dat;
+wire [DATA_WIDTH-1:0] rx_dat;
 wire rx_bitslip;
 
 wire s_clk;
@@ -35,8 +51,8 @@ wire s_clk;
 // Transmitter
 transmitter #
 (
-.WIDTH  (WIDTH),
-.MODE   (MODE)
+.WIDTH  (DATA_WIDTH),
+.MODE   (DATA_RATE)
 )
 transmitter
 (
@@ -47,16 +63,14 @@ transmitter
 .O_DAT      (tx_dat),
 
 .S_CLK      (s_clk),
-.S_DAT      (O_DAT)
+.S_DAT      (iob_o)
 );
-
-assign O_CLK = s_clk;
 
 // Receiver
 receiver #
 (
-.WIDTH  (WIDTH),
-.MODE   (MODE)
+.WIDTH  (DATA_WIDTH),
+.MODE   (DATA_RATE)
 )
 receiver
 (
@@ -64,7 +78,7 @@ receiver
 .RST        (RST),
 
 .I_CLK      (s_clk),
-.I_DAT      (I_DAT),
+.I_DAT      (iob_i),
 
 .O_STB      (rx_stb),
 .O_DAT      (rx_dat),
@@ -72,7 +86,7 @@ receiver
 );
 
 // The comparator module generates bitslip signal for the receiver. However
-// the bitslip can shift only modulo WIDTH. Therefore additional delay is
+// the bitslip can shift only modulo DATA_WIDTH. Therefore additional delay is
 // added which can delay the transmitted data that we compare to by a number
 // of full words.
 
@@ -82,24 +96,24 @@ always @(posedge CLK)
     if (RST)
         rx_bitslip_cnt <= 0;
     else if (rx_bitslip) begin
-        if (rx_bitslip_cnt == (2*WIDTH - 1))
+        if (rx_bitslip_cnt == (2*DATA_WIDTH - 1))
             rx_bitslip_cnt <= 0;
         else
             rx_bitslip_cnt <= rx_bitslip_cnt + 1;
     end
 
 // Word delay
-reg  [1:0]       tx_dly_cnt;
-reg  [WIDTH-1:0] tx_dat_dly_a;
-reg  [WIDTH-1:0] tx_dat_dly_b;
-reg  [WIDTH-1:0] tx_dat_dly_c;
-reg  [WIDTH-1:0] tx_dat_dly_d;
-wire [WIDTH-1:0] tx_dat_dly;
+reg  [1:0] tx_dly_cnt;
+reg  [DATA_WIDTH-1:0] tx_dat_dly_a;
+reg  [DATA_WIDTH-1:0] tx_dat_dly_b;
+reg  [DATA_WIDTH-1:0] tx_dat_dly_c;
+reg  [DATA_WIDTH-1:0] tx_dat_dly_d;
+wire [DATA_WIDTH-1:0] tx_dat_dly;
 
 always @(posedge CLK)
     if (RST)
         tx_dly_cnt <= 0;
-    else if(rx_bitslip && rx_bitslip_cnt == (2*WIDTH - 1))
+    else if(rx_bitslip && rx_bitslip_cnt == (2*DATA_WIDTH - 1))
         tx_dly_cnt <= tx_dly_cnt + 1;
 
 always @(posedge CLK)
@@ -118,7 +132,7 @@ assign tx_dat_dly = (tx_dly_cnt == 0) ?  tx_dat_dly_a :
 // Comparator
 comparator #
 (
-.WIDTH  (WIDTH)
+.WIDTH  (DATA_WIDTH)
 )
 comparator
 (
@@ -132,7 +146,7 @@ comparator
 .RX_DAT     (rx_dat),
 .RX_BITSLIP (rx_bitslip),
 
-.O_ERROR    (ERROR)
+.O_ERROR    (O_ERROR)
 );
 
 endmodule

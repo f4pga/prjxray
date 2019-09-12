@@ -39,32 +39,21 @@ set_property PACKAGE_PIN N3  [get_ports led[13]]
 set_property PACKAGE_PIN P1  [get_ports led[14]]
 set_property PACKAGE_PIN L1  [get_ports led[15]]
 
-set_property PACKAGE_PIN J1  [get_ports ja1]
-set_property PACKAGE_PIN L2  [get_ports ja2]
-set_property PACKAGE_PIN J2  [get_ports ja3]
-set_property PACKAGE_PIN G2  [get_ports ja4]
-set_property PACKAGE_PIN H1  [get_ports ja7]
-set_property PACKAGE_PIN K2  [get_ports ja8]
-set_property PACKAGE_PIN H2  [get_ports ja9]
-set_property PACKAGE_PIN G3  [get_ports ja10]
+# JA (X1Y1)
+set_property PACKAGE_PIN J1  [get_ports io[0]]
+set_property PACKAGE_PIN L2  [get_ports io[1]]
+set_property PACKAGE_PIN J2  [get_ports io[2]]
+set_property PACKAGE_PIN G2  [get_ports io[3]]
 
-set_property PACKAGE_PIN A14 [get_ports jb1]
-set_property PACKAGE_PIN A16 [get_ports jb2]
-set_property PACKAGE_PIN B15 [get_ports jb3]
-set_property PACKAGE_PIN B16 [get_ports jb4]
-set_property PACKAGE_PIN A15 [get_ports jb7]
-set_property PACKAGE_PIN A17 [get_ports jb8]
-set_property PACKAGE_PIN C15 [get_ports jb9]
-set_property PACKAGE_PIN C16 [get_ports jb10]
+# JB (X0Y2)
+set_property PACKAGE_PIN A14 [get_ports io[4]]
+set_property PACKAGE_PIN A16 [get_ports io[5]]
+set_property PACKAGE_PIN B15 [get_ports io[6]]
 
-set_property PACKAGE_PIN K17 [get_ports jc1]
-set_property PACKAGE_PIN M18 [get_ports jc2]
-set_property PACKAGE_PIN N17 [get_ports jc3]
-set_property PACKAGE_PIN P18 [get_ports jc4]
-set_property PACKAGE_PIN L17 [get_ports jc7]
-set_property PACKAGE_PIN M19 [get_ports jc8]
-set_property PACKAGE_PIN P17 [get_ports jc9]
-set_property PACKAGE_PIN R18 [get_ports jc10]
+# JC (X0Y0)
+set_property PACKAGE_PIN K17 [get_ports io[7]]
+set_property PACKAGE_PIN M18 [get_ports io[8]]
+set_property PACKAGE_PIN N17 [get_ports io[9]]
 
 foreach port [get_ports] {
     set_property IOSTANDARD LVCMOS33 $port

@@ -24,15 +24,15 @@ ifeq ($(SYNTH), yosys)
 	$(YOSYS) -p "read_verilog $< ; synth_xilinx -flatten -nosrl; write_edif -pvector bra -attrprop $@"  -l $@.log
 
 else ifeq ($(SYNTH), vivado)
-%.edif: %.v
+%.edif: %.v tcl/syn.tcl
 	mkdir -p build-syn.$(basename $@)
-	cd build-syn.$(basename $@) && env PROJECT_NAME=$(basename $@) $(XRAY_VIVADO) -mode batch -source ../syn.tcl -nojournal -log ../$@.log
+	cd build-syn.$(basename $@) && env PROJECT_NAME=$(basename $@) $(XRAY_VIVADO) -mode batch -source ../tcl/syn.tcl -nojournal -log ../$@.log
 	rm -rf *.backup.log
 
 endif
 
-%.bit: %.edif par.tcl
+%.bit: %.edif tcl/par.tcl
 	mkdir -p build-par.$(basename $@)
-	cd build-par.$(basename $@) && env PROJECT_NAME=$(basename $@) $(XRAY_VIVADO) -mode batch -source ../par.tcl -nojournal -log ../$@.log
+	cd build-par.$(basename $@) && env PROJECT_NAME=$(basename $@) $(XRAY_VIVADO) -mode batch -source ../tcl/par.tcl -nojournal -log ../$@.log
 	rm -rf *.backup.log
 
