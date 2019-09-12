@@ -137,7 +137,7 @@ db-extras-zynq7:
 	+source minitests/roi_harness/zybo-swbut.sh && $(MAKE) -C fuzzers part_only
 	+source minitests/roi_harness/zybo-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
-			HARNESS_DIR=database/artix7/harness/zybo/swbut run
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/zynq7/harness/zybo/swbut run
 
 db-check:
 	@true
