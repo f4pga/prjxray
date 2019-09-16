@@ -1,6 +1,9 @@
 add_executable(bitread bitread.cc)
 target_link_libraries(bitread absl::optional absl::strings gflags libprjxray)
 
+add_executable(sp6bitread sp6bitread.cc)
+target_link_libraries(sp6bitread absl::optional absl::strings gflags libsp6)
+
 add_executable(segmatch segmatch.cc)
 target_link_libraries(segmatch gflags absl::strings)
 
