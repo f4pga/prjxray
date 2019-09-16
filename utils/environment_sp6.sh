@@ -1,0 +1,17 @@
+source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
+# tools
+#export XRAY_GENHEADER="${XRAY_UTILS_DIR}/genheader.sh"
+export XRAY_BITREAD="${XRAY_TOOLS_DIR}/sp6bitread --part_file ${XRAY_PART_YAML}"
+#export XRAY_MERGEDB="bash ${XRAY_UTILS_DIR}/mergedb.sh"
+#export XRAY_DBFIXUP="python3 ${XRAY_UTILS_DIR}/dbfixup.py"
+#export XRAY_MASKMERGE="bash ${XRAY_UTILS_DIR}/maskmerge.sh"
+#export XRAY_SEGMATCH="${XRAY_TOOLS_DIR}/segmatch"
+#export XRAY_SEGPRINT="python3 ${XRAY_UTILS_DIR}/segprint.py"
+#export XRAY_BIT2FASM="python3 ${XRAY_UTILS_DIR}/bit2fasm.py"
+#export XRAY_FASM2FRAMES="python3 ${XRAY_UTILS_DIR}/fasm2frames.py"
+#export XRAY_BITTOOL="${XRAY_TOOLS_DIR}/bittool"
+#export XRAY_BLOCKWIDTH="python3 ${XRAY_UTILS_DIR}/blockwidth.py"
+#export XRAY_PARSEDB="python3 ${XRAY_UTILS_DIR}/parsedb.py"
+#export XRAY_TCL_REFORMAT="${XRAY_UTILS_DIR}/tcl-reformat.sh"
+export XRAY_ISE="${XRAY_UTILS_DIR}/planAhead.sh"
+export XRAY_ISE_SETTINGS="${XRAY_ISE_SETTINGS:-/opt/Xilinx/ISE/14.7/ISE_DS/settings64.sh}"

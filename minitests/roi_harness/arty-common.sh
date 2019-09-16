@@ -42,4 +42,4 @@ export XRAY_ROI_DOUT_LPIP="SW6BEG0"
 export XRAY_ROI_DOUT_RPIP="LH12"
 
 
-source $XRAY_DIR/utils/environment.sh
+source $XRAY_DIR/utils/environment_xc7.sh
