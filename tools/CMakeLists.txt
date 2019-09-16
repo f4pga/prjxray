@@ -35,3 +35,10 @@ target_link_libraries(xc7frames2bit
 	gflags
 	libprjxray
 )
+add_executable(sp6frames2bit sp6frames2bit.cc)
+target_link_libraries(sp6frames2bit
+	absl::strings
+	absl::time
+	gflags
+	libsp6
+)
