@@ -144,8 +144,8 @@ class Bitstream:
                 if verbose:
                     print(
                         "\tWord: ", hex(word),
-                        f'Type: {type}, Op: {opcodes[opcode]}, Addr: {reg_addr}, Words: {words}'
-                    )
+                        'Type: {}, Op: {}, Addr: {}, Words: {}'.format(
+                            type, opcodes[opcode], reg_addr, words))
                 if opcode and reg_addr in conf_regs:
                     payload_len = words
                     continue
@@ -258,19 +258,19 @@ class Bitstream:
         if reg == "CMD":
             command = self.parse_command(word)
             if verbose:
-                print(f"Command: {command}\n")
+                print("Command: {}\n".format(command))
         elif reg == "FLR":
             frame_length = word
             if verbose:
-                print(f"Frame length: {frame_length}\n")
+                print("Frame length: {}\n".format(frame_length))
         elif reg == "COR1":
             conf_options = self.parse_cor1(word)
             if verbose:
-                print(f"COR1 options: {conf_options}\n")
+                print("COR1 options: {}\n".format(conf_options))
         elif reg == "COR2":
             conf_options = self.parse_cor2(word)
             if verbose:
-                print(f"COR2 options: {conf_options}\n")
+                print("COR2 options: {}\n".format(conf_options))
         elif reg == "IDCODE":
             assert payload_len < 3
             if payload_len == 2:
@@ -282,67 +282,69 @@ class Bitstream:
         elif reg == "MASK":
             mask = word
             if verbose:
-                print(f"Mask value: {mask}\n")
+                print("Mask value: {}\n".format(mask))
         elif reg == "CTL":
             ctl_options = self.parse_ctl(word)
             if verbose:
-                print(f"CTL options: {ctl_options}\n")
+                print("CTL options: {}\n".format(ctl_options))
         elif reg == "CCLK_FREQ":
             cclk_freq_options = self.parse_cclk_freq(word)
             if verbose:
-                print(f"CCLK_FREQ options: {cclk_freq_options}\n")
+                print("CCLK_FREQ options: {}\n".format(cclk_freq_options))
         elif reg == "PWRDN_REG":
             suspend_reg_options = self.parse_pwrdn(word)
             if verbose:
-                print(f"{reg} options: {suspend_reg_options}\n")
+                print("{} options: {}\n".format(reg, suspend_reg_options))
         elif reg == "EYE_MASK":
             eye_mask = self.parse_eye_mask(word)
             if verbose:
-                print(f"{reg} options: {eye_mask}\n")
+                print("{} options: {}\n".format(reg, eye_mask))
         elif reg == "HC_OPT_REG":
             hc_options = self.parse_hc_opt(word)
             if verbose:
-                print(f"{reg} options: {hc_options}\n")
+                print("{} options: {}\n".format(reg, hc_options))
         elif reg == "CWDT":
             cwdt_options = self.parse_cwdt(word)
             if verbose:
-                print(f"{reg} options: {cwdt_options}\n")
+                print("{} options: {}\n".format(reg, cwdt_options))
         elif reg == "PU_GWE":
             pu_gwe_sequence = self.parse_pu_gwe(word)
             if verbose:
-                print(f"{reg} options: {pu_gwe_sequence}\n")
+                print("{} options: {}\n".format(reg, pu_gwe_sequence))
         elif reg == "PU_GTS":
             pu_gts_sequence = self.parse_pu_gts(word)
             if verbose:
-                print(f"{reg} options: {pu_gts_sequence}\n")
+                print("{} options: {}\n".format(reg, pu_gts_sequence))
         elif reg == "MODE_REG":
             mode_options = self.parse_mode(word)
             if verbose:
-                print(f"{reg} options: {mode_options}\n")
+                print("{} options: {}\n".format(reg, mode_options))
         elif reg == "GENERAL1" or reg == "GENERAL2" \
              or reg == "GENERAL3" or reg == "GENERAL4" \
              or reg == "GENERAL5":
             general_options = word
             if verbose:
-                print(f"{reg} options: {general_options}\n")
+                print("{} options: {}\n".format(reg, general_options))
         elif reg == "SEU_OPT":
             seu_options = self.parse_seu(word)
             if verbose:
-                print(f"{reg} options: {seu_options}\n")
+                print("{} options: {}\n".format(reg, seu_options))
         elif reg == "EXP_SIGN":
             if payload_len == 2:
                 self.exp_sign = word << 16
             elif payload_len == 1:
                 self.exp_sign |= word
                 if verbose:
-                    print(f"{reg}: {self.exp_sign}\n")
+                    print("{}: {}\n".format(reg, self.exp_sign))
         elif reg == "FAR_MAJ":
             if payload_len == 2:
                 self.current_far_maj = word
             elif payload_len == 1:
                 self.current_far_min = word
                 if verbose:
-                    print(f"{reg}: {self.far_maj} FAR_MIN: {self.far_min}\n")
+                    print(
+                        "{}: {} FAR_MIN: {}\n".format(
+                            reg, self.far_maj, self.far_min))
         elif reg == "FDRI":
             if self.fdri_in_progress:
                 self.frame_data.append(word)
@@ -357,7 +359,7 @@ class Bitstream:
                 # Check if 0 words actually means read something
                 payload_len = self.curr_fdri_write_len + 2
                 if verbose:
-                    print(f"{reg}: {self.curr_fdri_write_len}\n")
+                    print("{}: {}\n".format(reg, self.curr_fdri_write_len))
                 return payload_len
         elif reg == "CRC":
             if payload_len == 2:
@@ -365,7 +367,7 @@ class Bitstream:
             elif payload_len == 1:
                 self.curr_crc_check |= word
                 if verbose:
-                    print(f"{reg}: {self.curr_crc_check}\n")
+                    print("{}: {}\n".format(reg, self.curr_crc_check))
         payload_len -= 1
         return payload_len
 
