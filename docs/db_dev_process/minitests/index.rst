@@ -14,7 +14,6 @@ Minitests are experiments to figure out how things work. They allow us to unders
    clkbuf
    eccbits
    fixedpnr
-   index.rst
    litex
    lvb_long_mux
    nodes_wires_list

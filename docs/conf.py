@@ -200,7 +200,7 @@ def setup(app):
     github_code_branch = 'blob/master/'
 
     docs_root_dir = os.path.realpath(os.path.dirname(__file__))
-    code_root_dir = os.path.realpath(os.path.join(docs_root_dir, "..", ".."))
+    code_root_dir = os.path.realpath(os.path.join(docs_root_dir, ".."))
 
     MarkdownSymlinksDomain.init_domain(
         github_code_repo, github_code_branch, docs_root_dir, code_root_dir)

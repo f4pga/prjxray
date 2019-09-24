@@ -8,7 +8,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXAUTOBUILD   = sphinx-autobuild
 SPHINXPROJ    = ProjectX-Ray
-SOURCEDIR     = src
+SOURCEDIR     = .
 BUILDDIR      = _build
 
 # Put it first so that "make" without argument is like "make help".
@@ -22,10 +22,10 @@ livehtml:
 
 # Update fuzzer / minitest markdown links.
 fuzzers-links:
-	@mkdir -p $(MAKEDIR)/${SOURCEDIR}/db_dev_process/fuzzers
-	@cd $(MAKEDIR)/${SOURCEDIR}/db_dev_process/fuzzers && rm -f *.md
-	@cd $(MAKEDIR)/${SOURCEDIR}/db_dev_process/fuzzers && \
-		for i in ../../../../fuzzers/*; do \
+	@mkdir -p $(MAKEDIR)/db_dev_process/fuzzers
+	@cd $(MAKEDIR)/db_dev_process/fuzzers && rm -f *.md
+	@cd $(MAKEDIR)/db_dev_process/fuzzers && \
+		for i in ../../../fuzzers/*; do \
 			n=$$(basename $$i | sed -e's/^[0-9][0-9][0-9]-//'); \
 			if [ ! -d $$i ]; then \
 				continue; \
@@ -42,10 +42,10 @@ fuzzers-links:
 		done
 
 minitests-links:
-	@mkdir -p $(MAKEDIR)/${SOURCEDIR}/db_dev_process/minitests
-	@cd  $(MAKEDIR)/${SOURCEDIR}/db_dev_process/minitests && rm -f *.md
-	@cd  $(MAKEDIR)/${SOURCEDIR}/db_dev_process/minitests && \
-		for i in ../../../../minitests/*; do \
+	@mkdir -p $(MAKEDIR)/db_dev_process/minitests
+	@cd  $(MAKEDIR)/db_dev_process/minitests && rm -f *.md
+	@cd  $(MAKEDIR)/db_dev_process/minitests && \
+		for i in ../../../minitests/*; do \
 			n=$$(basename $$i | sed -e's/^[0-9][0-9][0-9]-//'); \
 			if [ ! -d $$i ]; then \
 				continue; \
