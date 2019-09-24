@@ -13,24 +13,27 @@ output wire [5:0]   O_CNT
 // ============================================================================
 // Input clock divider (to get different clkins)
 wire clk100;
-wire clk50;
+reg  clk50;
 
 assign clk100 = CLK;
 
-wire clkbuf;
-BUFMR mr_buf (.I(CLK), .O(clkbuf));
+always @(posedge clk100)
+    clk50 <= !clk50;
 
-BUFR #
-(
-.BUFR_DIVIDE ("2")
-)
-bufr
-(
-.I      (clkbuf),
-.CLR    (RST),
-.CE     (1'b1),
-.O      (clk50)
-);
+//wire clkbuf;
+//BUFMR mr_buf (.I(CLK), .O(clkbuf));
+
+//BUFR #
+//(
+//.BUFR_DIVIDE ("2")
+//)
+//bufr
+//(
+//.I      (clkbuf),
+//.CLR    (RST),
+//.CE     (1'b1),
+//.O      (clk50)
+//);
 
 // ============================================================================
 // The PLL
