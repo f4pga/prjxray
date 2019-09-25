@@ -81,7 +81,7 @@ The following configurations are supported;
         # 125 MHz CLK onboard
         K17
 
-# Quickstart
+## Quickstart
 
 ```
 source settings/artix7.sh
@@ -91,7 +91,7 @@ make clean
 make copy
 ```
 
-# How it works
+## How it works
 
 Basic idea:
 - LOC LUTs in the ROI to terminate input and output routing

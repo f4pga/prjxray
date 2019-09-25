@@ -8,7 +8,7 @@ The reason for using the `docs` branch is to avoid running the full CI test suit
 Updating the docs is a three-step process: Make your updates, test your updates,
 send a pull request.
 
-# 1. Make your updates
+## 1. Make your updates
 
 The standard Project X-Ray [contribution guidelines](CONTRIBUTING.md) apply to
 doc updates too.
@@ -16,18 +16,18 @@ doc updates too.
 Follow your usual process for updating content on GitHub. See GitHub's guide to
 [working with forks](https://help.github.com/articles/working-with-forks/).
 
-# 2. Test your updates
+## 2. Test your updates
 
 Before sending a pull request with your doc updates, you need to check the
 effects of your changes on the page you've updated and on the docs as a whole.
 
-## Check your markup
+### Check your markup
 
 There are a few places on the web where you can view ReStructured Text rendered
 as HTML. For example:
 [https://livesphinx.herokuapp.com/](https://livesphinx.herokuapp.com/)
 
-## Perform basic tests: make html and linkcheck
+### Perform basic tests: make html and linkcheck
 
 If your changes are quite simple, you can perform a few basic checks before
 sending a pull request. At minimum:
@@ -85,7 +85,7 @@ Steps in detail, on Linux:
 
 1. To leave the shell, type: `exit`.
 
-## Perform more comprehensive testing on your own staging doc site
+### Perform more comprehensive testing on your own staging doc site
 
 If your changes are more comprehensive, you should do a full test of your fork
 of the docs before sending a pull request to the Project X-Ray repo. You can
@@ -125,7 +125,7 @@ Follow these steps to create your own staging doc site on Read the Docs (RtD):
    guide](https://docs.readthedocs.io/en/latest/getting_started.html#import-docs)
    for more info.
 
-# 3. Send a pull request
+## 3. Send a pull request
 
 Follow your standard GitHub process to send a pull request to the Project X-Ray
 repo. See the GitHub guide to [creating a pull request from a

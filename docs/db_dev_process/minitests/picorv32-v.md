@@ -1,1 +1,0 @@
-../../../minitests/picorv32-v/README.md
