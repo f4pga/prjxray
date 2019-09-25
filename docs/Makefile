@@ -35,9 +35,6 @@ fuzzers-links:
 				ln -s $$i/README.md $${n}.md; \
 			else \
 				echo "Missing $$i/README.md"; \
-				echo "# $$n Fuzzer"		>  $${n}.md; \
-				echo "" 			>> $${n}.md; \
-				echo "Missing README.md!" 	>> $${n}.md; \
 			fi; \
 		done
 
@@ -55,9 +52,6 @@ minitests-links:
 				ln -s $$i/README.md $${n}.md; \
 			else \
 				echo "Missing $$i/README.md"; \
-				echo "# $$n Minitest"		>  $${n}.md; \
-				echo "" 			>> $${n}.md; \
-				echo "Missing README.md!" 	>> $${n}.md; \
 			fi; \
 		done
 

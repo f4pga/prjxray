@@ -10,7 +10,7 @@ harness into a bitstream with fasm2frame and xc7patch.  Since writting FASM is
 rather tedious, rules are provided to convert Verilog ROI designs into FASM via
 Vivado.
 
-# Usage
+## Usage
 
 make rules are provided for generating each step of the process so that
 intermediate forms can be analyzed.  Assuming you have a .fasm file, invoking
@@ -20,7 +20,7 @@ the %\_hand\_crafted.bit rule will generate a merged bitstream:
 make foo.hand\_crafted.bit # reads foo.fasm
 ```
 
-# Using Vivado to generate .fasm
+## Using Vivado to generate .fasm
 
 Vivado's Partial Reconfiguration flow can be used to synthesize and implement a
 ROI design that is then converted to .fasm.  Write a Verilog module

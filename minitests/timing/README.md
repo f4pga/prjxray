@@ -13,14 +13,14 @@ comparision between the reduced model implemented in prjxray and the Vivado
 timing results.
 
 Model quality
-=============
+-------------
 
 The prjxray timing handles most nets +/- 1.5% delay.  The large exception to
 this is clock nets, which appear to use a table lookup that is not understood
 at this time.
 
 Running the model
-=================
+-----------------
 
 The provided Makefile will by default compile all examples.  It a specific design
 family is desired, the family name can be provided.  If a specific design within
