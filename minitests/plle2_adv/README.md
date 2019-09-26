@@ -11,7 +11,7 @@ This test verifies operation of the `PLLE2_ADV` primitive. The PLL is configured
 - CLKOUT4: 16/80
 - CLKOUT5: 16/96
 
-The input clock can be swtched between 100MHz and 50MHz using the `sw[1]` switch. The 50MHz clock is generated using a `BUFR` driven by a `BUFMR`.
+The input clock can be swtched between 100MHz and 50MHz using the `sw[1]` switch. The 50MHz clock is generated using simple divider implemented in logic.
 
 Clocks from the PLL are further divided by 2^21 and then fed to LEDs 0:5. PLL lock indicator is connected to LED 15. The switch `sw[0]` provides reset signal to the PLL.
 

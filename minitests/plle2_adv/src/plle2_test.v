@@ -20,21 +20,6 @@ assign clk100 = CLK;
 always @(posedge clk100)
     clk50 <= !clk50;
 
-//wire clkbuf;
-//BUFMR mr_buf (.I(CLK), .O(clkbuf));
-
-//BUFR #
-//(
-//.BUFR_DIVIDE ("2")
-//)
-//bufr
-//(
-//.I      (clkbuf),
-//.CLR    (RST),
-//.CE     (1'b1),
-//.O      (clk50)
-//);
-
 // ============================================================================
 // The PLL
 wire clk_fb;
@@ -51,22 +36,27 @@ PLLE2_ADV #
 
 .CLKOUT0_DIVIDE     (16),
 .CLKOUT0_DUTY_CYCLE (0.5),
-.CLKOUT0_PHASE      (0.0),
+.CLKOUT0_PHASE      (45.0),
+
 .CLKOUT1_DIVIDE     (32),
 .CLKOUT1_DUTY_CYCLE (0.5),
-.CLKOUT1_PHASE      (0.0),
+.CLKOUT1_PHASE      (90.0),
+
 .CLKOUT2_DIVIDE     (48),
 .CLKOUT2_DUTY_CYCLE (0.5),
-.CLKOUT2_PHASE      (0.0),
+.CLKOUT2_PHASE      (135.0),
+
 .CLKOUT3_DIVIDE     (64),
 .CLKOUT3_DUTY_CYCLE (0.5),
-.CLKOUT3_PHASE      (0.0),
+.CLKOUT3_PHASE      (-45.0),
+
 .CLKOUT4_DIVIDE     (80),
 .CLKOUT4_DUTY_CYCLE (0.5),
-.CLKOUT4_PHASE      (0.0),
+.CLKOUT4_PHASE      (-90.0),
+
 .CLKOUT5_DIVIDE     (96),
 .CLKOUT5_DUTY_CYCLE (0.5),
-.CLKOUT5_PHASE      (0.0),
+.CLKOUT5_PHASE      (-135.0),
 
 .STARTUP_WAIT       ("FALSE")
 )
