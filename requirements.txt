@@ -1,5 +1,4 @@
-fasm
-futures
+pyfasm
 intervaltree
 junit-xml
 numpy
