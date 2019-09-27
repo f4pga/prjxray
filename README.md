@@ -46,26 +46,28 @@ Build the C++ tools:
     make build
 
 ### Step 5: ###
+Choose one of the following options:
+
 (Option 1) - Install the Python environment locally
 
-    sudo apt-get install virtualenv python3-virtualenv python3-yaml
+    sudo apt-get install virtualenv python3 python3-pip python3-virtualenv python3-yaml
     make env
 
 (Option 2) - Install the Python environment globally
 
-    sudo apt-get install python3-yaml
-    sudo pip3 install -r requirements.txt
+    sudo apt-get install python3 python3-pip python3-yaml
+    sudo -H pip3 install -r requirements.txt
 
 This step is known to fail with a compiler error while building the `pyjson5`
-library when using Arch Linux and Fedora. `pyjson5` needs one change to build
-correctly:
+library when using Arch Linux and Fedora. If this occurs, `pyjson5` needs one
+change to build correctly:
 
     git clone https://github.com/Kijewski/pyjson5.git
     cd pyjson5
     sed -i 's/char \*PyUnicode/const char \*PyUnicode/' src/_imports.pyx
     sudo make
 
-This might give you and error about `sphinx_autodoc_typehints` but it should
+This might give you an error about `sphinx_autodoc_typehints` but it should
 correctly build and install pyjson5. After this, run either option 1 or 2 again.
 
 ### Step 6: ###
@@ -88,7 +90,7 @@ Python API with a pre-generated database)
 ### Step 8: ###
 Pick a fuzzer (or write your own) and run:
 
-    cd fuzzers/010-lutinit
+    cd fuzzers/010-clb-lutinit
     make -j$(nproc) run
 
 ### Step 9: ###
