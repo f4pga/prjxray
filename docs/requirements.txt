@@ -1,3 +1,5 @@
+sphinx_materialdesign_theme
+
 docutils
 sphinx
 sphinx-autobuild
@@ -5,7 +7,6 @@ sphinx-autobuild
 breathe
 recommonmark
 sphinx-markdown-tables
-git+https://github.com/SymbiFlow/sphinx_symbiflow_theme
 sphinxcontrib-napoleon
 
 # Markdown cross-reference solver library
