@@ -1,4 +1,4 @@
-pyfasm
+-e third_party/fasm
 intervaltree
 junit-xml
 numpy

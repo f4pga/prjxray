@@ -46,10 +46,6 @@ Build the C++ tools:
     make build
 
 ### Step 5: ###
-Alias python to python3 to avoid using python2 accidentally:
-
-    alias python=python3
-
 Choose one of the following options:
 
 (Option 1) - Install the Python environment locally
