@@ -17,25 +17,37 @@ def main():
 
     tiledata = {}
     pipdata = {}
+    ppipdata = {}
     ignpip = set()
 
-    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
-                           'cmt_top', 'cmt_top_l_upper_t.txt')) as f:
-        for l in f:
-            tile_type, dst, src = l.strip().split('.')
-            if tile_type not in pipdata:
-                pipdata[tile_type] = []
+    # Load PIP lists
+    piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
+    for piplist in piplists:
+        with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build', 'cmt_top', piplist)) as f:
+            for l in f:
+                tile_type, dst, src = l.strip().split('.')
+                if tile_type not in pipdata:
+                    pipdata[tile_type] = []
 
-            pipdata[tile_type].append((src, dst))
+                pipdata[tile_type].append((src, dst))
 
-    with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
-                           'cmt_top', 'cmt_top_r_upper_t.txt')) as f:
-        for l in f:
-            tile_type, dst, src = l.strip().split('.')
-            if tile_type not in pipdata:
-                pipdata[tile_type] = []
+    # Load PPIP lists (to exclude them)
+    ppiplists = ['ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db']
+    for ppiplist in ppiplists:
+        fname = os.path.join(os.getenv('FUZDIR'), '..', '071-ppips', 'build', ppiplist)
+        with open(fname, 'r') as f:
+            for l in f:
+                pip_data, pip_type = l.strip().split()
 
-            pipdata[tile_type].append((src, dst))
+                print(pip_data, pip_type)
+                if pip_type != 'always':
+                    continue
+
+                tile_type, dst, src = pip_data.split('.')
+                if tile_type not in ppipdata:
+                    ppipdata[tile_type] = []
+
+                ppipdata[tile_type].append((src, dst))
 
     print("Loading tags from design.txt.")
     with open("design.txt", "r") as f:
@@ -46,6 +58,8 @@ def main():
                 continue
 
             if 'UPPER_B' in tile:
+                continue
+            if 'LOWER_T' in tile:
                 continue
 
             pip_prefix, _ = pip.split(".")
@@ -75,6 +89,11 @@ def main():
             if dst.startswith('CMT_TOP_R_UPPER_T_CLK') or \
                dst.startswith('CMT_TOP_L_UPPER_T_CLK'):
                 ignpip.add((src, dst))
+
+            # Ignore pseudo pips
+            for ppip in ppipdata[tile_type]:
+                if ppip == (src, dst):
+                    ignpip.add((src, dst, ))
 
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]
