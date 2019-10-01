@@ -23,7 +23,8 @@ def main():
     # Load PIP lists
     piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
     for piplist in piplists:
-        with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build', 'cmt_top', piplist)) as f:
+        with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
+                               'cmt_top', piplist)) as f:
             for l in f:
                 tile_type, dst, src = l.strip().split('.')
                 if tile_type not in pipdata:
@@ -34,7 +35,8 @@ def main():
     # Load PPIP lists (to exclude them)
     ppiplists = ['ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db']
     for ppiplist in ppiplists:
-        fname = os.path.join(os.getenv('FUZDIR'), '..', '071-ppips', 'build', ppiplist)
+        fname = os.path.join(
+            os.getenv('FUZDIR'), '..', '071-ppips', 'build', ppiplist)
         with open(fname, 'r') as f:
             for l in f:
                 pip_data, pip_type = l.strip().split()
@@ -93,7 +95,10 @@ def main():
             # Ignore pseudo pips
             for ppip in ppipdata[tile_type]:
                 if ppip == (src, dst):
-                    ignpip.add((src, dst, ))
+                    ignpip.add((
+                        src,
+                        dst,
+                    ))
 
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]

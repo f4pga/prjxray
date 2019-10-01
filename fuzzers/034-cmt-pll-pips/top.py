@@ -42,7 +42,8 @@ def gen_sites():
                 yield tile_name, site_name, phasers
 
 
-def get_random_route_from_site_pin(db, tile_name, site_name, site_pin, direction, occupied_wires):
+def get_random_route_from_site_pin(
+        db, tile_name, site_name, site_pin, direction, occupied_wires):
 
     grid = db.grid()
     tile = db.tilegrid[tile_name]
@@ -50,7 +51,8 @@ def get_random_route_from_site_pin(db, tile_name, site_name, site_pin, direction
     site_type = tile["sites"][site_name]
 
     tile = db.get_tile_type(tile_type)
-    site = [s for s in tile.get_sites() if s.type == site_type][0] # FIXME: find correct site by vivado loc
+    site = [s for s in tile.get_sites() if s.type == site_type
+            ][0]  # FIXME: find correct site by vivado loc
 
     # Find site wire
     wire = None
@@ -76,11 +78,11 @@ def get_random_route_from_site_pin(db, tile_name, site_name, site_pin, direction
                 continue
 
             if next_wire not in occupied_wires:
-                wires.append(next_wire)      
+                wires.append(next_wire)
 
         if len(wires) == 0:
             break
-        
+
         wire = random.choice(wires)
         occupied_wires.add(wire)
 
@@ -111,38 +113,46 @@ module top();
         endpoints = {}
 
         pins = [
-#            ('CLKIN1', 'up'),
-#            ('CLKIN2', 'up'),
+            #            ('CLKIN1', 'up'),
+            #            ('CLKIN2', 'up'),
             ('CLKFBIN', 'up'),
             ('CLKFBOUT', 'down'),
-#            ('CLKOUT0', 'down'),
-#            ('CLKOUT1', 'down'),
-#            ('CLKOUT2', 'down'),
-#            ('CLKOUT3', 'down'),
+            #            ('CLKOUT0', 'down'),
+            #            ('CLKOUT1', 'down'),
+            #            ('CLKOUT2', 'down'),
+            #            ('CLKOUT3', 'down'),
         ]
 
         occupied_wires = set()
         for pin, dir in pins:
 
-            route = get_random_route_from_site_pin(db, tile, site, pin, dir, occupied_wires)
+            route = get_random_route_from_site_pin(
+                db, tile, site, pin, dir, occupied_wires)
             if route is None:
                 endpoints[pin] = ""
                 continue
 
-            routes[pin] = (route, dir,)
+            routes[pin] = (
+                route,
+                dir,
+            )
             endpoints[pin] = route[-1] if dir == 'down' else route[0]
 
         internal_feedback = endpoints['CLKFBOUT'].endswith('CLKFBIN')
-        if internal_feedback:            
+        if internal_feedback:
             del routes['CLKFBIN']
 
         # Store them in random order so the TCL script will try to route
         # in random order.
         lines = []
-        for pin, (route, dir,) in routes.items():
+        for pin, (
+                route,
+                dir,
+        ) in routes.items():
 
             route_str = " ".join(route)
-            lines.append('{} {} {} {} {}\n'.format(tile, site, pin, dir, route_str))
+            lines.append(
+                '{} {} {} {} {}\n'.format(tile, site, pin, dir, route_str))
 
         random.shuffle(lines)
         routes_file.writelines(lines)
@@ -236,7 +246,8 @@ module top();
             );""".format(idx=clkout, site=site, phaser_loc=phasers['OUT'][0]))
 
         if internal_feedback:
-            print("""
+            print(
+                """
                 assign clkfbin_{site} = clkfbout_mult_{site};
                 """.format(site=site))
         else:
@@ -249,17 +260,20 @@ module top();
                     .O(clkfbin_{site})
                 );""".format(site=site))
             elif clkfbin_src == '0':
-                print("""
+                print(
+                    """
                 assign clkfbin_{site} = 1'b0;
                 """.format(site=site))
             elif clkfbin_src == '1':
-                print("""
+                print(
+                    """
                 assign clkfbin_{site} = 1'b1;
                 """.format(site=site))
             elif clkfbin_src is None:
                 pass
             elif clkfbin_src == 'logic':
-                print("""
+                print(
+                    """
                 (* KEEP, DONT_TOUCH *)
                 LUT6 # (.INIT(64'h5555555555555555))
                 clkfbin_logic_{site} (
@@ -271,14 +285,15 @@ module top();
         clkin_is_none = False
 
         for clkin in range(2):
-            clkin_src = random.choice((
-                'BUFH',
-                'BUFR',
-#                '0',
-#                '1',
-                'logic',
-#                None,
-            ))
+            clkin_src = random.choice(
+                (
+                    'BUFH',
+                    'BUFR',
+                    #                '0',
+                    #                '1',
+                    'logic',
+                    #                None,
+                ))
             if clkin == 1 and clkin_is_none and clkin_src is None:
                 clkin_src = 'BUFH'
 
@@ -309,7 +324,8 @@ module top();
                 assign clkin{idx}_{site} = 1;
                 """.format(idx=clkin + 1, site=site))
             elif clkin_src == 'logic':
-                print("""
+                print(
+                    """
                 (* KEEP, DONT_TOUCH *)
                 LUT6 # (.INIT(64'h5555555555555555))
                 clkin{idx}_logic_{site} (

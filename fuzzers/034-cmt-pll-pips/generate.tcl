@@ -100,7 +100,7 @@ proc load_routes {filename} {
             # Ripup and discard the fixed route.
             set_property FIXED_ROUTE "" $net
             route_design -unroute -nets $net
-            puts "MANROUTE: Net $net status $status, ripping up..."    
+            puts "MANROUTE: Net $net status $status, ripping up..."
         } else {
             set_property IS_ROUTE_FIXED 1 $net
             puts "MANROUTE: Successful manual route for $net"
