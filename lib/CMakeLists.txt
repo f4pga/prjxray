@@ -70,4 +70,22 @@ if (PRJXRAY_BUILD_TESTING)
 	add_test(NAME xilinx_xc7series_test
 		 COMMAND xilinx_xc7series_test
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
+
+	add_executable(xilinx_spartan6_test
+		xilinx/tests/spartan6/bitstream_reader_test.cc
+		xilinx/tests/spartan6/bitstream_writer_test.cc
+		xilinx/tests/spartan6/block_type_test.cc
+		xilinx/tests/spartan6/configuration_bus_test.cc
+		xilinx/tests/spartan6/configuration_column_test.cc
+		xilinx/tests/spartan6/configuration_test.cc
+		xilinx/tests/spartan6/configuration_packet_test.cc
+		xilinx/tests/spartan6/frame_address_test.cc
+		xilinx/tests/spartan6/global_clock_region_test.cc
+		xilinx/tests/spartan6/part_test.cc
+		xilinx/tests/spartan6/row_test.cc
+		xilinx/tests/spartan6/frames_test.cc)
+	target_link_libraries(xilinx_spartan6_test libprjxray gtest_main)
+	add_test(NAME xilinx_spartan6_test
+		 COMMAND xilinx_spartan6_test
+		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 endif()
