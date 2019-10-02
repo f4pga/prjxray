@@ -72,6 +72,31 @@ class BitstreamReader {
 
 template <>
 template <typename T>
+std::optional<BitstreamReader<Spartan6>> BitstreamReader<Spartan6>::InitWithBytes(T bitstream) {
+	// If this is really a Xilinx 7-Series bitstream, there will be a sync
+	// word somewhere toward the beginning.
+	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),
+	                            kSyncWord.begin(), kSyncWord.end());
+	if (sync_pos == bitstream.end()) {
+		return absl::optional<BitstreamReader<Spartan6>>();
+	}
+	sync_pos += kSyncWord.size();
+
+	// Wrap the provided container in a span that strips off the preamble.
+	absl::Span<typename T::value_type> bitstream_span(bitstream);
+	auto config_packets =
+	    bitstream_span.subspan(sync_pos - bitstream.begin());
+
+	// Convert the bytes into 16-bit, big-endian words.
+	auto big_endian_reader = make_big_endian_span<uint16_t>(config_packets);
+	std::vector<uint32_t> words{big_endian_reader.begin(),
+	                            big_endian_reader.end()};
+
+	return BitstreamReader<Spartan6>(std::move(words));
+}
+
+template <>
+template <typename T>
 std::optional<BitstreamReader<Series7>> BitstreamReader<Series7>::InitWithBytes(T bitstream) {
 	// If this is really a Xilinx 7-Series bitstream, there will be a sync
 	// word somewhere toward the beginning.

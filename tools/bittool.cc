@@ -162,12 +162,22 @@ struct DeviceIdGetter {
 				 ArchType::ConfRegType::IDCODE);
 				});
 		if (idcode_packet != reader->end()) {
-			if (idcode_packet->data().size() != 1) {
-				std::cerr << "Write to IDCODE with word_count != 1"
-					<< std::endl;
-				return 1;
+			if (std::is_same_v<ArchType, xilinx::Spartan6>) {
+				if (idcode_packet->data().size() != 2) {
+					std::cerr << "Write to IDCODE with word_count != 2"
+						<< std::endl;
+					return 1;
+				}
+				std::cout << "0x" << std::hex << ((idcode_packet->data()[0] << 16) | idcode_packet->data()[1]) << std::endl;
 			}
-			std::cout << "0x" << std::hex << idcode_packet->data()[0] << std::endl;
+			else {
+				if (idcode_packet->data().size() != 1) {
+					std::cerr << "Write to IDCODE with word_count != 1"
+						<< std::endl;
+					return 1;
+				}
+				std::cout << "0x" << std::hex << idcode_packet->data()[0] << std::endl;
+			}
 		}
 		return 0;
 	}

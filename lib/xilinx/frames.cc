@@ -46,7 +46,10 @@ int Frames<ArchType>::readFrames(const std::string& frm_file_str) {
 			               return std::stoul(val, nullptr, 16);
 		               });
 
-		updateECC(frame_data);
+		// Spartan6 doesn't have ECC
+		if (!std::is_same_v<ArchType, Spartan6>) {
+			updateECC(frame_data);
+		}
 
 		// Insert the frame address and corresponding frame data to the
 		// map
@@ -89,8 +92,11 @@ void Frames<Series7>::updateECC(FrameData& data) {
         data[0x32] |= (calculateECC(data) & 0x1FFF);
 }
 
+template Frames<Spartan6>::Frames2Data& Frames<Spartan6>::getFrames();
 template Frames<Series7>::Frames2Data& Frames<Series7>::getFrames();
+template void Frames<Spartan6>::addMissingFrames(const absl::optional<Spartan6::Part>& part);
 template void Frames<Series7>::addMissingFrames(const absl::optional<Series7::Part>& part);
+template int Frames<Spartan6>::readFrames(const std::string&);
 template int Frames<Series7>::readFrames(const std::string&);
 template void Frames<Series7>::updateECC(Frames<Series7>::FrameData&);
 

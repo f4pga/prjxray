@@ -140,7 +140,7 @@ struct BitReader {
 			} else if (FLAGS_x || FLAGS_y) {
 				for (int i = 0; i < (int)it.second.size(); i++) {
 					for (int k = 0; k < word_length; k++) {
-						if (((i != 50 || k > 12 || FLAGS_C)) &&
+						if (((i != 50 || k > 12 || FLAGS_C) || std::is_same_v<ArchType, prjxray::xilinx::Spartan6>) &&
 						((it.second.at(i) & (1 << k)) != 0)) {
 							if (FLAGS_x)
 								fprintf(
@@ -181,11 +181,17 @@ struct BitReader {
 							static_cast<uint32_t>(it.first));
 
 				for (size_t i = 0; i < it.second.size(); i++)
-					fprintf(f, "%08x%s",
-							it.second.at(i) &
-							((i != 50 || FLAGS_C) ? 0xffffffff
-							 : 0xffffe000),
-							(i % 6) == 5 ? "\n" : " ");
+					if (std::is_same_v<ArchType, prjxray::xilinx::Spartan6>) {
+						fprintf(f, "%08x%s",
+								it.second.at(i) & 0xffffffff,
+								(i % 6) == 5 ? "\n" : " ");
+					} else {
+						fprintf(f, "%08x%s",
+								it.second.at(i) &
+								((i != 50 || FLAGS_C) ? 0xffffffff
+								 : 0xffffe000),
+								(i % 6) == 5 ? "\n" : " ");
+					}
 
 				fprintf(f, "\n\n");
 			}
