@@ -90,7 +90,8 @@ BitstreamReader<ArchType>::InitWithBytes(T bitstream) {
 	auto config_packets =
 	    bitstream_span.subspan(sync_pos - bitstream.begin());
 
-	// Convert the bytes into 32-bit, big-endian words.
+	// Convert the bytes into 32-bit or 16-bit in case of Spartan6,
+	// big-endian words.
 	auto big_endian_reader =
 	    make_big_endian_span<typename ArchType::WordType>(config_packets);
 	std::vector<uint32_t> words{big_endian_reader.begin(),

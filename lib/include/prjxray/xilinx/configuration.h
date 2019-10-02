@@ -94,6 +94,130 @@ Configuration<ArchType>::createType2ConfigurationPacketData(
 	return packet_data;
 }
 
+template <>
+template <typename Collection>
+absl::optional<Configuration<Spartan6>>
+Configuration<Spartan6>::InitWithPackets(const typename Spartan6::Part& part,
+                                         Collection& packets) {
+	using ArchType = Spartan6;
+	// Registers that can be directly written to.
+	uint32_t command_register = 0;
+	uint32_t frame_address_register = 0;
+	uint32_t mask_register = 0;
+	__attribute__((unused)) uint32_t ctl1_register = 0;
+
+	// Internal state machine for writes.
+	bool start_new_write = false;
+	typename ArchType::FrameAddress current_frame_address = 0;
+
+	Configuration<ArchType>::FrameMap frames;
+	for (auto packet : packets) {
+		if (packet.opcode() !=
+		    ConfigurationPacket<
+		        typename ArchType::ConfRegType>::Opcode::Write) {
+			continue;
+		}
+
+		switch (packet.address()) {
+			case ArchType::ConfRegType::MASK:
+				if (packet.data().size() < 1)
+					continue;
+				mask_register = packet.data()[0];
+				break;
+			case ArchType::ConfRegType::CTL:
+				if (packet.data().size() < 1)
+					continue;
+				ctl1_register =
+				    packet.data()[0] & mask_register;
+				break;
+			case ArchType::ConfRegType::CMD:
+				if (packet.data().size() < 1)
+					continue;
+				command_register = packet.data()[0];
+				// Writes to CMD trigger an immediate action. In
+				// the case of WCFG, that is just setting a flag
+				// for the next FDRI.
+				if (command_register == 0x1) {
+					start_new_write = true;
+				}
+				break;
+			case ArchType::ConfRegType::IDCODE: {
+				// This really should be a two-word write.
+				if (packet.data().size() < 2)
+					continue;
+
+				// If the IDCODE doesn't match our expected
+				// part, consider the bitstream invalid.
+				uint32_t idcode = (packet.data()[0] << 16) |
+				                  (packet.data()[1]);
+				if (idcode != part.idcode()) {
+					return {};
+				}
+				break;
+			}
+			// UG380 describes the frame addressing scheme where two
+			// words for FAR_MAJ update FAR_MAJ anda FAR_MIN -
+			// FAR_MAJ comes first
+			case ArchType::ConfRegType::FAR_MAJ: {
+				size_t packet_size = packet.data().size();
+				assert(packet_size < 3);
+				if (packet_size < 1) {
+					continue;
+				} else if (packet_size < 2) {
+					frame_address_register =
+					    (packet.data()[0] & 0xFFFF) << 16;
+				} else {
+					frame_address_register =
+					    ((packet.data()[0] & 0xFFFF)
+					     << 16) |
+					    (packet.data()[1] & 0xFFFF);
+				}
+				break;
+			}
+			case ArchType::ConfRegType::FAR_MIN:
+				// This really should be a one-word write.
+				if (packet.data().size() < 1)
+					continue;
+
+				frame_address_register |=
+				    packet.data()[0] & 0x3FF;
+
+				break;
+			case ArchType::ConfRegType::FDRI: {
+				if (start_new_write) {
+					current_frame_address =
+					    frame_address_register;
+					start_new_write = false;
+				}
+
+				// Spartan6 frames are 65-words long.  Writes
+				// to this register can be multiples of that to
+				// do auto-incrementing block writes.
+
+				for (size_t ii = 0; ii < packet.data().size();
+				     ii += ArchType::words_per_frame) {
+					frames[current_frame_address] =
+					    packet.data().subspan(
+					        ii, ArchType::words_per_frame);
+
+					auto next_address =
+					    part.GetNextFrameAddress(
+					        current_frame_address);
+					if (!next_address)
+						break;
+
+					current_frame_address = *next_address;
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	return Configuration(part, frames);
+}
+
 template <typename ArchType>
 template <typename Collection>
 absl::optional<Configuration<ArchType>>

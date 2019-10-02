@@ -20,5 +20,9 @@ void Frames<UltraScalePlus>::updateECC(
 	xc7series::updateECC(data);
 }
 
+// Spartan6 doesn't have ECC
+template <>
+void Frames<Spartan6>::updateECC(typename Frames<Spartan6>::FrameData& data) {}
+
 }  // namespace xilinx
 }  // namespace prjxray
