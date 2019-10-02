@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-namespace xc7series = prjxray::xilinx::xc7series;
+using namespace prjxray::xilinx;
 
 TEST(IcapCrcTest, SimpleTests) {
 	// CRC for Zero Data
