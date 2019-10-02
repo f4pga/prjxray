@@ -11,15 +11,13 @@
 #include <absl/types/span.h>
 #include <gflags/gflags.h>
 #include <prjxray/memory_mapped_file.h>
-#include <prjxray/xilinx/xc7series/bitstream_reader.h>
-#include <prjxray/xilinx/xc7series/frame_address.h>
-#include <prjxray/xilinx/xc7series/global_clock_region.h>
-#include <prjxray/xilinx/xc7series/part.h>
+#include <prjxray/xilinx/bitstream_reader.h>
+#include <prjxray/xilinx/architectures.h>
 #include <yaml-cpp/yaml.h>
 
 DEFINE_bool(f, false, "Use FAR registers instead of LOUT ones");
 
-namespace xc7series = prjxray::xilinx::xc7series;
+namespace xilinx = prjxray::xilinx;
 
 int main(int argc, char* argv[]) {
 	gflags::SetUsageMessage(
@@ -42,37 +40,37 @@ int main(int argc, char* argv[]) {
 	}
 
 	auto reader =
-	    xc7series::BitstreamReader::InitWithBytes(in_file->as_bytes());
+	    xilinx::BitstreamReader<xilinx::Series7>::InitWithBytes(in_file->as_bytes());
 	if (!reader) {
 		std::cerr << "Input doesn't look like a bitstream" << std::endl;
 		return 1;
 	}
 
 	bool found_fdri_write = false;
-	std::vector<xc7series::FrameAddress> frame_addresses;
+	std::vector<xilinx::Series7::FrameAddress> frame_addresses;
 	absl::optional<uint32_t> idcode;
 	for (auto packet : *reader) {
 		if (packet.opcode() !=
-		    xc7series::ConfigurationPacket::Opcode::Write) {
+		    xilinx::ConfigurationPacket<xilinx::Series7::ConfRegType>::Opcode::Write) {
 			continue;
 		}
 
 		if (packet.address() ==
-		    xc7series::ConfigurationRegister::FDRI) {
+		    xilinx::Series7::ConfRegType::FDRI) {
 			found_fdri_write = true;
 		} else if ((packet.address() ==
-		            xc7series::ConfigurationRegister::IDCODE) &&
+		            xilinx::Series7::ConfRegType::IDCODE) &&
 		           packet.data().size() == 1) {
 			idcode = packet.data()[0];
 		} else if (found_fdri_write &&
 		           (packet.address() ==
-		            xc7series::ConfigurationRegister::LOUT) &&
+		            xilinx::Series7::ConfRegType::LOUT) &&
 		           (packet.data().size() == 1) && FLAGS_f == false) {
 			frame_addresses.push_back(packet.data()[0]);
 			found_fdri_write = false;
 		} else if (found_fdri_write &&
 		           (packet.address() ==
-		            xc7series::ConfigurationRegister::FAR) &&
+		            xilinx::Series7::ConfRegType::FAR) &&
 		           (packet.data().size() == 1) && FLAGS_f == true) {
 			frame_addresses.push_back(packet.data()[0]);
 			found_fdri_write = false;
@@ -92,7 +90,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	auto part = xc7series::Part(*idcode, frame_addresses.begin(),
+	auto part = xilinx::Series7::Part(*idcode, frame_addresses.begin(),
 	                            frame_addresses.end());
 	std::cout << YAML::Node(part) << std::endl;
 

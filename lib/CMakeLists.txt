@@ -2,20 +2,21 @@ add_library(libprjxray
 	database.cc
 	memory_mapped_file.cc
 	segbits_file_reader.cc
-	xilinx/xc7series/bitstream_reader.cc
-	xilinx/xc7series/bitstream_writer.cc
-	xilinx/xc7series/block_type.cc
-	xilinx/xc7series/configuration_bus.cc
-	xilinx/xc7series/configuration_column.cc
-	xilinx/xc7series/configuration_packet.cc
-	xilinx/xc7series/configuration_packetizer.cc
-	xilinx/xc7series/configuration_register.cc
+	xilinx/bitstream_reader.cc
+	xilinx/bitstream_writer.cc
+	xilinx/configuration_packet.cc
+	xilinx/configuration_packetizer.cc
+	xilinx/configuration_register.cc
+	xilinx/frames.cc
+	xilinx/configuration.cc
+	# Series-7 specific
 	xilinx/xc7series/frame_address.cc
 	xilinx/xc7series/global_clock_region.cc
 	xilinx/xc7series/part.cc
-	xilinx/xc7series/row.cc
-	xilinx/xc7series/frames.cc
-	xilinx/xc7series/utils.cc
+	xilinx/xc7series/configuration_row.cc
+	xilinx/xc7series/block_type.cc
+	xilinx/xc7series/configuration_bus.cc
+	xilinx/xc7series/configuration_column.cc
 	xilinx/xc7series/ecc.cc
 )
 target_include_directories(libprjxray PUBLIC "include")

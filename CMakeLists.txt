@@ -16,6 +16,7 @@ if(PRJXRAY_BUILD_TESTING)
 	enable_testing()
 endif()
 
+set(CMAKE_CXX_STANDARD 17)
 add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/gflags EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/cctz EXCLUDE_FROM_ALL)
@@ -28,7 +29,6 @@ target_include_directories(yaml-cpp PUBLIC
 	)
 
 # Set the CXX standard and compile time for our code only.
-set(CMAKE_CXX_STANDARD 14)
 add_compile_options(-Wall -Werror)
 
 add_subdirectory(lib)

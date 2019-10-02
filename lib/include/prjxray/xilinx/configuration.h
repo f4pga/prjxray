@@ -1,30 +1,39 @@
-#ifndef PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_H_
-#define PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_H_
+#ifndef PRJXRAY_LIB_XILINX_CONFIGURATION_H_
+#define PRJXRAY_LIB_XILINX_CONFIGURATION_H_
 
 #include <map>
+#include <optional>
+#include <type_traits>
 
 #include <absl/types/span.h>
+
 #include <prjxray/bit_ops.h>
-#include <prjxray/xilinx/xc7series/bitstream_reader.h>
-#include <prjxray/xilinx/xc7series/configuration_packet.h>
-#include <prjxray/xilinx/xc7series/frame_address.h>
-#include <prjxray/xilinx/xc7series/part.h>
+#include <prjxray/xilinx/frames.h>
+#include <prjxray/xilinx/architectures.h>
 
 namespace prjxray {
 namespace xilinx {
-namespace xc7series {
 
+template <typename ArchType>
 class Configuration {
        public:
-	using FrameMap = std::map<FrameAddress, absl::Span<const uint32_t>>;
+	using FrameMap = std::map<typename ArchType::FrameAddress, absl::Span<const uint32_t>>;
+	using PacketData = std::vector<uint32_t>;
 
 	template <typename Collection>
-	static absl::optional<Configuration> InitWithPackets(
-	    const Part& part,
-	    Collection& packets);
+	static std::optional<Configuration<ArchType>> InitWithPackets(
+				const typename ArchType::Part& part,
+				Collection& packets);
 
-	Configuration(const Part& part,
-	              std::map<FrameAddress, std::vector<uint32_t>>* frames)
+	static void createConfigurationPackage(typename ArchType::ConfigurationPackage& out_packets,
+                                const PacketData& packet_data,
+                                absl::optional<typename ArchType::Part>& part);
+
+	static PacketData createType2ConfigurationPacketData(const typename Frames<ArchType>::Frames2Data& frames,
+                                              absl::optional<typename ArchType::Part>& part);
+
+	Configuration(const typename ArchType::Part& part,
+	              std::map<typename ArchType::FrameAddress, std::vector<uint32_t>>* frames)
 	    : part_(part) {
 		for (auto& frame : *frames) {
 			frames_[frame.first] =
@@ -32,23 +41,23 @@ class Configuration {
 		}
 	}
 
-	Configuration(const Part& part, const FrameMap& frames)
+	Configuration(const typename ArchType::Part& part, const FrameMap& frames)
 	    : part_(part), frames_(std::move(frames)) {}
 
-	const Part& part() const { return part_; }
+	const typename ArchType::Part& part() const { return part_; }
 	const FrameMap& frames() const { return frames_; }
 
        private:
-	static constexpr int kWordsPerFrame = 101;
-
-	Part part_;
+	typename ArchType::Part part_;
 	FrameMap frames_;
 };
 
+template <>
 template <typename Collection>
-absl::optional<Configuration> Configuration::InitWithPackets(
-    const Part& part,
+std::optional<Configuration<Series7>> Configuration<Series7>::InitWithPackets(
+    const typename Series7::Part& part,
     Collection& packets) {
+	using ArchType = Series7;
 	// Registers that can be directly written to.
 	uint32_t command_register = 0;
 	uint32_t frame_address_register = 0;
@@ -57,27 +66,27 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 
 	// Internal state machine for writes.
 	bool start_new_write = false;
-	FrameAddress current_frame_address = 0;
+	typename ArchType::FrameAddress current_frame_address = 0;
 
-	Configuration::FrameMap frames;
+	Configuration<ArchType>::FrameMap frames;
 	for (auto packet : packets) {
-		if (packet.opcode() != ConfigurationPacket::Opcode::Write) {
+		if (packet.opcode() != ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::Write) {
 			continue;
 		}
 
 		switch (packet.address()) {
-			case ConfigurationRegister::MASK:
+			case ArchType::ConfRegType::MASK:
 				if (packet.data().size() < 1)
 					continue;
 				mask_register = packet.data()[0];
 				break;
-			case ConfigurationRegister::CTL1:
+			case ArchType::ConfRegType::CTL1:
 				if (packet.data().size() < 1)
 					continue;
 				ctl1_register =
 				    packet.data()[0] & mask_register;
 				break;
-			case ConfigurationRegister::CMD:
+			case ArchType::ConfRegType::CMD:
 				if (packet.data().size() < 1)
 					continue;
 				command_register = packet.data()[0];
@@ -88,7 +97,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 					start_new_write = true;
 				}
 				break;
-			case ConfigurationRegister::IDCODE:
+			case ArchType::ConfRegType::IDCODE:
 				// This really should be a one-word write.
 				if (packet.data().size() < 1)
 					continue;
@@ -99,7 +108,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 					return {};
 				}
 				break;
-			case ConfigurationRegister::FAR:
+			case ArchType::ConfRegType::FAR:
 				// This really should be a one-word write.
 				if (packet.data().size() < 1)
 					continue;
@@ -123,7 +132,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 					start_new_write = true;
 				}
 				break;
-			case ConfigurationRegister::FDRI: {
+			case ArchType::ConfRegType::FDRI: {
 				if (start_new_write) {
 					current_frame_address =
 					    frame_address_register;
@@ -134,10 +143,10 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 				// to this register can be multiples of that to
 				// do auto-incrementing block writes.
 				for (size_t ii = 0; ii < packet.data().size();
-				     ii += kWordsPerFrame) {
+				     ii += ArchType::words_per_frame) {
 					frames[current_frame_address] =
 					    packet.data().subspan(
-					        ii, kWordsPerFrame);
+					        ii, ArchType::words_per_frame);
 
 					auto next_address =
 					    part.GetNextFrameAddress(
@@ -157,7 +166,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 					             .is_bottom_half_rows() ||
 					     next_address->row() !=
 					         current_frame_address.row())) {
-						ii += 2 * kWordsPerFrame;
+						ii += 2 * ArchType::words_per_frame;
 					}
 					current_frame_address = *next_address;
 				}
@@ -171,8 +180,7 @@ absl::optional<Configuration> Configuration::InitWithPackets(
 	return Configuration(part, frames);
 }
 
-}  // namespace xc7series
 }  // namespace xilinx
 }  // namespace prjxray
 
-#endif  // PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_H_
+#endif  // PRJXRAY_LIB_XILINX_CONFIGURATION_H_
