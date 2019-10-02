@@ -1,13 +1,14 @@
-#ifndef PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_REGISTER_H_
-#define PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_REGISTER_H_
+#ifndef PRJXRAY_LIB_XILINX_CONFIGURATION_REGISTER_H_
+#define PRJXRAY_LIB_XILINX_CONFIGURATION_REGISTER_H_
 
 #include <ostream>
 
 namespace prjxray {
 namespace xilinx {
-namespace xc7series {
 
-enum class ConfigurationRegister : unsigned int {
+// Series-7 configuration register addresses
+// according to UG470, pg. 109
+enum class Series7ConfigurationRegister : unsigned int {
 	CRC = 0x00,
 	FAR = 0x01,
 	FDRI = 0x02,
@@ -31,10 +32,10 @@ enum class ConfigurationRegister : unsigned int {
 	BSPI = 0x1F,
 };
 
-std::ostream& operator<<(std::ostream& o, const ConfigurationRegister& value);
+std::ostream& operator<<(std::ostream& o,
+                         const Series7ConfigurationRegister& value);
 
-}  // namespace xc7series
 }  // namespace xilinx
 }  // namespace prjxray
 
-#endif  // PRJXRAY_LIB_XILINX_XC7SERIES_CONFIGURATION_REGISTER_H_
+#endif  // PRJXRAY_LIB_XILINX_CONFIGURATION_REGISTER_H_

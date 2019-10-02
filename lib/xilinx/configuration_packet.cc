@@ -1,24 +1,28 @@
-#include <prjxray/xilinx/xc7series/configuration_packet.h>
+#include <prjxray/xilinx/configuration_packet.h>
 
 #include <iomanip>
+#include <iostream>
 #include <ostream>
 
 #include <prjxray/bit_ops.h>
 
 namespace prjxray {
 namespace xilinx {
-namespace xc7series {
 
-std::pair<absl::Span<uint32_t>, absl::optional<ConfigurationPacket>>
-ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
-                                   const ConfigurationPacket* previous_packet) {
+template <>
+std::pair<absl::Span<uint32_t>,
+          absl::optional<ConfigurationPacket<Series7ConfigurationRegister>>>
+ConfigurationPacket<Series7ConfigurationRegister>::InitWithWords(
+    absl::Span<uint32_t> words,
+    const ConfigurationPacket<Series7ConfigurationRegister>* previous_packet) {
+	using ConfigurationRegister = Series7ConfigurationRegister;
 	// Need at least one 32-bit word to have a valid packet header.
 	if (words.size() < 1)
 		return {words, {}};
 
 	uint32_t header_type = bit_field_get(words[0], 31, 29);
 	switch (header_type) {
-		case 0x0:
+		case NONE:
 			// Type 0 is emitted at the end of a configuration row
 			// when BITSTREAM.GENERAL.DEBUGBITSTREAM is set to YES.
 			// These seem to be padding that are interepreted as
@@ -30,7 +34,7 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 			          Opcode::NOP,
 			          ConfigurationRegister::CRC,
 			          {}}}};
-		case 0x1: {
+		case TYPE1: {
 			Opcode opcode = static_cast<Opcode>(
 			    bit_field_get(words[0], 28, 27));
 			ConfigurationRegister address =
@@ -49,7 +53,7 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 			        {{header_type, opcode, address,
 			          words.subspan(1, data_word_count)}}};
 		}
-		case 0x2: {
+		case TYPE2: {
 			absl::optional<ConfigurationPacket> packet;
 			Opcode opcode = static_cast<Opcode>(
 			    bit_field_get(words[0], 28, 27));
@@ -76,16 +80,18 @@ ConfigurationPacket::InitWithWords(absl::Span<uint32_t> words,
 	}
 }
 
-std::ostream& operator<<(std::ostream& o, const ConfigurationPacket& packet) {
+template <class ConfigRegType>
+std::ostream& operator<<(std::ostream& o,
+                         const ConfigurationPacket<ConfigRegType>& packet) {
 	if (packet.header_type() == 0x0) {
 		return o << "[Zero-pad]" << std::endl;
 	}
 
 	switch (packet.opcode()) {
-		case ConfigurationPacket::Opcode::NOP:
+		case ConfigurationPacket<ConfigRegType>::Opcode::NOP:
 			o << "[NOP]" << std::endl;
 			break;
-		case ConfigurationPacket::Opcode::Read:
+		case ConfigurationPacket<ConfigRegType>::Opcode::Read:
 			o << "[Read Type=";
 			o << packet.header_type();
 			o << " Address=";
@@ -96,7 +102,7 @@ std::ostream& operator<<(std::ostream& o, const ConfigurationPacket& packet) {
 			o << " Reg=\"" << packet.address() << "\"";
 			o << "]" << std::endl;
 			break;
-		case ConfigurationPacket::Opcode::Write:
+		case ConfigurationPacket<ConfigRegType>::Opcode::Write:
 			o << "[Write Type=";
 			o << packet.header_type();
 			o << " Address=";
@@ -127,6 +133,8 @@ std::ostream& operator<<(std::ostream& o, const ConfigurationPacket& packet) {
 	return o;
 }
 
-}  // namespace xc7series
+template std::ostream& operator<<(
+    std::ostream&,
+    const ConfigurationPacket<Series7ConfigurationRegister>&);
 }  // namespace xilinx
 }  // namespace prjxray

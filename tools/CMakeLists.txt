@@ -25,6 +25,7 @@ target_link_libraries(xc7patch
 	gflags
 	libprjxray
 )
+
 add_executable(xc7frames2bit xc7frames2bit.cc)
 target_link_libraries(xc7frames2bit
 	absl::strings

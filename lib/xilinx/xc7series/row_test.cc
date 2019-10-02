@@ -1,4 +1,4 @@
-#include <prjxray/xilinx/xc7series/row.h>
+#include <prjxray/xilinx/xc7series/configuration_row.h>
 
 #include <gtest/gtest.h>
 
