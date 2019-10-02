@@ -113,14 +113,25 @@ module top();
         endpoints = {}
 
         pins = [
-            #            ('CLKIN1', 'up'),
-            #            ('CLKIN2', 'up'),
+            # Enabling random manual routing for CLKINx breaks solution for
+            # tags:
+            # - CMT_TOP_R_UPPER_T_PLLE2_CLKIN1.CMT_TOP_R_UPPER_T_PLLE2_CLK_IN1_INT
+            # - CMT_TOP_R_UPPER_T_PLLE2_CLKIN2.CMT_TOP_R_UPPER_T_PLLE2_CLK_IN2_INT
+
+            #('CLKIN1', 'up'),
+            #('CLKIN2', 'up'),
+
+            # This works:
             ('CLKFBIN', 'up'),
             ('CLKFBOUT', 'down'),
-            #            ('CLKOUT0', 'down'),
-            #            ('CLKOUT1', 'down'),
-            #            ('CLKOUT2', 'down'),
-            #            ('CLKOUT3', 'down'),
+
+            # Sometimes manually randomized route for CLKOUTx conflicts with
+            # the verilog design. Need to fix that in the future.
+
+            #('CLKOUT0', 'down'),
+            #('CLKOUT1', 'down'),
+            #('CLKOUT2', 'down'),
+            #('CLKOUT3', 'down'),
         ]
 
         occupied_wires = set()
