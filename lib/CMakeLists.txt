@@ -45,21 +45,21 @@ if (PRJXRAY_BUILD_TESTING)
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 
 	add_executable(xilinx_xc7series_test
-		xilinx/xc7series/bitstream_reader_test.cc
-		xilinx/xc7series/bitstream_writer_test.cc
-		xilinx/xc7series/block_type_test.cc
-		xilinx/xc7series/configuration_bus_test.cc
-		xilinx/xc7series/configuration_column_test.cc
-		xilinx/xc7series/configuration_test.cc
-		xilinx/xc7series/configuration_packet_test.cc
-		xilinx/xc7series/configuration_packetizer_test.cc
-		xilinx/xc7series/crc_test.cc
-		xilinx/xc7series/ecc_test.cc
-		xilinx/xc7series/frame_address_test.cc
-		xilinx/xc7series/global_clock_region_test.cc
-		xilinx/xc7series/part_test.cc
-		xilinx/xc7series/row_test.cc
-		xilinx/xc7series/frames_test.cc)
+		xilinx/tests/xc7series/bitstream_reader_test.cc
+		xilinx/tests/xc7series/bitstream_writer_test.cc
+		xilinx/tests/xc7series/block_type_test.cc
+		xilinx/tests/xc7series/configuration_bus_test.cc
+		xilinx/tests/xc7series/configuration_column_test.cc
+		xilinx/tests/xc7series/configuration_test.cc
+		xilinx/tests/xc7series/configuration_packet_test.cc
+		xilinx/tests/xc7series/configuration_packetizer_test.cc
+		xilinx/tests/xc7series/crc_test.cc
+		xilinx/tests/xc7series/ecc_test.cc
+		xilinx/tests/xc7series/frame_address_test.cc
+		xilinx/tests/xc7series/global_clock_region_test.cc
+		xilinx/tests/xc7series/part_test.cc
+		xilinx/tests/xc7series/row_test.cc
+		xilinx/tests/xc7series/frames_test.cc)
 	target_link_libraries(xilinx_xc7series_test libprjxray gtest_main)
 	add_test(NAME xilinx_xc7series_test
 		 COMMAND xilinx_xc7series_test

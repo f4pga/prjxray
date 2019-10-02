@@ -2,10 +2,12 @@
 
 #include <gtest/gtest.h>
 
-#include <prjxray/xilinx/xc7series/frames.h>
+#include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/frames.h>
 #include <prjxray/xilinx/xc7series/part.h>
 
-namespace xc7series = prjxray::xilinx::xc7series;
+using namespace prjxray::xilinx;
+
 TEST(FramesTest, FillInMissingFrames) {
 	std::vector<xc7series::FrameAddress> test_part_addresses = {
 	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
@@ -21,7 +23,7 @@ TEST(FramesTest, FillInMissingFrames) {
 
 	xc7series::Part test_part(0x1234, test_part_addresses);
 
-	xc7series::Frames frames;
+	Frames<Series7> frames;
 	frames.getFrames().emplace(std::make_pair(
 	    xc7series::FrameAddress(2), std::vector<uint32_t>(101, 0xCC)));
 	frames.getFrames().emplace(std::make_pair(
