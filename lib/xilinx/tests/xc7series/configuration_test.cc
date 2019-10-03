@@ -5,12 +5,12 @@
 #include <absl/types/span.h>
 #include <gtest/gtest.h>
 #include <prjxray/memory_mapped_file.h>
+#include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/bitstream_reader.h>
 #include <prjxray/xilinx/configuration.h>
 #include <prjxray/xilinx/configuration_packet.h>
 #include <prjxray/xilinx/configuration_register.h>
 #include <prjxray/xilinx/frames.h>
-#include <prjxray/xilinx/architectures.h>
-#include <prjxray/xilinx/bitstream_reader.h>
 #include <yaml-cpp/yaml.h>
 
 using namespace prjxray::xilinx;
@@ -146,8 +146,7 @@ TEST(ConfigurationTest,
 	ASSERT_TRUE(perframecrc_reader);
 
 	auto perframecrc_configuration =
-	    Configuration<Series7>::InitWithPackets(*part,
-	                                              *perframecrc_reader);
+	    Configuration<Series7>::InitWithPackets(*part, *perframecrc_reader);
 	ASSERT_TRUE(perframecrc_configuration);
 
 	for (auto debug_frame : debug_configuration->frames()) {
@@ -263,8 +262,8 @@ TEST(ConfigurationTest, CheckForPaddingFrames) {
 	ASSERT_EQ(frames.getFrames().size(), 5);
 
 	Configuration<Series7>::PacketData packet_data =
-	    Configuration<Series7>::createType2ConfigurationPacketData(frames.getFrames(),
-	                                                  test_part);
+	    Configuration<Series7>::createType2ConfigurationPacketData(
+	        frames.getFrames(), test_part);
 	// createType2ConfigurationPacketData should detect 4
 	// row/half/block_type switches thus add 4*2 padding frames  moreover 2
 	// extra padding frames are added at the end of the creation of the data

@@ -11,8 +11,8 @@
 #include <absl/types/span.h>
 #include <gflags/gflags.h>
 #include <prjxray/memory_mapped_file.h>
-#include <prjxray/xilinx/bitstream_reader.h>
 #include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/bitstream_reader.h>
 #include <yaml-cpp/yaml.h>
 
 DEFINE_bool(f, false, "Use FAR registers instead of LOUT ones");
@@ -39,8 +39,8 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	auto reader =
-	    xilinx::BitstreamReader<xilinx::Series7>::InitWithBytes(in_file->as_bytes());
+	auto reader = xilinx::BitstreamReader<xilinx::Series7>::InitWithBytes(
+	    in_file->as_bytes());
 	if (!reader) {
 		std::cerr << "Input doesn't look like a bitstream" << std::endl;
 		return 1;
@@ -51,12 +51,12 @@ int main(int argc, char* argv[]) {
 	absl::optional<uint32_t> idcode;
 	for (auto packet : *reader) {
 		if (packet.opcode() !=
-		    xilinx::ConfigurationPacket<xilinx::Series7::ConfRegType>::Opcode::Write) {
+		    xilinx::ConfigurationPacket<
+		        xilinx::Series7::ConfRegType>::Opcode::Write) {
 			continue;
 		}
 
-		if (packet.address() ==
-		    xilinx::Series7::ConfRegType::FDRI) {
+		if (packet.address() == xilinx::Series7::ConfRegType::FDRI) {
 			found_fdri_write = true;
 		} else if ((packet.address() ==
 		            xilinx::Series7::ConfRegType::IDCODE) &&
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	auto part = xilinx::Series7::Part(*idcode, frame_addresses.begin(),
-	                            frame_addresses.end());
+	                                  frame_addresses.end());
 	std::cout << YAML::Node(part) << std::endl;
 
 	return 0;

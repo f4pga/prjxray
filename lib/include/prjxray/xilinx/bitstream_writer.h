@@ -23,7 +23,9 @@ template <typename ArchType>
 class BitstreamWriter {
        public:
 	typedef std::vector<uint32_t> header_t;
-	typedef std::vector<std::unique_ptr<ConfigurationPacket<typename ArchType::ConfRegType>>> packets_t;
+	typedef std::vector<std::unique_ptr<
+	    ConfigurationPacket<typename ArchType::ConfRegType>>>
+	    packets_t;
 	typedef std::vector<uint8_t> BitstreamHeader;
 	// Only defined if a packet exists
 	typedef absl::optional<absl::Span<const uint32_t>> op_data_t;
@@ -48,9 +50,11 @@ class BitstreamWriter {
 		} state_t;
 
 	       protected:
-		explicit packet_iterator(const ConfigurationPacket<typename ArchType::ConfRegType>* packet,
-		                         state_t state,
-		                         data_iterator_t itr_data);
+		explicit packet_iterator(
+		    const ConfigurationPacket<typename ArchType::ConfRegType>*
+		        packet,
+		    state_t state,
+		    data_iterator_t itr_data);
 
 	       private:
 		friend iterator;
@@ -62,7 +66,8 @@ class BitstreamWriter {
 		// Over packet.data()
 		data_iterator_t itr_data_;
 
-		const ConfigurationPacket<typename ArchType::ConfRegType>* packet_;
+		const ConfigurationPacket<typename ArchType::ConfRegType>*
+		    packet_;
 	};
 
 	class iterator
@@ -96,14 +101,14 @@ class BitstreamWriter {
 		absl::optional<packet_iterator> op_itr_packet_;
 	};
 
-	BitstreamWriter(const packets_t& packets)
-		: packets_(packets) {}
+	BitstreamWriter(const packets_t& packets) : packets_(packets) {}
 
-	int writeBitstream(const typename ArchType::ConfigurationPackage& packets,
-                   const std::string& part_name,
-                   const std::string& frames_file,
-                   const std::string& generator_name,
-                   const std::string& output_file);
+	int writeBitstream(
+	    const typename ArchType::ConfigurationPackage& packets,
+	    const std::string& part_name,
+	    const std::string& frames_file,
+	    const std::string& generator_name,
+	    const std::string& output_file);
 	iterator begin();
 	iterator end();
 
@@ -112,8 +117,8 @@ class BitstreamWriter {
 	const packets_t& packets_;
 
 	BitstreamHeader create_header(const std::string& part_name,
-                                      const std::string& frames_file_name,
-                                      const std::string& generator_name);
+	                              const std::string& frames_file_name,
+	                              const std::string& generator_name);
 };
 
 }  // namespace xilinx

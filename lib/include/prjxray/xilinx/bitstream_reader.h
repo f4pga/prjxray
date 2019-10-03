@@ -4,14 +4,14 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
-#include <vector>
 #include <optional>
+#include <vector>
 
 #include <absl/types/span.h>
 
 #include <prjxray/big_endian_span.h>
-#include <prjxray/xilinx/configuration_packet.h>
 #include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/configuration_packet.h>
 
 namespace prjxray {
 namespace xilinx {
@@ -45,17 +45,16 @@ class BitstreamReader {
 	// Construct a reader from a collection of 16-bit, big-endian words.
 	// Assumes that any sync word has already been removed.
 	BitstreamReader(std::vector<uint32_t>&& words)
-    		: words_(std::move(words)) {}
+	    : words_(std::move(words)) {}
 
 	BitstreamReader() {}
-	size_t size() {
-		return words_.size();
-	}
+	size_t size() { return words_.size(); }
 
 	// Construct a `BitstreamReader` from a Container of bytes.
 	// Any bytes preceding an initial sync word are ignored.
 	template <typename T>
-	static absl::optional<BitstreamReader<ArchType>> InitWithBytes(T bitstream);
+	static absl::optional<BitstreamReader<ArchType>> InitWithBytes(
+	    T bitstream);
 
 	const std::vector<uint32_t>& words() { return words_; };
 
@@ -72,7 +71,8 @@ class BitstreamReader {
 
 template <>
 template <typename T>
-std::optional<BitstreamReader<Spartan6>> BitstreamReader<Spartan6>::InitWithBytes(T bitstream) {
+std::optional<BitstreamReader<Spartan6>>
+BitstreamReader<Spartan6>::InitWithBytes(T bitstream) {
 	// If this is really a Xilinx 7-Series bitstream, there will be a sync
 	// word somewhere toward the beginning.
 	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),
@@ -97,7 +97,8 @@ std::optional<BitstreamReader<Spartan6>> BitstreamReader<Spartan6>::InitWithByte
 
 template <>
 template <typename T>
-std::optional<BitstreamReader<Series7>> BitstreamReader<Series7>::InitWithBytes(T bitstream) {
+std::optional<BitstreamReader<Series7>> BitstreamReader<Series7>::InitWithBytes(
+    T bitstream) {
 	// If this is really a Xilinx 7-Series bitstream, there will be a sync
 	// word somewhere toward the beginning.
 	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),
@@ -121,10 +122,12 @@ std::optional<BitstreamReader<Series7>> BitstreamReader<Series7>::InitWithBytes(
 }
 
 template <typename ArchType>
-std::array<uint8_t, 4> BitstreamReader<ArchType>::kSyncWord{0xAA, 0x99, 0x55, 0x66};
+std::array<uint8_t, 4> BitstreamReader<ArchType>::kSyncWord{0xAA, 0x99, 0x55,
+                                                            0x66};
 
 template <typename ArchType>
-typename BitstreamReader<ArchType>::iterator BitstreamReader<ArchType>::begin() {
+typename BitstreamReader<ArchType>::iterator
+BitstreamReader<ArchType>::begin() {
 	return iterator(absl::MakeSpan(words_));
 }
 
@@ -141,12 +144,15 @@ BitstreamReader<ArchType>::iterator::iterator(absl::Span<uint32_t> words) {
 }
 
 template <typename ArchType>
-typename BitstreamReader<ArchType>::iterator& BitstreamReader<ArchType>::iterator::operator++() {
+typename BitstreamReader<ArchType>::iterator&
+BitstreamReader<ArchType>::iterator::operator++() {
 	do {
-		auto new_result = ConfigurationPacket<typename ArchType::ConfRegType>::InitWithWords(
-		    parse_result_.first, parse_result_.second.has_value()
-		                             ? parse_result_.second.operator->()
-		                             : nullptr);
+		auto new_result =
+		    ConfigurationPacket<typename ArchType::ConfRegType>::
+		        InitWithWords(parse_result_.first,
+		                      parse_result_.second.has_value()
+		                          ? parse_result_.second.operator->()
+		                          : nullptr);
 
 		// If the a valid header is being found but there are
 		// insufficient words to yield a packet, consider it the end.
@@ -167,24 +173,26 @@ typename BitstreamReader<ArchType>::iterator& BitstreamReader<ArchType>::iterato
 }
 
 template <typename ArchType>
-bool BitstreamReader<ArchType>::iterator::operator==(const iterator& other) const {
+bool BitstreamReader<ArchType>::iterator::operator==(
+    const iterator& other) const {
 	return words_ == other.words_;
 }
 
 template <typename ArchType>
-bool BitstreamReader<ArchType>::iterator::operator!=(const iterator& other) const {
+bool BitstreamReader<ArchType>::iterator::operator!=(
+    const iterator& other) const {
 	return !(*this == other);
 }
 
 template <typename ArchType>
-const typename BitstreamReader<ArchType>::value_type& BitstreamReader<ArchType>::iterator::operator*()
-    const {
+const typename BitstreamReader<ArchType>::value_type&
+    BitstreamReader<ArchType>::iterator::operator*() const {
 	return *(parse_result_.second);
 }
 
 template <typename ArchType>
-const typename BitstreamReader<ArchType>::value_type* BitstreamReader<ArchType>::iterator::operator->()
-    const {
+const typename BitstreamReader<ArchType>::value_type*
+    BitstreamReader<ArchType>::iterator::operator->() const {
 	return parse_result_.second.operator->();
 }
 }  // namespace xilinx

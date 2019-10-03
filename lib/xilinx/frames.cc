@@ -55,21 +55,26 @@ int Frames<ArchType>::readFrames(const std::string& frm_file_str) {
 		// map
 		typename ArchType::FrameAddress frm_addr(frame_address);
 		frames_data_.insert(
-		    std::pair<typename ArchType::FrameAddress, FrameData>(frm_addr, frame_data));
+		    std::pair<typename ArchType::FrameAddress, FrameData>(
+		        frm_addr, frame_data));
 	}
 	return 0;
 }
 
 template <typename ArchType>
-void Frames<ArchType>::addMissingFrames(const absl::optional<typename ArchType::Part>& part) {
+void Frames<ArchType>::addMissingFrames(
+    const absl::optional<typename ArchType::Part>& part) {
 	auto current_frame_address =
-	    absl::optional<typename ArchType::FrameAddress>(typename ArchType::FrameAddress(0));
+	    absl::optional<typename ArchType::FrameAddress>(
+	        typename ArchType::FrameAddress(0));
 	do {
 		auto iter = frames_data_.find(*current_frame_address);
 		if (iter == frames_data_.end()) {
 			FrameData frame_data(ArchType::words_per_frame, 0);
-			frames_data_.insert(std::pair<typename ArchType::FrameAddress, FrameData>(
-			    *current_frame_address, frame_data));
+			frames_data_.insert(
+			    std::pair<typename ArchType::FrameAddress,
+			              FrameData>(*current_frame_address,
+			                         frame_data));
 		}
 		current_frame_address =
 		    part->GetNextFrameAddress(*current_frame_address);
@@ -77,25 +82,27 @@ void Frames<ArchType>::addMissingFrames(const absl::optional<typename ArchType::
 }
 
 uint32_t calculateECC(const typename Frames<Series7>::FrameData& data) {
-        uint32_t ecc = 0;
-        for (size_t ii = 0; ii < data.size(); ++ii) {
-                ecc = xc7series::icap_ecc(ii, data[ii], ecc);
-        }
-        return ecc;
+	uint32_t ecc = 0;
+	for (size_t ii = 0; ii < data.size(); ++ii) {
+		ecc = xc7series::icap_ecc(ii, data[ii], ecc);
+	}
+	return ecc;
 }
 
 template <>
 void Frames<Series7>::updateECC(FrameData& data) {
-        assert(data.size() != 0);
-        // Replace the old ECC with the new.
-        data[0x32] &= 0xFFFFE000;
-        data[0x32] |= (calculateECC(data) & 0x1FFF);
+	assert(data.size() != 0);
+	// Replace the old ECC with the new.
+	data[0x32] &= 0xFFFFE000;
+	data[0x32] |= (calculateECC(data) & 0x1FFF);
 }
 
 template Frames<Spartan6>::Frames2Data& Frames<Spartan6>::getFrames();
 template Frames<Series7>::Frames2Data& Frames<Series7>::getFrames();
-template void Frames<Spartan6>::addMissingFrames(const absl::optional<Spartan6::Part>& part);
-template void Frames<Series7>::addMissingFrames(const absl::optional<Series7::Part>& part);
+template void Frames<Spartan6>::addMissingFrames(
+    const absl::optional<Spartan6::Part>& part);
+template void Frames<Series7>::addMissingFrames(
+    const absl::optional<Series7::Part>& part);
 template int Frames<Spartan6>::readFrames(const std::string&);
 template int Frames<Series7>::readFrames(const std::string&);
 template void Frames<Series7>::updateECC(Frames<Series7>::FrameData&);

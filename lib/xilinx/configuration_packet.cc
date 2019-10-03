@@ -10,9 +10,11 @@ namespace prjxray {
 namespace xilinx {
 
 template <>
-std::pair<absl::Span<uint32_t>, absl::optional<ConfigurationPacket<Spartan6ConfigurationRegister>>>
-ConfigurationPacket<Spartan6ConfigurationRegister>::InitWithWords(absl::Span<uint32_t> words,
-                                   const ConfigurationPacket<Spartan6ConfigurationRegister>* previous_packet) {
+std::pair<absl::Span<uint32_t>,
+          absl::optional<ConfigurationPacket<Spartan6ConfigurationRegister>>>
+ConfigurationPacket<Spartan6ConfigurationRegister>::InitWithWords(
+    absl::Span<uint32_t> words,
+    const ConfigurationPacket<Spartan6ConfigurationRegister>* previous_packet) {
 	using ConfigurationRegister = Spartan6ConfigurationRegister;
 	// Need at least one 32-bit word to have a valid packet header.
 	if (words.size() < 1)
@@ -85,9 +87,11 @@ ConfigurationPacket<Spartan6ConfigurationRegister>::InitWithWords(absl::Span<uin
 }
 
 template <>
-std::pair<absl::Span<uint32_t>, absl::optional<ConfigurationPacket<Series7ConfigurationRegister>>>
-ConfigurationPacket<Series7ConfigurationRegister>::InitWithWords(absl::Span<uint32_t> words,
-                                   const ConfigurationPacket<Series7ConfigurationRegister>* previous_packet) {
+std::pair<absl::Span<uint32_t>,
+          absl::optional<ConfigurationPacket<Series7ConfigurationRegister>>>
+ConfigurationPacket<Series7ConfigurationRegister>::InitWithWords(
+    absl::Span<uint32_t> words,
+    const ConfigurationPacket<Series7ConfigurationRegister>* previous_packet) {
 	using ConfigurationRegister = Series7ConfigurationRegister;
 	// Need at least one 32-bit word to have a valid packet header.
 	if (words.size() < 1)
@@ -154,7 +158,8 @@ ConfigurationPacket<Series7ConfigurationRegister>::InitWithWords(absl::Span<uint
 }
 
 template <class ConfigRegType>
-std::ostream& operator<<(std::ostream& o, const ConfigurationPacket<ConfigRegType>& packet) {
+std::ostream& operator<<(std::ostream& o,
+                         const ConfigurationPacket<ConfigRegType>& packet) {
 	if (packet.header_type() == 0x0) {
 		return o << "[Zero-pad]" << std::endl;
 	}
@@ -205,7 +210,11 @@ std::ostream& operator<<(std::ostream& o, const ConfigurationPacket<ConfigRegTyp
 	return o;
 }
 
-template std::ostream& operator<<(std::ostream&, const ConfigurationPacket<Spartan6ConfigurationRegister>&);
-template std::ostream& operator<<(std::ostream&, const ConfigurationPacket<Series7ConfigurationRegister>&);
+template std::ostream& operator<<(
+    std::ostream&,
+    const ConfigurationPacket<Spartan6ConfigurationRegister>&);
+template std::ostream& operator<<(
+    std::ostream&,
+    const ConfigurationPacket<Series7ConfigurationRegister>&);
 }  // namespace xilinx
 }  // namespace prjxray

@@ -8,8 +8,8 @@
 #include <absl/types/span.h>
 
 #include <prjxray/bit_ops.h>
-#include <prjxray/xilinx/frames.h>
 #include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/frames.h>
 
 namespace prjxray {
 namespace xilinx {
@@ -17,23 +17,27 @@ namespace xilinx {
 template <typename ArchType>
 class Configuration {
        public:
-	using FrameMap = std::map<typename ArchType::FrameAddress, absl::Span<const uint32_t>>;
+	using FrameMap = std::map<typename ArchType::FrameAddress,
+	                          absl::Span<const uint32_t>>;
 	using PacketData = std::vector<uint32_t>;
 
 	template <typename Collection>
 	static std::optional<Configuration<ArchType>> InitWithPackets(
-				const typename ArchType::Part& part,
-				Collection& packets);
+	    const typename ArchType::Part& part,
+	    Collection& packets);
 
-	static void createConfigurationPackage(typename ArchType::ConfigurationPackage& out_packets,
-                                const PacketData& packet_data,
-                                absl::optional<typename ArchType::Part>& part);
+	static void createConfigurationPackage(
+	    typename ArchType::ConfigurationPackage& out_packets,
+	    const PacketData& packet_data,
+	    absl::optional<typename ArchType::Part>& part);
 
-	static PacketData createType2ConfigurationPacketData(const typename Frames<ArchType>::Frames2Data& frames,
-                                              absl::optional<typename ArchType::Part>& part);
+	static PacketData createType2ConfigurationPacketData(
+	    const typename Frames<ArchType>::Frames2Data& frames,
+	    absl::optional<typename ArchType::Part>& part);
 
 	Configuration(const typename ArchType::Part& part,
-	              std::map<typename ArchType::FrameAddress, std::vector<uint32_t>>* frames)
+	              std::map<typename ArchType::FrameAddress,
+	                       std::vector<uint32_t>>* frames)
 	    : part_(part) {
 		for (auto& frame : *frames) {
 			frames_[frame.first] =
@@ -41,7 +45,8 @@ class Configuration {
 		}
 	}
 
-	Configuration(const typename ArchType::Part& part, const FrameMap& frames)
+	Configuration(const typename ArchType::Part& part,
+	              const FrameMap& frames)
 	    : part_(part), frames_(std::move(frames)) {}
 
 	const typename ArchType::Part& part() const { return part_; }
@@ -70,7 +75,9 @@ std::optional<Configuration<Series7>> Configuration<Series7>::InitWithPackets(
 
 	Configuration<ArchType>::FrameMap frames;
 	for (auto packet : packets) {
-		if (packet.opcode() != ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::Write) {
+		if (packet.opcode() !=
+		    ConfigurationPacket<
+		        typename ArchType::ConfRegType>::Opcode::Write) {
 			continue;
 		}
 
@@ -166,7 +173,8 @@ std::optional<Configuration<Series7>> Configuration<Series7>::InitWithPackets(
 					             .is_bottom_half_rows() ||
 					     next_address->row() !=
 					         current_frame_address.row())) {
-						ii += 2 * ArchType::words_per_frame;
+						ii += 2 *
+						      ArchType::words_per_frame;
 					}
 					current_frame_address = *next_address;
 				}
@@ -198,7 +206,9 @@ std::optional<Configuration<Spartan6>> Configuration<Spartan6>::InitWithPackets(
 
 	Configuration<ArchType>::FrameMap frames;
 	for (auto packet : packets) {
-		if (packet.opcode() != ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::Write) {
+		if (packet.opcode() !=
+		    ConfigurationPacket<
+		        typename ArchType::ConfRegType>::Opcode::Write) {
 			continue;
 		}
 

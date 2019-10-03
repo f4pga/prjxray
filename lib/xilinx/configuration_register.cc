@@ -3,7 +3,8 @@
 namespace prjxray {
 namespace xilinx {
 
-std::ostream& operator<<(std::ostream& o, const Spartan6ConfigurationRegister& value) {
+std::ostream& operator<<(std::ostream& o,
+                         const Spartan6ConfigurationRegister& value) {
 	switch (value) {
 		case Spartan6ConfigurationRegister::CRC:
 			return o << "CRC";
@@ -84,7 +85,8 @@ std::ostream& operator<<(std::ostream& o, const Spartan6ConfigurationRegister& v
 	}
 }
 
-std::ostream& operator<<(std::ostream& o, const Series7ConfigurationRegister& value) {
+std::ostream& operator<<(std::ostream& o,
+                         const Series7ConfigurationRegister& value) {
 	switch (value) {
 		case Series7ConfigurationRegister::CRC:
 			return o << "CRC";

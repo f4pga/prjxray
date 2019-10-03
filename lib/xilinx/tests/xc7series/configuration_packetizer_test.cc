@@ -3,8 +3,8 @@
 
 #include <gtest/gtest.h>
 
-#include <prjxray/xilinx/configuration_packetizer.h>
 #include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/configuration_packetizer.h>
 
 using namespace prjxray::xilinx;
 
@@ -107,10 +107,10 @@ TEST(ConfigurationPacketizerTest, ConfigWithFrameAtEndOfRowGeneratesZerofill) {
 		++packet;
 		ASSERT_NE(packet, packetizer.end());
 		EXPECT_EQ(packet->header_type(), static_cast<unsigned int>(0));
-		EXPECT_EQ(packet->opcode(),
-		          ConfigurationPacket<Series7::ConfRegType>::Opcode::NOP);
-		EXPECT_EQ(packet->address(),
-		          Series7::ConfRegType::CRC);
+		EXPECT_EQ(
+		    packet->opcode(),
+		    ConfigurationPacket<Series7::ConfRegType>::Opcode::NOP);
+		EXPECT_EQ(packet->address(), Series7::ConfRegType::CRC);
 		EXPECT_EQ(packet->data(), std::vector<uint32_t>());
 	}
 

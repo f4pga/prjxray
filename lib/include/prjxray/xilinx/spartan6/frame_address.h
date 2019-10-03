@@ -49,8 +49,7 @@ namespace spartan6 = prjxray::xilinx::spartan6;
 template <>
 struct convert<spartan6::FrameAddress> {
 	static Node encode(const spartan6::FrameAddress& rhs);
-	static bool decode(const Node& node,
-	                   spartan6::FrameAddress& lhs);
+	static bool decode(const Node& node, spartan6::FrameAddress& lhs);
 };
 }  // namespace YAML
 #endif  // PRJXRAY_LIB_XILINX_SPARTAN6_FRAME_ADDRESS_H_

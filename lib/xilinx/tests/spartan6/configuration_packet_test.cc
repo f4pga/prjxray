@@ -11,8 +11,8 @@ using namespace prjxray::xilinx;
 constexpr uint32_t kType1NOP = prjxray::bit_field_set<uint32_t>(0, 15, 13, 0x1);
 
 const uint32_t MakeType1(const int opcode,
-                             const int address,
-                             const int word_count) {
+                         const int address,
+                         const int word_count) {
 	return prjxray::bit_field_set<uint32_t>(
 	    prjxray::bit_field_set<uint32_t>(
 	        prjxray::bit_field_set<uint32_t>(
@@ -38,7 +38,8 @@ const std::vector<uint32_t> MakeType2(const int opcode,
 }
 
 TEST(ConfigPacket, InitWithZeroBytes) {
-	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords({});
+	auto packet =
+	    ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords({});
 
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	EXPECT_FALSE(packet.second);
@@ -47,39 +48,39 @@ TEST(ConfigPacket, InitWithZeroBytes) {
 TEST(ConfigPacket, InitWithType1Nop) {
 	std::vector<uint32_t> words{kType1NOP};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(word_span);
+	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(
+	    word_span);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
 	EXPECT_EQ(packet.second->opcode(),
 	          ConfigurationPacket<Spartan6::ConfRegType>::Opcode::NOP);
-	EXPECT_EQ(packet.second->address(),
-	          Spartan6::ConfRegType::CRC);
+	EXPECT_EQ(packet.second->address(), Spartan6::ConfRegType::CRC);
 	EXPECT_EQ(packet.second->data(), absl::Span<uint32_t>());
 }
 
 TEST(ConfigPacket, InitWithType1Read) {
 	std::vector<uint32_t> words{MakeType1(0x1, 0x3, 2), 0xAA, 0xBB};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(word_span);
+	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(
+	    word_span);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
 	EXPECT_EQ(packet.second->opcode(),
 	          ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Read);
-	EXPECT_EQ(packet.second->address(),
-	          Spartan6::ConfRegType::FDRI);
+	EXPECT_EQ(packet.second->address(), Spartan6::ConfRegType::FDRI);
 	EXPECT_EQ(packet.second->data(), word_span.subspan(1));
 }
 
 TEST(ConfigPacket, InitWithType1Write) {
 	std::vector<uint32_t> words{MakeType1(0x2, 0x4, 2), 0xAA, 0xBB};
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(word_span);
+	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(
+	    word_span);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
 	EXPECT_EQ(packet.second->opcode(),
 	          ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write);
-	EXPECT_EQ(packet.second->address(),
-	          Spartan6::ConfRegType::FDRO);
+	EXPECT_EQ(packet.second->address(), Spartan6::ConfRegType::FDRO);
 	EXPECT_EQ(packet.second->data(), word_span.subspan(1));
 }
 
@@ -88,12 +89,12 @@ TEST(ConfigPacket, InitWithType2WithPreviousPacket) {
 	std::vector<uint32_t> type2 = MakeType2(0x01, 0x03, 12);
 	words.insert(words.begin(), type2.begin(), type2.end());
 	absl::Span<uint32_t> word_span(words);
-	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(word_span);
+	auto packet = ConfigurationPacket<Spartan6::ConfRegType>::InitWithWords(
+	    word_span);
 	EXPECT_EQ(packet.first, absl::Span<uint32_t>());
 	ASSERT_TRUE(packet.second);
 	EXPECT_EQ(packet.second->opcode(),
 	          ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Read);
-	EXPECT_EQ(packet.second->address(),
-	          Spartan6::ConfRegType::FDRI);
+	EXPECT_EQ(packet.second->address(), Spartan6::ConfRegType::FDRI);
 	EXPECT_EQ(packet.second->data(), word_span.subspan(3));
 }

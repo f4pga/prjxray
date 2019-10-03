@@ -1,9 +1,9 @@
 #ifndef PRJXRAY_LIB_XILINX_FRAMES_H
 #define PRJXRAY_LIB_XILINX_FRAMES_H
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include <prjxray/xilinx/architectures.h>
 
@@ -16,7 +16,8 @@ template <typename ArchType>
 class Frames {
        public:
 	typedef std::vector<uint32_t> FrameData;
-	typedef std::map<typename ArchType::FrameAddress, FrameData> Frames2Data;
+	typedef std::map<typename ArchType::FrameAddress, FrameData>
+	    Frames2Data;
 
 	// Reads the contents of the frames file and populates
 	// the Frames container.
@@ -24,7 +25,8 @@ class Frames {
 
 	// Adds empty frames that are present in the tilegrid of a specific part
 	// but are missing in the current frames container.
-	void addMissingFrames(const absl::optional<typename ArchType::Part>& part);
+	void addMissingFrames(
+	    const absl::optional<typename ArchType::Part>& part);
 
 	// Returns the map with frame addresses and corresponding data
 	Frames2Data& getFrames();

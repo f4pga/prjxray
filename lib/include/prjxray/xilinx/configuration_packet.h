@@ -39,7 +39,8 @@ class ConfigurationPacket {
 	const absl::Span<const uint32_t>& data() const { return data_; }
 	static ParseResult InitWithWords(
 	    absl::Span<uint32_t> words,
-	    const ConfigurationPacket<ConfigRegType>* previous_packet = nullptr);
+	    const ConfigurationPacket<ConfigRegType>* previous_packet =
+	        nullptr);
 
        private:
 	unsigned int header_type_;
@@ -49,7 +50,8 @@ class ConfigurationPacket {
 };
 
 template <class ConfigRegType>
-std::ostream& operator<<(std::ostream& o, const ConfigurationPacket<ConfigRegType>& packet);
+std::ostream& operator<<(std::ostream& o,
+                         const ConfigurationPacket<ConfigRegType>& packet);
 
 }  // namespace xilinx
 }  // namespace prjxray

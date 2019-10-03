@@ -7,14 +7,15 @@
 namespace prjxray {
 namespace xilinx {
 
-template<typename ConfigRegType>
+template <typename ConfigRegType>
 class NopPacket : public ConfigurationPacket<ConfigRegType> {
        public:
 	NopPacket()
-	    : ConfigurationPacket<ConfigRegType>(1,
-	                          ConfigurationPacket<ConfigRegType>::Opcode::NOP,
-	                          ConfigRegType::CRC,
-	                          {}) {}
+	    : ConfigurationPacket<ConfigRegType>(
+	          1,
+	          ConfigurationPacket<ConfigRegType>::Opcode::NOP,
+	          ConfigRegType::CRC,
+	          {}) {}
 };
 
 }  // namespace xilinx

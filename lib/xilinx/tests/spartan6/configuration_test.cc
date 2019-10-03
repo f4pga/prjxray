@@ -2,13 +2,13 @@
 #include <iostream>
 #include <vector>
 
-#include <yaml-cpp/yaml.h>
 #include <absl/types/span.h>
 #include <gtest/gtest.h>
 #include <prjxray/memory_mapped_file.h>
-#include <prjxray/xilinx/spartan6/frame_address.h>
 #include <prjxray/xilinx/architectures.h>
 #include <prjxray/xilinx/configuration.h>
+#include <prjxray/xilinx/spartan6/frame_address.h>
+#include <yaml-cpp/yaml.h>
 
 using namespace prjxray::xilinx;
 
@@ -24,32 +24,33 @@ TEST(ConfigurationTest, ConstructFromPacketsWithSingleFrame) {
 	std::vector<uint32_t> frame_address{0x345};
 	std::vector<uint32_t> frame(65, 0xAA);
 
-	std::vector<ConfigurationPacket<typename Spartan6::ConfRegType>> packets{
-	    {
-	        static_cast<unsigned int>(0x1),
-	        ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
-	        Spartan6::ConfRegType::IDCODE,
-	        absl::MakeSpan(idcode),
-	    },
-	    {
-	        static_cast<unsigned int>(0x1),
-	        ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
-	        Spartan6::ConfRegType::FAR_MIN,
-	        absl::MakeSpan(frame_address),
-	    },
-	    {
-	        static_cast<unsigned int>(0x1),
-	        ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
-	        Spartan6::ConfRegType::CMD,
-	        absl::MakeSpan(cmd),
-	    },
-	    {
-	        static_cast<unsigned int>(0x1),
-	        ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
-	        Spartan6::ConfRegType::FDRI,
-	        absl::MakeSpan(frame),
-	    },
-	};
+	std::vector<ConfigurationPacket<typename Spartan6::ConfRegType>>
+	    packets{
+	        {
+	            static_cast<unsigned int>(0x1),
+	            ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
+	            Spartan6::ConfRegType::IDCODE,
+	            absl::MakeSpan(idcode),
+	        },
+	        {
+	            static_cast<unsigned int>(0x1),
+	            ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
+	            Spartan6::ConfRegType::FAR_MIN,
+	            absl::MakeSpan(frame_address),
+	        },
+	        {
+	            static_cast<unsigned int>(0x1),
+	            ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
+	            Spartan6::ConfRegType::CMD,
+	            absl::MakeSpan(cmd),
+	        },
+	        {
+	            static_cast<unsigned int>(0x1),
+	            ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
+	            Spartan6::ConfRegType::FDRI,
+	            absl::MakeSpan(frame),
+	        },
+	    };
 
 	auto test_config =
 	    Configuration<Spartan6>::InitWithPackets(test_part, packets);
@@ -139,8 +140,8 @@ TEST(ConfigurationTest, DISABLED_CheckForPaddingAfterIOBFrame) {
 	ASSERT_EQ(frames.getFrames().size(), 3);
 
 	Configuration<Spartan6>::PacketData packet_data =
-	    Configuration<Spartan6>::createType2ConfigurationPacketData(frames.getFrames(),
-	                                                 test_part);
+	    Configuration<Spartan6>::createType2ConfigurationPacketData(
+	        frames.getFrames(), test_part);
 	// createType2ConfigurationPacketData should add a 16-bit pad word after
 	// after the IOB frame
 	EXPECT_EQ(packet_data.size(), 3 * 65 + 1);

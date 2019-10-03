@@ -52,7 +52,7 @@ Part::Part(uint32_t idcode, T first, T last) : idcode_(idcode) {
 	top_region_ = spartan6::GlobalClockRegion(first, last);
 }
 
-}  // namespace sprtan6
+}  // namespace spartan6
 }  // namespace xilinx
 }  // namespace prjxray
 
@@ -63,8 +63,7 @@ namespace spartan6 = prjxray::xilinx::spartan6;
 template <>
 struct convert<spartan6::Part> {
 	static Node encode(const spartan6::Part& rhs);
-	static bool decode(const Node& node,
-	                   spartan6::Part& lhs);
+	static bool decode(const Node& node, spartan6::Part& lhs);
 };
 }  // namespace YAML
 

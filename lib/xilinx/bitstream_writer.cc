@@ -6,9 +6,9 @@
 #include <absl/time/clock.h>
 #include <absl/time/time.h>
 
-#include <prjxray/xilinx/bitstream_writer.h>
-#include <prjxray/xilinx/architectures.h>
 #include <prjxray/bit_ops.h>
+#include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/bitstream_writer.h>
 
 namespace prjxray {
 namespace xilinx {
@@ -24,13 +24,13 @@ template <>
 typename BitstreamWriter<Series7>::header_t BitstreamWriter<Series7>::header_{
     0xFFFFFFFF, 0x000000BB, 0x11220044, 0xFFFFFFFF, 0xFFFFFFFF, 0xAA995566};
 
-
 template <typename ArchType>
-int BitstreamWriter<ArchType>::writeBitstream(const typename ArchType::ConfigurationPackage& packets,
-                   const std::string& part_name,
-                   const std::string& frames_file,
-                   const std::string& generator_name,
-                   const std::string& output_file) {
+int BitstreamWriter<ArchType>::writeBitstream(
+    const typename ArchType::ConfigurationPackage& packets,
+    const std::string& part_name,
+    const std::string& frames_file,
+    const std::string& generator_name,
+    const std::string& output_file) {
 	std::ofstream out_file(output_file, std::ofstream::binary);
 	if (!out_file) {
 		std::cerr << "Unable to open file for writting: " << output_file
@@ -54,7 +54,7 @@ int BitstreamWriter<ArchType>::writeBitstream(const typename ArchType::Configura
 			out_file.put((word >> 16) & 0xFF);
 		}
 		out_file.put((word >> 8) & 0xFF);
-		out_file.put((word) & 0xFF);
+		out_file.put((word)&0xFF);
 	}
 
 	uint32_t length_of_data = out_file.tellp() - end_of_header_pos;
@@ -68,9 +68,10 @@ int BitstreamWriter<ArchType>::writeBitstream(const typename ArchType::Configura
 }
 
 template <typename ArchType>
-typename BitstreamWriter<ArchType>::BitstreamHeader BitstreamWriter<ArchType>::create_header(const std::string& part_name,
-                                      const std::string& frames_file_name,
-                                      const std::string& generator_name) {
+typename BitstreamWriter<ArchType>::BitstreamHeader
+BitstreamWriter<ArchType>::create_header(const std::string& part_name,
+                                         const std::string& frames_file_name,
+                                         const std::string& generator_name) {
 	// Sync header
 	BitstreamHeader bit_header{0x0,  0x9,  0x0f, 0xf0, 0x0f, 0xf0, 0x0f,
 	                           0xf0, 0x0f, 0xf0, 0x00, 0x00, 0x01, 'a'};
@@ -119,9 +120,11 @@ typename BitstreamWriter<ArchType>::BitstreamHeader BitstreamWriter<ArchType>::c
 }
 
 template <typename ArchType>
-typename BitstreamWriter<ArchType>::packet_iterator BitstreamWriter<ArchType>::iterator::packet_begin() {
+typename BitstreamWriter<ArchType>::packet_iterator
+BitstreamWriter<ArchType>::iterator::packet_begin() {
 	// itr_packets = packets.begin();
-	const ConfigurationPacket<typename ArchType::ConfRegType>& packet = **itr_packets_;
+	const ConfigurationPacket<typename ArchType::ConfRegType>& packet =
+	    **itr_packets_;
 
 	return BitstreamWriter::packet_iterator(
 	    &packet, BitstreamWriter::packet_iterator::STATE_HEADER,
@@ -129,8 +132,10 @@ typename BitstreamWriter<ArchType>::packet_iterator BitstreamWriter<ArchType>::i
 }
 
 template <typename ArchType>
-typename BitstreamWriter<ArchType>::packet_iterator BitstreamWriter<ArchType>::iterator::packet_end() {
-	const ConfigurationPacket<typename ArchType::ConfRegType>& packet = **itr_packets_;
+typename BitstreamWriter<ArchType>::packet_iterator
+BitstreamWriter<ArchType>::iterator::packet_end() {
+	const ConfigurationPacket<typename ArchType::ConfRegType>& packet =
+	    **itr_packets_;
 
 	return BitstreamWriter<ArchType>::packet_iterator(
 	    &packet, BitstreamWriter::packet_iterator::STATE_END,
@@ -146,8 +151,8 @@ BitstreamWriter<ArchType>::packet_iterator::packet_iterator(
     : state_(state), itr_data_(itr_data), packet_(packet) {}
 
 template <typename ArchType>
-typename BitstreamWriter<ArchType>::packet_iterator& BitstreamWriter<ArchType>::packet_iterator::
-operator++() {
+typename BitstreamWriter<ArchType>::packet_iterator&
+BitstreamWriter<ArchType>::packet_iterator::operator++() {
 	if (state_ == STATE_HEADER) {
 		itr_data_ = packet_->data().begin();
 		if (itr_data_ == packet_->data().end()) {
@@ -178,7 +183,8 @@ bool BitstreamWriter<ArchType>::packet_iterator::operator!=(
 	return !(*this == other);
 }
 
-uint32_t packet2header(const ConfigurationPacket<Spartan6ConfigurationRegister>& packet) {
+uint32_t packet2header(
+    const ConfigurationPacket<Spartan6ConfigurationRegister>& packet) {
 	uint32_t ret = 0;
 
 	ret = bit_field_set(ret, 15, 13, packet.header_type());
@@ -208,7 +214,8 @@ uint32_t packet2header(const ConfigurationPacket<Spartan6ConfigurationRegister>&
 	return ret;
 }
 
-uint32_t packet2header(const ConfigurationPacket<Series7ConfigurationRegister>& packet) {
+uint32_t packet2header(
+    const ConfigurationPacket<Series7ConfigurationRegister>& packet) {
 	uint32_t ret = 0;
 
 	ret = bit_field_set(ret, 31, 29, packet.header_type());
@@ -240,8 +247,8 @@ uint32_t packet2header(const ConfigurationPacket<Series7ConfigurationRegister>& 
 }
 
 template <typename ArchType>
-const typename BitstreamWriter<ArchType>::itr_value_type BitstreamWriter<ArchType>::packet_iterator::
-operator*() const {
+const typename BitstreamWriter<ArchType>::itr_value_type
+    BitstreamWriter<ArchType>::packet_iterator::operator*() const {
 	if (state_ == STATE_HEADER) {
 		return packet2header(*packet_);
 	} else if (state_ == STATE_DATA) {
@@ -251,8 +258,8 @@ operator*() const {
 }
 
 template <typename ArchType>
-const typename BitstreamWriter<ArchType>::itr_value_type BitstreamWriter<ArchType>::packet_iterator::
-operator->() const {
+const typename BitstreamWriter<ArchType>::itr_value_type
+    BitstreamWriter<ArchType>::packet_iterator::operator->() const {
 	return *(*this);
 }
 
@@ -261,7 +268,8 @@ operator->() const {
  *************************************************/
 
 template <typename ArchType>
-typename BitstreamWriter<ArchType>::iterator BitstreamWriter<ArchType>::begin() {
+typename BitstreamWriter<ArchType>::iterator
+BitstreamWriter<ArchType>::begin() {
 	typename packets_t::const_iterator itr_packets = packets_.begin();
 	absl::optional<packet_iterator> op_packet_itr;
 
@@ -269,7 +277,8 @@ typename BitstreamWriter<ArchType>::iterator BitstreamWriter<ArchType>::begin() 
 	if (itr_packets != packets_.end()) {
 		// op_packet_itr = packet_begin();
 		// FIXME: de-duplicate this
-		const ConfigurationPacket<typename ArchType::ConfRegType>& packet = **itr_packets;
+		const ConfigurationPacket<typename ArchType::ConfRegType>&
+		    packet = **itr_packets;
 		packet_iterator packet_itr =
 		    packet_iterator(&packet, packet_iterator::STATE_HEADER,
 		                    packet.data().begin());
@@ -285,17 +294,19 @@ typename BitstreamWriter<ArchType>::iterator BitstreamWriter<ArchType>::end() {
 }
 
 template <typename ArchType>
-BitstreamWriter<ArchType>::iterator::iterator(header_t::iterator itr_header,
-                                    const typename BitstreamWriter<ArchType>::packets_t& packets,
-                                    typename BitstreamWriter<ArchType>::packets_t::const_iterator itr_packets,
-                                    absl::optional<packet_iterator> itr_packet)
+BitstreamWriter<ArchType>::iterator::iterator(
+    header_t::iterator itr_header,
+    const typename BitstreamWriter<ArchType>::packets_t& packets,
+    typename BitstreamWriter<ArchType>::packets_t::const_iterator itr_packets,
+    absl::optional<packet_iterator> itr_packet)
     : itr_header_(itr_header),
       packets_(packets),
       itr_packets_(itr_packets),
       op_itr_packet_(itr_packet) {}
 
 template <typename ArchType>
-typename BitstreamWriter<ArchType>::iterator& BitstreamWriter<ArchType>::iterator::operator++() {
+typename BitstreamWriter<ArchType>::iterator&
+BitstreamWriter<ArchType>::iterator::operator++() {
 	// Still generating header?
 	if (itr_header_ != header_.end()) {
 		itr_header_++;
@@ -330,20 +341,22 @@ typename BitstreamWriter<ArchType>::iterator& BitstreamWriter<ArchType>::iterato
 }
 
 template <typename ArchType>
-bool BitstreamWriter<ArchType>::iterator::operator==(const iterator& other) const {
+bool BitstreamWriter<ArchType>::iterator::operator==(
+    const iterator& other) const {
 	return itr_header_ == other.itr_header_ &&
 	       itr_packets_ == other.itr_packets_ &&
 	       op_itr_packet_ == other.op_itr_packet_;
 }
 
 template <typename ArchType>
-bool BitstreamWriter<ArchType>::iterator::operator!=(const iterator& other) const {
+bool BitstreamWriter<ArchType>::iterator::operator!=(
+    const iterator& other) const {
 	return !(*this == other);
 }
 
 template <typename ArchType>
-const typename BitstreamWriter<ArchType>::itr_value_type BitstreamWriter<ArchType>::iterator::operator*()
-    const {
+const typename BitstreamWriter<ArchType>::itr_value_type
+    BitstreamWriter<ArchType>::iterator::operator*() const {
 	if (itr_header_ != header_.end()) {
 		return *itr_header_;
 	} else {
@@ -353,25 +366,39 @@ const typename BitstreamWriter<ArchType>::itr_value_type BitstreamWriter<ArchTyp
 }
 
 template <typename ArchType>
-const typename BitstreamWriter<ArchType>::itr_value_type BitstreamWriter<ArchType>::iterator::operator->()
-    const {
+const typename BitstreamWriter<ArchType>::itr_value_type
+    BitstreamWriter<ArchType>::iterator::operator->() const {
 	return *(*this);
 }
 
-template int BitstreamWriter<Spartan6>::writeBitstream(const typename Spartan6::ConfigurationPackage&,
-                   const std::string&, const std::string&, const std::string&, const std::string&);
+template int BitstreamWriter<Spartan6>::writeBitstream(
+    const typename Spartan6::ConfigurationPackage&,
+    const std::string&,
+    const std::string&,
+    const std::string&,
+    const std::string&);
 template BitstreamWriter<Spartan6>::iterator BitstreamWriter<Spartan6>::begin();
 template BitstreamWriter<Spartan6>::iterator BitstreamWriter<Spartan6>::end();
-template const BitstreamWriter<Spartan6>::itr_value_type BitstreamWriter<Spartan6>::iterator::operator*() const;
-template BitstreamWriter<Spartan6>::iterator& BitstreamWriter<Spartan6>::iterator::operator++();
-template bool BitstreamWriter<Spartan6>::iterator::operator!=(const BitstreamWriter<Spartan6>::iterator&) const;
-template int BitstreamWriter<Series7>::writeBitstream(const Series7::ConfigurationPackage&,
-                   const std::string&, const std::string&, const std::string&, const std::string&);
+template const BitstreamWriter<Spartan6>::itr_value_type
+    BitstreamWriter<Spartan6>::iterator::operator*() const;
+template BitstreamWriter<Spartan6>::iterator&
+BitstreamWriter<Spartan6>::iterator::operator++();
+template bool BitstreamWriter<Spartan6>::iterator::operator!=(
+    const BitstreamWriter<Spartan6>::iterator&) const;
+template int BitstreamWriter<Series7>::writeBitstream(
+    const Series7::ConfigurationPackage&,
+    const std::string&,
+    const std::string&,
+    const std::string&,
+    const std::string&);
 template BitstreamWriter<Series7>::iterator BitstreamWriter<Series7>::begin();
 template BitstreamWriter<Series7>::iterator BitstreamWriter<Series7>::end();
-template const BitstreamWriter<Series7>::itr_value_type BitstreamWriter<Series7>::iterator::operator*() const;
-template BitstreamWriter<Series7>::iterator& BitstreamWriter<Series7>::iterator::operator++();
-template bool BitstreamWriter<Series7>::iterator::operator!=(const BitstreamWriter<Series7>::iterator&) const;
+template const BitstreamWriter<Series7>::itr_value_type
+    BitstreamWriter<Series7>::iterator::operator*() const;
+template BitstreamWriter<Series7>::iterator&
+BitstreamWriter<Series7>::iterator::operator++();
+template bool BitstreamWriter<Series7>::iterator::operator!=(
+    const BitstreamWriter<Series7>::iterator&) const;
 
 }  // namespace xilinx
 }  // namespace prjxray

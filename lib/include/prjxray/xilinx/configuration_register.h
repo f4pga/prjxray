@@ -69,8 +69,10 @@ enum class Series7ConfigurationRegister : unsigned int {
 	BSPI = 0x1F,
 };
 
-std::ostream& operator<<(std::ostream& o, const Spartan6ConfigurationRegister& value);
-std::ostream& operator<<(std::ostream& o, const Series7ConfigurationRegister& value);
+std::ostream& operator<<(std::ostream& o,
+                         const Spartan6ConfigurationRegister& value);
+std::ostream& operator<<(std::ostream& o,
+                         const Series7ConfigurationRegister& value);
 
 }  // namespace xilinx
 }  // namespace prjxray

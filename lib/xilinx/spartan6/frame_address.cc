@@ -25,7 +25,8 @@ bool FrameAddress::is_bottom_half_rows() const {
 }
 
 spartan6::BlockType FrameAddress::block_type() const {
-	return static_cast<typename spartan6::BlockType>(bit_field_get(address_, 31, 28));
+	return static_cast<typename spartan6::BlockType>(
+	    bit_field_get(address_, 31, 28));
 }
 
 uint8_t FrameAddress::row() const {
@@ -51,7 +52,7 @@ std::ostream& operator<<(std::ostream& o, const FrameAddress& addr) {
 	return o;
 }
 
-}  // namepsace spartan6
+}  // namespace spartan6
 }  // namespace xilinx
 }  // namespace prjxray
 

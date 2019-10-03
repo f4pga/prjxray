@@ -96,16 +96,14 @@ TEST(BitstreamReaderTest, ParsesType2AfterType1Packet) {
 	auto first_packet = reader->begin();
 	EXPECT_EQ(first_packet->opcode(),
 	          ConfigurationPacket<Spartan6>::Opcode::Read);
-	EXPECT_EQ(first_packet->address(),
-	          Spartan6::ConfRegType::FDRO);
+	EXPECT_EQ(first_packet->address(), Spartan6::ConfRegType::FDRO);
 	EXPECT_EQ(first_packet->data(), absl::Span<uint32_t>());
 
 	auto third_packet = ++first_packet;
 	ASSERT_NE(third_packet, reader->end());
 	EXPECT_EQ(third_packet->opcode(),
 	          ConfigurationPacket<Spartan6>::Opcode::Write);
-	EXPECT_EQ(third_packet->address(),
-	          Spartan6::ConfRegType::FDRI);
+	EXPECT_EQ(third_packet->address(), Spartan6::ConfRegType::FDRI);
 	(third_packet->data(), absl::Span<uint32_t>(data_words));
 	EXPECT_EQ(++first_packet, reader->end());
 }

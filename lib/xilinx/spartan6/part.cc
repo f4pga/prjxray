@@ -45,7 +45,8 @@ absl::optional<FrameAddress> Part::GetNextFrameAddress(
 
 	// Block types are next numerically.
 	if (address.block_type() < spartan6::BlockType::BLOCK_RAM) {
-		next_address = FrameAddress(spartan6::BlockType::BLOCK_RAM, 0, 0, 0);
+		next_address =
+		    FrameAddress(spartan6::BlockType::BLOCK_RAM, 0, 0, 0);
 		if (IsValidFrameAddress(*next_address))
 			return next_address;
 	}

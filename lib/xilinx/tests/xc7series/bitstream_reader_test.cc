@@ -1,10 +1,10 @@
 #include <array>
 
 #include <gtest/gtest.h>
+#include <prjxray/xilinx/architectures.h>
 #include <prjxray/xilinx/bitstream_reader.h>
 #include <prjxray/xilinx/configuration_packet.h>
 #include <prjxray/xilinx/configuration_register.h>
-#include <prjxray/xilinx/architectures.h>
 
 using namespace prjxray::xilinx;
 
@@ -77,16 +77,14 @@ TEST(BitstreamReaderTest, ParsesType2AfterType1Packet) {
 	auto first_packet = reader->begin();
 	EXPECT_EQ(first_packet->opcode(),
 	          ConfigurationPacket<Series7::ConfRegType>::Opcode::Read);
-	EXPECT_EQ(first_packet->address(),
-	          Series7::ConfRegType::FDRO);
+	EXPECT_EQ(first_packet->address(), Series7::ConfRegType::FDRO);
 	EXPECT_EQ(first_packet->data(), absl::Span<uint32_t>());
 
 	auto second_packet = ++first_packet;
 	ASSERT_NE(second_packet, reader->end());
 	EXPECT_EQ(second_packet->opcode(),
 	          ConfigurationPacket<Series7::ConfRegType>::Opcode::Read);
-	EXPECT_EQ(second_packet->address(),
-	          Series7::ConfRegType::FDRO);
+	EXPECT_EQ(second_packet->address(), Series7::ConfRegType::FDRO);
 	EXPECT_EQ(first_packet->data(), absl::Span<uint32_t>(data_words));
 
 	EXPECT_EQ(++first_packet, reader->end());

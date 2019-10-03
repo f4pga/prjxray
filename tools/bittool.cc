@@ -7,19 +7,18 @@
 #include <absl/types/span.h>
 #include <gflags/gflags.h>
 #include <prjxray/memory_mapped_file.h>
-#include <prjxray/xilinx/bitstream_reader.h>
 #include <prjxray/xilinx/architectures.h>
+#include <prjxray/xilinx/bitstream_reader.h>
 
 namespace xilinx = prjxray::xilinx;
 
 struct Action {
 	std::string name;
-	std::function<int(int, char* [])> handler;
+	std::function<int(int, char*[])> handler;
 };
 
 struct ConfigPacketsLister {
-	ConfigPacketsLister (const absl::Span<uint8_t>& bytes)
-		: bytes_(bytes) {}
+	ConfigPacketsLister(const absl::Span<uint8_t>& bytes) : bytes_(bytes) {}
 
 	const absl::Span<uint8_t>& bytes_;
 
@@ -27,9 +26,10 @@ struct ConfigPacketsLister {
 	int operator()(T& arg) {
 		using ArchType = std::decay_t<decltype(arg)>;
 		auto reader =
-			xilinx::BitstreamReader<ArchType>::InitWithBytes(bytes_);
+		    xilinx::BitstreamReader<ArchType>::InitWithBytes(bytes_);
 		if (!reader) {
-			std::cerr << "Input doesn't look like a bitstream" << std::endl;
+			std::cerr << "Input doesn't look like a bitstream"
+			          << std::endl;
 			return 1;
 		}
 
@@ -62,38 +62,41 @@ int ListConfigPackets(int argc, char* argv[]) {
 	}
 	auto in_bytes = absl::Span<uint8_t>(
 	    static_cast<uint8_t*>(in_file->data()), in_file->size());
-	xilinx::Architecture::Container arch_container = xilinx::ArchitectureFactory::create_architecture(architecture);
+	xilinx::Architecture::Container arch_container =
+	    xilinx::ArchitectureFactory::create_architecture(architecture);
 	return std::visit(ConfigPacketsLister(in_bytes), arch_container);
-
 }
 
 struct DebugFrameAddressesDumper {
-	DebugFrameAddressesDumper (const absl::Span<uint8_t>& bytes)
-		: bytes_(bytes) {}
+	DebugFrameAddressesDumper(const absl::Span<uint8_t>& bytes)
+	    : bytes_(bytes) {}
 
 	const absl::Span<uint8_t>& bytes_;
 
 	template <typename T>
 	int operator()(T& arg) {
 		using ArchType = std::decay_t<decltype(arg)>;
-		auto reader = xilinx::BitstreamReader<ArchType>::InitWithBytes(bytes_);
+		auto reader =
+		    xilinx::BitstreamReader<ArchType>::InitWithBytes(bytes_);
 		if (!reader) {
-			std::cerr << "Input doesn't look like a bitstream" << std::endl;
+			std::cerr << "Input doesn't look like a bitstream"
+			          << std::endl;
 			return 1;
 		}
 
 		bool found_one_lout = false;
 		for (auto packet : *reader) {
 			if ((packet.opcode() !=
-						xilinx::ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::Write) ||
-					(packet.address() !=
-					 ArchType::ConfRegType::LOUT)) {
+			     xilinx::ConfigurationPacket<
+			         typename ArchType::ConfRegType>::Opcode::
+			         Write) ||
+			    (packet.address() != ArchType::ConfRegType::LOUT)) {
 				continue;
 			}
 
 			if (packet.data().size() != 1) {
 				std::cerr << "Write to FAR with word_count != 1"
-					<< std::endl;
+				          << std::endl;
 				continue;
 			}
 
@@ -102,9 +105,10 @@ struct DebugFrameAddressesDumper {
 		}
 
 		if (!found_one_lout) {
-			std::cerr << "No LOUT writes found.  Was "
-				<< "BITSTREAM.GENERAL.DEBUGBITSTREAM set to YES?"
-				<< std::endl;
+			std::cerr
+			    << "No LOUT writes found.  Was "
+			    << "BITSTREAM.GENERAL.DEBUGBITSTREAM set to YES?"
+			    << std::endl;
 			return 1;
 		}
 
@@ -135,48 +139,59 @@ int DumpDebugbitstreamFrameAddresses(int argc, char* argv[]) {
 
 	auto in_bytes = absl::Span<uint8_t>(
 	    static_cast<uint8_t*>(in_file->data()), in_file->size());
-	xilinx::Architecture::Container arch_container = xilinx::ArchitectureFactory::create_architecture(architecture);
+	xilinx::Architecture::Container arch_container =
+	    xilinx::ArchitectureFactory::create_architecture(architecture);
 	return std::visit(DebugFrameAddressesDumper(in_bytes), arch_container);
 }
 
 struct DeviceIdGetter {
-	DeviceIdGetter(const absl::Span<uint8_t>& bytes)
-		: bytes_(bytes) {}
+	DeviceIdGetter(const absl::Span<uint8_t>& bytes) : bytes_(bytes) {}
 
 	const absl::Span<uint8_t>& bytes_;
 
 	template <typename T>
 	int operator()(T& arg) {
 		using ArchType = std::decay_t<decltype(arg)>;
-		auto reader = xilinx::BitstreamReader<ArchType>::InitWithBytes(bytes_);
+		auto reader =
+		    xilinx::BitstreamReader<ArchType>::InitWithBytes(bytes_);
 		if (!reader) {
-			std::cerr << "Input doesn't look like a bitstream" << std::endl;
+			std::cerr << "Input doesn't look like a bitstream"
+			          << std::endl;
 			return 1;
 		}
 		auto idcode_packet = std::find_if(
-				reader->begin(), reader->end(),
-				[](const xilinx::ConfigurationPacket<typename ArchType::ConfRegType>& packet) {
-				return (packet.opcode() ==
-						xilinx::ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::Write) &&
-				(packet.address() ==
-				 ArchType::ConfRegType::IDCODE);
-				});
+		    reader->begin(), reader->end(),
+		    [](const xilinx::ConfigurationPacket<
+		        typename ArchType::ConfRegType>& packet) {
+			    return (packet.opcode() ==
+			            xilinx::ConfigurationPacket<
+			                typename ArchType::ConfRegType>::
+			                Opcode::Write) &&
+			           (packet.address() ==
+			            ArchType::ConfRegType::IDCODE);
+		    });
 		if (idcode_packet != reader->end()) {
 			if (std::is_same_v<ArchType, xilinx::Spartan6>) {
 				if (idcode_packet->data().size() != 2) {
-					std::cerr << "Write to IDCODE with word_count != 2"
-						<< std::endl;
+					std::cerr << "Write to IDCODE with "
+					             "word_count != 2"
+					          << std::endl;
 					return 1;
 				}
-				std::cout << "0x" << std::hex << ((idcode_packet->data()[0] << 16) | idcode_packet->data()[1]) << std::endl;
-			}
-			else {
+				std::cout << "0x" << std::hex
+				          << ((idcode_packet->data()[0] << 16) |
+				              idcode_packet->data()[1])
+				          << std::endl;
+			} else {
 				if (idcode_packet->data().size() != 1) {
-					std::cerr << "Write to IDCODE with word_count != 1"
-						<< std::endl;
+					std::cerr << "Write to IDCODE with "
+					             "word_count != 1"
+					          << std::endl;
 					return 1;
 				}
-				std::cout << "0x" << std::hex << idcode_packet->data()[0] << std::endl;
+				std::cout << "0x" << std::hex
+				          << idcode_packet->data()[0]
+				          << std::endl;
 			}
 		}
 		return 0;
@@ -187,7 +202,8 @@ int GetDeviceId(int argc, char* argv[]) {
 	std::string architecture("Series7");
 	if (argc < 1) {
 		std::cerr << "ERROR: no input specified" << std::endl;
-		std::cerr << "Usage: " << argv[0] << "get_device_id <bit_file> [<architecture>]"
+		std::cerr << "Usage: " << argv[0]
+		          << "get_device_id <bit_file> [<architecture>]"
 		          << std::endl;
 		return 1;
 	}
@@ -205,7 +221,8 @@ int GetDeviceId(int argc, char* argv[]) {
 	auto in_bytes = absl::Span<uint8_t>(
 	    static_cast<uint8_t*>(in_file->data()), in_file->size());
 
-	xilinx::Architecture::Container arch_container = xilinx::ArchitectureFactory::create_architecture(architecture);
+	xilinx::Architecture::Container arch_container =
+	    xilinx::ArchitectureFactory::create_architecture(architecture);
 	return std::visit(DeviceIdGetter(in_bytes), arch_container);
 }
 
@@ -239,5 +256,4 @@ int main(int argc, char* argv[]) {
 	}
 
 	return requested_action->handler(argc - 2, argv + 2);
-
 }

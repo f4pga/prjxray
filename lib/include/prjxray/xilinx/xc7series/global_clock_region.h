@@ -7,8 +7,8 @@
 #include <memory>
 
 #include <absl/types/optional.h>
-#include <prjxray/xilinx/xc7series/frame_address.h>
 #include <prjxray/xilinx/xc7series/configuration_row.h>
+#include <prjxray/xilinx/xc7series/frame_address.h>
 #include <yaml-cpp/yaml.h>
 
 namespace prjxray {

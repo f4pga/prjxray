@@ -1,22 +1,25 @@
 #include <absl/types/span.h>
-#include <prjxray/xilinx/configuration_packetizer.h>
 #include <prjxray/xilinx/configuration.h>
+#include <prjxray/xilinx/configuration_packetizer.h>
 
 namespace prjxray {
 namespace xilinx {
 
 template <typename ArchType>
-ConfigurationPacketizer<ArchType>::ConfigurationPacketizer(const Configuration<ArchType>& config)
+ConfigurationPacketizer<ArchType>::ConfigurationPacketizer(
+    const Configuration<ArchType>& config)
     : config_(config) {}
 
 template <typename ArchType>
-typename ConfigurationPacketizer<ArchType>::iterator ConfigurationPacketizer<ArchType>::begin() const {
+typename ConfigurationPacketizer<ArchType>::iterator
+ConfigurationPacketizer<ArchType>::begin() const {
 	return iterator(&config_.part(), config_.frames().begin(),
 	                config_.frames().end());
 }
 
 template <typename ArchType>
-typename ConfigurationPacketizer<ArchType>::iterator ConfigurationPacketizer<ArchType>::end() const {
+typename ConfigurationPacketizer<ArchType>::iterator
+ConfigurationPacketizer<ArchType>::end() const {
 	return iterator(&config_.part(), config_.frames().end(),
 	                config_.frames().end());
 }
@@ -34,14 +37,14 @@ ConfigurationPacketizer<ArchType>::iterator::iterator(
 }
 
 template <typename ArchType>
-const ConfigurationPacket<typename ArchType::ConfRegType>& ConfigurationPacketizer<ArchType>::iterator::operator*()
-    const {
+const ConfigurationPacket<typename ArchType::ConfRegType>&
+    ConfigurationPacketizer<ArchType>::iterator::operator*() const {
 	return *packet_;
 }
 
 template <typename ArchType>
-const ConfigurationPacket<typename ArchType::ConfRegType>* ConfigurationPacketizer<ArchType>::iterator::operator->()
-    const {
+const ConfigurationPacket<typename ArchType::ConfRegType>*
+    ConfigurationPacketizer<ArchType>::iterator::operator->() const {
 	return &(*packet_);
 }
 
@@ -58,8 +61,8 @@ bool ConfigurationPacketizer<ArchType>::iterator::operator!=(
 }
 
 template <>
-typename ConfigurationPacketizer<Series7>::iterator& ConfigurationPacketizer<Series7>::iterator::
-operator++() {
+typename ConfigurationPacketizer<Series7>::iterator&
+ConfigurationPacketizer<Series7>::iterator::operator++() {
 	using ArchType = Series7;
 	// Frames are accessed via an indirect addressing scheme using the FAR
 	// and FDRI registers.  Writes begin with writing the target frame
@@ -88,8 +91,12 @@ operator++() {
 				// Type 0 frames aren't documented in UG470.  In
 				// practice, they are used to zero pad in the
 				// bitstream.
-				packet_ = ConfigurationPacket<typename ArchType::ConfRegType>(
-				    0, ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::NOP,
+				packet_ = ConfigurationPacket<
+				    typename ArchType::ConfRegType>(
+				    0,
+				    ConfigurationPacket<
+				        typename ArchType::ConfRegType>::
+				        Opcode::NOP,
 				    ArchType::ConfRegType::CRC, {});
 				state_ = State::ZeroPadWritten;
 				break;
@@ -106,15 +113,21 @@ operator++() {
 			}
 
 			frame_address_ = frame_cur_->first;
-			packet_ = ConfigurationPacket<typename ArchType::ConfRegType>(
-			    1, ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::Write,
+			packet_ = ConfigurationPacket<
+			    typename ArchType::ConfRegType>(
+			    1,
+			    ConfigurationPacket<
+			        typename ArchType::ConfRegType>::Opcode::Write,
 			    ArchType::ConfRegType::FAR,
 			    absl::Span<uint32_t>(&frame_address_.value(), 1));
 			state_ = State::FrameAddressWritten;
 			break;
 		case State::FrameAddressWritten:
-			packet_ = ConfigurationPacket<typename ArchType::ConfRegType>(
-			    1, ConfigurationPacket<typename ArchType::ConfRegType>::Opcode::Write,
+			packet_ = ConfigurationPacket<
+			    typename ArchType::ConfRegType>(
+			    1,
+			    ConfigurationPacket<
+			        typename ArchType::ConfRegType>::Opcode::Write,
 			    ArchType::ConfRegType::FDRI, frame_cur_->second);
 			state_ = State::FrameDataWritten;
 			break;
@@ -131,12 +144,19 @@ operator++() {
 	return *this;
 }
 
-template ConfigurationPacketizer<Series7>::ConfigurationPacketizer(const Configuration<Series7>& config);
-template ConfigurationPacketizer<Series7>::iterator ConfigurationPacketizer<Series7>::begin() const;
-template ConfigurationPacketizer<Series7>::iterator ConfigurationPacketizer<Series7>::end() const;
-template const ConfigurationPacket<typename Series7::ConfRegType>& ConfigurationPacketizer<Series7>::iterator::operator*() const;
-template const ConfigurationPacket<typename Series7::ConfRegType>* ConfigurationPacketizer<Series7>::iterator::operator->() const;
-template bool ConfigurationPacketizer<Series7>::iterator::operator==(const ConfigurationPacketizer<Series7>::iterator& other) const;
-template bool ConfigurationPacketizer<Series7>::iterator::operator!=(const ConfigurationPacketizer<Series7>::iterator& other) const;
+template ConfigurationPacketizer<Series7>::ConfigurationPacketizer(
+    const Configuration<Series7>& config);
+template ConfigurationPacketizer<Series7>::iterator
+ConfigurationPacketizer<Series7>::begin() const;
+template ConfigurationPacketizer<Series7>::iterator
+ConfigurationPacketizer<Series7>::end() const;
+template const ConfigurationPacket<typename Series7::ConfRegType>&
+    ConfigurationPacketizer<Series7>::iterator::operator*() const;
+template const ConfigurationPacket<typename Series7::ConfRegType>*
+    ConfigurationPacketizer<Series7>::iterator::operator->() const;
+template bool ConfigurationPacketizer<Series7>::iterator::operator==(
+    const ConfigurationPacketizer<Series7>::iterator& other) const;
+template bool ConfigurationPacketizer<Series7>::iterator::operator!=(
+    const ConfigurationPacketizer<Series7>::iterator& other) const;
 }  // namespace xilinx
 }  // namespace prjxray

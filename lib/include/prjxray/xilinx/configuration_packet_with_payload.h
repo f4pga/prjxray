@@ -12,13 +12,18 @@ namespace prjxray {
 namespace xilinx {
 
 template <int Words, typename ConfigRegType>
-class ConfigurationPacketWithPayload : public ConfigurationPacket<ConfigRegType> {
+class ConfigurationPacketWithPayload
+    : public ConfigurationPacket<ConfigRegType> {
        public:
 	ConfigurationPacketWithPayload(
 	    typename ConfigurationPacket<ConfigRegType>::Opcode op,
 	    ConfigRegType reg,
 	    const std::array<uint32_t, Words>& payload)
-	    : ConfigurationPacket<ConfigRegType>(1, op, reg, absl::Span<uint32_t>(payload_)),
+	    : ConfigurationPacket<ConfigRegType>(
+	          1,
+	          op,
+	          reg,
+	          absl::Span<uint32_t>(payload_)),
 	      payload_(std::move(payload)) {}
 
        private:
