@@ -10,6 +10,16 @@ with open('params.csv', 'r') as f:
     for d in csv.DictReader(f):
         dsp = "DSP_0" if d['site'][-1] in "02468" else "DSP_1"
 
+        a_input = str(d['a_input'])
+        segmk.add_site_tag(
+            d['site'], "%s.A_INPUT[0]" % (dsp),
+            (1 if a_input == "DIRECT" else 0))
+
+        b_input = str(d['b_input'])
+        segmk.add_site_tag(
+            d['site'], "%s.B_INPUT[0]" % (dsp),
+            (1 if b_input == "DIRECT" else 0))
+
         mask = int(d['mask'])
         pattern = int(d['pattern'])
 

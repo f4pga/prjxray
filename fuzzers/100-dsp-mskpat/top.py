@@ -18,9 +18,14 @@ def gen_sites():
 
 
 def write_params(lines):
-    pinstr = 'tile,site,mask,pattern\n'
-    for tile, site, mask, pattern in lines:
-        pinstr += '%s,%s,%s,%s\n' % (tile, site, mask, pattern)
+    pinstr = 'tile,site,a_input,b_input,mask,pattern\n'
+    for tile, site, a_input, b_input, mask, pattern in lines:
+        pinstr += '%s,' % (tile)
+        pinstr += '%s,' % (site)
+        pinstr += '%s,' % (a_input)
+        pinstr += '%s,' % (b_input)
+        pinstr += '%s,' % (mask)
+        pinstr += '%s\n' % (pattern)
 
     open('params.csv', 'w').write(pinstr)
 
@@ -36,17 +41,21 @@ module top();
     for (tile_name, site_name) in sites:
         mask = random.randint(0, 2**48 - 1)
         pattern = random.randint(0, 2**48 - 1)
-        lines.append((tile_name, site_name, mask, pattern))
+        a_input = random.choice(('DIRECT', 'CASCADE'))
+        b_input = random.choice(('DIRECT', 'CASCADE'))
+        lines.append((tile_name, site_name, a_input, b_input, mask, pattern))
 
         print(
             '''
             (* KEEP, DONT_TOUCH, LOC = "{0}" *)
             DSP48E1 #(
-                .MASK(48'h{1:x}),
-                .PATTERN(48'h{2:x})
+                .A_INPUT("{1}"),
+                .B_INPUT("{2}"),
+                .MASK(48'h{3:x}),
+                .PATTERN(48'h{4:x})
             ) dsp_{0} (
             );
-'''.format(site_name, mask, pattern))
+'''.format(site_name, a_input, b_input, mask, pattern))
 
     print("endmodule")
     write_params(lines)
