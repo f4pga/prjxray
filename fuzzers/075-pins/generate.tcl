@@ -3,7 +3,7 @@ set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
 set fp [open $::env(XRAY_PART)_package_pins.csv w]
-puts $fp "pin,site,tile"
+puts $fp "pin,site,tile,pin_function"
 foreach pin [get_package_pins] {
     set site [get_sites -quiet -of_object $pin]
     if { $site == "" } {
@@ -11,6 +11,7 @@ foreach pin [get_package_pins] {
     }
 
     set tile [get_tiles -of_object $site]
+    set pin_function [get_property PIN_FUNC [get_package_pins E18]]
 
-    puts $fp "$pin,$site,$tile"
+    puts $fp "$pin,$site,$tile,$pin_function"
 }
