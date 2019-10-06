@@ -20,6 +20,17 @@ with open('params.csv', 'r') as f:
             d['site'], "%s.B_INPUT[0]" % (dsp),
             (1 if b_input == "DIRECT" else 0))
 
+        autoreset_patdet = str(d['autoreset_patdet'])
+        if autoreset_patdet == "RESET_MATCH":
+            segmk.add_site_tag(d['site'], "%s.AUTO_RESET_PATDET[0]" % (dsp), 0)
+            segmk.add_site_tag(d['site'], "%s.AUTO_RESET_PATDET[1]" % (dsp), 0)
+        elif autoreset_patdet == "NO_RESET":
+            segmk.add_site_tag(d['site'], "%s.AUTO_RESET_PATDET[0]" % (dsp), 0)
+            segmk.add_site_tag(d['site'], "%s.AUTO_RESET_PATDET[1]" % (dsp), 1)
+        elif autoreset_patdet == "RESET_NOT_MATCH":
+            segmk.add_site_tag(d['site'], "%s.AUTO_RESET_PATDET[0]" % (dsp), 1)
+            segmk.add_site_tag(d['site'], "%s.AUTO_RESET_PATDET[1]" % (dsp), 0)
+
         mask = int(d['mask'])
         pattern = int(d['pattern'])
 

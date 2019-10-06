@@ -18,12 +18,13 @@ def gen_sites():
 
 
 def write_params(lines):
-    pinstr = 'tile,site,a_input,b_input,mask,pattern\n'
-    for tile, site, a_input, b_input, mask, pattern in lines:
+    pinstr = 'tile,site,a_input,b_input,autoreset_patdet,mask,pattern\n'
+    for tile, site, a_input, b_input, autoreset_patdet, mask, pattern in lines:
         pinstr += '%s,' % (tile)
         pinstr += '%s,' % (site)
         pinstr += '%s,' % (a_input)
         pinstr += '%s,' % (b_input)
+        pinstr += '%s,' % (autoreset_patdet)
         pinstr += '%s,' % (mask)
         pinstr += '%s\n' % (pattern)
 
@@ -43,7 +44,12 @@ module top();
         pattern = random.randint(0, 2**48 - 1)
         a_input = random.choice(('DIRECT', 'CASCADE'))
         b_input = random.choice(('DIRECT', 'CASCADE'))
-        lines.append((tile_name, site_name, a_input, b_input, mask, pattern))
+        autoreset_patdet = random.choice(
+            ('NO_RESET', 'RESET_MATCH', 'RESET_NOT_MATCH'))
+        lines.append(
+            (
+                tile_name, site_name, a_input, b_input, autoreset_patdet, mask,
+                pattern))
 
         print(
             '''
@@ -51,11 +57,12 @@ module top();
             DSP48E1 #(
                 .A_INPUT("{1}"),
                 .B_INPUT("{2}"),
-                .MASK(48'h{3:x}),
-                .PATTERN(48'h{4:x})
+                .AUTORESET_PATDET("{3}"),
+                .MASK(48'h{4:x}),
+                .PATTERN(48'h{5:x})
             ) dsp_{0} (
             );
-'''.format(site_name, a_input, b_input, mask, pattern))
+'''.format(site_name, a_input, b_input, autoreset_patdet, mask, pattern))
 
     print("endmodule")
     write_params(lines)
