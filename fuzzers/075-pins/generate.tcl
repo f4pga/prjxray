@@ -11,7 +11,7 @@ foreach pin [get_package_pins] {
     }
 
     set tile [get_tiles -of_object $site]
-    set pin_function [get_property PIN_FUNC [get_package_pins E18]]
+    set pin_function [get_property PIN_FUNC [get_package_pins $pin]]
 
     puts $fp "$pin,$site,$tile,$pin_function"
 }
