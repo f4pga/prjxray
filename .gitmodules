@@ -22,3 +22,6 @@
 [submodule "third_party/yosys"]
 	path = third_party/yosys
 	url = https://github.com/YosysHQ/yosys
+[submodule "third_party/sanitizers-cmake"]
+	path = third_party/sanitizers-cmake
+	url = https://github.com/arsenm/sanitizers-cmake.git
