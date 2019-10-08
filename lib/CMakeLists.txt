@@ -4,7 +4,6 @@ add_library(libprjxray
 	segbits_file_reader.cc
 	xilinx/bitstream_writer.cc
 	xilinx/configuration_packet.cc
-	xilinx/configuration_packetizer.cc
 	xilinx/configuration_register.cc
 	xilinx/frames.cc
 	xilinx/configuration.cc
@@ -52,7 +51,6 @@ if (PRJXRAY_BUILD_TESTING)
 		xilinx/tests/xc7series/configuration_column_test.cc
 		xilinx/tests/xc7series/configuration_test.cc
 		xilinx/tests/xc7series/configuration_packet_test.cc
-		xilinx/tests/xc7series/configuration_packetizer_test.cc
 		xilinx/tests/xc7series/crc_test.cc
 		xilinx/tests/xc7series/ecc_test.cc
 		xilinx/tests/xc7series/frame_address_test.cc
