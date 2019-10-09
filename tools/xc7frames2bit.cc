@@ -39,7 +39,8 @@ struct Frames2BitWriter {
 			return 1;
 		}
 
-		if (std::is_same<ArchType, xilinx::Series7>::value) {
+		if (std::is_same<ArchType, xilinx::Series7>::value ||
+		    std::is_same<ArchType, xilinx::UltraScalePlus>::value) {
 			// In case the frames input file is missing some frames
 			// that are in the tilegrid
 			frames.addMissingFrames(part);

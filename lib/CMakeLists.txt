@@ -6,6 +6,7 @@ add_library(libprjxray
 	xilinx/configuration_packet.cc
 	xilinx/configuration_register.cc
 	xilinx/configuration.cc
+	xilinx/frames.cc
 	# Series-7 specific
 	xilinx/xc7series/frame_address.cc
 	xilinx/xc7series/global_clock_region.cc

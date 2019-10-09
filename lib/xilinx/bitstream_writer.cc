@@ -12,6 +12,11 @@ template <>
 typename BitstreamWriter<Series7>::header_t BitstreamWriter<Series7>::header_{
     0xFFFFFFFF, 0x000000BB, 0x11220044, 0xFFFFFFFF, 0xFFFFFFFF, 0xAA995566};
 
+template <>
+typename BitstreamWriter<UltraScalePlus>::header_t
+    BitstreamWriter<UltraScalePlus>::header_{
+        0xFFFFFFFF, 0x000000BB, 0x11220044, 0xFFFFFFFF, 0xFFFFFFFF, 0xAA995566};
+
 uint32_t packet2header(
     const ConfigurationPacket<Series7ConfigurationRegister>& packet) {
 	uint32_t ret = 0;

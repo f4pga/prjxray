@@ -14,10 +14,11 @@ namespace prjxray {
 namespace xilinx {
 
 class Series7;
+class UltraScalePlus;
 
 class Architecture {
        public:
-	using Container = absl::variant<Series7>;
+	using Container = absl::variant<Series7, UltraScalePlus>;
 	virtual const std::string& name() const = 0;
 };
 
@@ -37,12 +38,24 @@ class Series7 : public Architecture {
 	std::string name_;
 };
 
+class UltraScalePlus : public Series7 {
+       public:
+	UltraScalePlus() : name_("UltraScalePlus") {}
+	const std::string& name() const override { return name_; }
+	static constexpr int words_per_frame = 93;
+
+       private:
+	std::string name_;
+};
+
 class ArchitectureFactory {
        public:
 	static Architecture::Container create_architecture(
 	    const std::string& arch) {
 		if (arch == "Series7") {
 			return Series7();
+		} else if (arch == "UltraScalePlus") {
+			return UltraScalePlus();
 		} else {
 			return Architecture::Container();
 		}

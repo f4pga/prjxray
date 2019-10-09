@@ -43,11 +43,6 @@ class Frames {
 };
 
 template <typename ArchType>
-void Frames<ArchType>::updateECC(typename Frames<ArchType>::FrameData& data) {
-	xc7series::updateECC(data);
-}
-
-template <typename ArchType>
 int Frames<ArchType>::readFrames(const std::string& frm_file_str) {
 	assert(!frm_file_str.empty());
 
