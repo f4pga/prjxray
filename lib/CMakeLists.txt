@@ -2,24 +2,23 @@ add_library(libprjxray
 	database.cc
 	memory_mapped_file.cc
 	segbits_file_reader.cc
-	xilinx/xc7series/bitstream_reader.cc
-	xilinx/xc7series/bitstream_writer.cc
-	xilinx/xc7series/block_type.cc
-	xilinx/xc7series/configuration_bus.cc
-	xilinx/xc7series/configuration_column.cc
-	xilinx/xc7series/configuration_packet.cc
-	xilinx/xc7series/configuration_packetizer.cc
-	xilinx/xc7series/configuration_register.cc
+	xilinx/bitstream_writer.cc
+	xilinx/configuration_packet.cc
+	xilinx/configuration_register.cc
+	xilinx/frames.cc
+	xilinx/configuration.cc
+	# Series-7 specific
 	xilinx/xc7series/frame_address.cc
 	xilinx/xc7series/global_clock_region.cc
 	xilinx/xc7series/part.cc
-	xilinx/xc7series/row.cc
-	xilinx/xc7series/frames.cc
-	xilinx/xc7series/utils.cc
+	xilinx/xc7series/configuration_row.cc
+	xilinx/xc7series/block_type.cc
+	xilinx/xc7series/configuration_bus.cc
+	xilinx/xc7series/configuration_column.cc
 	xilinx/xc7series/ecc.cc
 )
 target_include_directories(libprjxray PUBLIC "include")
-target_link_libraries(libprjxray absl::optional absl::strings absl::span absl::time yaml-cpp)
+target_link_libraries(libprjxray absl::optional absl::variant absl::strings absl::span absl::time yaml-cpp)
 
 if (PRJXRAY_BUILD_TESTING)
 	add_executable(big_endian_span_test big_endian_span_test.cc)
@@ -45,21 +44,20 @@ if (PRJXRAY_BUILD_TESTING)
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 
 	add_executable(xilinx_xc7series_test
-		xilinx/xc7series/bitstream_reader_test.cc
-		xilinx/xc7series/bitstream_writer_test.cc
-		xilinx/xc7series/block_type_test.cc
-		xilinx/xc7series/configuration_bus_test.cc
-		xilinx/xc7series/configuration_column_test.cc
-		xilinx/xc7series/configuration_test.cc
-		xilinx/xc7series/configuration_packet_test.cc
-		xilinx/xc7series/configuration_packetizer_test.cc
-		xilinx/xc7series/crc_test.cc
-		xilinx/xc7series/ecc_test.cc
-		xilinx/xc7series/frame_address_test.cc
-		xilinx/xc7series/global_clock_region_test.cc
-		xilinx/xc7series/part_test.cc
-		xilinx/xc7series/row_test.cc
-		xilinx/xc7series/frames_test.cc)
+		xilinx/tests/xc7series/bitstream_reader_test.cc
+		xilinx/tests/xc7series/bitstream_writer_test.cc
+		xilinx/tests/xc7series/block_type_test.cc
+		xilinx/tests/xc7series/configuration_bus_test.cc
+		xilinx/tests/xc7series/configuration_column_test.cc
+		xilinx/tests/xc7series/configuration_test.cc
+		xilinx/tests/xc7series/configuration_packet_test.cc
+		xilinx/tests/xc7series/crc_test.cc
+		xilinx/tests/xc7series/ecc_test.cc
+		xilinx/tests/xc7series/frame_address_test.cc
+		xilinx/tests/xc7series/global_clock_region_test.cc
+		xilinx/tests/xc7series/part_test.cc
+		xilinx/tests/xc7series/row_test.cc
+		xilinx/tests/xc7series/frames_test.cc)
 	target_link_libraries(xilinx_xc7series_test libprjxray gtest_main)
 	add_test(NAME xilinx_xc7series_test
 		 COMMAND xilinx_xc7series_test

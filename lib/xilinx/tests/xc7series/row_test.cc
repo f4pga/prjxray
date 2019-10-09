@@ -1,8 +1,8 @@
-#include <prjxray/xilinx/xc7series/row.h>
+#include <prjxray/xilinx/xc7series/configuration_row.h>
 
 #include <gtest/gtest.h>
 
-namespace xc7series = prjxray::xilinx::xc7series;
+using namespace prjxray::xilinx;
 
 TEST(RowTest, IsValidFrameAddress) {
 	std::vector<xc7series::FrameAddress> addresses;

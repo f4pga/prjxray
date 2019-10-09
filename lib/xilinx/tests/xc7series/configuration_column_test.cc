@@ -5,7 +5,7 @@
 #include <prjxray/xilinx/xc7series/frame_address.h>
 #include <yaml-cpp/yaml.h>
 
-namespace xc7series = prjxray::xilinx::xc7series;
+using namespace prjxray::xilinx;
 
 TEST(ConfigurationColumnTest, IsValidFrameAddress) {
 	xc7series::ConfigurationColumn column(10);

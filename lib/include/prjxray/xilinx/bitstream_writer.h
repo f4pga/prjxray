@@ -3,8 +3,8 @@
  * file This includes the following: -Bus auto detection -Sync Word -FPGA
  * configuration
  */
-#ifndef PRJXRAY_LIB_XILINX_XC7SERIES_BITSTREAM_WRITER_H
-#define PRJXRAY_LIB_XILINX_XC7SERIES_BITSTREAM_WRITER_H
+#ifndef PRJXRAY_LIB_XILINX_BITSTREAM_WRITER_H
+#define PRJXRAY_LIB_XILINX_BITSTREAM_WRITER_H
 
 #include <algorithm>
 #include <memory>
@@ -14,16 +14,21 @@
 #include <absl/types/span.h>
 
 #include <prjxray/big_endian_span.h>
-#include <prjxray/xilinx/xc7series/configuration_packet.h>
+#include <prjxray/xilinx/configuration_packet.h>
 
 namespace prjxray {
 namespace xilinx {
-namespace xc7series {
 
+// Writes out the complete Xilinx bitstream including
+// header, sync word and configuration sequence.
+template <typename ArchType>
 class BitstreamWriter {
        public:
-	typedef std::array<uint32_t, 6> header_t;
-	typedef std::vector<std::unique_ptr<ConfigurationPacket>> packets_t;
+	typedef std::vector<uint32_t> header_t;
+	typedef std::vector<std::unique_ptr<
+	    ConfigurationPacket<typename ArchType::ConfRegType>>>
+	    packets_t;
+	typedef std::vector<uint8_t> BitstreamHeader;
 	// Only defined if a packet exists
 	typedef absl::optional<absl::Span<const uint32_t>> op_data_t;
 	typedef absl::Span<const uint32_t>::iterator data_iterator_t;
@@ -47,9 +52,11 @@ class BitstreamWriter {
 		} state_t;
 
 	       protected:
-		explicit packet_iterator(const ConfigurationPacket* packet,
-		                         state_t state,
-		                         data_iterator_t itr_data);
+		explicit packet_iterator(
+		    const ConfigurationPacket<typename ArchType::ConfRegType>*
+		        packet,
+		    state_t state,
+		    data_iterator_t itr_data);
 
 	       private:
 		friend iterator;
@@ -61,10 +68,10 @@ class BitstreamWriter {
 		// Over packet.data()
 		data_iterator_t itr_data_;
 
-		const ConfigurationPacket* packet_;
+		const ConfigurationPacket<typename ArchType::ConfRegType>*
+		    packet_;
 	};
 
-	using value_type = uint32_t;
 	class iterator
 	    : public std::iterator<std::input_iterator_tag, itr_value_type> {
 	       public:
@@ -83,7 +90,7 @@ class BitstreamWriter {
 		explicit iterator(
 		    header_t::iterator itr_header,
 		    const packets_t& packets,
-		    packets_t::const_iterator itr_packets,
+		    typename packets_t::const_iterator itr_packets,
 		    absl::optional<packet_iterator> op_itr_packet);
 
 	       private:
@@ -92,21 +99,36 @@ class BitstreamWriter {
 		// First over the fixed header, then the configuration data
 		header_t::iterator itr_header_;
 		const packets_t& packets_;
-		packets_t::const_iterator itr_packets_;
+		typename packets_t::const_iterator itr_packets_;
 		absl::optional<packet_iterator> op_itr_packet_;
 	};
 
-	BitstreamWriter(const packets_t& packets);
+	BitstreamWriter(const packets_t& packets) : packets_(packets) {}
 
+	// Writes out the complete bitstream for Xilinx FPGA based on
+	// the Configuration Package which holds the complete programming
+	// sequence.
+	int writeBitstream(
+	    const typename ArchType::ConfigurationPackage& packets,
+	    const std::string& part_name,
+	    const std::string& frames_file,
+	    const std::string& generator_name,
+	    const std::string& output_file);
 	iterator begin();
 	iterator end();
 
        private:
 	static header_t header_;
 	const packets_t& packets_;
+
+	// Creates a Xilinx bit header which is mostly a
+	// Tag-Length-Value(TLV) format documented here:
+	// http://www.fpga-faq.com/FAQ_Pages/0026_Tell_me_about_bit_files.htm
+	BitstreamHeader create_header(const std::string& part_name,
+	                              const std::string& frames_file_name,
+	                              const std::string& generator_name);
 };
 
-}  // namespace xc7series
 }  // namespace xilinx
 }  // namespace prjxray
 
