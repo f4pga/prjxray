@@ -3,7 +3,8 @@
 from prjxray.segmaker import Segmaker
 import os
 import os.path
-
+import itertools
+import random
 
 def bitfilter(frame, word):
     if frame <= 1:
@@ -100,17 +101,21 @@ def main():
                         dst,
                     ))
 
+    tags = {}
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]
         pips = pips_srcs_dsts["pips"]
+
+        if tile not in tags:
+            tags[tile] = {}
 
         for src, dst in pipdata[tile_type]:
             if (src, dst) in ignpip:
                 pass
             elif (src, dst) in pips:
-                segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
+                tags[tile]["%s.%s" % (dst, src)] = 1
             elif (src, dst) not in tiledata[tile]["pips"]:
-                segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
+                tags[tile]["%s.%s" % (dst, src)] = 0
 
         internal_feedback = False
         for src, dst in [
@@ -120,7 +125,31 @@ def main():
             if (src, dst) in pips:
                 internal_feedback = True
 
-        segmk.add_tile_tag(tile, "EXTERNAL_FEEDBACK", not internal_feedback)
+        tags[tile]["EXTERNAL_FEEDBACK"] = int(not internal_feedback)
+
+
+    # Those tags are exclusive. This is due to the fact that Vivado sometimes
+    # report routes that does not correspond to underlying bit configuration.
+    xored_tags = [
+        ("CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_CLKFBIN",
+         "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_PLLE2_CLK_FB_INT"),
+        ("CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_CLKFBIN",
+         "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_PLLE2_CLK_FB_INT"),
+    ]
+
+    for tile in tags.keys():
+        for pair in xored_tags:
+            for tag_a, tag_b in itertools.permutations(pair, 2):
+
+                if tag_a in tags[tile] and tag_b in tags[tile]:
+                    if tags[tile][tag_a] == tags[tile][tag_b]:
+                        d = tags[tile]
+                        del d[tag_a]
+                        del d[tag_b]
+
+    for tile, tile_tags in tags.items():
+        for t, v in tile_tags.items():
+            segmk.add_tile_tag(tile, t, v)
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()
