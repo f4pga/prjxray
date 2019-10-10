@@ -6,6 +6,7 @@ import os.path
 import itertools
 import random
 
+
 def bitfilter(frame, word):
     if frame <= 1:
         return False
@@ -127,14 +128,17 @@ def main():
 
         tags[tile]["EXTERNAL_FEEDBACK"] = int(not internal_feedback)
 
-
     # Those tags are exclusive. This is due to the fact that Vivado sometimes
     # report routes that does not correspond to underlying bit configuration.
     xored_tags = [
-        ("CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_CLKFBIN",
-         "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_PLLE2_CLK_FB_INT"),
-        ("CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_CLKFBIN",
-         "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_PLLE2_CLK_FB_INT"),
+        (
+            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_CLKFBIN",
+            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_PLLE2_CLK_FB_INT"
+        ),
+        (
+            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_CLKFBIN",
+            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_PLLE2_CLK_FB_INT"
+        ),
     ]
 
     for tile in tags.keys():
