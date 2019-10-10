@@ -5,7 +5,6 @@ add_library(libprjxray
 	xilinx/bitstream_writer.cc
 	xilinx/configuration_packet.cc
 	xilinx/configuration_register.cc
-	xilinx/frames.cc
 	xilinx/configuration.cc
 	# Series-7 specific
 	xilinx/xc7series/frame_address.cc
