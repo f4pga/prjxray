@@ -55,7 +55,10 @@ int Frames<ArchType>::readFrames(const std::string& frm_file_str) {
 			               return std::stoul(val, nullptr, 16);
 		               });
 
-		updateECC(frame_data);
+		// Spartan6 doesn't have ECC
+		if (std::is_same<ArchType, Series7>::value) {
+			xc7series::updateECC(frame_data);
+		}
 
 		// Insert the frame address and corresponding frame data to the
 		// map
@@ -87,27 +90,10 @@ void Frames<ArchType>::addMissingFrames(
 	} while (current_frame_address);
 }
 
-static uint32_t calculateECC(const typename Frames<Series7>::FrameData& data) {
-	uint32_t ecc = 0;
-	for (size_t ii = 0; ii < data.size(); ++ii) {
-		ecc = xc7series::icap_ecc(ii, data[ii], ecc);
-	}
-	return ecc;
-}
-
-template <>
-void Frames<Series7>::updateECC(FrameData& data) {
-	assert(data.size() != 0);
-	// Replace the old ECC with the new.
-	data[0x32] &= 0xFFFFE000;
-	data[0x32] |= (calculateECC(data) & 0x1FFF);
-}
-
 template Frames<Series7>::Frames2Data& Frames<Series7>::getFrames();
 template void Frames<Series7>::addMissingFrames(
     const absl::optional<Series7::Part>& part);
 template int Frames<Series7>::readFrames(const std::string&);
-template void Frames<Series7>::updateECC(Frames<Series7>::FrameData&);
 
 }  // namespace xilinx
 }  // namespace prjxray
