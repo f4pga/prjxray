@@ -2,7 +2,7 @@
 
 import sys
 import os
-sys.path.append(os.getenv("XRAY_DIR") + "/utils")
+sys.path.append(os.getenv("XRAY_UTILS_DIR"))
 import simpleroute
 
 print()
