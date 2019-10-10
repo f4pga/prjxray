@@ -1,71 +1,91 @@
 import os
 import random
+import csv
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray.db import Database
 
 
-def gen_sites():
+def gen_sites ():
     db = Database(util.get_db_root())
     grid = db.grid()
-    for tile_name in sorted(grid.tiles()):
-        loc = grid.loc_of_tilename(tile_name)
+    for tile in sorted(grid.tiles()):
+        loc = grid.loc_of_tilename(tile)
         gridinfo = grid.gridinfo_at_loc(loc)
         if gridinfo.tile_type in ['DSP_L', 'DSP_R']:
             for site in sorted(gridinfo.sites.keys()):
                 if gridinfo.sites[site] == 'DSP48E1':
-                    yield tile_name, site
+                    yield tile, site
 
+def fuzz (*args):
+    if len(args) == 1 and isinstance(args[0], int):
+        # Argument indicates that we should generate a random integer with
+        # args[0] number of bits.
+        return random.getrandbits(args[0])
+    else:
+        # Otherwise make a random choice
+        return random.choice(*args)
 
-def write_params(lines):
-    pinstr = 'tile,site,a_input,b_input,autoreset_patdet,mask,pattern\n'
-    for tile, site, a_input, b_input, autoreset_patdet, mask, pattern in lines:
-        pinstr += '%s,' % (tile)
-        pinstr += '%s,' % (site)
-        pinstr += '%s,' % (a_input)
-        pinstr += '%s,' % (b_input)
-        pinstr += '%s,' % (autoreset_patdet)
-        pinstr += '%s,' % (mask)
-        pinstr += '%s\n' % (pattern)
+def run ():
+    # Attributes list:
+    #   Attribute name
+    #   Verilog parameter value prefix
+    #   Arguments to `fuzz`
+    #   Verilog parameter value suffix
+    attributes = []
+    attributes.append(('A_INPUT', '"', ('DIRECT', 'CASCADE'), '"'))
+    attributes.append(('B_INPUT', '"', ('DIRECT', 'CASCADE'), '"'))
+    attributes.append(('AUTORESET_PATDET', '"',('NO_RESET', 'RESET_MATCH',
+        'RESET_NOT_MATCH'), '"'))
+    attributes.append(('MASK', '48\'d', (48), ''))
+    attributes.append(('PATTERN', '48\'d', (48), ''))
 
-    open('params.csv', 'w').write(pinstr)
+    # CSV headings
+    headings = []
+    headings.append('TILE')
+    headings.append('SITE')
 
+    for attribute in attributes:
+        headings.append(attribute[0])
 
-def run():
-    print('''
-module top();
-    ''')
+    # CSV rows
+    rows = []
+    rows.append(headings)
 
-    lines = []
+    print('module top();')
 
     sites = list(gen_sites())
-    for (tile_name, site_name) in sites:
-        mask = random.randint(0, 2**48 - 1)
-        pattern = random.randint(0, 2**48 - 1)
-        a_input = random.choice(('DIRECT', 'CASCADE'))
-        b_input = random.choice(('DIRECT', 'CASCADE'))
-        autoreset_patdet = random.choice(
-            ('NO_RESET', 'RESET_MATCH', 'RESET_NOT_MATCH'))
-        lines.append(
-            (
-                tile_name, site_name, a_input, b_input, autoreset_patdet, mask,
-                pattern))
 
-        print(
-            '''
-            (* KEEP, DONT_TOUCH, LOC = "{0}" *)
-            DSP48E1 #(
-                .A_INPUT("{1}"),
-                .B_INPUT("{2}"),
-                .AUTORESET_PATDET("{3}"),
-                .MASK(48'h{4:x}),
-                .PATTERN(48'h{5:x})
-            ) dsp_{0} (
-            );
-'''.format(site_name, a_input, b_input, autoreset_patdet, mask, pattern))
+    # For every DSP site:
+    #   Add an instance to top.v with fuzzed attributes
+    #   Add a row for params.csv
+    for (tile, site) in sites:
+        row = []
+        row.append(tile)
+        row.append(site)
+        print('\t(* KEEP, DONT_TOUCH, LOC = "{0}" *)'.format(site))
+        print('\tDSP48E1 #(')
+
+        for attr in attributes[:-1]:
+            val = fuzz(attr[2])
+            row.append(val)
+            print('\t\t.{0}({1}{2}{3}),'.format(attr[0], attr[1], val, attr[3]))
+
+        attr = attributes[-1]
+        val = fuzz(attr[2])
+        row.append(val)
+        print('\t\t.{0}({1}{2}{3})'.format(attr[0], attr[1], val, attr[3]))
+
+        rows.append(row)
+        print('\t) dsp_{0} ();\n'.format(site))
 
     print("endmodule")
-    write_params(lines)
+
+    # Generate params.csv
+    with open('params.csv', 'w') as writeFile:
+        writer = csv.writer(writeFile)
+        writer.writerows(rows)
+    writeFile.close()
 
 
 if __name__ == '__main__':
