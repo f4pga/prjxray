@@ -51,8 +51,9 @@ def get_random_route_from_site_pin(
     site_type = tile["sites"][site_name]
 
     tile = db.get_tile_type(tile_type)
-    site = [s for s in tile.get_sites() if s.type == site_type
-            ][0]  # FIXME: find correct site by vivado loc
+
+    # Assumption: there is only one PLL per tile.
+    site = [s for s in tile.get_sites() if s.type == site_type][0]
 
     # Find site wire
     wire = None
@@ -62,7 +63,7 @@ def get_random_route_from_site_pin(
             break
     assert wire is not None
 
-    # Walk randomly over not occupied wires.
+    # Walk randomly.
     route = []
     while True:
         route.append(wire)
@@ -94,40 +95,47 @@ def get_random_route_from_site_pin(
 
 
 def main():
+
+    # 8 inputs per clock region
+    # 5 clock regions for device
+    max_clk_inputs = 8 * 5
+    clkin_idx = 0
+
     print(
         '''
-module top();
+module top(
+  input wire [{nclkin}:0] clkin
+);
+
     (* KEEP, DONT_TOUCH *)
     LUT6 dummy();
-    ''')
+    '''.format(nclkin=max_clk_inputs - 1))
 
     db = Database(util.get_db_root())
     bufg_count = 0
 
+    design_file = open('design.txt', 'w')
     routes_file = open('routes.txt', 'w')
 
     for tile, site, phasers in sorted(gen_sites(), key=lambda x: x[0]):
+        in_use = random.randint(0, 2) > 0
+
+        design_file.write("{},{},{}\n".format(tile, site, int(in_use)))
+
+        if not in_use:
+            continue
 
         # Generate random routes to/from some pins
         routes = {}
         endpoints = {}
 
         pins = [
-            # Enabling random manual routing for CLKINx breaks solution for
-            # tags:
-            # - CMT_TOP_R_UPPER_T_PLLE2_CLKIN1.CMT_TOP_R_UPPER_T_PLLE2_CLK_IN1_INT
-            # - CMT_TOP_R_UPPER_T_PLLE2_CLKIN2.CMT_TOP_R_UPPER_T_PLLE2_CLK_IN2_INT
-
-            #('CLKIN1', 'up'),
-            #('CLKIN2', 'up'),
-
-            # This works:
+            ('CLKIN1', 'up'),
+            ('CLKIN2', 'up'),
             ('CLKFBIN', 'up'),
-            ('CLKFBOUT', 'down'),
 
             # Sometimes manually randomized route for CLKOUTx conflicts with
-            # the verilog design. Need to fix that in the future.
-
+            # the verilog design.
             #('CLKOUT0', 'down'),
             #('CLKOUT1', 'down'),
             #('CLKOUT2', 'down'),
@@ -149,12 +157,10 @@ module top();
             )
             endpoints[pin] = route[-1] if dir == 'down' else route[0]
 
-        internal_feedback = endpoints['CLKFBOUT'].endswith('CLKFBIN')
-        if internal_feedback:
-            del routes['CLKFBIN']
+        internal_feedback = endpoints['CLKFBIN'].endswith('CLKFBOUT')
 
-        # Store them in random order so the TCL script will try to route
-        # in random order.
+        # Store them in a random order so the TCL script will try to route
+        # them also in the random order.
         lines = []
         for pin, (
                 route,
@@ -168,7 +174,6 @@ module top();
         random.shuffle(lines)
         routes_file.writelines(lines)
 
-        #clkfbin_src = random.choice(('BUFH', '0', '1', 'logic', None))
         clkfbin_src = random.choice(('BUFH', 'logic'))
 
         if internal_feedback:
@@ -236,7 +241,7 @@ module top();
             #  - Global drivers (e.g. BUFG)
             #  - PHASER_[IN|OUT]_[CA|DB]_FREQREFCLK via BB_[0-3]
             drive_bufg = random.randint(0, 1) and bufg_count < 16
-            drive_phaser = random.randint(0, 1)
+            drive_phaser = 0  #random.randint(0, 1)
 
             if drive_bufg:
                 bufg_count += 1
@@ -270,18 +275,6 @@ module top();
                     .I(clkfbout_mult_{site}),
                     .O(clkfbin_{site})
                 );""".format(site=site))
-            elif clkfbin_src == '0':
-                print(
-                    """
-                assign clkfbin_{site} = 1'b0;
-                """.format(site=site))
-            elif clkfbin_src == '1':
-                print(
-                    """
-                assign clkfbin_{site} = 1'b1;
-                """.format(site=site))
-            elif clkfbin_src is None:
-                pass
             elif clkfbin_src == 'logic':
                 print(
                     """
@@ -292,59 +285,46 @@ module top();
                     .O(clkfbin_{site})
                 );
                 """.format(site=site))
-
-        clkin_is_none = False
+            else:
+                assert False, clkfb_src
 
         for clkin in range(2):
-            clkin_src = random.choice(
-                (
-                    'BUFH',
-                    'BUFR',
-                    #                '0',
-                    #                '1',
-                    'logic',
-                    #                None,
-                ))
-            if clkin == 1 and clkin_is_none and clkin_src is None:
-                clkin_src = 'BUFH'
+            clkin_src = random.choice((
+                'BUFH',
+                'BUFR',
+                'logic',
+            ))
 
-            if clkin_src is None:
-                pass
-            elif clkin_src == 'BUFH':
+            if clkin_src == 'BUFH':
                 print(
                     """
                 (* KEEP, DONT_TOUCH *)
                 BUFH (
-                    .O(clkin{idx}_{site})
-                );""".format(idx=clkin + 1, site=site))
+                    .O(clkin{idx}_{site}),
+                    .I(clkin{idx2})
+                );""".format(idx=clkin + 1, idx2=clkin_idx, site=site))
             elif clkin_src == 'BUFR':
                 print(
                     """
                 (* KEEP, DONT_TOUCH *)
                 BUFR (
-                    .O(clkin{idx}_{site})
-                );""".format(idx=clkin + 1, site=site))
-            elif clkin_src == '0':
-                print(
-                    """
-                assign clkin{idx}_{site} = 0;
-                """.format(idx=clkin + 1, site=site))
-            elif clkin_src == '1':
-                print(
-                    """
-                assign clkin{idx}_{site} = 1;
-                """.format(idx=clkin + 1, site=site))
+                    .O(clkin{idx}_{site}),
+                    .I(clkin{idx2})
+                );""".format(idx=clkin + 1, idx2=clkin_idx, site=site))
             elif clkin_src == 'logic':
                 print(
                     """
                 (* KEEP, DONT_TOUCH *)
                 LUT6 # (.INIT(64'h5555555555555555))
                 clkin{idx}_logic_{site} (
+                    .I0(clkin{idx2}),
                     .O(clkin{idx}_{site})
                 );
-                """.format(idx=clkin + 1, site=site))
+                """.format(idx=clkin + 1, idx2=clkin_idx, site=site))
             else:
-                assert False, clkin_src
+                assert False, (clkin, clkin_src)
+
+            clkin_idx += 1
 
     print("endmodule")
 

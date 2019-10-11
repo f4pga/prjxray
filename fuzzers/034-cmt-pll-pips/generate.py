@@ -4,11 +4,10 @@ from prjxray.segmaker import Segmaker
 import os
 import os.path
 import itertools
-import random
 
 
 def bitfilter(frame, word):
-    if frame <= 1:
+    if frame < 28 or frame > 29:
         return False
 
     return True
@@ -17,12 +16,14 @@ def bitfilter(frame, word):
 def main():
     segmk = Segmaker("design.bits")
 
+    designdata = {}
     tiledata = {}
     pipdata = {}
     ppipdata = {}
     ignpip = set()
 
     # Load PIP lists
+    print("Loading PIP lists...")
     piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
     for piplist in piplists:
         with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
@@ -35,6 +36,7 @@ def main():
                 pipdata[tile_type].append((src, dst))
 
     # Load PPIP lists (to exclude them)
+    print("Loading PPIP lists...")
     ppiplists = ['ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db']
     for ppiplist in ppiplists:
         fname = os.path.join(
@@ -43,7 +45,6 @@ def main():
             for l in f:
                 pip_data, pip_type = l.strip().split()
 
-                print(pip_data, pip_type)
                 if pip_type != 'always':
                     continue
 
@@ -53,8 +54,14 @@ def main():
 
                 ppipdata[tile_type].append((src, dst))
 
-    print("Loading tags from design.txt.")
+    # Load desgin data
+    print("Loading design data...")
     with open("design.txt", "r") as f:
+        for line in f:
+            fields = line.strip().split(",")
+            designdata[fields[0]] = fields[1:]
+
+    with open("design_pips.txt", "r") as f:
         for line in f:
             tile, pip, src, dst, pnum, pdir = line.split()
 
@@ -94,63 +101,50 @@ def main():
                dst.startswith('CMT_TOP_L_UPPER_T_CLK'):
                 ignpip.add((src, dst))
 
-            # Ignore pseudo pips
-            for ppip in ppipdata[tile_type]:
-                if ppip == (src, dst):
-                    ignpip.add((
-                        src,
-                        dst,
-                    ))
-
     tags = {}
-    for tile, pips_srcs_dsts in tiledata.items():
-        tile_type = pips_srcs_dsts["type"]
-        pips = pips_srcs_dsts["pips"]
 
+    # Populate IN_USE tags
+    for tile, (site, in_use) in designdata.items():
         if tile not in tags:
             tags[tile] = {}
 
-        for src, dst in pipdata[tile_type]:
-            if (src, dst) in ignpip:
-                pass
-            elif (src, dst) in pips:
-                tags[tile]["%s.%s" % (dst, src)] = 1
-            elif (src, dst) not in tiledata[tile]["pips"]:
-                tags[tile]["%s.%s" % (dst, src)] = 0
+        tags[tile]["IN_USE"] = int(in_use)
 
-        internal_feedback = False
-        for src, dst in [
-            ('CMT_TOP_L_CLKFBOUT2IN', 'CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN'),
-            ('CMT_TOP_R_CLKFBOUT2IN', 'CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN'),
-        ]:
-            if (src, dst) in pips:
-                internal_feedback = True
-
-        tags[tile]["EXTERNAL_FEEDBACK"] = int(not internal_feedback)
-
-    # Those tags are exclusive. This is due to the fact that Vivado sometimes
-    # report routes that does not correspond to underlying bit configuration.
-    xored_tags = [
-        (
-            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_CLKFBIN",
-            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_L_UPPER_T_PLLE2_CLK_FB_INT"
-        ),
-        (
-            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_CLKFBIN",
-            "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN.CMT_TOP_R_UPPER_T_PLLE2_CLK_FB_INT"
-        ),
-    ]
-
+    # Populate PIPs
     for tile in tags.keys():
-        for pair in xored_tags:
-            for tag_a, tag_b in itertools.permutations(pair, 2):
+        tile_type = tile.rsplit("_", maxsplit=1)[0]
 
-                if tag_a in tags[tile] and tag_b in tags[tile]:
-                    if tags[tile][tag_a] == tags[tile][tag_b]:
-                        d = tags[tile]
-                        del d[tag_a]
-                        del d[tag_b]
+        in_use = tags[tile]["IN_USE"]
+        internal_feedback = False
 
+        if not in_use:
+            active_pips = []
+        else:
+            active_pips = tiledata[tile]["pips"]
+
+        for src, dst in pipdata[tile_type]:
+
+            if (src, dst) in ignpip:
+                continue
+            if (src, dst) in ppipdata[tile_type]:
+                continue
+
+            tag = "{}.{}".format(dst, src)
+            val = in_use if (src, dst) in active_pips else False
+
+            if not (in_use and not val):
+                tags[tile][tag] = int(val)
+
+            for s, d in [
+                ('CMT_TOP_L_CLKFBOUT2IN', 'CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN'),
+                ('CMT_TOP_R_CLKFBOUT2IN', 'CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN'),
+            ]:
+                if (s, d) in active_pips:
+                    internal_feedback = in_use
+
+        tags[tile]["INTERNAL_FEEDBACK"] = int(internal_feedback)
+
+    # Output tags
     for tile, tile_tags in tags.items():
         for t, v in tile_tags.items():
             segmk.add_tile_tag(tile, t, v)

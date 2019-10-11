@@ -22,12 +22,16 @@ always @(posedge clk100)
 
 // ============================================================================
 // The PLL
-wire clk_fb;
+wire clk_fb_o;
+wire clk_fb_i;
 
 wire [5:0] clk;
 
 PLLE2_ADV #
 (
+.BANDWIDTH          ("HIGH"),
+.COMPENSATION       ("BUF_IN"),
+
 .CLKIN1_PERIOD      (20.0),  // 50MHz
 .CLKIN2_PERIOD      (10.0),  // 100MHz
 
@@ -35,7 +39,7 @@ PLLE2_ADV #
 .CLKFBOUT_PHASE     (0.0),
 
 .CLKOUT0_DIVIDE     (16),
-.CLKOUT0_DUTY_CYCLE (0.5),
+.CLKOUT0_DUTY_CYCLE (0.53125),
 .CLKOUT0_PHASE      (45.0),
 
 .CLKOUT1_DIVIDE     (32),
@@ -69,8 +73,8 @@ pll
 .RST        (RST),
 .LOCKED     (O_LOCKED),
 
-.CLKFBIN    (clk_fb),
-.CLKFBOUT   (clk_fb),
+.CLKFBIN    (clk_fb_i),
+.CLKFBOUT   (clk_fb_o),
 
 .CLKOUT0    (clk[0]),
 .CLKOUT1    (clk[1]),
@@ -79,6 +83,8 @@ pll
 .CLKOUT4    (clk[4]),
 .CLKOUT5    (clk[5])
 );
+
+BUFG clk_fb_buf (.I(clk_fb_o), .O(clk_fb_i));
 
 // ============================================================================
 // Counters

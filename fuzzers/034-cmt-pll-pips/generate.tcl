@@ -92,7 +92,7 @@ proc load_routes {filename} {
 
         # Route the single net. Needed to detect conflicts when evaluating
         # other ones
-        route_design -quiet -nets $net
+        route_design -quiet -directive Quick -nets $net
 
         # Check for conflicts.
         set status [get_property ROUTE_STATUS $net]
@@ -138,11 +138,11 @@ proc run {} {
     load_routes routes.txt
     write_checkpoint -force design_pre_route.dcp
 
-    route_design -preserve
+    route_design -directive Quick -preserve
 
     write_checkpoint -force design.dcp
     write_bitstream -force design.bit
-    write_pip_txtdata design.txt
+    write_pip_txtdata design_pips.txt
 }
 
 run
