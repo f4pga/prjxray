@@ -27,6 +27,11 @@ class FasmAssembler(object):
         self.frames = {}
         self.frames_line = {}
 
+        self.feature_callback = lambda feature: None
+
+    def set_feature_callback(self, feature_callback):
+        self.feature_callback = feature_callback
+
     def get_frames(self, sparse=False):
         if not sparse:
             frames = self.frames_init()
@@ -137,6 +142,8 @@ class FasmAssembler(object):
     def add_fasm_line(self, line, missing_features):
         if not line.set_feature:
             return
+
+        self.feature_callback(line.set_feature)
 
         line_strs = tuple(fasm.fasm_line_to_string(line))
         assert len(line_strs) == 1

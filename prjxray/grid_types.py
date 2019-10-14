@@ -11,7 +11,7 @@ class BlockType(enum.Enum):
 
 
 GridLoc = namedtuple('GridLoc', 'grid_x grid_y')
-GridInfo = namedtuple('GridInfo', 'bits sites tile_type')
+GridInfo = namedtuple('GridInfo', 'bits sites tile_type pin_functions')
 BitAlias = namedtuple('BitAlias', 'tile_type start_offset sites')
 Bits = namedtuple('Bits', 'base_address frames offset words alias')
 BitsInfo = namedtuple('BitsInfo', 'block_type tile bits')
