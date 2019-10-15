@@ -19,6 +19,7 @@ class Architecture {
        public:
 	using Container = absl::variant<Series7>;
 	virtual const std::string& name() const = 0;
+	virtual ~Architecture() {}
 };
 
 class Series7 : public Architecture {
