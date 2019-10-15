@@ -11,6 +11,7 @@ TileSegbitsAlias performs severals functions to achieve the alias:
 
 from prjxray import bitstream
 from prjxray.grid_types import Bits
+from prjxray.tile_segbits import read_ppips
 
 
 class TileSegbitsAlias(object):
@@ -53,6 +54,12 @@ class TileSegbitsAlias(object):
                 assert alias_site not in self.sites_rev_map[block_type]
                 self.sites_rev_map[block_type][alias_site] = site
 
+        tile_db = db.tile_types[self.tile_type]
+        self.ppips = {}
+
+        if tile_db.ppips is not None:
+            with open(tile_db.ppips) as f:
+                self.ppips = read_ppips(f)
         self.tile_segbits = db.get_tile_segbits(self.alias_tile_type)
 
     def map_feature_to_segbits(self, feature):
@@ -100,6 +107,9 @@ class TileSegbitsAlias(object):
             yield (bits_found, feature)
 
     def feature_to_bits(self, bits_map, feature, address=0):
+        if feature in self.ppips:
+            return
+
         alias_feature = self.map_feature_to_segbits(feature)
         for block_type, bit in self.tile_segbits.feature_to_bits(
                 self.alias_bits_map, alias_feature, address):
