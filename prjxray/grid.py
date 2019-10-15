@@ -50,6 +50,7 @@ class Grid(object):
                 bits=bits,
                 sites=tileinfo['sites'],
                 tile_type=tileinfo['type'],
+                pin_functions=tileinfo.get('pin_functions', {}),
             )
 
         x, y = zip(*self.loc.keys())

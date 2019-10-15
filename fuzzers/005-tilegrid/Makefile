@@ -49,6 +49,7 @@ build/basicdb/tilegrid.json: generate.py build/tiles/tiles.txt
 	mkdir -p build/basicdb
 	cd build && python3 ${FUZDIR}/generate.py \
 		--tiles $(FUZDIR)/build/tiles/tiles.txt \
+		--pin_func $(FUZDIR)/build/tiles/pin_func.txt \
 		--out ${BUILD_DIR}/basicdb/tilegrid.json
 
 clb/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
