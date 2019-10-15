@@ -102,7 +102,8 @@ def run(
                 nonlocal pudc_b_in_use
                 pudc_b_in_use = True
 
-        assembler.set_feature_callback(check_for_pudc_b)
+        if pudc_b_tile_site is not None:
+            assembler.set_feature_callback(check_for_pudc_b)
 
     extra_features = []
     if roi:
@@ -121,7 +122,7 @@ def run(
 
     assembler.parse_fasm_filename(filename_in, extra_features=extra_features)
 
-    if emit_pudc_b_pullup and not pudc_b_in_use:
+    if emit_pudc_b_pullup and not pudc_b_in_use and pudc_b_tile_site is not None:
         # Enable IN-only and PULLUP on PUDC_B IOB.
         #
         # TODO: The following FASM string only works on Artix 50T and Zynq 10
