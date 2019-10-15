@@ -24,6 +24,12 @@ add_subdirectory(third_party/gflags EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/cctz EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/abseil-cpp EXCLUDE_FROM_ALL)
 
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-Wundefined-var-template" CXX_COMPILER_SUPPORTS_UNDEF_VAR)
+if(${CXX_COMPILER_SUPPORTS_UNDEF_VAR})
+    add_compile_options("-Wno-undefined-var-template")
+endif()
+
 option(YAML_CPP_BUILD_TESTS "" OFF)
 add_subdirectory(third_party/yaml-cpp EXCLUDE_FROM_ALL)
 target_include_directories(yaml-cpp PUBLIC
