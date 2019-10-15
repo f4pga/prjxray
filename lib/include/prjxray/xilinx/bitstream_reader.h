@@ -98,6 +98,32 @@ BitstreamReader<Series7>::InitWithBytes(T bitstream) {
 	return BitstreamReader<Series7>(std::move(words));
 }
 
+template <>
+template <typename T>
+absl::optional<BitstreamReader<UltraScalePlus>>
+BitstreamReader<UltraScalePlus>::InitWithBytes(T bitstream) {
+	// If this is really a Xilinx bitstream, there will be a sync
+	// word somewhere toward the beginning.
+	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),
+	                            kSyncWord.begin(), kSyncWord.end());
+	if (sync_pos == bitstream.end()) {
+		return absl::optional<BitstreamReader<UltraScalePlus>>();
+	}
+	sync_pos += kSyncWord.size();
+
+	// Wrap the provided container in a span that strips off the preamble.
+	absl::Span<typename T::value_type> bitstream_span(bitstream);
+	auto config_packets =
+	    bitstream_span.subspan(sync_pos - bitstream.begin());
+
+	// Convert the bytes into 32-bit, big-endian words.
+	auto big_endian_reader = make_big_endian_span<uint32_t>(config_packets);
+	std::vector<uint32_t> words{big_endian_reader.begin(),
+	                            big_endian_reader.end()};
+
+	return BitstreamReader<UltraScalePlus>(std::move(words));
+}
+
 // Sync word as specified in UG470 page 81
 template <typename ArchType>
 std::array<uint8_t, 4> BitstreamReader<ArchType>::kSyncWord{0xAA, 0x99, 0x55,
