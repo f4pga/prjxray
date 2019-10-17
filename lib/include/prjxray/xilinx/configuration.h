@@ -66,6 +66,35 @@ class Configuration {
 };
 
 template <typename ArchType>
+typename Configuration<ArchType>::PacketData
+Configuration<ArchType>::createType2ConfigurationPacketData(
+    const typename Frames<ArchType>::Frames2Data& frames,
+    absl::optional<typename ArchType::Part>& part) {
+	PacketData packet_data;
+	// Certain configuration frames blocks are separated by Zero Frames,
+	// i.e. frames with words with all zeroes. For Series-7, US and US+
+	// there zero frames separator consists of two frames.
+	static const int kZeroFramesSeparatorWords =
+	    ArchType::words_per_frame * 2;
+	for (auto& frame : frames) {
+		std::copy(frame.second.begin(), frame.second.end(),
+		          std::back_inserter(packet_data));
+
+		auto next_address = part->GetNextFrameAddress(frame.first);
+		if (next_address &&
+		    (next_address->block_type() != frame.first.block_type() ||
+		     next_address->is_bottom_half_rows() !=
+		         frame.first.is_bottom_half_rows() ||
+		     next_address->row() != frame.first.row())) {
+			packet_data.insert(packet_data.end(),
+			                   kZeroFramesSeparatorWords, 0);
+		}
+	}
+	packet_data.insert(packet_data.end(), kZeroFramesSeparatorWords, 0);
+	return packet_data;
+}
+
+template <typename ArchType>
 template <typename Collection>
 absl::optional<Configuration<ArchType>>
 Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
