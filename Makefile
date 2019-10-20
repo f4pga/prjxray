@@ -1,6 +1,11 @@
 SHELL = bash
 ALL_EXCLUDE = third_party .git env build
 
+# Check if root
+ifeq ($(shell id -u),0)
+        $(error ERROR: Running as ID 0)
+endif
+
 # Tools + Environment
 IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi;
 env:
