@@ -116,15 +116,15 @@ assign ser_rst = ser_rst_sr[0];
 
 // BUFR - generation of CLKDIV
 localparam DIVIDE = (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 2) ? "2" :
-                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 3) ? "3" : 
-                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 4) ? "4" : 
-                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 5) ? "5" : 
-                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 6) ? "6" : 
-                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 7) ? "7" : 
-                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 8) ? "8" : 
+                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 3) ? "3" :
+                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 4) ? "4" :
+                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 5) ? "5" :
+                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 6) ? "6" :
+                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 7) ? "7" :
+                    (ISERDES_MODE == "SDR" && ISERDES_WIDTH == 8) ? "8" :
 
-                    (ISERDES_MODE == "DDR" && ISERDES_WIDTH == 4) ? "2" : 
-                    (ISERDES_MODE == "DDR" && ISERDES_WIDTH == 6) ? "3" : 
+                    (ISERDES_MODE == "DDR" && ISERDES_WIDTH == 4) ? "2" :
+                    (ISERDES_MODE == "DDR" && ISERDES_WIDTH == 6) ? "3" :
                     (ISERDES_MODE == "DDR" && ISERDES_WIDTH == 8) ? "4" : "BYPASS";
 BUFR #
 (

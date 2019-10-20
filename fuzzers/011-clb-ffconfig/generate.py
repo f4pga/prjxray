@@ -58,7 +58,7 @@ with open("design.txt", "r") as f:
         puts $fp "$type $tile $grid_x $grid_y $ff $bel_type $used $usedstr"
 
         CLBLM_L CLBLM_L_X10Y137 30 13 SLICE_X13Y137/AFF REG_INIT 1 FDRE
-        CLBLM_L CLBLM_L_X10Y137 30 13 SLICE_X12Y137/D5FF FF_INIT 0 
+        CLBLM_L CLBLM_L_X10Y137 30 13 SLICE_X12Y137/D5FF FF_INIT 0
         '''
         line = line.split()
         tile_type = line[0]
