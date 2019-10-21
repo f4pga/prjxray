@@ -14,13 +14,18 @@ namespace prjxray {
 namespace xilinx {
 
 class Series7;
+class UltraScale;
 class UltraScalePlus;
 
 class Architecture {
        public:
-	using Container = absl::variant<Series7, UltraScalePlus>;
-	virtual const std::string& name() const = 0;
+	using Container = absl::variant<Series7, UltraScale, UltraScalePlus>;
+	Architecture(const std::string& name) : name_(name) {}
+	const std::string& name() const { return name_; }
 	virtual ~Architecture() {}
+
+       private:
+	const std::string name_;
 };
 
 class Series7 : public Architecture {
@@ -31,22 +36,21 @@ class Series7 : public Architecture {
 	    std::vector<std::unique_ptr<ConfigurationPacket<ConfRegType>>>;
 	using FrameAddress = xc7series::FrameAddress;
 	using WordType = uint32_t;
-	Series7() : name_("Series7") {}
-	const std::string& name() const override { return name_; }
+	Series7() : Architecture("Series7") {}
+	Series7(const std::string& name) : Architecture(name) {}
 	static constexpr int words_per_frame = 101;
-
-       private:
-	std::string name_;
 };
 
 class UltraScalePlus : public Series7 {
        public:
-	UltraScalePlus() : name_("UltraScalePlus") {}
-	const std::string& name() const override { return name_; }
+	UltraScalePlus() : Series7("UltraScalePlus") {}
 	static constexpr int words_per_frame = 93;
+};
 
-       private:
-	std::string name_;
+class UltraScale : public Series7 {
+       public:
+	UltraScale() : Series7("UltraScale") {}
+	static constexpr int words_per_frame = 123;
 };
 
 class ArchitectureFactory {
@@ -55,6 +59,8 @@ class ArchitectureFactory {
 	    const std::string& arch) {
 		if (arch == "Series7") {
 			return Series7();
+		} else if (arch == "UltraScale") {
+			return UltraScale();
 		} else if (arch == "UltraScalePlus") {
 			return UltraScalePlus();
 		} else {
