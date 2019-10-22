@@ -9,7 +9,6 @@
 
 #include <absl/strings/str_split.h>
 #include <prjxray/xilinx/architectures.h>
-#include <prjxray/xilinx/xc7series/ecc.h>
 
 namespace prjxray {
 namespace xilinx {
@@ -67,13 +66,18 @@ int Frames<ArchType>::readFrames(const std::string& frm_file_str) {
 		std::vector<std::string> frame_data_strings =
 		    absl::StrSplit(frame_delta.second, ',');
 
-		if (frame_data_strings.size() != ArchType::words_per_frame) {
-			std::cerr << "Frame " << std::hex << frame_address
-			          << ": found " << std::dec
-			          << frame_data_strings.size()
-			          << " words instead of "
-			          << ArchType::words_per_frame << std::endl;
-			continue;
+		// Spartan6's IOB frames can have different word count
+		if (!std::is_same<ArchType, Spartan6>::value) {
+			if (frame_data_strings.size() !=
+			    ArchType::words_per_frame) {
+				std::cerr
+				    << "Frame " << std::hex << frame_address
+				    << ": found " << std::dec
+				    << frame_data_strings.size()
+				    << " words instead of "
+				    << ArchType::words_per_frame << std::endl;
+				continue;
+			}
 		}
 
 		FrameData frame_data(frame_data_strings.size(), 0);

@@ -7,6 +7,14 @@ add_library(libprjxray
 	xilinx/configuration_register.cc
 	xilinx/configuration.cc
 	xilinx/frames.cc
+	# Spartan6 specific
+	xilinx/spartan6/frame_address.cc
+	xilinx/spartan6/global_clock_region.cc
+	xilinx/spartan6/part.cc
+	xilinx/spartan6/configuration_row.cc
+	xilinx/spartan6/block_type.cc
+	xilinx/spartan6/configuration_bus.cc
+	xilinx/spartan6/configuration_column.cc
 	# Series-7 specific
 	xilinx/xc7series/frame_address.cc
 	xilinx/xc7series/global_clock_region.cc
@@ -61,5 +69,23 @@ if (PRJXRAY_BUILD_TESTING)
 	target_link_libraries(xilinx_xc7series_test libprjxray gtest_main)
 	add_test(NAME xilinx_xc7series_test
 		 COMMAND xilinx_xc7series_test
+		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
+
+	add_executable(xilinx_spartan6_test
+		xilinx/tests/spartan6/bitstream_reader_test.cc
+		xilinx/tests/spartan6/bitstream_writer_test.cc
+		xilinx/tests/spartan6/block_type_test.cc
+		xilinx/tests/spartan6/configuration_bus_test.cc
+		xilinx/tests/spartan6/configuration_column_test.cc
+		xilinx/tests/spartan6/configuration_test.cc
+		xilinx/tests/spartan6/configuration_packet_test.cc
+		xilinx/tests/spartan6/frame_address_test.cc
+		xilinx/tests/spartan6/global_clock_region_test.cc
+		xilinx/tests/spartan6/part_test.cc
+		xilinx/tests/spartan6/row_test.cc
+		xilinx/tests/spartan6/frames_test.cc)
+	target_link_libraries(xilinx_spartan6_test libprjxray gtest_main)
+	add_test(NAME xilinx_spartan6_test
+		 COMMAND xilinx_spartan6_test
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 endif()
