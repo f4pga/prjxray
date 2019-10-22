@@ -58,10 +58,10 @@ always @(posedge CLK)
         tx_req <= 1'b0;
     else case (fsm)
 
-    FSM_TX_HEX: tx_req <= 1'b1;    
-    FSM_TX_SEP: tx_req <= 1'b1;    
-    FSM_TX_CR:  tx_req <= 1'b1;    
-    FSM_TX_LF:  tx_req <= 1'b1;    
+    FSM_TX_HEX: tx_req <= 1'b1;
+    FSM_TX_SEP: tx_req <= 1'b1;
+    FSM_TX_CR:  tx_req <= 1'b1;
+    FSM_TX_LF:  tx_req <= 1'b1;
 
     default:    tx_req <= 1'b0;
 
@@ -106,7 +106,7 @@ always @(posedge CLK)
 
     FSM_IDLE:   if (I_STB) fsm <= FSM_TX_HEX;
 
-    FSM_TX_HEX: 
+    FSM_TX_HEX:
                 if (tx_rdy && (char_cnt == 0) && (word_cnt == 0))
                     fsm <= FSM_TX_CR;
                 else if (tx_rdy && (char_cnt == 0)) fsm <= FSM_TX_SEP;
@@ -115,7 +115,7 @@ always @(posedge CLK)
     FSM_TX_SEP: if (tx_rdy) fsm <= FSM_TX_HEX;
     FSM_TX_CR:  if (tx_rdy) fsm <= FSM_TX_LF;
     FSM_TX_LF:  if (tx_rdy) fsm <= FSM_IDLE;
-    
+
     endcase
 
 // ============================================================================

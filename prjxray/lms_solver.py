@@ -19,7 +19,7 @@ solved all at once (not recommended).
 
 For each tag a vector of weights is calculated. Each weight corresponds to one
 bit. Positive values indicate positive correlation and negative values negative
-correlation. 
+correlation.
 
 Each weight vector is normalized so that maximum absolute weight is equal to
 one.
@@ -557,7 +557,7 @@ def detect_candidates(X, th, norm=None):
 
 def compute_bit_correlations(tags_to_solve, bits_to_solve, segdata, W):
     """
-    Basing on solution given in the matrix W returns a matrix C with 
+    Basing on solution given in the matrix W returns a matrix C with
     correlation coefficients of each bit.
 
     Also returns a dict of dicts indexed by tag names and bit names with
@@ -635,7 +635,7 @@ def compute_tag_stats(all_tags, segdata):
 
     Returns
     -------
-    
+
     A dict indexed by tag name with tuples containing 0 and 1 occurrence count.
 
     """
@@ -681,11 +681,11 @@ def build_address_map(tilegrid_file):
     ----------
 
     tilegrid_file:
-        The tilegrid.json file/    
+        The tilegrid.json file/
 
     Returns
     -------
-    
+
     A dict with lists of tile names.
 
     """

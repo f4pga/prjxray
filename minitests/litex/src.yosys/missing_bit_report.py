@@ -1,7 +1,7 @@
 """ Generates a missing feature/bit report for LiteX design.
 
 This script is fairly fragile, because it depends on the specific observation
-that all of the remaining bits appear to either belong to HCLK_IOI or IOI3 
+that all of the remaining bits appear to either belong to HCLK_IOI or IOI3
 tiles.  A more general version of this script could be created, but that was
 not the point of this script.
 

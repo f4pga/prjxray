@@ -94,7 +94,7 @@ module clb_NCY0_O5 (input clk, input [7:0] din, output [7:0] dout);
     always @(*) begin
         s = din[7:4];
         s[N] = o6;
-        
+
         di = {din[3:0]};
         di[N] = o5;
     end

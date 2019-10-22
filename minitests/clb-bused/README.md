@@ -4,7 +4,7 @@
 Tests for BUSED bit
 
 ## Result
-However got this  
+However got this
 ```
 seg SEG_CLBLL_R_X13Y101
 bit 30_24
