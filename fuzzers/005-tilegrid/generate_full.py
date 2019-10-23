@@ -418,6 +418,31 @@ def propagate_IOI_Y9(database, tiles_by_grid):
         database[tile]['bits']['CLB_IO_CLK']['offset'] = 18
 
 
+def alias_HCLKs(database):
+    """ Generate HCLK aliases for HCLK_[LR] subsets.
+
+    There are some HCLK_[LR] tiles that are missing some routing due to
+    obstructions, e.g. PCIE hardblock.  These tiles do not have southbound
+    clock routing, but are otherwise the same as HCLK_[LR] tiles.
+
+    Simply alias their segbits.
+
+    """
+    for tile in database:
+        if database[tile]['type'] == "HCLK_L_BOT_UTURN":
+            database[tile]['bits']['CLB_IO_CLK']['alias'] = {
+                "sites": {},
+                "start_offset": 0,
+                "type": "HCLK_L"
+            }
+        elif database[tile]['type'] == "HCLK_R_BOT_UTURN":
+            database[tile]['bits']['CLB_IO_CLK']['alias'] = {
+                "sites": {},
+                "start_offset": 0,
+                "type": "HCLK_R"
+            }
+
+
 def run(json_in_fn, json_out_fn, verbose=False):
     # Load input files
     database = json.load(open(json_in_fn, "r"))
@@ -429,6 +454,7 @@ def run(json_in_fn, json_out_fn, verbose=False):
     propagate_IOB_SING(database, tiles_by_grid)
     propagate_IOI_SING(database, tiles_by_grid)
     propagate_IOI_Y9(database, tiles_by_grid)
+    alias_HCLKs(database)
 
     # Save
     xjson.pprint(open(json_out_fn, "w"), database)
