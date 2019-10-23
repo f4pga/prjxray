@@ -27,17 +27,17 @@ output wire O_ERROR
 // ============================================================================
 // Generate CLK2 and CLKDIV for OSERDES using BUFRs
 
-localparam CLKDIV_DIVIDE =
+localparam CLKDIV_DIVIDE = 
     (DATA_RATE == "SDR" && DATA_WIDTH == 2) ? "2" :
-    (DATA_RATE == "SDR" && DATA_WIDTH == 3) ? "3" :
-    (DATA_RATE == "SDR" && DATA_WIDTH == 4) ? "4" :
-    (DATA_RATE == "SDR" && DATA_WIDTH == 5) ? "5" :
-    (DATA_RATE == "SDR" && DATA_WIDTH == 6) ? "6" :
-    (DATA_RATE == "SDR" && DATA_WIDTH == 7) ? "7" :
-    (DATA_RATE == "SDR" && DATA_WIDTH == 8) ? "8" :
+    (DATA_RATE == "SDR" && DATA_WIDTH == 3) ? "3" : 
+    (DATA_RATE == "SDR" && DATA_WIDTH == 4) ? "4" : 
+    (DATA_RATE == "SDR" && DATA_WIDTH == 5) ? "5" : 
+    (DATA_RATE == "SDR" && DATA_WIDTH == 6) ? "6" : 
+    (DATA_RATE == "SDR" && DATA_WIDTH == 7) ? "7" : 
+    (DATA_RATE == "SDR" && DATA_WIDTH == 8) ? "8" : 
 
-    (DATA_RATE == "DDR" && DATA_WIDTH == 4) ? "4" :
-    (DATA_RATE == "DDR" && DATA_WIDTH == 6) ? "6" :
+    (DATA_RATE == "DDR" && DATA_WIDTH == 4) ? "4" : 
+    (DATA_RATE == "DDR" && DATA_WIDTH == 6) ? "6" : 
     (DATA_RATE == "DDR" && DATA_WIDTH == 8) ? "8" : "BYPASS";
 
 wire CLKX;
@@ -93,7 +93,7 @@ always @(posedge CLKDIV)
     ser_dat <= lfsr_dat;
 
 // ============================================================================
-// OSERDES
+// OSERDES 
 
 // OSERDES reset generator (required for it to work properly!)
 reg [3:0]  ser_rst_sr;

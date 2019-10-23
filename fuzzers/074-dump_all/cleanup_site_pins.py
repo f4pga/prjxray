@@ -51,7 +51,7 @@ def find_origin_coordinate(sites):
 def create_site_pin_to_wire_maps(tile_name, nodes):
     """ Create a map from site_pin names to nodes.
 
-  Create a mapping from site pins to tile local wires.  For each node that is
+  Create a mapping from site pins to tile local wires.  For each node that is 
   attached to a site pin, there should only be 1 tile local wire.
 
   """

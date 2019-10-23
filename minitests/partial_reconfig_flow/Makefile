@@ -5,7 +5,7 @@
 # will generate a bitstream that includes both the harness and the .fasm design
 # ready for programming to a board.  For example,
 # 'make inv_hand_crafted.bit' will generate a bitstream that includes the
-# design from roi_noninv.fasm.
+# design from roi_noninv.fasm. 
 %_hand_crafted.bit: %_roi_partial.frm harness.bit
 	${XRAY_TOOLS_DIR}/xc7patch \
 		--part_name "${XRAY_PART}" \

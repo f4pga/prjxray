@@ -51,7 +51,7 @@ module roi(input clk, input [255:0] din, output [255:0] dout);
             clb_NOUTMUX_XOR     (.clk(clk), .din(din[  56 +: 8]), .dout(dout[ 56 +: 8 ]));
     //ok
     clb_NOUTMUX_B5Q #(.LOC("SLICE_X18Y105"), .N(N))
-            clb_NOUTMUX_B5Q     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));
+            clb_NOUTMUX_B5Q     (.clk(clk), .din(din[  48 +: 8]), .dout(dout[ 48 +: 8 ]));    
 endmodule
 
 module myLUT8 (input clk, input [7:0] din,

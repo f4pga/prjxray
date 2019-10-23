@@ -87,7 +87,7 @@ wire rst = RST || !O_LOCKED;
 
 genvar i;
 generate for (i=0; i<6; i=i+1) begin
-
+  
   reg [23:0] counter;
 
   always @(posedge clk[i] or posedge rst)

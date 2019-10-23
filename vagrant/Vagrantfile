@@ -51,7 +51,7 @@ Vagrant.configure("2") do |config|
     s.inline = <<-SHELL
       export DISPLAY=:0
       dconf write /org/gnome/desktop/screensaver/idle-activation-enabled false
-      dconf write /org/gnome/desktop/screensaver/lock-enabled false
+      dconf write /org/gnome/desktop/screensaver/lock-enabled false 
     SHELL
   end
 

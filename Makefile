@@ -58,7 +58,7 @@ test-cpp:
 
 # Auto formatting of code.
 # ------------------------
-FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*') -and -not -name *.bit
+FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*')
 
 CLANG_FORMAT ?= clang-format-5.0
 format-cpp:
@@ -76,13 +76,10 @@ TCL_FORMAT ?= utils//tcl-reformat.sh
 format-tcl:
 	find . -name \*.tcl $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) -n 1 $(TCL_FORMAT)
 
-format-trailing-ws:
-	find . -type f $(FORMAT_EXCLUDE) | xargs sed -i 's@\s\+$$@@g'
-
-format: format-cpp format-docs format-py format-tcl format-trailing-ws
+format: format-cpp format-docs format-py format-tcl
 	@true
 
-.PHONY: format format-cpp format-py format-tcl format-trailing-ws
+.PHONY: format format-cpp format-py format-tcl
 
 # Targets related to Project X-Ray databases
 # ------------------------

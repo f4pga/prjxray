@@ -147,7 +147,7 @@ module myLUT8 (input clk, input [7:0] din,
 		.O6(lutno6[1]));
 
     generate if (ALUT_SRL != 0) begin
-
+    
     (* LOC=LOC, BEL="A6LUT", KEEP, DONT_TOUCH *)
 	SRLC32E #(
 		.INIT(64'h8000_1CE0_0000_0001)
@@ -162,7 +162,7 @@ module myLUT8 (input clk, input [7:0] din,
     assign lutno5[0] = din[6];
 
     end else begin
-
+	
     (* LOC=LOC, BEL="A6LUT", KEEP, DONT_TOUCH *)
 	LUT6_2 #(
 		.INIT(64'h8000_1CE0_0000_0001)

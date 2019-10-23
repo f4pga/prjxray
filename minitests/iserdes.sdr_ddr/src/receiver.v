@@ -26,15 +26,15 @@ wire i_rstdiv;
 
 // Divider for BUFR
 localparam DIVIDE = (MODE == "SDR" && WIDTH == 2) ? "2" :
-                    (MODE == "SDR" && WIDTH == 3) ? "3" :
-                    (MODE == "SDR" && WIDTH == 4) ? "4" :
-                    (MODE == "SDR" && WIDTH == 5) ? "5" :
-                    (MODE == "SDR" && WIDTH == 6) ? "6" :
-                    (MODE == "SDR" && WIDTH == 7) ? "7" :
-                    (MODE == "SDR" && WIDTH == 8) ? "8" :
+                    (MODE == "SDR" && WIDTH == 3) ? "3" : 
+                    (MODE == "SDR" && WIDTH == 4) ? "4" : 
+                    (MODE == "SDR" && WIDTH == 5) ? "5" : 
+                    (MODE == "SDR" && WIDTH == 6) ? "6" : 
+                    (MODE == "SDR" && WIDTH == 7) ? "7" : 
+                    (MODE == "SDR" && WIDTH == 8) ? "8" : 
 
-                    (MODE == "DDR" && WIDTH == 4) ? "2" :
-                    (MODE == "DDR" && WIDTH == 6) ? "3" :
+                    (MODE == "DDR" && WIDTH == 4) ? "2" : 
+                    (MODE == "DDR" && WIDTH == 6) ? "3" : 
                     (MODE == "DDR" && WIDTH == 8) ? "4" : "BYPASS";
 // BUFR
 BUFR #
