@@ -17,7 +17,7 @@ bit_0002000f_079_06
 Where:
 -0002000f: FDRI address
 -079: FDIR word number (0-100)
--06: bit index (0-31)
+-06: bit index (0-31) 
 '''
 
 

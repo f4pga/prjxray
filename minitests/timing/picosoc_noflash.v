@@ -94,11 +94,11 @@ module picosoc_noflash (
 	wire [31:0] simpleuart_reg_dat_do;
 	wire        simpleuart_reg_dat_wait;
 
-	assign mem_ready =
+	assign mem_ready = 
             (iomem_valid && iomem_ready) || progmem_ready || ram_ready || spimemio_cfgreg_sel ||
 			simpleuart_reg_div_sel || (simpleuart_reg_dat_sel && !simpleuart_reg_dat_wait);
 
-	assign mem_rdata =
+	assign mem_rdata = 
             (iomem_valid && iomem_ready) ? iomem_rdata :
             progmem_ready ? progmem_rdata :
             ram_ready ? ram_rdata :
@@ -106,7 +106,7 @@ module picosoc_noflash (
 			simpleuart_reg_div_sel ? simpleuart_reg_div_do :
 			simpleuart_reg_dat_sel ? simpleuart_reg_dat_do : 32'h 0000_0000;
 
-`ifdef SIMULATION
+`ifdef SIMULATION    
 	wire        trace_valid;
 	wire [35:0] trace_data;
     integer     trace_file;
@@ -121,7 +121,7 @@ module picosoc_noflash (
 		.ENABLE_MUL(1),
 		.ENABLE_DIV(1),
 		.ENABLE_IRQ(1),
-`ifdef SIMULATION
+`ifdef SIMULATION    
 		.ENABLE_IRQ_QREGS(0),
         .ENABLE_TRACE(1)
 `else

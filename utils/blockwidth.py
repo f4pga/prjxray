@@ -37,7 +37,7 @@ def gen_frame_writes(f):
 
     [Write Type=1 Address= 1 Length=         1 Reg="Frame Address"]
     Data in hex:
-          1d
+          1d 
 
     '''
     while True:

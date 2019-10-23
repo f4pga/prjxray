@@ -1,12 +1,12 @@
 # CLB_RAM Minitest
 
 ## Purpose
-SLICEM RAM test
-LUT6 => 64 bits
-Focus on 64 bit
-32 probably uses same O5/O6 stuff
-128 probably uses same MUX stuff
-Why isn't there a 256?
+SLICEM RAM test  
+LUT6 => 64 bits  
+Focus on 64 bit  
+32 probably uses same O5/O6 stuff  
+128 probably uses same MUX stuff  
+Why isn't there a 256?  
 
 ## Result
 ```
