@@ -23,21 +23,21 @@ def handle_data_width(segmk, d):
 
     for opt in [2, 3, 4, 5, 6, 7, 8]:
         segmk.add_site_tag(
-            site, 'OSERDESE.DATA_WIDTH.W{}'.format(opt),
+            site, 'OSERDES.DATA_WIDTH.W{}'.format(opt),
             d['DATA_WIDTH'] == opt)
 
     if verilog.unquote(d['DATA_RATE_OQ']) == 'DDR':
         # DDR + WIDTH 6/8 have some overlapping bits, create a feature.
         OVERLAPPING_WIDTHS = [6, 8]
         segmk.add_site_tag(
-            site, 'OSERDESE.DATA_WIDTH.DDR.W{}'.format(
+            site, 'OSERDES.DATA_WIDTH.DDR.W{}'.format(
                 '_'.join(map(str, OVERLAPPING_WIDTHS))),
             d['DATA_WIDTH'] in OVERLAPPING_WIDTHS)
     else:
         # SDR + WIDTH 2/4/5/6 have some overlapping bits, create a feature.
         OVERLAPPING_WIDTHS = [2, 4, 5, 6]
         segmk.add_site_tag(
-            site, 'OSERDESE.DATA_WIDTH.SDR.W{}'.format(
+            site, 'OSERDES.DATA_WIDTH.SDR.W{}'.format(
                 '_'.join(map(str, OVERLAPPING_WIDTHS))),
             d['DATA_WIDTH'] in OVERLAPPING_WIDTHS)
 
@@ -54,19 +54,19 @@ def main():
 
             handle_data_width(segmk, d)
 
-            segmk.add_site_tag(site, 'OSERDESE.IN_USE', d['use_oserdese2'])
+            segmk.add_site_tag(site, 'OSERDES.IN_USE', d['use_oserdese2'])
 
             if d['use_oserdese2']:
                 segmk.add_site_tag(site, 'OQUSED', 1)
 
                 for opt in ['SDR', 'DDR']:
                     segmk.add_site_tag(
-                        site, 'OSERDESE.DATA_RATE_OQ.{}'.format(opt),
+                        site, 'OSERDES.DATA_RATE_OQ.{}'.format(opt),
                         verilog.unquote(d['DATA_RATE_OQ']) == opt)
 
                 for opt in ['BUF', 'SDR', 'DDR']:
                     segmk.add_site_tag(
-                        site, 'OSERDESE.DATA_RATE_TQ.{}'.format(opt),
+                        site, 'OSERDES.DATA_RATE_TQ.{}'.format(opt),
                         verilog.unquote(d['DATA_RATE_TQ']) == opt)
 
                 for opt in ['SRVAL_OQ', 'SRVAL_TQ', 'INIT_OQ', 'INIT_TQ']:
@@ -96,12 +96,12 @@ def main():
                 for tristate_width in [1, 4]:
                     segmk.add_site_tag(
                         site,
-                        'OSERDESE.TRISTATE_WIDTH.W{}'.format(tristate_width),
+                        'OSERDES.TRISTATE_WIDTH.W{}'.format(tristate_width),
                         d['TRISTATE_WIDTH'] == tristate_width)
 
                 for opt in ['MASTER', 'SLAVE']:
                     segmk.add_site_tag(
-                        site, 'OSERDESE.SERDES_MODE.{}'.format(opt),
+                        site, 'OSERDES.SERDES_MODE.{}'.format(opt),
                         opt == verilog.unquote(d['OSERDES_MODE']))
 
             if d['oddr_mux_config'] == 'direct' and d[
@@ -121,12 +121,12 @@ def main():
                 if 'SRTYPE' in d:
                     for opt in ['ASYNC', 'SYNC']:
                         segmk.add_site_tag(
-                            site, 'OSERDESE.SRTYPE.{}'.format(opt),
+                            site, 'OSERDES.SRTYPE.{}'.format(opt),
                             verilog.unquote(d['SRTYPE']) == opt)
 
                 for opt in ['ASYNC', 'SYNC']:
                     segmk.add_site_tag(
-                        site, 'OSERDESE.TSRTYPE.{}'.format(opt),
+                        site, 'OSERDES.TSRTYPE.{}'.format(opt),
                         verilog.unquote(d['TSRTYPE']) == opt)
 
             if not d['use_oserdese2']:
