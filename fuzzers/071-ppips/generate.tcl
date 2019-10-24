@@ -101,7 +101,7 @@ foreach tile_type {INT_L INT_R  BRAM_INT_INTERFACE_L BRAM_INT_INTERFACE_R \
             CMT_TOP_R_UPPER_T CMT_TOP_R_UPPER_B \
             CMT_TOP_R_LOWER_T CMT_TOP_R_LOWER_B \
             INT_INTERFACE_L INT_INTERFACE_R \
-            HCLK_IOI3 CLK_BUFG_REBUF} {
+            HCLK_IOI3} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
