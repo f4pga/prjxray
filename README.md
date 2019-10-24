@@ -4,16 +4,20 @@
 ![Documentation Status](https://readthedocs.org/projects/pyxray/badge/?version=latest)
 ![License](https://img.shields.io/github/license/SymbiFlow/prjxray.svg)
 
-Documenting the Xilinx 7-series bit-stream format.
+Documenting the Xilinx FPGA bit-stream formats.
 
-This repository contains both tools and scripts which allow you to document the
-bit-stream format of Xilinx 7-series FPGAs.
+This repository contains both tools and scripts used to document the
+bit-stream formats of various Xilinx FPGA families:
+ * Xilinx 7-Series
+ * Xilinx Spartan-6
+ * Xilinx UltraScale and UltraScalePlus
+
 
 More documentation can be found published on [prjxray ReadTheDocs site](http://prjxray.readthedocs.io/en/latest/) - this includes;
  * [Highlevel Bitstream Architecture](http://prjxray.readthedocs.io/en/latest/architecture/overview.html)
  * [Overview of DB Development Process](http://prjxray.readthedocs.io/en/latest/db_dev_process/overview.html)
 
-# Quickstart Guide
+# Quickstart Guide (for Xilinx 7-Series)
 Instructions were originally written for Ubuntu 16.04. Please let us know if you have information on other distributions.
 
 ### Step 1: ###
