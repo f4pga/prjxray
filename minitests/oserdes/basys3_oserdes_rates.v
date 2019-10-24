@@ -67,16 +67,16 @@ wire [9:0] error;
 genvar i;
 generate for (i=0; i<10; i=i+1) begin
 
-  localparam DATA_WIDTH = (i == 0) ?   2 : 
-                          (i == 1) ?   3 : 
-                          (i == 2) ?   4 : 
-                          (i == 3) ?   5 : 
-                          (i == 4) ?   6 : 
-                          (i == 5) ?   7 : 
-                          (i == 6) ?   8 : 
-                          (i == 7) ?   4 : 
-                          (i == 8) ?   6 : 
-                        /*(i == 9) ?*/ 8; 
+  localparam DATA_WIDTH = (i == 0) ?   2 :
+                          (i == 1) ?   3 :
+                          (i == 2) ?   4 :
+                          (i == 3) ?   5 :
+                          (i == 4) ?   6 :
+                          (i == 5) ?   7 :
+                          (i == 6) ?   8 :
+                          (i == 7) ?   4 :
+                          (i == 8) ?   6 :
+                        /*(i == 9) ?*/ 8;
 
   localparam DATA_RATE =  (i <  7) ? "SDR" : "DDR";
 

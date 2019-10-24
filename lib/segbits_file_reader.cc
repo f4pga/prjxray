@@ -23,7 +23,7 @@ SegbitsFileReader::iterator SegbitsFileReader::end() {
 }
 
 SegbitsFileReader::value_type::value_type(const absl::string_view& view) {
-	size_t separator_start = view.find_first_of(" \t");
+	size_t separator_start = view.find_first_of(" \t\n");
 	if (separator_start == absl::string_view::npos) {
 		tag_ = view;
 		bit_ = absl::string_view();

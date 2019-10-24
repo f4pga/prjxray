@@ -88,12 +88,12 @@ always @(posedge CLK)
         count_err <= count_err + 1;
     else if (o_bitslip)
         count_err <= 0;
-    
+
 always @(posedge CLK)
     if (RST)
         o_bitslip <= 1'b0;
     else if (!o_bitslip && (count_err >= ERROR_COUNT))
-        o_bitslip <= 1'b1;    
+        o_bitslip <= 1'b1;
     else if ( o_bitslip)
         o_bitslip <= 1'b0;
 

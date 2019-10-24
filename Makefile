@@ -58,7 +58,7 @@ test-cpp:
 
 # Auto formatting of code.
 # ------------------------
-FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*')
+FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*') -and -not -name *.bit
 
 CLANG_FORMAT ?= clang-format-5.0
 format-cpp:
@@ -76,10 +76,34 @@ TCL_FORMAT ?= utils//tcl-reformat.sh
 format-tcl:
 	find . -name \*.tcl $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) -n 1 $(TCL_FORMAT)
 
-format: format-cpp format-docs format-py format-tcl
+# Command to find and replace trailing whitespace in-place using `sed` (This is
+# placed inside quotes later so need to escape the "'")
+WS_CMD = sed -i '\''s@\s\+$$@@g'\''
+
+# File filter for files to fix trailing whitespace in, this is just a couple of
+# chained bash conditionals ensuring that the file (indicated by {}, provided by
+# xargs later) is a file, and not a directory or link.  Also filters out .bit
+# files as these are the only binary files currently tracked by Git and we don't
+# want to inadvertently change these at all.
+WS_FILTER = [ -f {} -a ! -L {} ] && [[ {} != *.bit ]]
+
+# For every file piped to $(WS_FORMAT) apply the filter and perform the command,
+# if a file does not match the filter, just returns true.
+WS_FORMAT = xargs -P $$(nproc) -n 1 -I{} bash -c '$(WS_FILTER) && $(WS_CMD) {} || true'
+
+format-trailing-ws:
+	# Use `git ls-files` to give us a complete list of tracked files to fix
+	# whitespace in; there is no point spending time processing anything that is
+	# not known to Git.
+	git ls-files | $(WS_FORMAT)
+
+	# Additionally fix untracked (but not ignored) files.
+	git ls-files -o --exclude-standard | $(WS_FORMAT)
+
+format: format-cpp format-docs format-py format-tcl format-trailing-ws
 	@true
 
-.PHONY: format format-cpp format-py format-tcl
+.PHONY: format format-cpp format-py format-tcl format-trailing-ws
 
 # Targets related to Project X-Ray databases
 # ------------------------

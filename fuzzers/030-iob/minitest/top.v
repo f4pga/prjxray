@@ -145,7 +145,7 @@ endmodule
 */
 
 /*
-ERROR: [DRC REQP-1581] obuf_loaded: OBUFT roi/dut pin O drives one or more invalid loads. The loads are: dout_shr[1]_i_1 
+ERROR: [DRC REQP-1581] obuf_loaded: OBUFT roi/dut pin O drives one or more invalid loads. The loads are: dout_shr[1]_i_1
 ERROR: [Place 30-69] Instance roi/dut (OBUFT) is unplaced after IO placer
 hmm
 Abandoning verilog approach
