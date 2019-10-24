@@ -96,12 +96,12 @@ def main():
                 for tristate_width in [1, 4]:
                     segmk.add_site_tag(
                         site,
-                        'OSERDES.TRISTATE_WIDTH.W{}'.format(tristate_width),
+                        'OSERDESE.TRISTATE_WIDTH.W{}'.format(tristate_width),
                         d['TRISTATE_WIDTH'] == tristate_width)
 
                 for opt in ['MASTER', 'SLAVE']:
                     segmk.add_site_tag(
-                        site, 'OSERDES.SERDES_MODE.{}'.format(opt),
+                        site, 'OSERDESE.SERDES_MODE.{}'.format(opt),
                         opt == verilog.unquote(d['OSERDES_MODE']))
 
             if d['oddr_mux_config'] == 'direct' and d[
