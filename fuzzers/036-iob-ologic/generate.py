@@ -23,8 +23,7 @@ def handle_data_width(segmk, d):
 
     for opt in [2, 3, 4, 5, 6, 7, 8]:
         segmk.add_site_tag(
-            site, 'OSERDES.DATA_WIDTH.W{}'.format(opt),
-            d['DATA_WIDTH'] == opt)
+            site, 'OSERDES.DATA_WIDTH.W{}'.format(opt), d['DATA_WIDTH'] == opt)
 
     if verilog.unquote(d['DATA_RATE_OQ']) == 'DDR':
         # DDR + WIDTH 6/8 have some overlapping bits, create a feature.
