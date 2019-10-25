@@ -9,7 +9,7 @@ else
 MAKETODO_FLAGS=--sides "l_upper_t" --pip-type ${PIP_TYPE} --seg-type cmt_top --re $(TODO_RE)
 endif
 
-N = 80
+N = 100
 SEGMATCH_FLAGS=-m 10 -M 20 -c 170
 
 A_PIPLIST=cmt_top_l_upper_t.txt
