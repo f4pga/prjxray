@@ -135,15 +135,6 @@ def main():
             if not (in_use and not val):
                 tags[tile][tag] = int(val)
 
-            for s, d in [
-                ('CMT_TOP_L_CLKFBOUT2IN', 'CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN'),
-                ('CMT_TOP_R_CLKFBOUT2IN', 'CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN'),
-            ]:
-                if (s, d) in active_pips:
-                    internal_feedback = in_use
-
-        tags[tile]["INTERNAL_FEEDBACK"] = int(internal_feedback)
-
     # Output tags
     for tile, tile_tags in tags.items():
         for t, v in tile_tags.items():
