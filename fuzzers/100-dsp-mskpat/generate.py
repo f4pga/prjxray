@@ -5,6 +5,7 @@ from prjxray.verilog import to_int
 from prjxray.verilog import quote
 import json
 
+
 def bits_in(value, width):
     bits = []
     for i in range(width):
@@ -14,7 +15,7 @@ def bits_in(value, width):
 
 
 def add(segmk, site, dsp, tag, bit, value, invert):
-    tag =  dsp + '.' + '%s' % ('Z' if invert else '') + tag + '[%u]' % bit
+    tag = dsp + '.' + '%s' % ('Z' if invert else '') + tag + '[%u]' % bit
     value = (~value if invert else value)
     value >>= bit
     return segmk.add_site_tag(site, tag, value & 1)
@@ -47,7 +48,9 @@ def run():
             add(segmk, site, dsp, 'BCASCREG', i, to_int(params['BCASCREG']), 1)
 
         add(segmk, site, dsp, 'CARRYINREG', 0, to_int(params['CARRYINREG']), 1)
-        add(segmk, site, dsp, 'CARRYINSELREG', 0, to_int(params['CARRYINSELREG']), 1)
+        add(
+            segmk, site, dsp, 'CARRYINSELREG', 0,
+            to_int(params['CARRYINSELREG']), 1)
         add(segmk, site, dsp, 'CREG', 0, to_int(params['CREG']), 1)
 
         add(segmk, site, dsp, 'DREG', 0, to_int(params['DREG']), 0)
@@ -91,8 +94,12 @@ def run():
         AUTORESET[quote('RESET_NOT_MATCH')] = 1
         AUTORESET[quote('RESET_MATCH')] = 2
 
-        add(segmk, site, dsp, 'AUTORESET_PATDET', 0, AUTORESET[params['AUTORESET_PATDET']], 0)
-        add(segmk, site, dsp, 'AUTORESET_PATDET', 1, AUTORESET[params['AUTORESET_PATDET']], 1)
+        add(
+            segmk, site, dsp, 'AUTORESET_PATDET', 0,
+            AUTORESET[params['AUTORESET_PATDET']], 0)
+        add(
+            segmk, site, dsp, 'AUTORESET_PATDET', 1,
+            AUTORESET[params['AUTORESET_PATDET']], 1)
 
         for i in range(48):
             add(segmk, site, dsp, 'MASK', i, to_int(params['MASK']), 0)
@@ -107,13 +114,17 @@ def run():
         SEL_MASK[quote('ROUNDING_MODE2')] = 3
 
         for i in range(2):
-            add(segmk, site, dsp, 'SEL_MASK', i, SEL_MASK[params['SEL_MASK']], 0)
+            add(
+                segmk, site, dsp, 'SEL_MASK', i, SEL_MASK[params['SEL_MASK']],
+                0)
 
         USE_PATTERN_DETECT = {}
         USE_PATTERN_DETECT[quote('NO_PATDET')] = 0
         USE_PATTERN_DETECT[quote('PATDET')] = 1
 
-        add(segmk, site, dsp, 'USE_PATTERN_DETECT', 0, USE_PATTERN_DETECT[params['USE_PATTERN_DETECT']], 0)
+        add(
+            segmk, site, dsp, 'USE_PATTERN_DETECT', 0,
+            USE_PATTERN_DETECT[params['USE_PATTERN_DETECT']], 0)
 
     segmk.compile()
     segmk.write()

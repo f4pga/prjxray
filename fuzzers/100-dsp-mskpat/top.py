@@ -30,30 +30,84 @@ def fuzz(*args):
 
 
 def run():
+    verilog.top_harness(48, 48)
+
+    print('module roi(input clk, input [47:0] din, output [47:0] dout);')
+
     data = {}
     data['instances'] = []
 
-    print('module top();')
-
     sites = list(gen_sites())
 
-    for (tile, site) in sites:
+    for i, (tile, site) in enumerate(sites):
         synthesis = '(* KEEP, DONT_TOUCH, LOC = "%s" *)' % (site)
         module = 'DSP48E1'
         instance = 'INST_%s' % (site)
         ports = {}
         params = {}
 
+        ports['A'] = '{30{1\'b1}}'
+        ports['ACIN'] = '{30{1\'b1}}'
+        ports['ACOUT'] = '30\'b0'
+        ports['ALUMODE'] = '4\'b1'
+        ports['B'] = '{18{1\'b1}}'
+        ports['BCIN'] = '{18{1\'b1}}'
+        ports['BCOUT'] = '18\'b0'
+        ports['C'] = '{48{1\'b1}}'
+        ports['CARRYCASCIN'] = '1\'b1'
+        ports['CARRYCASCOUT'] = '1\'b0'
+        ports['CARRYIN'] = '1\'b1'
+        ports['CARRYINSEL'] = '3\'b000'
+        ports['CARRYOUT'] = '4\'b0'
+        ports['CEA1'] = '1\'b1'
+        ports['CEA2'] = '1\'b1'
+        ports['CEAD'] = '1\'b1'
+        ports['CEALUMODE'] = '1\'b1'
+        ports['CEB1'] = '1\'b1'
+        ports['CEB2'] = '1\'b1'
+        ports['CEC'] = '1\'b1'
+        ports['CECARRYIN'] = '1\'b1'
+        ports['CECTRL'] = '1\'b1'
+        ports['CED'] = '1\'b1'
+        ports['CEINMODE'] = '1\'b1'
+        ports['CEM'] = '1\'b1'
+        ports['CEP'] = '1\'b1'
+        ports['CLK'] = '1\'b1'
+        ports['D'] = '{25{1\'b1}}'
+        ports['INMODE'] = '5\'b11111'
+        #ports['MULTISIGNIN'] = '1\'b1'
+        #ports['MULTISIGNOUT'] = '1\'b0'
+        ports['OPMODE'] = '7\'b1111111'
+        ports['OVERFLOW'] = '1\'b0'
+        ports['P'] = '48\'b0'
+        ports['PATTERNBDETECT'] = '1\'b0'
+        ports['PATTERNDETECT'] = '1\'b0'
+        ports['PCIN'] = '{48{1\'b1}}'
+        ports['PCOUT'] = '48\'b0'
+        ports['RSTA'] = '1\'b1'
+        ports['RSTALLCARRYIN'] = '1\'b1'
+        ports['RSTALUMODE'] = '1\'b1'
+        ports['RSTB'] = '1\'b1'
+        ports['RSTC'] = '1\'b1'
+        ports['RSTCTRL'] = '1\'b1'
+        ports['RSTD'] = '1\'b1'
+        ports['RSTINMODE'] = '1\'b1'
+        ports['RSTM'] = '1\'b1'
+        ports['RSTP'] = '1\'b1'
+        ports['UNDERFLOW'] = '1\'b0'
+
         params['ADREG'] = fuzz((0, 1))
         params['ALUMODEREG'] = fuzz((0, 1))
-        # AREG/BREG requires inputs to be connected when configured with a value
-        # of 2, constraining to 0 and 1 for now.
-        params['AREG'] = fuzz((0, 1))
-        params['ACASCREG'] = params['AREG'] if params[
-            'AREG'] == 0 or params['AREG'] == 1 else fuzz((1, 2))
-        params['BREG'] = fuzz((0, 1))
-        params['BCASCREG'] = params['BREG'] if params[
-            'BREG'] == 0 or params['BREG'] == 1 else fuzz((1, 2))
+        params['AREG'] = fuzz((0, 1, 2))
+        if params['AREG'] == 0 or params['AREG'] == 1:
+            params['ACASCREG'] = params['AREG']
+        else:
+            params['ACASCREG'] = fuzz((1, 2))
+        params['BREG'] = fuzz((0, 1, 2))
+        if params['BREG'] == 0 or params['BREG'] == 1:
+            params['BCASCREG'] = params['BREG']
+        else:
+            params['BCASCREG'] = fuzz((1, 2))
         params['CARRYINREG'] = fuzz((0, 1))
         params['CARRYINSELREG'] = fuzz((0, 1))
         params['CREG'] = fuzz((0, 1))
@@ -64,11 +118,10 @@ def run():
         params['A_INPUT'] = verilog.quote(fuzz(('DIRECT', 'CASCADE')))
         params['B_INPUT'] = verilog.quote(fuzz(('DIRECT', 'CASCADE')))
         params['USE_DPORT'] = verilog.quote(fuzz(('TRUE', 'FALSE')))
-        params['USE_SIMD'] = verilog.quote(
-            fuzz(('ONE48', 'TWO24', 'FOUR12')))
+        params['USE_SIMD'] = verilog.quote(fuzz(('ONE48', 'TWO24', 'FOUR12')))
         params['USE_MULT'] = verilog.quote(
-            'NONE' if params['USE_SIMD'] != verilog.quote('ONE48') else
-            fuzz(('NONE', 'MULTIPLY', 'DYNAMIC')))
+            'NONE' if params['USE_SIMD'] != verilog.quote('ONE48') else fuzz(
+                ('NONE', 'MULTIPLY', 'DYNAMIC')))
         params['MREG'] = 0 if params['USE_MULT'] == verilog.quote(
             'NONE') else fuzz((0, 1))
         params['AUTORESET_PATDET'] = verilog.quote(

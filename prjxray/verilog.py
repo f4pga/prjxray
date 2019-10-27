@@ -65,6 +65,7 @@ def unquote(s):
     assert s[0] == '"' and s[-1] == '"'
     return s[1:-1]
 
+
 def to_int(s):
     value = 0
 
@@ -94,6 +95,7 @@ def to_int(s):
         value = int(s)
 
     return value
+
 
 def parsei(s):
     if s == "1'b0":
