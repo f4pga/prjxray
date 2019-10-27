@@ -1,8 +1,9 @@
 import os
 import random
-import csv
+import json
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
+from prjxray import verilog
 from prjxray.db import Database
 
 
@@ -29,145 +30,67 @@ def fuzz(*args):
 
 
 def run():
-    # Attributes list:
-    #   Attribute name
-    #   Verilog parameter value prefix
-    #   Arguments to `fuzz`
-    #   Verilog parameter value suffix
-    attributes = []
-    attributes.append(('ADREG', '', (0, 1), ''))
-    attributes.append(('ALUMODEREG', '', (0, 1), ''))
-    # AREG/BREG requires inputs to be connected when configured with a value of
-    # 2, contstraining to 0 and 1 for now.
-    attributes.append(('AREG', '', (0, 1), ''))
-    attributes.append(('BREG', '', (0, 1), ''))
-    attributes.append(('CARRYINREG', '', (0, 1), ''))
-    attributes.append(('CARRYINSELREG', '', (0, 1), ''))
-    attributes.append(('CREG', '', (0, 1), ''))
-    attributes.append(('DREG', '', (0, 1), ''))
-    attributes.append(('INMODEREG', '', (0, 1), ''))
-    attributes.append(('OPMODEREG', '', (0, 1), ''))
-    attributes.append(('PREG', '', (0, 1), ''))
-    attributes.append(('A_INPUT', '"', ('DIRECT', 'CASCADE'), '"'))
-    attributes.append(('B_INPUT', '"', ('DIRECT', 'CASCADE'), '"'))
-    attributes.append(('USE_DPORT', '"', ('TRUE', 'FALSE'), '"'))
-    attributes.append(('USE_SIMD', '"', ('ONE48', 'TWO24', 'FOUR12'), '"'))
-    attributes.append(
-        (
-            'AUTORESET_PATDET', '"',
-            ('NO_RESET', 'RESET_MATCH', 'RESET_NOT_MATCH'), '"'))
-    attributes.append(('MASK', '48\'d', (48), ''))
-    attributes.append(('PATTERN', '48\'d', (48), ''))
-    attributes.append(
-        (
-            'SEL_MASK', '"', ('MASK', 'C', 'ROUNDING_MODE1', 'ROUNDING_MODE2'),
-            '"'))
-    attributes.append(('SEL_PATTERN', '"', ('PATTERN', 'C'), '"'))
-    attributes.append(
-        ('USE_PATTERN_DETECT', '"', ('NO_PATDET', 'PATDET'), '"'))
-
-    # CSV headings
-    headings = []
-    headings.append('TILE')
-    headings.append('SITE')
-
-    for attribute in attributes:
-        headings.append(attribute[0])
-
-        # ACASCREG dependent on AREG
-        if attribute[0] == 'AREG':
-            headings.append('ACASCREG')
-
-        # BCASCREG dependent on BREG
-        if attribute[0] == 'BREG':
-            headings.append('BCASCREG')
-
-        # USE_MULT dependent on USE_SIMD
-        if attribute[0] == 'USE_SIMD':
-            headings.append('USE_MULT')
-            # MREG dependent on USE_MULT
-            headings.append('MREG')
-
-    # CSV rows
-    rows = []
-    rows.append(headings)
+    data = {}
+    data['instances'] = []
 
     print('module top();')
 
     sites = list(gen_sites())
 
-    # For every DSP site:
-    #   Add an instance to top.v with fuzzed attributes
-    #   Add a row for params.csv
     for (tile, site) in sites:
-        row = []
-        row.append(tile)
-        row.append(site)
-        print('\t(* KEEP, DONT_TOUCH, LOC = "{0}" *)'.format(site))
-        print('\tDSP48E1 #(')
+        synthesis = '(* KEEP, DONT_TOUCH, LOC = "%s" *)' % (site)
+        module = 'DSP48E1'
+        instance = 'INST_%s' % (site)
+        ports = {}
+        params = {}
 
-        for attr in attributes[:-1]:
-            val = fuzz(attr[2])
-            row.append(val)
-            print(
-                '\t\t.{0}({1}{2}{3}),'.format(attr[0], attr[1], val, attr[3]))
+        params['ADREG'] = fuzz((0, 1))
+        params['ALUMODEREG'] = fuzz((0, 1))
+        # AREG/BREG requires inputs to be connected when configured with a value
+        # of 2, constraining to 0 and 1 for now.
+        params['AREG'] = fuzz((0, 1))
+        params['ACASCREG'] = params['AREG'] if params[
+            'AREG'] == 0 or params['AREG'] == 1 else fuzz((1, 2))
+        params['BREG'] = fuzz((0, 1))
+        params['BCASCREG'] = params['BREG'] if params[
+            'BREG'] == 0 or params['BREG'] == 1 else fuzz((1, 2))
+        params['CARRYINREG'] = fuzz((0, 1))
+        params['CARRYINSELREG'] = fuzz((0, 1))
+        params['CREG'] = fuzz((0, 1))
+        params['DREG'] = fuzz((0, 1))
+        params['INMODEREG'] = fuzz((0, 1))
+        params['OPMODEREG'] = fuzz((0, 1))
+        params['PREG'] = fuzz((0, 1))
+        params['A_INPUT'] = verilog.quote(fuzz(('DIRECT', 'CASCADE')))
+        params['B_INPUT'] = verilog.quote(fuzz(('DIRECT', 'CASCADE')))
+        params['USE_DPORT'] = verilog.quote(fuzz(('TRUE', 'FALSE')))
+        params['USE_SIMD'] = verilog.quote(
+            fuzz(('ONE48', 'TWO24', 'FOUR12')))
+        params['USE_MULT'] = verilog.quote(
+            'NONE' if params['USE_SIMD'] != verilog.quote('ONE48') else
+            fuzz(('NONE', 'MULTIPLY', 'DYNAMIC')))
+        params['MREG'] = 0 if params['USE_MULT'] == verilog.quote(
+            'NONE') else fuzz((0, 1))
+        params['AUTORESET_PATDET'] = verilog.quote(
+            fuzz(('NO_RESET', 'RESET_MATCH', 'RESET_NOT_MATCH')))
+        params['MASK'] = '48\'d%s' % fuzz(48)
+        params['PATTERN'] = '48\'d%s' % fuzz(48)
+        params['SEL_MASK'] = verilog.quote(
+            fuzz(('MASK', 'C', 'ROUNDING_MODE1', 'ROUNDING_MODE2')))
+        params['USE_PATTERN_DETECT'] = verilog.quote(
+            fuzz(('NO_PATDET', 'PATDET')))
 
-            # ACASCREG dependent on AREG
-            if attr[0] == 'AREG':
-                if val == 0 or val == 1:
-                    print('\t\t.ACASCREG({0}),'.format(val))
-                elif val == 2:
-                    val = fuzz((1, 2))
-                    print('\t\t.ACASCREG({0}),'.format(val))
+        verilog.instance(synthesis + ' ' + module, instance, ports, params)
 
-                row.append(val)
+        params['TILE'] = tile
+        params['SITE'] = site
 
-            # BCASCREG dependent on BREG
-            elif attr[0] == 'BREG':
-                if val == 0 or val == 1:
-                    print('\t\t.BCASCREG({0}),'.format(val))
-                elif val == 2:
-                    val = fuzz((1, 2))
-                    print('\t\t.BCASCREG({0}),'.format(val))
+        data['instances'].append(params)
 
-                row.append(val)
-
-            # USE_MULT dependent on USE_SIMD
-            elif attr[0] == 'USE_SIMD':
-                if val != "ONE48":
-                    val = 'NONE'
-                    print('\t\t.USE_MULT("{0}"),'.format(val))
-                else:
-                    val = fuzz(('NONE', 'MULTIPLY', 'DYNAMIC'))
-                    print('\t\t.USE_MULT("{0}"),'.format(val))
-
-                row.append(val)
-
-                # MREG dependent on USE_MULT
-                if val == 'NONE':
-                    val = 0
-                    print('\t\t.MREG("{0}"),'.format(val))
-                else:
-                    val = fuzz((0, 1))
-                    print('\t\t.MREG("{0}"),'.format(val))
-
-                row.append(val)
-
-        attr = attributes[-1]
-        val = fuzz(attr[2])
-        row.append(val)
-        print('\t\t.{0}({1}{2}{3})'.format(attr[0], attr[1], val, attr[3]))
-
-        rows.append(row)
-        print('\t) dsp_{0} ();\n'.format(site))
+    with open('params.json', 'w') as fp:
+        json.dump(data, fp)
 
     print("endmodule")
-
-    # Generate params.csv
-    with open('params.csv', 'w') as writeFile:
-        writer = csv.writer(writeFile)
-        writer.writerows(rows)
-    writeFile.close()
 
 
 if __name__ == '__main__':
