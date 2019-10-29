@@ -22,9 +22,18 @@ def main():
     ppipdata = {}
     ignpip = set()
 
+    # Zynq7 do not have R CMTs
+    if os.getenv("XRAY_DATABASE") == "zynq7":
+        piplists = ['cmt_top_l_upper_t.txt']
+        ppiplists = ['ppips_cmt_top_l_upper_t.db']
+    else:
+        piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
+        ppiplists = [
+            'ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db'
+        ]
+
     # Load PIP lists
     print("Loading PIP lists...")
-    piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
     for piplist in piplists:
         with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
                                'cmt_top', piplist)) as f:
@@ -37,7 +46,6 @@ def main():
 
     # Load PPIP lists (to exclude them)
     print("Loading PPIP lists...")
-    ppiplists = ['ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db']
     for ppiplist in ppiplists:
         fname = os.path.join(
             os.getenv('FUZDIR'), '..', '071-ppips', 'build', ppiplist)
