@@ -140,6 +140,18 @@ proc run {} {
 
     route_design -directive Quick -preserve
 
+    if {[llength [get_nets -filter {ROUTE_STATUS!="ROUTED"}]] ne 0} {
+        set nets [get_nets -filter {IS_ROUTE_FIXED==1}]
+        puts "MANROUTE: Got unrouted nets: $nets"
+        puts "MANROUTE: Ripping up and starting again with no fixed routes"
+
+        route_design -unroute
+        set_property FIXED_ROUTE "" $nets
+        set_property IS_ROUTE_FIXED 0 $nets
+
+        route_design -directive Quick
+    }
+
     write_checkpoint -force design.dcp
     write_bitstream -force design.bit
     write_pip_txtdata design_pips.txt
