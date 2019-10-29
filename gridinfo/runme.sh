@@ -22,12 +22,12 @@ EOT
 cat > design.v << EOT
 module top(input [5:0] I, output O);
 	LUT6 #(.INIT(64'h8000000000000000)) lut (
-		.I0(I[0]), 
-		.I1(I[1]), 
-		.I2(I[2]), 
-		.I3(I[3]), 
-		.I4(I[4]), 
-		.I5(I[5]), 
+		.I0(I[0]),
+		.I1(I[1]),
+		.I2(I[2]),
+		.I3(I[3]),
+		.I4(I[4]),
+		.I5(I[5]),
 		.O(O)
 	);
 endmodule

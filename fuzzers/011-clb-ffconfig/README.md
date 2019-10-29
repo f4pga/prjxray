@@ -34,7 +34,7 @@ Configures whether a storage element is synchronous or asynchronous.
 
 Scope: entire site (not individual FFs)
 
-| FFSYNC | Reset        | Applicable prims          | 
+| FFSYNC | Reset        | Applicable prims          |
 |--------|--------------|---------------------------|
 |0       | Synchronous  | FDPE, FDCE, LDCE, LDPE    |
 |1       | Asynchronous | FDSE, FDRE                |
