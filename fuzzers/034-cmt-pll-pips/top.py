@@ -6,6 +6,49 @@ from prjxray import util
 from prjxray.db import Database
 
 
+class PipList(object):
+    def __init__(self):
+        self.piplist = {}
+        self.ppiplist = {}
+
+    def get_pip_and_ppip_list_for_tile_type(self, tile_type):
+
+        # Load PIP list for the tile type if not already loaded
+        if tile_type not in self.piplist:
+            self.piplist[tile_type] = []
+
+            fname = os.path.join(
+                os.getenv('FUZDIR'), '..', 'piplist', 'build', 'cmt_top',
+                tile_type.lower() + '.txt')
+
+            with open(fname, "r") as f:
+                for l in f:
+                    tile, dst, src = l.strip().split('.')
+                    if tile_type == tile:
+                        self.piplist[tile_type].append((src, dst))
+
+        # Load PPIP list for the tile type if not already loaded
+        if tile_type not in self.ppiplist:
+            self.ppiplist[tile_type] = []
+
+            fname = os.path.join(
+                os.getenv('FUZDIR'), '..', '071-ppips', 'build',
+                'ppips_' + tile_type.lower() + '.db')
+
+            with open(fname, "r") as f:
+                for l in f:
+                    pip_data, pip_type = l.strip().split()
+
+                    if pip_type != 'always':
+                        continue
+
+                    tile, dst, src = pip_data.strip().split('.')
+                    if tile_type == tile:
+                        self.ppiplist[tile_type].append((src, dst))
+
+        return self.piplist[tile_type], self.ppiplist[tile_type]
+
+
 def find_phasers_for_pll(grid, loc):
     gridinfo = grid.gridinfo_at_loc((loc[0], loc[1] + 13))
 
@@ -43,25 +86,31 @@ def gen_sites():
 
 
 def get_random_route_from_site_pin(
-        db, tile_name, site_name, site_pin, direction, occupied_wires):
+        pip_list, tile_name, site_pin, direction, occupied_wires):
 
-    grid = db.grid()
-    tile = db.tilegrid[tile_name]
-    tile_type = tile["type"]
-    site_type = tile["sites"][site_name]
+    # A map of PLL site pins to wires they are connected to.
+    pin_to_wire = {
+        "CMT_TOP_L_UPPER_T": {
+            "CLKIN1": "CMT_TOP_R_UPPER_T_PLLE2_CLKIN1",
+            "CLKIN2": "CMT_TOP_R_UPPER_T_PLLE2_CLKIN2",
+            "CLKFBIN": "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN",
+        },
+        "CMT_TOP_R_UPPER_T": {
+            "CLKIN1": "CMT_TOP_R_UPPER_T_PLLE2_CLKIN1",
+            "CLKIN2": "CMT_TOP_R_UPPER_T_PLLE2_CLKIN2",
+            "CLKFBIN": "CMT_TOP_R_UPPER_T_PLLE2_CLKFBIN",
+        },
+    }
 
-    tile = db.get_tile_type(tile_type)
+    # Get tile type
+    tile_type = tile_name.rsplit("_", maxsplit=1)[0]
 
-    # Assumption: there is only one PLL per tile.
-    site = [s for s in tile.get_sites() if s.type == site_type][0]
+    # Get all PIPs (PIPs + PPIPs)
+    pips, ppips = pip_list.get_pip_and_ppip_list_for_tile_type(tile_type)
+    all_pips = pips + ppips
 
-    # Find site wire
-    wire = None
-    for pin in site.site_pins:
-        if pin.name == site_pin:
-            wire = pin.wire
-            break
-    assert wire is not None
+    # The first wire
+    wire = pin_to_wire[tile_type][site_pin]
 
     # Walk randomly.
     route = []
@@ -70,11 +119,11 @@ def get_random_route_from_site_pin(
 
         wires = []
 
-        for pip in tile.pips:
-            if direction == "down" and pip.net_from == wire:
-                next_wire = pip.net_to
-            elif direction == "up" and pip.net_to == wire:
-                next_wire = pip.net_from
+        for src, dst in all_pips:
+            if direction == "down" and src == wire:
+                next_wire = dst
+            elif direction == "up" and dst == wire:
+                next_wire = src
             else:
                 continue
 
@@ -111,7 +160,7 @@ module top(
     LUT6 dummy();
     '''.format(nclkin=max_clk_inputs - 1))
 
-    db = Database(util.get_db_root())
+    pip_list = PipList()
     bufg_count = 0
 
     design_file = open('design.txt', 'w')
@@ -146,7 +195,7 @@ module top(
         for pin, dir in pins:
 
             route = get_random_route_from_site_pin(
-                db, tile, site, pin, dir, occupied_wires)
+                pip_list, tile, pin, dir, occupied_wires)
             if route is None:
                 endpoints[pin] = ""
                 continue
