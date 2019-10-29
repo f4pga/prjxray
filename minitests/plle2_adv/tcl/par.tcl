@@ -13,4 +13,4 @@ route_design
 
 write_checkpoint -force ../$env(PROJECT_NAME).dcp
 
-write_bitstream -force ../$env(PROJECT_NAME).bit
+write_bitstream -force -logic_location_file ../$env(PROJECT_NAME).bit

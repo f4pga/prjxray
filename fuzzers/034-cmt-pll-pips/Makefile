@@ -1,14 +1,16 @@
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=cmt_top
 PIPLIST_TCL=$(FUZDIR)/cmt_top_upper_t.tcl
-TODO_RE=".*\.CMT_TOP_[LR]_UPPER_T_PLLE2_CLK_[^_]+_INT"
+TODO_RE=".*CMT_TOP_[LR]_UPPER_T_PLLE2_CLK(IN1|IN2|FBIN)\.CMT_TOP_[LR]"
 
 ifneq (${XRAY_DATABASE}, zynq7)
 MAKETODO_FLAGS=--sides "r_upper_t,l_upper_t" --pip-type ${PIP_TYPE} --seg-type cmt_top --re $(TODO_RE)
 else
 MAKETODO_FLAGS=--sides "l_upper_t" --pip-type ${PIP_TYPE} --seg-type cmt_top --re $(TODO_RE)
 endif
-N = 50
+
+N = 100
+SEGMATCH_FLAGS=-m 10 -M 20 -c 170
 
 A_PIPLIST=cmt_top_l_upper_t.txt
 
@@ -30,14 +32,14 @@ RDBS += build/segbits_cmt_top_r_upper_t.rdb
 endif
 
 database: ${RDBS}
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
-		--seg-fn-in build/segbits_cmt_top_l_upper_t.rdb \
-		--seg-fn-out build/segbits_cmt_top_l_upper_t.db
+	python3 ${FUZDIR}/fixup_and_group.py -g tag_groups.txt \
+		-i build/segbits_cmt_top_l_upper_t.rdb \
+		-o build/segbits_cmt_top_l_upper_t.db
 
 ifneq (${XRAY_DATABASE}, zynq7)
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
-		--seg-fn-in build/segbits_cmt_top_r_upper_t.rdb \
-		--seg-fn-out build/segbits_cmt_top_r_upper_t.db
+	python3 ${FUZDIR}/fixup_and_group.py -g tag_groups.txt \
+		-i build/segbits_cmt_top_r_upper_t.rdb \
+		-o build/segbits_cmt_top_r_upper_t.db
 endif
 
 	# Keep a copy to track iter progress
