@@ -417,24 +417,33 @@ module top();
     # BUFRs
     for _, site in gen_sites('BUFR'):
         if random.random() < 0.5:
-            wire_name = cmt_fast_clock_sources.get_random_source(
-                site_to_cmt[site], no_repeats=False)
-            if wire_name is None:
-                continue
-            src_cmt = cmt_fast_clock_sources.source_to_cmt[wire_name]
-            wire_name = check_cmt_clk_src(wire_name, src_cmt)
-            if wire_name is None:
-                continue
+            if random.random() < 0.7:
+                wire_name = luts.get_next_output_net()
+            else:
+                wire_name = cmt_fast_clock_sources.get_random_source(
+                    site_to_cmt[site], no_repeats=False)
+                if wire_name is None:
+                    continue
+                src_cmt = cmt_fast_clock_sources.source_to_cmt[wire_name]
+                wire_name = check_cmt_clk_src(wire_name, src_cmt)
+                if wire_name is None:
+                    continue
             bufr_clock_sources.add_clock_source(
                 'O_{site}'.format(site=site), site_to_cmt[site])
+
+            # Add DIVIDE
+            divide = "BYPASS"
+            if random.random() < 0.8:
+                divide = "{}".format(random.randint(2, 8))
+
             print(
                 """
     assign I_{site} = {clock_source};
     (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    BUFR bufr_{site} (
+    BUFR #(.BUFR_DIVIDE("{divide}")) bufr_{site} (
         .O(O_{site}),
         .I(I_{site})
-        );""".format(site=site, clock_source=wire_name),
+        );""".format(site=site, clock_source=wire_name, divide=divide),
                 file=bufs)
 
     for _, site in gen_sites('MMCME2_ADV'):
@@ -449,6 +458,9 @@ module top();
                 site=site, wire_name=wire_name))
 
     print(bufs.getvalue())
+
+    for l in luts.create_wires_and_luts():
+        print(l)
 
     print("endmodule")
 
