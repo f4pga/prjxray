@@ -284,7 +284,7 @@ module top();
     for cmt in site_to_cmt.values():
         idelayctrl_in_clock_region[cmt] = False
     for _, site in gen_sites('IDELAYCTRL'):
-        if random.random() < 0.8:
+        if random.random() < 0.5:
             wire_name = global_clock_sources.get_random_source(
                 site_to_cmt[site], no_repeats=False)
             if wire_name is None:
@@ -305,7 +305,162 @@ module top();
             .RST()
             );""".format(site=site, clock_source=wire_name))
 
+    # Add SERDES driven by BUFH or MMCM
+    for tile, site in gen_sites('ILOGICE3'):
+        wire_name = None
+        clock_region = site_to_cmt[site]
+        if clock_region not in clock_region_limit:
+            # Select serdes limit and relative location per clock region
+            serdes_location = random.choice(["TOP", "BOTTOM", "ANY"])
+            if serdes_location in "ANY":
+                #We want TOP and BOTTOM IGCLK PIPs occupied but leave one slot for IDELAYCTRL
+                if idelayctrl_in_clock_region[clock_region]:
+                    clock_region_limit[clock_region] = 0 if random.random(
+                    ) < 0.2 else 11
+                else:
+                    clock_region_limit[clock_region] = 0 if random.random(
+                    ) < 0.2 else 12
+            else:
+                if idelayctrl_in_clock_region[clock_region]:
+                    clock_region_limit[clock_region] = 0 if random.random(
+                    ) < 0.2 else 5
+                else:
+                    clock_region_limit[clock_region] = 0 if random.random(
+                    ) < 0.2 else 6
+
+            clock_region_serdes_location[clock_region] = serdes_location
+
+        # We reached the limit of hclks in this clock region
+        if clock_region_limit[clock_region] == 0:
+            continue
+
+        # Add a serdes if it's located at the correct side from the HCLK_IOI tile
+        if clock_region_serdes_location[clock_region] not in "ANY" and \
+                serdes_relative_location(tile, site) != clock_region_serdes_location[clock_region]:
+            continue
+        if random.random() > 0.1:
+            wire_name = global_clock_sources.get_random_source(
+                site_to_cmt[site], no_repeats=True)
+            if wire_name is None:
+                continue
+            src_cmt = global_clock_sources.source_to_cmt[wire_name]
+            wire_name = check_hclk_src(wire_name, src_cmt)
+            if wire_name is None:
+                print("//wire is None")
+                continue
+            clock_region_limit[clock_region] -= 1
+            print(
+                """
+    assign serdes_clk_{site} = {clock_source};""".format(
+                    site=site, clock_source=wire_name))
+        else:
+            wire_name = cmt_fast_clock_sources.get_random_source(
+                site_to_cmt[site], no_repeats=False)
+            if wire_name is None:
+                continue
+            src_cmt = cmt_fast_clock_sources.source_to_cmt[wire_name]
+            wire_name = check_cmt_clk_src(wire_name, src_cmt)
+            if wire_name is None:
+                continue
+            bufio_site = get_clock_region_site("BUFIO", clock_region)
+            if bufio_site is None:
+                continue
+            print(
+                """
+    assign serdes_clk_{serdes_loc} = O_{site};
+    assign I_{site} = {clock_source};
+    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+    BUFIO bufio_{site} (
+        .O(O_{site}),
+        .I(I_{site})
+    );""".format(site=bufio_site, clock_source=wire_name, serdes_loc=site))
+
+        print(
+            "// clock_region: {} {}".format(
+                clock_region, clock_region_serdes_location[clock_region]))
+        print(
+            """
+    (* KEEP, DONT_TOUCH, LOC = "{loc}" *)
+    ISERDESE2 #(
+    .DATA_RATE("SDR"),
+    .DATA_WIDTH(4),
+    .DYN_CLKDIV_INV_EN("FALSE"),
+    .DYN_CLK_INV_EN("FALSE"),
+    .INIT_Q1(1'b0),
+    .INIT_Q2(1'b0),
+    .INIT_Q3(1'b0),
+    .INIT_Q4(1'b0),
+    .INTERFACE_TYPE("OVERSAMPLE"),
+    .IOBDELAY("NONE"),
+    .NUM_CE(2),
+    .OFB_USED("FALSE"),
+    .SERDES_MODE("MASTER"),
+    .SRVAL_Q1(1'b0),
+    .SRVAL_Q2(1'b0),
+    .SRVAL_Q3(1'b0),
+    .SRVAL_Q4(1'b0)
+    )
+    ISERDESE2_inst_{loc} (
+    .CLK(serdes_clk_{loc}),
+    .CLKB(),
+    .CLKDIV(),
+    .D(1'b0),
+    .DDLY(),
+    .OFB(),
+    .OCLKB(),
+    .RST(),
+    .SHIFTIN1(),
+    .SHIFTIN2()
+    );
+    """.format(loc=site, clock_source=wire_name))
+
+    # BUFRs
+    for _, site in gen_sites('BUFR'):
+        if random.random() < 0.6:
+            if random.random() < 0.5:
+                wire_name = luts.get_next_output_net()
+            else:
+                wire_name = cmt_fast_clock_sources.get_random_source(
+                    site_to_cmt[site], no_repeats=False)
+                if wire_name is None:
+                    continue
+                src_cmt = cmt_fast_clock_sources.source_to_cmt[wire_name]
+                wire_name = check_cmt_clk_src(wire_name, src_cmt)
+                if wire_name is None:
+                    continue
+            bufr_clock_sources.add_clock_source(
+                'O_{site}'.format(site=site), site_to_cmt[site])
+
+            # Add DIVIDE
+            divide = "BYPASS"
+            if random.random() < 0.5:
+                divide = "".format(random.randint(2, 8))
+
+            print(
+                """
+    assign I_{site} = {clock_source};
+    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+    BUFR #(.BUFR_DIVIDE("{divide}")) bufr_{site} (
+        .O(O_{site}),
+        .I(I_{site})
+        );""".format(site=site, clock_source=wire_name, divide=divide),
+                file=bufs)
+
+    for _, site in gen_sites('MMCME2_ADV'):
+        wire_name = bufr_clock_sources.get_random_source(
+            site_to_cmt[site], no_repeats=True)
+
+        if wire_name is None:
+            continue
+        print(
+            """
+    assign cin1_{site} = {wire_name};""".format(
+                site=site, wire_name=wire_name))
+
     print(bufs.getvalue())
+
+    for l in luts.create_wires_and_luts():
+        print(l)
 
     print("endmodule")
 
