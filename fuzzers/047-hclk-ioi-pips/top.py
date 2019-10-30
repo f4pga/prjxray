@@ -417,7 +417,7 @@ module top();
     # BUFRs
     for _, site in gen_sites('BUFR'):
         if random.random() < 0.5:
-            if random.random() < 0.7:
+            if random.random() < 0.5:
                 wire_name = luts.get_next_output_net()
             else:
                 wire_name = cmt_fast_clock_sources.get_random_source(
