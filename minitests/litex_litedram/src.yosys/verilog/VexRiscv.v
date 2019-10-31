@@ -2523,7 +2523,7 @@ module VexRiscv (
     end
   end
 
-  InstructionCache IBusCachedPlugin_cache ( 
+  InstructionCache IBusCachedPlugin_cache (
     .io_flush(_zz_221_),
     .io_cpu_prefetch_isValid(_zz_222_),
     .io_cpu_prefetch_haltIt(IBusCachedPlugin_cache_io_cpu_prefetch_haltIt),
@@ -2569,9 +2569,9 @@ module VexRiscv (
     .io_mem_rsp_payload_data(iBus_rsp_payload_data),
     .io_mem_rsp_payload_error(iBus_rsp_payload_error),
     .clk(clk),
-    .reset(reset) 
+    .reset(reset)
   );
-  DataCache dataCache_1_ ( 
+  DataCache dataCache_1_ (
     .io_cpu_execute_isValid(_zz_230_),
     .io_cpu_execute_address(_zz_231_),
     .io_cpu_execute_args_wr(execute_MEMORY_WR),
@@ -2619,7 +2619,7 @@ module VexRiscv (
     .io_mem_rsp_payload_data(dBus_rsp_payload_data),
     .io_mem_rsp_payload_error(dBus_rsp_payload_error),
     .clk(clk),
-    .reset(reset) 
+    .reset(reset)
   );
   always @(*) begin
     case(_zz_371_)
