@@ -6,16 +6,8 @@ from prjxray.verilog import quote
 import json
 
 
-def bits_in(value, width):
-    bits = []
-    for i in range(width):
-        bits.append(value & 1)
-        value >>= 1
-    return bits
-
-
 def add(segmk, site, dsp, tag, bit, value, invert):
-    tag = dsp + '.' + '%s' % ('Z' if invert else '') + tag + '[%u]' % bit
+    tag = "%s.%s%s[%u]" % (dsp, ('Z' if invert else ''), tag, bit)
     value = (~value if invert else value)
     value >>= bit
     return segmk.add_site_tag(site, tag, value & 1)
