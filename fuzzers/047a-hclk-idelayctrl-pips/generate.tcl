@@ -164,6 +164,11 @@ proc route_todo {} {
             lappend todos $src_wire
         }
 
+        set todos_length [llength $todos]
+        if {$todos_length == 0} {
+            continue
+        }
+
         puts "All todos for $tile_type / $wire"
         foreach src_wire $todos {
             puts "  - $src_wire"
