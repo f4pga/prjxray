@@ -338,7 +338,7 @@ module top();
         if clock_region_serdes_location[clock_region] not in "ANY" and \
                 serdes_relative_location(tile, site) != clock_region_serdes_location[clock_region]:
             continue
-        if random.random() > 0.3:
+        if random.random() > 0.1:
             wire_name = global_clock_sources.get_random_source(
                 site_to_cmt[site], no_repeats=True)
             if wire_name is None:
@@ -416,7 +416,7 @@ module top();
 
     # BUFRs
     for _, site in gen_sites('BUFR'):
-        if random.random() < 0.5:
+        if random.random() < 0.6:
             if random.random() < 0.5:
                 wire_name = luts.get_next_output_net()
             else:
@@ -433,8 +433,8 @@ module top();
 
             # Add DIVIDE
             divide = "BYPASS"
-            if random.random() < 0.8:
-                divide = "{}".format(random.randint(2, 8))
+            if random.random() < 0.5:
+                divide = "".format(random.randint(2, 8))
 
             print(
                 """

@@ -121,118 +121,18 @@ proc get_nets_with_todo_pip_wires {direction net_regexp wire_regexp used_destina
 
 proc route_todo {} {
     set used_destinations [dict create]
-    set todo_map [load_todo "dsts"]
-    set serdes_nets [get_nets_with_todo_pip_wires "dsts" "serdes_clk_ILOGIC" "HCLK_IOI_CK_IGCLK" $used_destinations]
-    puts "Serdes nets: $serdes_nets"
-    dict for {net tile_wire} $serdes_nets {
-        set tile [lindex $tile_wire 0]
-        set wire [lindex $tile_wire 1]
-        set dsts [dict get $todo_map $wire]
-        set tile_type [get_property TILE_TYPE [get_tiles $tile]]
-        set todos {}
-
-        set old_target_wire [get_wires -of_objects $net -filter {TILE_NAME =~ "*HCLK_IOI*" && NAME =~ "*HCLK_IOI_LEAF_GCLK_*"}]
-        if {$old_target_wire == {}} {
-            continue
-        }
-        if {[dict exists $used_destinations $old_target_wire]} {
-            puts "Not routing to $old_target_wire, in use."
-            continue
-        }
-        puts "Rerouting net $net at $tile / $wire (type $tile_type)"
-        puts "Previous target wire: $old_target_wire"
-        set old_target_node [get_nodes -of_objects $old_target_wire]
-        if [regexp "HCLK_IOI_LEAF_GCLK_\(\(TOP\)|\(BOT\)\).*" $old_target_wire match group] {
-            set old_target_side $group
-        }
-        foreach dst $dsts {
-            set dst_tile_type [lindex $dst 0]
-            if {$dst_tile_type != $tile_type} {
-                continue
-            }
-
-            set dst_wire [lindex $dst 1]
-
-            set is_gclk_net 0
-            if [regexp "HCLK_IOI_LEAF_GCLK_\(\(TOP\)|\(BOT\)\).*" $dst_wire match group] {
-                set is_gclk_net 1
-                set dst_side $group
-            }
-
-            if {$is_gclk_net == 0 || $dst_side != $old_target_side} {
-                continue
-            }
-
-            lappend todos $dst_wire
-        }
-
-        set todos_length [llength $todos]
-        if {$todos_length == 0} {
-            continue
-        }
-
-        puts "All todos for $tile_type / $wire"
-        foreach dst_wire $todos {
-            puts "  - $dst_wire"
-        }
-
-        set todos [shuffle_list $todos]
-
-        set origin_node [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
-        puts "Origin node: $origin_node"
-        route_design -unroute -nets $net
-
-        # Find an input in the todo list that this can can drive.
-        foreach dst_wire $todos {
-            if { [dict exists $used_destinations "$tile/$dst_wire"] } {
-                puts "Not routing to $tile / $dst_wire, in use."
-                continue
-            }
-
-            set target_wire [get_wires "$tile/$dst_wire"]
-            set target_node [get_nodes -of_objects $target_wire]
-            if {[llength $target_node] == 0} {
-                error "Failed to find node for $tile/$dst_wire."
-            }
-
-            set old_net [get_nets -of_objects $target_node -quiet]
-            if {$old_net == {}} {
-                continue
-            }
-            puts "Unrouting the old net: $old_net"
-            route_design -unroute -nets $old_net
-            set old_origin_node [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $old_net]]
-
-            # Route the net through the desired node
-            puts "Attempting to route to $target_node for net $net."
-            route_via $net [list $target_node]
-
-            puts "Attempting to route to $old_target_node for net $old_net."
-            # Route the old net through the old target node
-            route_via $old_net [list $old_target_node ]
-
-            puts "Origin node: $origin_node, Old origin node: $old_origin_node"
-            puts "Target wire: $target_wire, Old target wire: $old_target_wire"
-            puts "Target node: $target_node, Old target node: $old_target_node"
-
-            dict set used_destinations "$target_wire" 1
-            dict set used_destinations "$old_target_wire" 1
-
-            break
-        }
-    }
 
     set todo_map [load_todo "srcs"]
-    set before_div_nets [get_nets_with_todo_pip_wires "srcs" "I_BUFR" "HCLK_IOI_RCLK_BEFORE_DIV" $used_destinations]
-    puts "Before div nets: $before_div_nets"
-    dict for {net tile_wire} $before_div_nets {
+    set idelayctrl_nets [get_nets_with_todo_pip_wires "srcs" "IDELAYCTRL" "HCLK_IOI_IDELAYCTRL_REFCLK" $used_destinations]
+    puts "Idelayctrl nets: $idelayctrl_nets"
+    dict for {net tile_wire} $idelayctrl_nets {
         set tile [lindex $tile_wire 0]
         set wire [lindex $tile_wire 1]
         set srcs [dict get $todo_map $wire]
         set tile_type [get_property TILE_TYPE [get_tiles $tile]]
         set todos {}
 
-        set old_origin_wire [get_wires -of_objects $net -filter {TILE_NAME =~ "*HCLK_IOI*" && NAME =~ "*HCLK_IOI_RCLK_IMUX*"}]
+        set old_origin_wire [get_wires -of_objects $net -filter {TILE_NAME =~ "*HCLK_IOI*" && NAME =~ "*HCLK_IOI_LEAF_GCLK_*"}]
         if {$old_origin_wire == {}} {
             continue
         }
@@ -241,7 +141,7 @@ proc route_todo {} {
         puts "Previous target wire: $old_origin_wire"
 
         set old_origin_node [get_nodes -of_objects $old_origin_wire]
-        if [regexp "HCLK_IOI_RCLK_IMUX.*" $old_origin_wire match group] {
+        if [regexp "HCLK_IOI_LEAF_GCLK_\(\(TOP\)|\(BOT\)\).*" $old_origin_wire match group] {
             set old_target_side $group
         }
         foreach src $srcs {
@@ -253,7 +153,7 @@ proc route_todo {} {
             set src_wire [lindex $src 1]
 
             set is_gclk_net 0
-            if [regexp "HCLK_IOI_RCLK_IMUX.*" $src_wire match group] {
+            if [regexp "HCLK_IOI_LEAF_GCLK_\(\(TOP\)|\(BOT\)\).*" $src_wire match group] {
                 set is_gclk_net 1
             }
 
