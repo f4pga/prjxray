@@ -1,5 +1,6 @@
 import sys
 import random
+import re
 
 
 def top_harness(DIN_N, DOUT_N, f=sys.stdout):
@@ -63,6 +64,37 @@ def quote(s):
 def unquote(s):
     assert s[0] == '"' and s[-1] == '"'
     return s[1:-1]
+
+
+def to_int(s):
+    value = 0
+
+    match = re.search(r'^(\d+)\'([sS]*)([bBoOdDhH])(.*)', str(s))
+
+    if match:
+        width = int(match.group(1))
+        signed = match.group(2)
+        radix = match.group(3)
+        value = match.group(4)
+
+        # Convert to int type
+        if re.match(r'[bB]', radix):
+            value = int(value, 2)
+        elif re.match(r'[oO]', radix):
+            value = int(value, 8)
+        elif re.match(r'[dD]', radix):
+            value = int(value, 10)
+        elif re.match(r'[hH]', radix):
+            value = int(value, 16)
+        else:
+            raise ValueError('Don\'t know how to interpret input %s' % (s))
+
+        # Truncate to `width` bits
+        value &= 2**width - 1
+    else:
+        value = int(s)
+
+    return value
 
 
 def parsei(s):

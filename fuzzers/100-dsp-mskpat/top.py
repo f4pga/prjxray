@@ -1,55 +1,149 @@
 import os
 import random
+import json
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
+from prjxray import verilog
 from prjxray.db import Database
 
 
 def gen_sites():
     db = Database(util.get_db_root())
     grid = db.grid()
-    for tile_name in sorted(grid.tiles()):
-        loc = grid.loc_of_tilename(tile_name)
+    for tile in sorted(grid.tiles()):
+        loc = grid.loc_of_tilename(tile)
         gridinfo = grid.gridinfo_at_loc(loc)
         if gridinfo.tile_type in ['DSP_L', 'DSP_R']:
             for site in sorted(gridinfo.sites.keys()):
                 if gridinfo.sites[site] == 'DSP48E1':
-                    yield tile_name, site
+                    yield tile, site
 
 
-def write_params(lines):
-    pinstr = 'tile,site,mask,pattern\n'
-    for tile, site, mask, pattern in lines:
-        pinstr += '%s,%s,%s,%s\n' % (tile, site, mask, pattern)
-
-    open('params.csv', 'w').write(pinstr)
+def fuzz(*args):
+    if len(args) == 1 and isinstance(args[0], int):
+        # Argument indicates that we should generate a random integer with
+        # args[0] number of bits.
+        return random.getrandbits(args[0])
+    else:
+        # Otherwise make a random choice
+        return random.choice(*args)
 
 
 def run():
-    print('''
-module top();
-    ''')
+    verilog.top_harness(48, 48)
 
-    lines = []
+    print('module roi(input clk, input [47:0] din, output [47:0] dout);')
+
+    data = {}
+    data['instances'] = []
 
     sites = list(gen_sites())
-    for (tile_name, site_name) in sites:
-        mask = random.randint(0, 2**48 - 1)
-        pattern = random.randint(0, 2**48 - 1)
-        lines.append((tile_name, site_name, mask, pattern))
 
-        print(
-            '''
-            (* KEEP, DONT_TOUCH, LOC = "{0}" *)
-            DSP48E1 #(
-                .MASK(48'h{1:x}),
-                .PATTERN(48'h{2:x})
-            ) dsp_{0} (
-            );
-'''.format(site_name, mask, pattern))
+    for i, (tile, site) in enumerate(sites):
+        synthesis = '(* KEEP, DONT_TOUCH, LOC = "%s" *)' % (site)
+        module = 'DSP48E1'
+        instance = 'INST_%s' % (site)
+        ports = {}
+        params = {}
+
+        ports['A'] = '{30{1\'b1}}'
+        ports['ACIN'] = '{30{1\'b1}}'
+        ports['ACOUT'] = '30\'b0'
+        ports['ALUMODE'] = '4\'b1'
+        ports['B'] = '{18{1\'b1}}'
+        ports['BCIN'] = '{18{1\'b1}}'
+        ports['BCOUT'] = '18\'b0'
+        ports['C'] = '{48{1\'b1}}'
+        ports['CARRYCASCIN'] = '1\'b1'
+        ports['CARRYCASCOUT'] = '1\'b0'
+        ports['CARRYIN'] = '1\'b1'
+        ports['CARRYINSEL'] = '3\'b000'
+        ports['CARRYOUT'] = '4\'b0'
+        ports['CEA1'] = '1\'b1'
+        ports['CEA2'] = '1\'b1'
+        ports['CEAD'] = '1\'b1'
+        ports['CEALUMODE'] = '1\'b1'
+        ports['CEB1'] = '1\'b1'
+        ports['CEB2'] = '1\'b1'
+        ports['CEC'] = '1\'b1'
+        ports['CECARRYIN'] = '1\'b1'
+        ports['CECTRL'] = '1\'b1'
+        ports['CED'] = '1\'b1'
+        ports['CEINMODE'] = '1\'b1'
+        ports['CEM'] = '1\'b1'
+        ports['CEP'] = '1\'b1'
+        ports['CLK'] = '1\'b1'
+        ports['D'] = '{25{1\'b1}}'
+        ports['INMODE'] = '5\'b11111'
+        #ports['MULTISIGNIN'] = '1\'b1'
+        #ports['MULTISIGNOUT'] = '1\'b0'
+        ports['OPMODE'] = '7\'b1111111'
+        ports['OVERFLOW'] = '1\'b0'
+        ports['P'] = '48\'b0'
+        ports['PATTERNBDETECT'] = '1\'b0'
+        ports['PATTERNDETECT'] = '1\'b0'
+        ports['PCIN'] = '{48{1\'b1}}'
+        ports['PCOUT'] = '48\'b0'
+        ports['RSTA'] = '1\'b1'
+        ports['RSTALLCARRYIN'] = '1\'b1'
+        ports['RSTALUMODE'] = '1\'b1'
+        ports['RSTB'] = '1\'b1'
+        ports['RSTC'] = '1\'b1'
+        ports['RSTCTRL'] = '1\'b1'
+        ports['RSTD'] = '1\'b1'
+        ports['RSTINMODE'] = '1\'b1'
+        ports['RSTM'] = '1\'b1'
+        ports['RSTP'] = '1\'b1'
+        ports['UNDERFLOW'] = '1\'b0'
+
+        params['ADREG'] = fuzz((0, 1))
+        params['ALUMODEREG'] = fuzz((0, 1))
+        params['AREG'] = fuzz((0, 1, 2))
+        if params['AREG'] == 0 or params['AREG'] == 1:
+            params['ACASCREG'] = params['AREG']
+        else:
+            params['ACASCREG'] = fuzz((1, 2))
+        params['BREG'] = fuzz((0, 1, 2))
+        if params['BREG'] == 0 or params['BREG'] == 1:
+            params['BCASCREG'] = params['BREG']
+        else:
+            params['BCASCREG'] = fuzz((1, 2))
+        params['CARRYINREG'] = fuzz((0, 1))
+        params['CARRYINSELREG'] = fuzz((0, 1))
+        params['CREG'] = fuzz((0, 1))
+        params['DREG'] = fuzz((0, 1))
+        params['INMODEREG'] = fuzz((0, 1))
+        params['OPMODEREG'] = fuzz((0, 1))
+        params['PREG'] = fuzz((0, 1))
+        params['A_INPUT'] = verilog.quote(fuzz(('DIRECT', 'CASCADE')))
+        params['B_INPUT'] = verilog.quote(fuzz(('DIRECT', 'CASCADE')))
+        params['USE_DPORT'] = verilog.quote(fuzz(('TRUE', 'FALSE')))
+        params['USE_SIMD'] = verilog.quote(fuzz(('ONE48', 'TWO24', 'FOUR12')))
+        params['USE_MULT'] = verilog.quote(
+            'NONE' if params['USE_SIMD'] != verilog.quote('ONE48') else fuzz(
+                ('NONE', 'MULTIPLY', 'DYNAMIC')))
+        params['MREG'] = 0 if params['USE_MULT'] == verilog.quote(
+            'NONE') else fuzz((0, 1))
+        params['AUTORESET_PATDET'] = verilog.quote(
+            fuzz(('NO_RESET', 'RESET_MATCH', 'RESET_NOT_MATCH')))
+        params['MASK'] = '48\'d%s' % fuzz(48)
+        params['PATTERN'] = '48\'d%s' % fuzz(48)
+        params['SEL_MASK'] = verilog.quote(
+            fuzz(('MASK', 'C', 'ROUNDING_MODE1', 'ROUNDING_MODE2')))
+        params['USE_PATTERN_DETECT'] = verilog.quote(
+            fuzz(('NO_PATDET', 'PATDET')))
+
+        verilog.instance(synthesis + ' ' + module, instance, ports, params)
+
+        params['TILE'] = tile
+        params['SITE'] = site
+
+        data['instances'].append(params)
+
+    with open('params.json', 'w') as fp:
+        json.dump(data, fp)
 
     print("endmodule")
-    write_params(lines)
 
 
 if __name__ == '__main__':
