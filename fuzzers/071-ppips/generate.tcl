@@ -83,6 +83,24 @@ proc write_bram_ppips_db {filename tile} {
     close $fp
 }
 
+proc write_hclk_ppips_db {filename tile} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if [string match "*HCLK_IOI_CK_IGCLK*" $dst_wire] {
+            continue
+        } elseif {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
+
+    close $fp
+}
+
 foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
@@ -100,14 +118,22 @@ foreach tile_type {INT_L INT_R  BRAM_INT_INTERFACE_L BRAM_INT_INTERFACE_R \
             CMT_TOP_L_LOWER_T CMT_TOP_L_LOWER_B \
             CMT_TOP_R_UPPER_T CMT_TOP_R_UPPER_B \
             CMT_TOP_R_LOWER_T CMT_TOP_R_LOWER_B \
-            INT_INTERFACE_L INT_INTERFACE_R \
-            HCLK_IOI3} {
+            INT_INTERFACE_L INT_INTERFACE_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
         write_int_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
+
+foreach tile_type {HCLK_IOI3} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_hclk_ppips_db "ppips_[string tolower $tile_type].db" $tile
+    }
+}
+
 foreach tile_type {BRAM_L BRAM_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
