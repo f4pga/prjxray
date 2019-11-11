@@ -23,6 +23,10 @@ echo "----------------------------------------"
 
 source settings/$XRAY_SETTINGS.sh
 
+echo "XRAY_VIVADO_SETTINGS: $XRAY_VIVADO_SETTINGS"
+mount
+ls -l $XRAY_VIVADO_SETTINGS
+
 echo
 echo "========================================"
 echo "Cleaning out current database"
