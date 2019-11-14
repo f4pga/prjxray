@@ -74,7 +74,7 @@ def bit_to_str(bit):
     Converts a tuple (frame, bit, value) to its string representation.
     """
     s = "!" if not bit[2] else ""
-    return "{}{}_{}".format(s, bit[0], bit[1])
+    return "{}{}_{:02d}".format(s, bit[0], bit[1])
 
 
 def load_segbits(file_name):
