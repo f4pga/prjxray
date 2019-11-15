@@ -10,9 +10,6 @@ def bitfilter(frame, word):
     if frame < 28:
         return False
 
-    if frame == 25 and word == 3121:
-        return False
-
     return True
 
 
@@ -69,15 +66,17 @@ def bus_tags(segmk, ps, site):
                 site, 'COMP.' + opt + '_Z' + conn + '_' + ps['site'], opt_match
                 and not conn_match)
 
-    match = verilog.unquote(ps['COMPENSATION']) in ['BUF_IN', 'EXTERNAL']
     bufg_on_clkin = \
             'BUFG' in ps['clkin1_conn'] or \
             'BUFG' in ps['clkin2_conn']
-    if not match:
-        if verilog.unquote(ps['COMPENSATION']) == 'ZHOLD' and bufg_on_clkin:
-            match = True
-    segmk.add_site_tag(
-        site, 'COMPENSATION.BUF_IN_OR_EXTERNAL_OR_ZHOLD_CLKIN_BUF', match)
+
+    # This one is in conflict with some clock routing bits.
+    #    match = verilog.unquote(ps['COMPENSATION']) in ['BUF_IN', 'EXTERNAL']
+    #    if not match:
+    #        if verilog.unquote(ps['COMPENSATION']) == 'ZHOLD' and bufg_on_clkin:
+    #            match = True
+    #    segmk.add_site_tag(
+    #        site, 'COMPENSATION.BUF_IN_OR_EXTERNAL_OR_ZHOLD_CLKIN_BUF', match)
 
     match = verilog.unquote(ps['COMPENSATION']) in ['ZHOLD']
     segmk.add_site_tag(
@@ -98,7 +97,8 @@ def bus_tags(segmk, ps, site):
                     site == "PLLE2_ADV_X0Y2"
                     )
 
-    for opt in ['ZHOLD', 'BUF_IN', 'EXTERNAL', 'INTERNAL']:
+    # No INTERNAL as it has conflicting bits
+    for opt in ['ZHOLD', 'BUF_IN', 'EXTERNAL']:
         if opt in ['BUF_IN', 'EXTERNAL']:
             if ps['clkfbin_conn'] not in ['', 'clk']:
                 continue
@@ -115,9 +115,11 @@ def bus_tags(segmk, ps, site):
             site, 'COMPENSATION.Z_' + opt,
             verilog.unquote(ps['COMPENSATION']) != opt)
 
-    segmk.add_site_tag(
-        site, 'COMPENSATION.INTERNAL',
-        verilog.unquote(ps['COMPENSATION']) in ['INTERNAL'])
+
+# This one has bits that are in conflict with clock routing
+#    segmk.add_site_tag(
+#        site, 'COMPENSATION.INTERNAL',
+#        verilog.unquote(ps['COMPENSATION']) in ['INTERNAL'])
 
     for param in ['CLKFBOUT_MULT']:
         paramadj = int(ps[param])
