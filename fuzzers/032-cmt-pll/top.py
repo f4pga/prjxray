@@ -14,23 +14,35 @@ def gen_sites():
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
 
+        tile_type = tile_name.rsplit("_", 1)[0]
+
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['PLLE2_ADV']:
-                yield site_name
+                yield tile_type, site_name
 
 
 def main():
+    sites = sorted(list(gen_sites()))
+    max_sites = len(sites)
+
     f = open('params.jl', 'w')
     f.write('module,loc,params\n')
 
-    print(
-        """module top(input clk);
+    routes_file = open('routes.txt', 'w')
+
+    print("""
+module top(
+    input [{N}:0] clkin1,
+    input [{N}:0] clkin2,
+    input [{N}:0] clkfb,
+    input [{N}:0] dclk
+);
 
     (* KEEP, DONT_TOUCH *)
     LUT1 dummy();
-            """)
+""".format(N=max_sites - 1))
 
-    for site in sorted(gen_sites()):
+    for tile_type, site in sorted(gen_sites()):
         params = {
             "site":
             site,
@@ -39,17 +51,19 @@ def main():
             "clkin1_conn":
             random.choice((
                 "clkfbout_mult_BUFG_" + site,
-                "clk",
+                "clkin1[{}]".format(i),
+                ""
             )),
             "clkin2_conn":
             random.choice((
                 "clkfbout_mult_BUFG_" + site,
-                "clk",
+                "clkin2[{}]".format(i),
+                ""
             )),
             "dclk_conn":
             random.choice((
                 "0",
-                "clk",
+                "dclk[{}]".format(i),
             )),
             "dwe_conn":
             random.choice((
@@ -127,9 +141,32 @@ def main():
                 ))
         else:
             params['clkfbin_conn'] = random.choice(
-                ("", "clk", "clkfbout_mult_BUFG_" + site))
+                ("", "clkfb[{}]".format(i), "clkfbout_mult_BUFG_" + site))
 
-        f.write('%s\n' % (json.dumps(params)))
+        params['clkin1_route'] = random.choice((
+            "{}_CLKIN1",
+            "{}_FREQ_BB0",
+            "{}_FREQ_BB1",
+            "{}_FREQ_BB2",
+            "{}_FREQ_BB3",
+            "{}_PLLE2_CLK_IN1_INT",
+        )).format(tile_type)
+
+        params['clkin2_route'] = random.choice((
+            "{}_CLKIN2",
+            "{}_FREQ_BB0",
+            "{}_FREQ_BB1",
+            "{}_FREQ_BB2",
+            "{}_FREQ_BB3",
+            "{}_PLLE2_CLK_IN2_INT",
+        )).format(tile_type)
+
+        f.write('%s\n' % (json.dumps(params, indent=1)))
+
+        if params['clkin1_conn'] != "":
+            routes_file.write('{} {}\n'.format(params['clkin1_conn'], params['clkin1_route']))
+        if params['clkin2_conn'] != "":
+            routes_file.write('{} {}\n'.format(params['clkin2_conn'], params['clkin2_route']))
 
         if not params['active']:
             continue

@@ -1,19 +1,22 @@
+source "$::env(XRAY_DIR)/utils/utils.tcl"
+
 create_project -force -part $::env(XRAY_PART) design design
 read_verilog top.v
 synth_design -top top
 
-set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
+#set_property -dict "PACKAGE_PIN $::env(XRAY_PIN_00) IOSTANDARD LVCMOS33" [get_ports clk]
 
 set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 
-create_clock -period 10.00 [get_ports clk]
+create_clock -period 10.00 [get_ports clkin1*]
+create_clock -period 10.00 [get_ports clkin2*]
 
-set net [get_nets clk_IBUF]
-if { [llength $net] > 0 } {
-    set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
-}
+#set net [get_nets clk_IBUF]
+#if { [llength $net] > 0 } {
+#    set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
+#}
 
 # Disable MMCM frequency etc sanity checks
 set_property IS_ENABLED 0 [get_drc_checks {PDRC-29}]
@@ -25,6 +28,9 @@ set_property IS_ENABLED 0 [get_drc_checks {REQP-126}]
 set_property IS_ENABLED 0 [get_drc_checks {PDRC-43}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-161}]
 set_property IS_ENABLED 0 [get_drc_checks {AVAL-78}]
+
+set_property IS_ENABLED 0 [get_drc_checks {UCIO-1}]
+set_property IS_ENABLED 0 [get_drc_checks {NSTD-1}]
 
 place_design
 route_design
