@@ -18,7 +18,7 @@ def gen_sites():
 
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['PLLE2_ADV']:
-                yield tile_type, site_name
+                yield tile_name, tile_type, site_name
 
 
 def main():
@@ -30,7 +30,8 @@ def main():
 
     routes_file = open('routes.txt', 'w')
 
-    print("""
+    print(
+        """
 module top(
     input [{N}:0] clkin1,
     input [{N}:0] clkin2,
@@ -42,24 +43,22 @@ module top(
     LUT1 dummy();
 """.format(N=max_sites - 1))
 
-    for tile_type, site in sorted(gen_sites()):
+    for i, (
+            tile_name,
+            tile_type,
+            site,
+    ) in enumerate(sorted(gen_sites())):
         params = {
             "site":
             site,
             'active':
             random.random() > .2,
             "clkin1_conn":
-            random.choice((
-                "clkfbout_mult_BUFG_" + site,
-                "clkin1[{}]".format(i),
-                ""
-            )),
+            random.choice(
+                ("clkfbout_mult_BUFG_" + site, "clkin1[{}]".format(i), "")),
             "clkin2_conn":
-            random.choice((
-                "clkfbout_mult_BUFG_" + site,
-                "clkin2[{}]".format(i),
-                ""
-            )),
+            random.choice(
+                ("clkfbout_mult_BUFG_" + site, "clkin2[{}]".format(i), "")),
             "dclk_conn":
             random.choice((
                 "0",
@@ -143,30 +142,59 @@ module top(
             params['clkfbin_conn'] = random.choice(
                 ("", "clkfb[{}]".format(i), "clkfbout_mult_BUFG_" + site))
 
-        params['clkin1_route'] = random.choice((
-            "{}_CLKIN1",
-            "{}_FREQ_BB0",
-            "{}_FREQ_BB1",
-            "{}_FREQ_BB2",
-            "{}_FREQ_BB3",
-            "{}_PLLE2_CLK_IN1_INT",
-        )).format(tile_type)
+        params['clkin1_route'] = random.choice(
+            (
+                "{}_CLKIN1",
+                "{}_FREQ_BB0",
+                "{}_FREQ_BB1",
+                "{}_FREQ_BB2",
+                "{}_FREQ_BB3",
+                "{}_PLLE2_CLK_IN1_INT",
+            )).format(tile_type)
 
-        params['clkin2_route'] = random.choice((
-            "{}_CLKIN2",
-            "{}_FREQ_BB0",
-            "{}_FREQ_BB1",
-            "{}_FREQ_BB2",
-            "{}_FREQ_BB3",
-            "{}_PLLE2_CLK_IN2_INT",
-        )).format(tile_type)
+        params['clkin2_route'] = random.choice(
+            (
+                "{}_CLKIN2",
+                "{}_FREQ_BB0",
+                "{}_FREQ_BB1",
+                "{}_FREQ_BB2",
+                "{}_FREQ_BB3",
+                "{}_PLLE2_CLK_IN2_INT",
+            )).format(tile_type)
 
-        f.write('%s\n' % (json.dumps(params, indent=1)))
+        params['clkfbin_route'] = random.choice(
+            (
+                "{}_CLKFBOUT2IN",
+                "{}_UPPER_T_FREQ_BB0",
+                "{}_UPPER_T_FREQ_BB1",
+                "{}_UPPER_T_FREQ_BB2",
+                "{}_UPPER_T_FREQ_BB3",
+                "{}_UPPER_T_PLLE2_CLK_FB_INT",
+            )).format(tile_type.replace("_UPPER_T", ""))
+
+        f.write('%s\n' % (json.dumps(params)))
+
+        def make_ibuf_net(net):
+            p = net.find('[')
+            return net[:p] + '_IBUF' + net[p:]
 
         if params['clkin1_conn'] != "":
-            routes_file.write('{} {}\n'.format(params['clkin1_conn'], params['clkin1_route']))
+            net = make_ibuf_net(params['clkin1_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin1_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
         if params['clkin2_conn'] != "":
-            routes_file.write('{} {}\n'.format(params['clkin2_conn'], params['clkin2_route']))
+            net = make_ibuf_net(params['clkin2_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin2_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkfbin_conn'] != "" and\
+           params['clkfbin_conn'] != ("clkfbout_mult_BUFG_" + site):
+            net = params['clkfbin_conn']
+            if "[" in net and "]" in net:
+                net = make_ibuf_net(net)
+            wire = '{}/{}'.format(tile_name, params['clkfbin_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
 
         if not params['active']:
             continue
