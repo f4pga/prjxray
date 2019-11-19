@@ -1,3 +1,22 @@
+proc extract_iobanks {filename} {
+    set fp [open $filename "w"]
+    foreach iobank [get_iobanks] {
+        set sample_site [lindex [get_sites -of $iobank] 0]
+        if {[llength $sample_site] == 0} continue
+        set clock_region [get_property CLOCK_REGION $sample_site]
+        foreach tile [get_tiles -filter {TYPE=~HCLK_IOI3}] {
+            set tile_sites [get_sites -of_object $tile]
+            if {[llength $tile_sites] == 0} continue
+            set hclk_tile_clock_region [get_property CLOCK_REGION [lindex [get_sites -of_object $tile] 0]]
+            if {$clock_region == $hclk_tile_clock_region} {
+                set coord [lindex [split $tile "_"] 2]
+                puts $fp "$iobank,$coord"
+            }
+        }
+    }
+    close $fp
+}
+
 create_project -force -part $::env(XRAY_PART) design design
 
 read_verilog ../../top.v
@@ -17,6 +36,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 place_design
 route_design
 
+extract_iobanks iobanks.txt
 write_checkpoint -force design.dcp
 
 # Write a normal bitstream that will do a singe FDRI write of all the frames.
