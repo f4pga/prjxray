@@ -1,10 +1,16 @@
 # LiteX minitest
 
-This folder contains a minitest for a Linux capable LiteX SoC for Arty board.
+This folder contains minitest for various Litex configurations and target platforms.
+It is divided into two directories that differ in the CPU configuration.
+
+* min - Minimal configuration - just a CPU + uart targeting Arty and Basys3 boards. The firmware is compiled into the bitstream i.e. the ROM and SRAM memories are instantiated and initialized on the FPGA (no DDR RAM controller).
+* base - Linux capable SoC configuration with DDR and Ethernet targeting the Arty.
 
 ## Synthesis+implementation
 
-There are two variants: for Vivado only flow and for Yosys+Vivado flow. In order to run one of them enter the specific directory and run `make`.
+For each variant and platform there are two variants: for Vivado only flow and for Yosys+Vivado flow.
+In order to run one of them enter the specific directory and run `make`.
+Once the bitstream is generated and loaded to the board, we should see the test result on the terminal connected to one of the serial ports.
 
 ## HDL code generation
 
