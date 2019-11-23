@@ -14,9 +14,16 @@ proc write_tiles_txt {} {
         set sites [get_sites -quiet -of_objects $tile]
         set typed_sites {}
 
+	set isbonded 1
         if [llength $sites] {
             set site_types [get_property SITE_TYPE $sites]
             foreach t $site_types s $sites {
+		if {[get_property IS_PAD $s] == 1} {
+		    if {[get_property IS_BONDED $s] == 0} {
+			set isbonded 0
+		    }
+		}
+
                 lappend typed_sites $t $s
 
                 set package_pin [get_package_pins -of $s -quiet]
@@ -26,7 +33,9 @@ proc write_tiles_txt {} {
             }
         }
 
-        puts $fp "$type $tile $grid_x $grid_y $typed_sites"
+	if $isbonded {
+	    puts $fp "$type $tile $grid_x $grid_y $typed_sites"
+	}
     }
     close $fp_pin
     close $fp
