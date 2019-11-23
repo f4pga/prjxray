@@ -7,6 +7,10 @@ proc write_tiles_txt {} {
     # Write tiles.txt with site metadata
     set fp [open "tiles.txt" w]
     set fp_pin [open "pin_func.txt" w]
+
+    # prep a list to keep track of unbonded sites
+    set unbonded {}
+    
     foreach tile $tiles {
         set type [get_property TYPE $tile]
         set grid_x [get_property GRID_POINT_X $tile]
@@ -14,16 +18,22 @@ proc write_tiles_txt {} {
         set sites [get_sites -quiet -of_objects $tile]
         set typed_sites {}
 
-	set isbonded 1
+	# catch unbonded pads and note their grid location
         if [llength $sites] {
             set site_types [get_property SITE_TYPE $sites]
             foreach t $site_types s $sites {
 		if {[get_property IS_PAD $s] == 1} {
 		    if {[get_property IS_BONDED $s] == 0} {
-			set isbonded 0
+			# puts "skipping unbonded $sites at $grid_y"
+			lappend unbonded $grid_y
 		    }
 		}
-
+	    }
+	}
+	    
+        if [llength $sites] {
+            set site_types [get_property SITE_TYPE $sites]
+            foreach t $site_types s $sites {
                 lappend typed_sites $t $s
 
                 set package_pin [get_package_pins -of $s -quiet]
@@ -33,9 +43,14 @@ proc write_tiles_txt {} {
             }
         }
 
-	if $isbonded {
-	    puts $fp "$type $tile $grid_x $grid_y $typed_sites"
+
+	if {[lsearch -exact $unbonded $grid_y] >= 0} {
+	    if { $grid_x == 0 || $grid_x == 1 || $grid_x == 3 || $grid_x == 4 } {
+		# puts "skipping unbonded correlate $grid_x $grid_y"
+		continue
+	    }
 	}
+	puts $fp "$type $tile $grid_x $grid_y $typed_sites"
     }
     close $fp_pin
     close $fp
