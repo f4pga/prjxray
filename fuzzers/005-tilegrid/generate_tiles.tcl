@@ -45,7 +45,7 @@ proc write_tiles_txt {} {
 
 
 	if {[lsearch -exact $unbonded $grid_y] >= 0} {
-	    if { $grid_x == 0 || $grid_x == 1 || $grid_x == 3 || $grid_x == 4 } {
+	    if { $grid_x == 0 || $grid_x == 1 || $grid_x == 3 } {
 		# puts "skipping unbonded correlate $grid_x $grid_y"
 		continue
 	    }
