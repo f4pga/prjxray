@@ -34,6 +34,8 @@ module top();
     jtag_chains = ("1", "2", "3", "4")
     for (tile_name, site_name), isone in zip(sites,
                                              util.gen_fuzz_states(len(sites))):
+        site_name = site_name[:-1]
+        site_name = site_name + str(isone)
         params[tile_name] = (site_name, isone)
         print(
             '''
