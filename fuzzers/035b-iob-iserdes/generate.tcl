@@ -18,6 +18,7 @@ set_property IS_ENABLED 0 [get_drc_checks {REQP-111}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-103}]
 set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
 set_property IS_ENABLED 0 [get_drc_checks {PDRC-26}]
+set_property IS_ENABLED 0 [get_drc_checks {REQP-105}]
 
 place_design
 route_design

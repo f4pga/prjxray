@@ -226,10 +226,12 @@ IDELAYCTRL idelayctrl();
             print('(* LOC="%s", KEEP, DONT_TOUCH *)' % other_sites["IOB"])
             print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
 
+            clk1_conn = random.choice(["clk1", ""])
+
             param_str = ",".join(".%s(%s)" % (k, v) for k, v in params.items())
             print(
-                'ilogic_single #(%s) ilogic_%03d (.clk1(clk1), .clk2(clk2), .ce(ce), .rst(rst), .I(di_buf[%3d]), .O(do_buf[%3d]));'
-                % (param_str, i, i, i))
+                'ilogic_single #(%s) ilogic_%03d (.clk1(%s), .clk2(clk2), .ce(ce), .rst(rst), .I(di_buf[%3d]), .O(do_buf[%3d]));'
+                % (param_str, i, clk1_conn, i, i))
 
             params["CHAINED"] = 0
             params["TILE_NAME"] = tile_name
