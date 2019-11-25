@@ -117,9 +117,6 @@ def gen_iserdes(loc):
     if verilog.unquote(params["OFB_USED"]) == "TRUE":
         params["IOBDELAY"] = verilog.quote("NONE")
 
-    if serdes_mode == "SLAVE":
-        params["IS_CLK_INVERTED"] = 0
-
     return params
 
 
@@ -147,6 +144,10 @@ def gen_iddr(loc):
         random.randint(0, 1),
         "SR_MODE":
         verilog.quote(random.choice(["NONE", "SET", "RST"])),
+        "IS_C_INVERTED":
+        random.randint(0, 1),
+        "IS_D_INVERTED":
+        random.randint(0, 1),
     }
 
     if params["USE_IDELAY"]:
@@ -208,7 +209,7 @@ IDELAYCTRL idelayctrl();
             # Generate cell
             bel_types = ["IDDR", "ISERDESE2"]
             bel_type = bel_types[int(
-                random.randint(0, 19) > 0)]  # ISERDES more often
+                random.randint(0, 2) > 0)]  # ISERDES more often
             if bel_type == "ISERDESE2":
                 params = gen_iserdes(this_sites["ILOGIC"])
             if bel_type == "IDDR":
@@ -322,6 +323,7 @@ parameter DDR_CLK_EDGE = "OPPOSITE_EDGE";
 parameter SRTYPE = "ASYNC";
 parameter CE1USED = 0;
 parameter SR_MODE = "NONE";
+parameter IS_C_INVERTED = 0;
 
 wire [8:0] x;
 wire ddly;
@@ -424,6 +426,8 @@ end else if (IS_USED && BEL_TYPE == "IDDR") begin
   (* LOC=SITE_LOC, KEEP, DONT_TOUCH *)
   IDDR #
   (
+  .IS_C_INVERTED(IS_C_INVERTED),
+  .IS_D_INVERTED(IS_D_INVERTED),
   .DDR_CLK_EDGE(DDR_CLK_EDGE),
   .INIT_Q1(INIT_Q1),
   .INIT_Q2(INIT_Q2),

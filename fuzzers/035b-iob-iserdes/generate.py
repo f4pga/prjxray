@@ -34,7 +34,7 @@ def run():
             loc = verilog.unquote(params["SITE_LOC"])
 
             get_xy = util.create_xy_fun('IOB_')
-            x, y = get_xy(loc)
+            x, y = get_xy(loc.replace("ILOGIC", "IOB"))
 
             loc_to_tile_site_map[loc] = params["TILE_NAME"] + ".IOB_Y%d" % (
                 y % 2)
@@ -60,8 +60,8 @@ def run():
                     else:
                         segmk.add_site_tag(loc, "ISERDES.%s.DDR.4" % i, 0)
 
-                segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 0)
-                segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
+                segmk.add_site_tag(loc, "ISERDES.NUM_CE.N1", 0)
+                segmk.add_site_tag(loc, "ISERDES.NUM_CE.N2", 0)
 
                 for i in range(1, 4 + 1):
                     segmk.add_site_tag(loc, "IFF.ZINIT_Q%d" % i, 0)
@@ -112,6 +112,7 @@ def run():
                         for j in data_rates:
                             for k in data_widths[j]:
                                 tag = "ISERDES.%s.%s.%s" % (i, j, k)
+                                val = 0
 
                                 if i == iface_type:
                                     if j == data_rate:
@@ -124,11 +125,11 @@ def run():
                 if "NUM_CE" in params:
                     value = params["NUM_CE"]
                     if value == 1:
-                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 1)
-                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
+                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.N1", 1)
+                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.N2", 0)
                     if value == 2:
-                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 0)
-                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 1)
+                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.N1", 0)
+                        segmk.add_site_tag(loc, "ISERDES.NUM_CE.N2", 1)
 
                 for i in range(1, 4 + 1):
                     if ("INIT_Q%d" % i) in params:
@@ -142,18 +143,15 @@ def run():
                             loc, "IFF.ZSRVAL_Q%d" % i,
                             not params["SRVAL_Q%d" % i])
 
-                if "IS_D_INVERTED" in params:
-                    segmk.add_site_tag(
-                        loc, "ZINV_D", int(params["IS_D_INVERTED"] == 0))
-
-    #            if "IS_CLKB_INVERTED" in params:
-    #                segmk.add_site_tag(
-    #                    loc, "ISERDES.IS_CLKB_INVERTED",
-    #                    params["IS_CLKB_INVERTED"])
-
-    #            if "IS_CLK_INVERTED" in params:
-    #                segmk.add_site_tag(
-    #                    loc, "ISERDES.IS_CLK_INVERTED", params["IS_CLK_INVERTED"])
+                for inv in ["CLK", "CLKB", "OCLK", "OCLKB", "CLKDIV",
+                            "CLKDIVP"]:
+                    if "IS_{}_INVERTED".format(inv) in params:
+                        segmk.add_site_tag(
+                            loc, "ISERDES.INV_{}".format(inv),
+                            params["IS_{}_INVERTED".format(inv)])
+                        segmk.add_site_tag(
+                            loc, "ISERDES.ZINV_{}".format(inv),
+                            not params["IS_{}_INVERTED".format(inv)])
 
                 if "DYN_CLKDIV_INV_EN" in params:
                     value = verilog.unquote(params["DYN_CLKDIV_INV_EN"])
@@ -238,8 +236,17 @@ def run():
                         segmk.add_site_tag(loc, "IFFDELMUXE3.P0", 0)
                         segmk.add_site_tag(loc, "IFFDELMUXE3.P1", 1)
 
-                segmk.add_site_tag(loc, "ISERDES.NUM_CE.1", 1)
-                segmk.add_site_tag(loc, "ISERDES.NUM_CE.2", 0)
+                for inv in ["C", "D"]:
+                    if "IS_{}_INVERTED".format(inv) in params:
+                        segmk.add_site_tag(
+                            loc, "INV_{}".format(inv),
+                            params["IS_{}_INVERTED".format(inv)])
+                        segmk.add_site_tag(
+                            loc, "ZINV_{}".format(inv),
+                            not params["IS_{}_INVERTED".format(inv)])
+
+                segmk.add_site_tag(loc, "ISERDES.NUM_CE.N1", 1)
+                segmk.add_site_tag(loc, "ISERDES.NUM_CE.N2", 0)
 
             # Should not happen
             else:
