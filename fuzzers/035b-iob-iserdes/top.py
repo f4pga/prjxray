@@ -443,7 +443,7 @@ end else if (IS_USED && BEL_TYPE == "IDDR") begin
   .Q1(x[0]),
   .Q2(x[1])
   );
-  
+
   assign x[8] = (IDELMUX) ? ddly : I;
   assign x[7:2] = 0;
 
