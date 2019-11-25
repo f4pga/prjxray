@@ -153,12 +153,12 @@ proc make_project_roi { roi_var } {
 
     assign_iobs
 
-    create_pblock roi
-    add_cells_to_pblock [get_pblocks roi] [get_cells roi]
-    foreach roi "$::env($roi_var)" {
-        puts "ROI: $roi"
-        resize_pblock [get_pblocks roi] -add "$roi"
-    }
+#    create_pblock roi
+#    add_cells_to_pblock [get_pblocks roi] [get_cells roi]
+#    foreach roi "$::env($roi_var)" {
+#        puts "ROI: $roi"
+#        resize_pblock [get_pblocks roi] -add "$roi"
+#    }
 
     set_property CFGBVS VCCO [current_design]
     set_property CONFIG_VOLTAGE 3.3 [current_design]

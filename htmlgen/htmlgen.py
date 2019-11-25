@@ -396,8 +396,13 @@ def mk_tilegrid_page(dbstate, output, grid):
             print("<tr>", file=f)
 
             for grid_x in range(grid_range[0], grid_range[2] + 1):
-                tilename = grid_map[(grid_x, grid_y)]
-                tiledata = grid[tilename]
+                try:
+                    tilename = grid_map[(grid_x, grid_y)]
+                    tiledata = grid[tilename]
+                except:
+                    tilename = "missing"
+                    tiledata = {"type":"NULL"}
+
 
                 bgcolor = tile_bgcolor(tiledata)
                 title = tile_title(tilename, tiledata, grid_x, grid_y, grid)

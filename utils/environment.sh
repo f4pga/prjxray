@@ -36,9 +36,9 @@ export XRAY_TCL_REFORMAT="${XRAY_UTILS_DIR}/tcl-reformat.sh"
 export XRAY_VIVADO="${XRAY_UTILS_DIR}/vivado.sh"
 
 # Verify an approved version is in use
-export XRAY_VIVADO_SETTINGS="${XRAY_VIVADO_SETTINGS:-/opt/Xilinx/Vivado/2017.2/settings64.sh}"
+export XRAY_VIVADO_SETTINGS="${XRAY_VIVADO_SETTINGS:-/opt/Xilinx-2019/Vivado/2019.2/settings64.sh}"
 # Vivado v2017.2 (64-bit)
-if [ $(${XRAY_VIVADO} -h |grep Vivado |cut -d\  -f 2) != "v2017.2" ] ; then
+if [ $(${XRAY_VIVADO} -h |grep Vivado |cut -d\  -f 2) != "v2019.2" ] ; then
     echo "Requires Vivado 2017.2. See https://github.com/SymbiFlow/prjxray/issues/14"
     # Can't exit since sourced script
     # Trash a key environment variable to preclude use

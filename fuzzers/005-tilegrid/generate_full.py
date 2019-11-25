@@ -451,9 +451,9 @@ def run(json_in_fn, json_out_fn, verbose=False):
     propagate_INT_lr_bits(database, tiles_by_grid, verbose=verbose)
     propagate_INT_bits_in_column(database, tiles_by_grid)
     propagate_rebuf(database, tiles_by_grid)
-    propagate_IOB_SING(database, tiles_by_grid)
-    propagate_IOI_SING(database, tiles_by_grid)
-    propagate_IOI_Y9(database, tiles_by_grid)
+    #propagate_IOB_SING(database, tiles_by_grid)
+    #propagate_IOI_SING(database, tiles_by_grid)
+    #propagate_IOI_Y9(database, tiles_by_grid)
     alias_HCLKs(database)
 
     # Save
