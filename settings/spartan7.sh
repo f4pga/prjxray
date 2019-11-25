@@ -1,0 +1,26 @@
+export XRAY_DATABASE="spartan7"
+export XRAY_PART="xc7s50csga324-1il"
+export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
+
+# All CLB's in part, all BRAM's in part, all DSP's in part.
+# tcl queries IOB => don't bother adding
+export XRAY_ROI_TILEGRID="SLICE_X0Y0:SLICE_X65Y99 SLICE_X0Y100:SLICE_X57Y149 RAMB18_X0Y0:RAMB18_X1Y59 RAMB36_X0Y0:RAMB36_X1Y29 RAMB18_X2Y0:RAMB18_X2Y39 RAMB36_X2Y0:RAMB36_X2Y19 DSP48_X0Y0:DSP48_X1Y59"
+
+# These settings must remain in sync
+export XRAY_ROI="SLICE_X0Y100:SLICE_X35Y149 RAMB18_X0Y40:RAMB18_X0Y59 RAMB36_X0Y20:RAMB36_X0Y29 DSP48_X0Y40:DSP48_X0Y59 IOB_X0Y0:IOB_X0Y49"
+# Most of CMT X0Y2.
+export XRAY_ROI_GRID_X1="10"
+export XRAY_ROI_GRID_X2="58"
+# Include VBRK / VTERM
+export XRAY_ROI_GRID_Y1="0"
+export XRAY_ROI_GRID_Y2="51"
+
+export XRAY_PIN_06="R12"
+export XRAY_PIN_05="V12"
+export XRAY_PIN_04="U11"
+export XRAY_PIN_03="T11"
+export XRAY_PIN_02="R11"
+export XRAY_PIN_01="T13"
+export XRAY_PIN_00="T12"
+
+source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
