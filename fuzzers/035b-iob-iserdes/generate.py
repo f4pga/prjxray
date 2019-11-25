@@ -32,7 +32,6 @@ def run():
     for param_list in data:
         for params in param_list:
             loc = verilog.unquote(params["SITE_LOC"])
-            loc = loc.replace("ILOGIC", "IOB")
 
             get_xy = util.create_xy_fun('IOB_')
             x, y = get_xy(loc)
