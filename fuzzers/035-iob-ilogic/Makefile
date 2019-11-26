@@ -10,8 +10,13 @@ include ../fuzzer.mk
 
 database: build/segbits_xioi3.db
 
-build/segbits_xioi3.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 6 -o build/segbits_xioi3.rdb $$(find -name segdata_*)
+build/segbits_xioi3.rdb2: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -c 6 -o build/segbits_xioi3.rdb2 $$(find -name segdata_*)
+
+build/segbits_xioi3.rdb: build/segbits_xioi3.rdb2
+	# Filter out ISERDES features. Also filter DYN_CLK_INV_EN as they should
+	# belong to ISEDRES and are solved by fuzzer 035b.
+	grep -v ".ISERDES." $^ | grep -v "DYN_" >$@
 
 build/segbits_xioi3.db: build/segbits_xioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@

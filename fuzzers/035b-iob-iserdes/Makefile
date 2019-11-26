@@ -1,10 +1,14 @@
-N := 60
+N := 50
 include ../fuzzer.mk
 
 database: build/segbits_xiob33.db
 
-build/segbits_xiob33.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 20 -m 1 -M 1 -o build/segbits_xiob33.rdb $$(find -name segdata_*.txt)
+build/segbits_xiob33.rdb2: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -c 20 -m 1 -M 1 -o build/segbits_xiob33.rdb2 $$(find -name segdata_*.txt)
+
+build/segbits_xiob33.rdb: build/segbits_xiob33.rdb2
+	# Keep only solution for ISERDES related features.
+	grep -e ".ISERDES." $^ >$@
 
 build/segbits_xiob33.db: build/segbits_xiob33.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
