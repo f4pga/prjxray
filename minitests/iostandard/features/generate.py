@@ -49,6 +49,10 @@ IOBUF_NOT_ALLOWED = [
     'SSTL18_I',
 ]
 
+DIFF_MAP = {
+    'SSTL135': 'DIFF_SSTL135',
+}
+
 
 def gen_iosettings():
     """
@@ -92,9 +96,21 @@ def gen_iosettings():
     SLEWS = ("SLOW", "FAST")
 
     for iostandard in IOSTANDARDS:
+
+        # Single ended
         for drive in DRIVES[iostandard]:
             for slew in SLEWS:
                 yield {"iostandard": iostandard, "drive": drive, "slew": slew}
+
+        # Differential
+        if iostandard in DIFF_MAP:
+            for drive in DRIVES[iostandard]:
+                for slew in SLEWS:
+                    yield {
+                        "iostandard": DIFF_MAP[iostandard],
+                        "drive": drive,
+                        "slew": slew
+                    }
 
 
 # =============================================================================
@@ -113,9 +129,13 @@ def run():
     design_index = 0
     while True:
 
+        num_inp = 0
+        num_out = 0
+        num_ino = 0
+
         # Generate clock regions
         region_data = []
-        for region in iob_sites:
+        for region in sorted(list(iob_sites.keys())):
 
             # Get IO settings
             try:
@@ -125,15 +145,36 @@ def run():
 
             # Get sites
             sites = [
-                site["name"] for site in iob_sites[region] if site["is_bonded"]
+                (
+                    site["name"],
+                    site["type"],
+                ) for site in iob_sites[region] if site["is_bonded"]
                 and not site["is_vref"] and "SING" not in site["tile"]
             ]
             if not len(sites):
                 continue
 
-            # Select 5 random sites (IBUF, IBUF, OBUF, OBUF, IOBUF)
-            used_sites = random.sample(sites, 5)
-            unused_sites = list(set(sites) - set(used_sites))
+            # Differential / single ended
+            if "DIFF" in iosettings["iostandard"]:
+
+                # Select 5 random sites (IBUFDS, IBUFDS, OBUFDS, OBUFDS, IOBUFDS)
+                site_names = [s[0] for s in sites if s[1] == "IOB33M"]
+                used_sites = random.sample(site_names, 5)
+                unused_sites = list(set(site_names) - set(used_sites))
+
+                num_inp += 4
+                num_out += 4
+                num_ino += 2
+
+            else:
+                # Select 5 random sites (IBUF, IBUF, OBUF, OBUF, IOBUF)
+                site_names = [s[0] for s in sites]
+                used_sites = random.sample(site_names, 5)
+                unused_sites = list(set(site_names) - set(used_sites))
+
+                num_inp += 2
+                num_out += 2
+                num_ino += 1
 
             # Store data
             region_data.append(
@@ -145,16 +186,14 @@ def run():
                     "output": used_sites[2:4],
                     "inout": used_sites[4:5],
                 })
+            print(region, iosettings)
+        print("----")
 
         # No more
         if len(region_data) == 0:
             break
 
         # Generate the design
-        num_inp = len(region_data) * 2
-        num_out = len(region_data) * 2
-        num_ino = len(region_data)
-
         verilog = """
 module top (
     input  wire [{num_inp}:0] inp,
@@ -163,8 +202,13 @@ module top (
 );
 """.format(num_inp=num_inp - 1, num_ino=num_ino - 1, num_out=num_out - 1)
 
+        inp_idx = 0
+        out_idx = 0
+        ino_idx = 0
+
         for i, data in enumerate(region_data):
 
+            is_diff = "DIFF" in data["iosettings"]["iostandard"]
             use_ino = data["iosettings"]["iostandard"] not in IOBUF_NOT_ALLOWED
 
             iostandard = data["iosettings"]["iostandard"]
@@ -186,16 +230,32 @@ module top (
                 "obuf_0_loc": data["output"][0],
                 "obuf_1_loc": data["output"][1],
                 "iobuf_loc": data["inout"][0],
-                "inp_0": 2 * i + 0,
-                "inp_1": 2 * i + 1,
-                "out_0": 2 * i + 0,
-                "out_1": 2 * i + 1,
-                "ino": i,
+                "inp_0_p": inp_idx,
+                "inp_0_n": inp_idx + 2,
+                "inp_1_p": inp_idx + 1,
+                "inp_1_n": inp_idx + 3,
+                "out_0_p": out_idx,
+                "out_0_n": out_idx + 2,
+                "out_1_p": out_idx + 1,
+                "out_1_n": out_idx + 3,
+                "ino_p": ino_idx,
+                "ino_n": ino_idx + 1,
                 "ibuf_param_str": ibuf_param_str,
                 "obuf_param_str": obuf_param_str,
             }
 
-            verilog += """
+            if is_diff:
+                inp_idx += 4
+                out_idx += 4
+                ino_idx += 2
+            else:
+                inp_idx += 2
+                out_idx += 2
+                ino_idx += 1
+
+            # Single ended
+            if not is_diff:
+                verilog += """
 
     // {region}
     wire inp_0_{region};
@@ -208,41 +268,41 @@ module top (
     wire ino_t_{region};
 """.format(**keys)
 
-            verilog += """
+                verilog += """
     (* KEEP, DONT_TOUCH, LOC="{ibuf_0_loc}" *)
     IBUF # ({ibuf_param_str}) ibuf_0_{region} (
-    .I(inp[{inp_0}]),
+    .I(inp[{inp_0_p}]),
     .O(inp_0_{region})
     );
 
     (* KEEP, DONT_TOUCH, LOC="{ibuf_1_loc}" *)
     IBUF # ({ibuf_param_str}) ibuf_1_{region} (
-    .I(inp[{inp_1}]),
+    .I(inp[{inp_1_p}]),
     .O(inp_1_{region})
     );
 
     (* KEEP, DONT_TOUCH, LOC="{obuf_0_loc}" *)
     OBUF # ({obuf_param_str}) obuf_0_{region} (
     .I(out_0_{region}),
-    .O(out[{out_0}])
+    .O(out[{out_0_p}])
     );
 
     (* KEEP, DONT_TOUCH, LOC="{obuf_1_loc}" *)
     OBUF # ({obuf_param_str}) obuf_1_{region} (
     .I(out_1_{region}),
-    .O(out[{out_1}])
+    .O(out[{out_1_p}])
     );
 """.format(**keys)
 
-            if use_ino:
-                verilog += """
+                if use_ino:
+                    verilog += """
 
     (* KEEP, DONT_TOUCH, LOC="{iobuf_loc}" *)
     IOBUF # ({obuf_param_str}) iobuf_{region} (
     .I(ino_i_{region}),
     .O(ino_o_{region}),
     .T(ino_t_{region}),
-    .IO(ino[{ino}])
+    .IO(ino[{ino_p}])
     );
 
     assign out_0_{region} = inp_0_{region};
@@ -251,12 +311,84 @@ module top (
     assign ino_t_{region} = inp_1_{region};
 """.format(**keys)
 
-            else:
-                verilog += """
+                else:
+                    verilog += """
 
     assign out_0_{region} = inp_0_{region};
     assign out_1_{region} = inp_1_{region};
     assign ino[{ino}] = 1'b0;
+""".format(**keys)
+
+            # Differential
+            else:
+                verilog += """
+
+    // {region}
+    wire inp_0_{region};
+    wire inp_1_{region};
+    wire out_0_{region};
+    wire out_1_{region};
+
+    wire ino_i_{region};
+    wire ino_o_{region};
+    wire ino_t_{region};
+""".format(**keys)
+
+                verilog += """
+    (* KEEP, DONT_TOUCH, LOC="{ibuf_0_loc}" *)
+    IBUFDS # ({ibuf_param_str}) ibufds_0_{region} (
+    .I(inp[{inp_0_p}]),
+    .IB(inp[{inp_0_n}]),
+    .O(inp_0_{region})
+    );
+
+    (* KEEP, DONT_TOUCH, LOC="{ibuf_1_loc}" *)
+    IBUFDS # ({ibuf_param_str}) ibufds_1_{region} (
+    .I(inp[{inp_1_p}]),
+    .IB(inp[{inp_1_n}]),
+    .O(inp_1_{region})
+    );
+
+    (* KEEP, DONT_TOUCH, LOC="{obuf_0_loc}" *)
+    OBUFDS # ({obuf_param_str}) obufds_0_{region} (
+    .I(out_0_{region}),
+    .O(out[{out_0_p}]),
+    .OB(out[{out_0_n}])
+    );
+
+    (* KEEP, DONT_TOUCH, LOC="{obuf_1_loc}" *)
+    OBUFDS # ({obuf_param_str}) obufds_1_{region} (
+    .I(out_1_{region}),
+    .O(out[{out_1_p}]),
+    .OB(out[{out_1_n}])
+    );
+""".format(**keys)
+
+                if use_ino:
+                    verilog += """
+
+    (* KEEP, DONT_TOUCH, LOC="{iobuf_loc}" *)
+    IOBUFDS # ({obuf_param_str}) iobufds_{region} (
+    .I(ino_i_{region}),
+    .O(ino_o_{region}),
+    .T(ino_t_{region}),
+    .IO(ino[{ino_p}]),
+    .IOB(ino[{ino_n}])
+    );
+
+    assign out_0_{region} = inp_0_{region};
+    assign out_1_{region} = ino_o_{region};
+    assign ino_i_{region} = inp_0_{region};
+    assign ino_t_{region} = inp_1_{region};
+""".format(**keys)
+
+                else:
+                    verilog += """
+
+    assign out_0_{region} = inp_0_{region};
+    assign out_1_{region} = inp_1_{region};
+    assign ino[{ino_p}] = 1'b0;
+    assign ino[{ino_n}] = 1'b0;
 """.format(**keys)
 
         verilog += "endmodule"

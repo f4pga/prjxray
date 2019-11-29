@@ -127,6 +127,8 @@ def run():
 
             iosettings = "{}.I{}.{}".format(iostandard, drive, slew)
 
+            is_diff = "DIFF" in iostandard
+
             for feature in sorted(features):
                 I = [f[1] for f in result["input"] if f[0] == feature and f[1]]
                 O = [
@@ -139,14 +141,15 @@ def run():
                     if f[0] == feature and f[1]
                 ]
 
-                s = [
-                    "I" if len(I) > 0 else "",
-                    "O" if len(O) > 0 else "",
-                    "T" if len(T) > 0 else "",
-                    "U" if len(U) > 0 else "",
-                ]
+                s = "".join(
+                    [
+                        "I" if len(I) > 0 else "",
+                        "O" if len(O) > 0 else "",
+                        "T" if len(T) > 0 else "",
+                        "U" if len(U) > 0 else "",
+                    ])
 
-                csv_data[iosettings][feature] = "".join(s)
+                csv_data[iosettings][feature] = s
 
         # Write header
         line = [""] + sorted(features)

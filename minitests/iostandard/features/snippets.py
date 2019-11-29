@@ -3,7 +3,7 @@ import argparse
 
 from collections import namedtuple
 
-IOSettings = namedtuple("IOSettings", "iostandard, drive, slew")
+IOSettings = namedtuple("IOSettings", "iostandard, drive, slew, is_diff")
 
 # =============================================================================
 
@@ -30,7 +30,7 @@ def load_feature_data(fname):
             ios = IOSettings(
                 parts[0],
                 int(parts[1][1:]) if parts[1][1:] != "_FIXED" else None,
-                parts[2])
+                parts[2], "DIFF_" in parts[0])
 
             # Feature activity
             feature_data[ios] = {
@@ -73,14 +73,18 @@ def get_relevant_parameters(feature_data, iob_type):
     parameters = []
 
     # Check if a feature is relevant to particular IOB type
+    is_diff = "DIFF_" in iob_type
+
     for feature in all_features:
         for iosettings in feature_data:
-            if iob_type in feature_data[iosettings][feature]:
-                parameters.append((
-                    feature,
-                    feature.replace(".", "_"),
-                ))
-                break
+            if iosettings.is_diff == is_diff:
+                base_iob_type = iob_type.replace("DIFF_", "")
+                if base_iob_type in feature_data[iosettings][feature]:
+                    parameters.append((
+                        feature,
+                        feature.replace(".", "_"),
+                    ))
+                    break
 
     return parameters
 
@@ -123,16 +127,22 @@ def generate_parameter_assignments(parameters, feature_data, iob_type):
     """
     verilog = []
 
+    is_diff = "DIFF_" in iob_type
+    base_iob_type = iob_type.replace("DIFF_", "")
+
     for feature, parameter in sorted(parameters):
         condition = []
         for iosettings in feature_data:
 
+            if iosettings.is_diff != is_diff:
+                continue
+
             # Feature is set
-            if iob_type in feature_data[iosettings][feature]:
+            if base_iob_type in feature_data[iosettings][feature]:
                 cond = "IOSTANDARD == \"{}\"".format(
                     iosettings.iostandard.upper())
 
-                if iob_type in ["O", "T"]:
+                if base_iob_type in ["O", "T"]:
                     if iosettings.drive is not None and "DRIVE" in feature:
                         cond += " && DRIVE == {}".format(iosettings.drive)
                     if "SLEW" in feature:
@@ -169,7 +179,7 @@ def run():
 
     # Make parameters
     parameters = {}
-    for iob_type in ["I", "O", "T"]:
+    for iob_type in ["I", "O", "T", "DIFF_I", "DIFF_O", "DIFF_T"]:
         parameters[iob_type] = get_relevant_parameters(feature_data, iob_type)
 
     # Parameter definition

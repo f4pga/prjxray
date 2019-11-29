@@ -32,6 +32,7 @@ clean:
 	@rm -rf features.csv
 	@rm -rf results.json
 	@rm -rf unknown_bits.jl
+	@rm -rf iobs-$(VIVADO_PART).csv
 
 iobs-$(VIVADO_PART).csv: ../dump_iobs.tcl
 	env VIVADO_PART=$(VIVADO_PART) $(XRAY_VIVADO) -mode batch -source ../dump_iobs.tcl -nojournal -log dump_iobs.log
