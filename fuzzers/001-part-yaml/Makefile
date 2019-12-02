@@ -4,7 +4,8 @@ SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 database: $(SPECIMENS)
 	mkdir -p build
 	cp build/specimen_001/part.yaml build/part.yaml
-	python3 -m utils.xyaml build/part.yaml > build/part.json
+	python3 -m utils.xyaml build/part.yaml > build/part_no_iobanks.json
+	python3 add_iobanks.py --part_json build/part_no_iobanks.json --iobanks_info build/specimen_001/iobanks.txt > build/part.json
 
 $(SPECIMENS): Makefile.specimen
 	mkdir -p $@
