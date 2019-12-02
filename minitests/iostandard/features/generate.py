@@ -23,7 +23,7 @@ def load_iob_sites(file_name):
         for line in fp:
 
             fields = line.split(",")
-            if len(fields) != 9:
+            if len(fields) != 10:
                 continue
 
             iob_sites[fields[3]].append(
@@ -32,10 +32,11 @@ def load_iob_sites(file_name):
                     "name": fields[1],
                     "type": fields[2],
                     "bank": fields[4],
-                    "is_bonded": bool(int(fields[5])),
-                    "is_clock": bool(int(fields[6])),
-                    "is_global_clock": bool(int(fields[7])),
-                    "is_vref": bool(int(fields[8])),
+                    "pkg_pin": fields[5],
+                    "is_bonded": bool(int(fields[6])),
+                    "is_clock": bool(int(fields[7])),
+                    "is_global_clock": bool(int(fields[8])),
+                    "is_vref": bool(int(fields[9])),
                 })
 
     return iob_sites
@@ -124,6 +125,23 @@ def run():
     # Load IOB data
     iob_sites = load_iob_sites("iobs-{}.csv".format(os.getenv("VIVADO_PART")))
 
+    # Generate IOB site to package pin map and *M site to *S site map.
+    site_to_pkg_pin = {}
+    master_to_slave = {}
+
+    for region, sites in iob_sites.items():
+        tiles = defaultdict(lambda: {})
+
+        for site in sites:
+            site_to_pkg_pin[site["name"]] = site["pkg_pin"]
+            if site["type"] == "IOB33M":
+                tiles[site["tile"]]["M"] = site
+            if site["type"] == "IOB33S":
+                tiles[site["tile"]]["S"] = site
+
+        for sites in tiles.values():
+            master_to_slave[sites["M"]["name"]] = sites["S"]["name"]
+
     # Generate designs
     iosettings_gen = gen_iosettings()
     design_index = 0
@@ -202,6 +220,8 @@ module top (
 );
 """.format(num_inp=num_inp - 1, num_ino=num_ino - 1, num_out=num_out - 1)
 
+        tcl = ""
+
         inp_idx = 0
         out_idx = 0
         ino_idx = 0
@@ -255,6 +275,18 @@ module top (
 
             # Single ended
             if not is_diff:
+
+                tcl += "set_property PACKAGE_PIN {} [get_ports inp[{}]]\n".format(
+                    site_to_pkg_pin[keys["ibuf_0_loc"]], keys["inp_0_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports inp[{}]]\n".format(
+                    site_to_pkg_pin[keys["ibuf_1_loc"]], keys["inp_1_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports out[{}]]\n".format(
+                    site_to_pkg_pin[keys["obuf_0_loc"]], keys["inp_0_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports out[{}]]\n".format(
+                    site_to_pkg_pin[keys["obuf_1_loc"]], keys["inp_1_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports ino[{}]]\n".format(
+                    site_to_pkg_pin[keys["iobuf_loc"]], keys["ino_p"])
+
                 verilog += """
 
     // {region}
@@ -269,25 +301,25 @@ module top (
 """.format(**keys)
 
                 verilog += """
-    (* KEEP, DONT_TOUCH, LOC="{ibuf_0_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     IBUF # ({ibuf_param_str}) ibuf_0_{region} (
     .I(inp[{inp_0_p}]),
     .O(inp_0_{region})
     );
 
-    (* KEEP, DONT_TOUCH, LOC="{ibuf_1_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     IBUF # ({ibuf_param_str}) ibuf_1_{region} (
     .I(inp[{inp_1_p}]),
     .O(inp_1_{region})
     );
 
-    (* KEEP, DONT_TOUCH, LOC="{obuf_0_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     OBUF # ({obuf_param_str}) obuf_0_{region} (
     .I(out_0_{region}),
     .O(out[{out_0_p}])
     );
 
-    (* KEEP, DONT_TOUCH, LOC="{obuf_1_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     OBUF # ({obuf_param_str}) obuf_1_{region} (
     .I(out_1_{region}),
     .O(out[{out_1_p}])
@@ -297,7 +329,7 @@ module top (
                 if use_ino:
                     verilog += """
 
-    (* KEEP, DONT_TOUCH, LOC="{iobuf_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     IOBUF # ({obuf_param_str}) iobuf_{region} (
     .I(ino_i_{region}),
     .O(ino_o_{region}),
@@ -321,6 +353,33 @@ module top (
 
             # Differential
             else:
+
+                tcl += "set_property PACKAGE_PIN {} [get_ports inp[{}]]\n".format(
+                    site_to_pkg_pin[keys["ibuf_0_loc"]], keys["inp_0_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports inp[{}]]\n".format(
+                    site_to_pkg_pin[master_to_slave[keys["ibuf_0_loc"]]],
+                    keys["inp_0_n"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports inp[{}]]\n".format(
+                    site_to_pkg_pin[keys["ibuf_1_loc"]], keys["inp_1_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports inp[{}]]\n".format(
+                    site_to_pkg_pin[master_to_slave[keys["ibuf_1_loc"]]],
+                    keys["inp_1_n"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports out[{}]]\n".format(
+                    site_to_pkg_pin[keys["obuf_0_loc"]], keys["inp_0_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports out[{}]]\n".format(
+                    site_to_pkg_pin[master_to_slave[keys["obuf_0_loc"]]],
+                    keys["inp_0_n"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports out[{}]]\n".format(
+                    site_to_pkg_pin[keys["obuf_1_loc"]], keys["inp_1_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports out[{}]]\n".format(
+                    site_to_pkg_pin[master_to_slave[keys["obuf_1_loc"]]],
+                    keys["inp_1_n"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports ino[{}]]\n".format(
+                    site_to_pkg_pin[keys["iobuf_loc"]], keys["ino_p"])
+                tcl += "set_property PACKAGE_PIN {} [get_ports ino[{}]]\n".format(
+                    site_to_pkg_pin[master_to_slave[keys["iobuf_loc"]]],
+                    keys["ino_n"])
+
                 verilog += """
 
     // {region}
@@ -335,28 +394,28 @@ module top (
 """.format(**keys)
 
                 verilog += """
-    (* KEEP, DONT_TOUCH, LOC="{ibuf_0_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     IBUFDS # ({ibuf_param_str}) ibufds_0_{region} (
     .I(inp[{inp_0_p}]),
     .IB(inp[{inp_0_n}]),
     .O(inp_0_{region})
     );
 
-    (* KEEP, DONT_TOUCH, LOC="{ibuf_1_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     IBUFDS # ({ibuf_param_str}) ibufds_1_{region} (
     .I(inp[{inp_1_p}]),
     .IB(inp[{inp_1_n}]),
     .O(inp_1_{region})
     );
 
-    (* KEEP, DONT_TOUCH, LOC="{obuf_0_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     OBUFDS # ({obuf_param_str}) obufds_0_{region} (
     .I(out_0_{region}),
     .O(out[{out_0_p}]),
     .OB(out[{out_0_n}])
     );
 
-    (* KEEP, DONT_TOUCH, LOC="{obuf_1_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     OBUFDS # ({obuf_param_str}) obufds_1_{region} (
     .I(out_1_{region}),
     .O(out[{out_1_p}]),
@@ -367,7 +426,7 @@ module top (
                 if use_ino:
                     verilog += """
 
-    (* KEEP, DONT_TOUCH, LOC="{iobuf_loc}" *)
+    (* KEEP, DONT_TOUCH *)
     IOBUFDS # ({obuf_param_str}) iobufds_{region} (
     .I(ino_i_{region}),
     .O(ino_o_{region}),
@@ -397,6 +456,11 @@ module top (
         fname = "design_{:03d}.v".format(design_index)
         with open(fname, "w") as fp:
             fp.write(verilog)
+
+        # Write TCL
+        fname = "design_{:03d}.tcl".format(design_index)
+        with open(fname, "w") as fp:
+            fp.write(tcl)
 
         # Write JSON
         fname = "design_{:03d}.json".format(design_index)

@@ -14,6 +14,7 @@ all: analysis
 
 clean:
 	@rm -rf design_*.v
+	@rm -rf design_*.tcl
 	@rm -rf design_*.json
 	@rm -rf design_*.csv
 	@rm -rf design_*.fasm

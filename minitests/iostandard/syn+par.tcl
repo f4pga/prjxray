@@ -5,6 +5,9 @@ set_property SEVERITY {Warning} [get_drc_checks UCIO-1]
 
 read_verilog ../$env(PROJECT_NAME).v
 synth_design -top top
+
+source ../$env(PROJECT_NAME).tcl
+
 place_design
 route_design
 
