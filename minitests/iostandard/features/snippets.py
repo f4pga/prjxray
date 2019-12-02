@@ -99,9 +99,9 @@ def generate_parameter_defs(parameters):
     verilog = []
 
     for feature, parameter in sorted(parameters):
-        verilog.append("parameter [0:0] {} = 1'b0".format(parameter))
+        verilog.append("parameter [0:0] {} = 1'b0;".format(parameter))
 
-    return ";\n".join(verilog)
+    return "\n".join(verilog)
 
 
 def generate_parameter_map(parameters):
