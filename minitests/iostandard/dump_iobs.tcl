@@ -1,7 +1,7 @@
 proc dump_iobs {file_name} {
 
     set fp [open $file_name w]
-    puts $fp "tile,site_name,site_type,clock_region,bank,is_bonded,is_clock,is_global_clock,is_vref"
+    puts $fp "tile,site_name,site_type,clock_region,bank,pkg_pin,is_bonded,is_clock,is_global_clock,is_vref"
 
     foreach tile [get_tiles *IOB33*] {
         foreach site [get_sites -of_objects $tile] {

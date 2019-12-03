@@ -1,5 +1,18 @@
+"""
+This script generates code snippets for cell definition, technology mapping and
+VPR architecture definition. It reads correlation of IOB fasm features with
+IO standard settings such as IOSTANDARD, DRIVE and SLEW and generates:
+
+- Verilog model parameter definitions that match fasm features.
+- Xilinx's IOB parameter translation to those features.
+- Assignment of model parameters to the actual fasm features for VPR arch def.
+
+Generated code snippets need to be manually copied to relevant places in the
+target code / arch. def.
+"""
 import os
 import argparse
+import csv
 
 from collections import namedtuple
 
@@ -12,31 +25,21 @@ def load_feature_data(fname):
     """
     Load feature vs. IO settings correlation data from a CSV file.
     """
+
+    # Load the data from CSV
     feature_data = {}
-
-    # Open the file
     with open(fname, "r") as fp:
+        for line in csv.DictReader(fp):
 
-        # Header
-        line = fp.readline()
-        features = line.strip().split(",")[1:]
-
-        # Data
-        for line in fp:
-            fields = line.strip().split(",")
-
-            # IOSettings
-            parts = fields[0].split(".")
+            # Get IOSettings
+            ios_parts = line["iosettings"].split(".")
             ios = IOSettings(
-                parts[0],
-                int(parts[1][1:]) if parts[1][1:] != "_FIXED" else None,
-                parts[2], "DIFF_" in parts[0])
+                ios_parts[0],
+                int(ios_parts[1][1:]) if ios_parts[1][1:] != "_FIXED" else
+                None, ios_parts[2], "DIFF_" in ios_parts[0])
 
             # Feature activity
-            feature_data[ios] = {
-                f: fields[1 + i]
-                for i, f in enumerate(features)
-            }
+            feature_data[ios] = {k: line[k] for k in list(line.keys())[1:]}
 
     return feature_data
 

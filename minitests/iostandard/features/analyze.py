@@ -1,3 +1,12 @@
+"""
+This script performs the analysis of disassembled bitstream and design information.
+It correlates presence/absence of particular fasm features in the bitstream
+with presence/absence of a particular IOB type. It also checks for features
+that are set for unused IOBs that are in the same bank as the used ones.
+
+The list of available fasm features is read from the prjxray database. The
+analysis result is written to a CSV file.
+"""
 import os
 import argparse
 import json
@@ -44,6 +53,13 @@ def load_iob_segbits():
 def correlate_features(features, tile, site, set_features):
     """
     Correlate each feature with the fasm disassembly for given tile/site.
+
+    Given a set of all possible fasm features (for an IOB) in the first
+    argument, checks whether they are set or cleared for the given tile+site in
+    a design. The parameter set_features contains fasm dissassembly of the
+    design.
+
+    Returns a list of tuples with feature names and whether they are set or not.
     """
     result = []
 
@@ -152,7 +168,7 @@ def run():
                 csv_data[iosettings][feature] = s
 
         # Write header
-        line = [""] + sorted(features)
+        line = ["iosettings"] + sorted(features)
         fp.write(",".join(line) + "\n")
 
         # Write data

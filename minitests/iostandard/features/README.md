@@ -1,6 +1,6 @@
 # IOSTANDARD feature correlation minitest
 
-This test checks which fasm features present in the db are set for given IO settings (IOSTANDARD + DRIVE + SLEW) and for which IOB type (IBUF, OBUF, IOBUF). It also checks what features are set on unused IOBs of a given bank in which active IOBs are instantiated. To avoid conflicts, a single iosettings combination is used within an IO bank.
+This test checks which fasm features present in the db are set for given IO settings (IOSTANDARD + DRIVE + SLEW) and for which IOB type (IBUF, OBUF, IOBUF, IBUFDS, OBUFDS, IOBUFDS). It also checks what features are set on unused IOBs of a given bank in which active IOBs are instantiated. To avoid conflicts, a single iosettings combination is used within an IO bank.
 
 ## Running the minitest
 

@@ -1,6 +1,7 @@
 import os
 import random
 import json
+import csv
 from collections import defaultdict
 
 try:
@@ -15,30 +16,17 @@ def load_iob_sites(file_name):
     """
     Loads IOB site dump from the given CSV file.
     """
-    iob_sites = defaultdict(lambda: [])
 
+    # Load the data
     with open(file_name, "r") as fp:
-        fp.readline()
+        data = [row for row in csv.DictReader(fp)]
 
-        for line in fp:
+    # Index IOB site data by clock regions
+    iob_sites = defaultdict(lambda: [])
+    for site_data in data:
+        iob_sites[site_data["clock_region"]].append(site_data)
 
-            fields = line.split(",")
-            if len(fields) != 10:
-                continue
-
-            iob_sites[fields[3]].append(
-                {
-                    "tile": fields[0],
-                    "name": fields[1],
-                    "type": fields[2],
-                    "bank": fields[4],
-                    "pkg_pin": fields[5],
-                    "is_bonded": bool(int(fields[6])),
-                    "is_clock": bool(int(fields[7])),
-                    "is_global_clock": bool(int(fields[8])),
-                    "is_vref": bool(int(fields[9])),
-                })
-
+    print(data)
     return iob_sites
 
 
@@ -133,14 +121,14 @@ def run():
         tiles = defaultdict(lambda: {})
 
         for site in sites:
-            site_to_pkg_pin[site["name"]] = site["pkg_pin"]
-            if site["type"] == "IOB33M":
+            site_to_pkg_pin[site["site_name"]] = site["pkg_pin"]
+            if site["site_type"] == "IOB33M":
                 tiles[site["tile"]]["M"] = site
-            if site["type"] == "IOB33S":
+            if site["site_type"] == "IOB33S":
                 tiles[site["tile"]]["S"] = site
 
         for sites in tiles.values():
-            master_to_slave[sites["M"]["name"]] = sites["S"]["name"]
+            master_to_slave[sites["M"]["site_name"]] = sites["S"]["site_name"]
 
     # Generate designs
     iosettings_gen = gen_iosettings()
@@ -164,10 +152,10 @@ def run():
             # Get sites
             sites = [
                 (
-                    site["name"],
-                    site["type"],
+                    site["site_name"],
+                    site["site_type"],
                 ) for site in iob_sites[region] if site["is_bonded"]
-                and not site["is_vref"] and "SING" not in site["tile"]
+                and not int(site["is_vref"]) and "SING" not in site["tile"]
             ]
             if not len(sites):
                 continue
@@ -205,11 +193,12 @@ def run():
                     "inout": used_sites[4:5],
                 })
             print(region, iosettings)
-        print("----")
 
         # No more
         if len(region_data) == 0:
             break
+
+        print("----")
 
         # Generate the design
         verilog = """
@@ -473,7 +462,8 @@ module top (
                 "IOB33S": "IOB_Y1"
             }
             site_to_loc = {
-                s["name"]: "{}.{}".format(s["tile"], type_to_loc[s["type"]])
+                s["site_name"]: "{}.{}".format(
+                    s["tile"], type_to_loc[s["site_type"]])
                 for s in iob_sites[data["region"]]
             }
 

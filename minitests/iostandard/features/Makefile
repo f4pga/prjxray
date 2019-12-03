@@ -1,7 +1,7 @@
-PART=xc7a50tfgg484-1
-VIVADO_PART=xc7a50tfgg484-1
+PART?=xc7a50tfgg484-1
+VIVADO_PART?=$(PART)
 
-BIT2FASM_ARGS= --part "$(XRAY_DIR)/database/artix7/$(PART)" --verbose
+BIT2FASM_ARGS= --part "$(XRAY_DIR)/database/$(XRAY_DATABASE)/$(PART)" --verbose
 
 DESIGN_FILES=$(wildcard design*.v)
 CSV_FILES=$(subst .v,.csv,$(DESIGN_FILES))
