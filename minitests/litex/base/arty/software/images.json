@@ -1,0 +1,6 @@
+{
+	"./software/Image":        "0xc0000000",
+	"./software/rootfs.cpio":  "0xc0800000",
+	"./software/rv32.dtb":     "0xc1000000",
+	"./software/emulator":  "0x50000000"
+}

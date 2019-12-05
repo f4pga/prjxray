@@ -22,8 +22,8 @@ The following instructions are for generation of the HDL code
 
     | Repo URL | SHA |
     |    ---   | --- |
-    | <https://github.com/antmicro/litex>         | 60f2853e |
-    | <https://github.com/enjoy-digital/litedram> | 7fbe0b7  |
+    | <https://github.com/enjoy-digital/litex>    | a0122f98 |
+    | <https://github.com/enjoy-digital/litedram> | 8dae0c0  |
     | <https://github.com/enjoy-digital/liteeth>  | 2424e62  |
     | <https://github.com/m-labs/migen>           | 562c046  |
 
@@ -100,14 +100,12 @@ If you have built the RISC-V toolchain then make the PATH point to its binaries:
 ```
 export PATH="crosstool-ng/riscv32-unknown-elf/bin:$(PATH)"
 ```
-
-The following command will generate HDL code for the LiteX SoC with DRAM and Ethernet support for the Arty board target:
+The python scripts used for generating the top HDL have been placed in the `scripts` directory of a given target.
+To generate the HDL code simply change the working directory to the chosen target and call the script, e.g.:
 
 ```
-cd litex/litex/boards/targets
-./arty.py --cpu-type vexriscv --cpu-variant linux --with-ethernet --no-compile-software --no-compile-gateware
+cd base/arty/scripts
+./base_arty.py --no-compile-software --no-compile-gateware
 ```
 
-You can choose which synthesis tool generate the design for. This can be done via the additional `--synth-mode` option of the `arty.py` script. The default is `vivado` but you can change it and specify `yosys`.
-
-Generated code will be placed in the `litex/litex/boards/targets/soc_ethernetsoc_arty` folder.
+Generated code will be placed in the `soc_base_arty` folder.
