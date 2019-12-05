@@ -101,6 +101,24 @@ proc write_hclk_ppips_db {filename tile} {
     close $fp
 }
 
+proc write_ioi_ppips_db {filename tile} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if [string match "*DATAOUT*" $dst_wire] {
+            continue
+        } elseif {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
+
+    close $fp
+}
+
 foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
@@ -111,8 +129,7 @@ foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
 
 foreach tile_type {INT_L INT_R  BRAM_INT_INTERFACE_L BRAM_INT_INTERFACE_R \
             CLK_HROW_TOP_R CLK_HROW_BOT_R CLK_BUFG_TOP_R CLK_BUFG_BOT_R \
-            IO_INT_INTERFACE_R IO_INT_INTERFACE_L RIOI3 LIOI3 LIOI3_TBYTETERM \
-            RIOI3_TBYTETERM LIOI3_TBYTESRC RIOI3_TBYTESRC LIOI3_SING RIOI3_SING \
+            IO_INT_INTERFACE_R IO_INT_INTERFACE_L \
             BRKH_INT HCLK_L HCLK_R HCLK_CMT \
             CMT_TOP_L_UPPER_T CMT_TOP_L_UPPER_B \
             CMT_TOP_L_LOWER_T CMT_TOP_L_LOWER_B \
@@ -131,6 +148,15 @@ foreach tile_type {HCLK_IOI3} {
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
         write_hclk_ppips_db "ppips_[string tolower $tile_type].db" $tile
+    }
+}
+
+foreach tile_type {RIOI3 LIOI3 LIOI3_TBYTETERM RIOI3_TBYTETERM \
+            LIOI3_TBYTESRC RIOI3_TBYTESRC LIOI3_SING RIOI3_SING} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_ioi_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
 
