@@ -87,6 +87,14 @@ class Database(object):
 
         self.tile_types_obj = {}
 
+        # Load set of required fasm features for given part.
+        self.required_features = {}
+        fname = os.path.join(self.db_root, "required_features.json")
+
+        if os.path.isfile(fname):
+            with open(fname, "r") as fp:
+                self.required_features = json.load(fp)
+
     def get_tile_types(self):
         """ Return list of tile types """
         return self.tile_types.keys()
@@ -147,3 +155,22 @@ class Database(object):
                 self.tile_types[tile_type.upper()])
 
         return self.tile_segbits[tile_type]
+
+    def get_required_fasm_features(self, part=None):
+        """
+        Assembles a set of required fasm features for given part. Returns a list
+        of fasm features.
+        """
+
+        # No required features in the db, return empty list
+        if self.required_features is None:
+            return set()
+
+        # Get a list of required features for all parts
+        features = set()
+        if "all" in self.required_features:
+            features |= set(self.required_features["all"])
+
+        # TODO: Add a support for required features for a specific part.
+
+        return features
