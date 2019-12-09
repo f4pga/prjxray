@@ -154,8 +154,10 @@ def run():
                 (
                     site["site_name"],
                     site["site_type"],
-                ) for site in iob_sites[region] if site["is_bonded"]
-                and not int(site["is_vref"]) and "SING" not in site["tile"]
+                )
+                for site in iob_sites[region]
+                if site["is_bonded"] and not int(site["is_vref"]) and "SING"
+                not in site["tile"] and not "PUDC_B" in site["pin_func"]
             ]
             if not len(sites):
                 continue
