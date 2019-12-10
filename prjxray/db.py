@@ -42,6 +42,8 @@ class Database(object):
         self.tile_segbits = {}
         self.site_types = {}
 
+        per_part_features = {}
+
         for f in os.listdir(self.db_root):
             if f.endswith('.json') and f.startswith('tile_type_'):
                 tile_type = f[len('tile_type_'):-len('.json')].lower()
@@ -85,15 +87,32 @@ class Database(object):
 
                 self.site_types[site_type_name] = os.path.join(self.db_root, f)
 
+            if f.endswith('_required_features.fasm'):
+                part = f[:-len('_required_features.fasm')]
+
+                with open(os.path.join(self.db_root, f), "r") as fp:
+                    features = []
+                    for line in fp:
+                        line = line.strip()
+                        if len(line) > 0:
+                            features.append(line)
+
+                    per_part_features[part] = set(features)
+
         self.tile_types_obj = {}
 
-        # Load set of required fasm features for given part.
-        self.required_features = {}
-        fname = os.path.join(self.db_root, "required_features.json")
+        # Find common required features for all supported parts
+        if len(per_part_features) > 0:
+            common_features = set.intersection(*per_part_features.values())
+            for features in per_part_features.values():
+                features -= common_features
+        else:
+            common_features = set()
 
-        if os.path.isfile(fname):
-            with open(fname, "r") as fp:
-                self.required_features = json.load(fp)
+        self.required_features = {
+            "always_required": common_features,
+            "per_part_required": per_part_features
+        }
 
     def get_tile_types(self):
         """ Return list of tile types """
@@ -171,16 +190,8 @@ class Database(object):
         if "always_required" in self.required_features:
             features |= set(self.required_features["always_required"])
 
-        # Append / remove features for the specific part. If a feature string
-        # starts with "-" then the feature needs not to be present for that
-        # part.
+        # Append list of part specific features
         if part is not None:
-            for f in self.required_features["per_part_required"][part]:
-
-                if f.startswith("-"):
-                    f = f[1:]
-                    features -= set([f])
-                else:
-                    features |= set([f])
+            features |= set(self.required_features["per_part_required"][part])
 
         return features
