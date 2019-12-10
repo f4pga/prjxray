@@ -168,9 +168,19 @@ class Database(object):
 
         # Get a list of required features for all parts
         features = set()
-        if "all" in self.required_features:
-            features |= set(self.required_features["all"])
+        if "always_required" in self.required_features:
+            features |= set(self.required_features["always_required"])
 
-        # TODO: Add a support for required features for a specific part.
+        # Append / remove features for the specific part. If a feature string
+        # starts with "-" then the feature needs not to be present for that
+        # part.
+        if part is not None:
+            for f in self.required_features["per_part_required"][part]:
+
+                if f.startswith("-"):
+                    f = f[1:]
+                    features -= set([f])
+                else:
+                    features |= set([f])
 
         return features

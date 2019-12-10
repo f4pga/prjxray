@@ -120,7 +120,7 @@ def run(
             extra_features = fasm.parse_fasm_string(
                 '\n'.join(roi_j['required_features']))
 
-    # Get required features for the part
+    # Get required extra features for the part
     # TODO: Specify the part explicitly ?
     required_features = db.get_required_fasm_features(None)
     extra_features += fasm.parse_fasm_string('\n'.join(required_features))
