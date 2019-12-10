@@ -170,13 +170,19 @@ def main():
         db_root_kwargs['required'] = False
         db_root_kwargs['default'] = os.path.join(database_dir, database)
 
-    def_part = os.getenv("XRAY_PART")
+    db_part = os.getenv("XRAY_PART")
+    db_part_kwargs = {}
+    if db_part is None:
+        db_part_kwargs['required'] = True
+    else:
+        db_part_kwargs['required'] = False
+        db_part_kwargs['default'] = db_part
 
     parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
     parser.add_argument(
         '--part',
-        default=def_part,
-        help="Part name. When not given defaults to XRAY_PART env. var.")
+        help="Part name. When not given defaults to XRAY_PART env. var.",
+        **db_part_kwargs)
     parser.add_argument(
         '--sparse', action='store_true', help="Don't zero fill all frames")
     parser.add_argument(

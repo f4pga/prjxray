@@ -42,7 +42,7 @@ class Database(object):
         self.tile_segbits = {}
         self.site_types = {}
 
-        per_part_features = {}
+        self.required_features = {}
 
         for f in os.listdir(self.db_root):
             if f.endswith('.json') and f.startswith('tile_type_'):
@@ -97,22 +97,9 @@ class Database(object):
                         if len(line) > 0:
                             features.append(line)
 
-                    per_part_features[part] = set(features)
+                    self.required_features[part] = set(features)
 
         self.tile_types_obj = {}
-
-        # Find common required features for all supported parts
-        if len(per_part_features) > 0:
-            common_features = set.intersection(*per_part_features.values())
-            for features in per_part_features.values():
-                features -= common_features
-        else:
-            common_features = set()
-
-        self.required_features = {
-            "always_required": common_features,
-            "per_part_required": per_part_features
-        }
 
     def get_tile_types(self):
         """ Return list of tile types """
@@ -181,17 +168,9 @@ class Database(object):
         of fasm features.
         """
 
-        # No required features in the db, return empty list
-        if self.required_features is None:
+        # No required features in the db or part not given, return empty list
+        if self.required_features is None or part is None:
             return set()
 
-        # Get a list of required features for all parts
-        features = set()
-        if "always_required" in self.required_features:
-            features |= set(self.required_features["always_required"])
-
-        # Append list of part specific features
-        if part is not None:
-            features |= set(self.required_features["per_part_required"][part])
-
-        return features
+        # Return list of part specific features
+        return self.required_features[part]
