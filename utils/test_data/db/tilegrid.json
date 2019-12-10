@@ -54,5 +54,141 @@
             "TIEOFF_X11Y102": "TIEOFF"
         },
         "type": "INT_L"
+    },
+    "LIOB33_SING_X0Y0": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "alias": {
+                    "sites": {
+                        "IOB33_Y0": "IOB33_Y0"
+                    },
+                    "start_offset": 2,
+                    "type": "LIOB33"
+                },
+                "baseaddr": "0x00400000",
+                "frames": 42,
+                "offset": 0,
+                "words": 2
+            }
+        },
+        "grid_x": 0,
+        "grid_y": 155,
+        "pin_functions": {
+            "IOB_X0Y0": "IO_25_14"
+        },
+        "sites": {
+            "IOB_X0Y0": "IOB33"
+        },
+        "type": "LIOB33_SING"
+    },
+    "LIOB33_X0Y1": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00400000",
+                "frames": 42,
+                "offset": 2,
+                "words": 4
+            }
+        },
+        "grid_x": 0,
+        "grid_y": 154,
+        "pin_functions": {
+            "IOB_X0Y1": "IO_L24N_T3_A00_D16_14",
+            "IOB_X0Y2": "IO_L24P_T3_A01_D17_14"
+        },
+        "sites": {
+            "IOB_X0Y1": "IOB33S",
+            "IOB_X0Y2": "IOB33M"
+        },
+        "type": "LIOB33"
+    },
+    "LIOB33_X0Y3": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00400000",
+                "frames": 42,
+                "offset": 6,
+                "words": 4
+            }
+        },
+        "grid_x": 0,
+        "grid_y": 152,
+        "pin_functions": {
+            "IOB_X0Y3": "IO_L23N_T3_A02_D18_14",
+            "IOB_X0Y4": "IO_L23P_T3_A03_D19_14"
+        },
+        "sites": {
+            "IOB_X0Y3": "IOB33S",
+            "IOB_X0Y4": "IOB33M"
+        },
+        "type": "LIOB33"
+    },
+    "RIOB33_SING_X43Y0": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "alias": {
+                    "sites": {
+                        "IOB33_Y0": "IOB33_Y0"
+                    },
+                    "start_offset": 2,
+                    "type": "RIOB33"
+                },
+                "baseaddr": "0x00401580",
+                "frames": 42,
+                "offset": 0,
+                "words": 2
+            }
+        },
+        "grid_x": 114,
+        "grid_y": 155,
+        "pin_functions": {
+            "IOB_X1Y0": "IO_25_34"
+        },
+        "sites": {
+            "IOB_X1Y0": "IOB33"
+        },
+        "type": "RIOB33_SING"
+    },
+    "RIOB33_X43Y1": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00401580",
+                "frames": 42,
+                "offset": 2,
+                "words": 4
+            }
+        },
+        "grid_x": 114,
+        "grid_y": 154,
+        "pin_functions": {
+            "IOB_X1Y1": "IO_L24N_T3_34",
+            "IOB_X1Y2": "IO_L24P_T3_34"
+        },
+        "sites": {
+            "IOB_X1Y1": "IOB33S",
+            "IOB_X1Y2": "IOB33M"
+        },
+        "type": "RIOB33"
+    },
+    "RIOB33_X43Y3": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00401580",
+                "frames": 42,
+                "offset": 6,
+                "words": 4
+            }
+        },
+        "grid_x": 114,
+        "grid_y": 152,
+        "pin_functions": {
+            "IOB_X1Y3": "IO_L23N_T3_34",
+            "IOB_X1Y4": "IO_L23P_T3_34"
+        },
+        "sites": {
+            "IOB_X1Y3": "IOB33S",
+            "IOB_X1Y4": "IOB33M"
+        },
+        "type": "RIOB33"
     }
 }

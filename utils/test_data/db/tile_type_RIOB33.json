@@ -1,0 +1,1541 @@
+{
+    "pips": {
+        "RIOB33.IOB_DIFFO_OUT0->IOB_DIFFO_IN1": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "dst_wire": "IOB_DIFFO_IN1",
+            "is_directional": "1",
+            "is_pass_transistor": 1,
+            "is_pseudo": "0",
+            "src_to_dst": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "src_wire": "IOB_DIFFO_OUT0"
+        },
+        "RIOB33.IOB_O0->>IOB_O_OUT0": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": [
+                    "0.001",
+                    "0.001",
+                    "0.001",
+                    "0.001"
+                ],
+                "in_cap": null,
+                "res": "0.0"
+            },
+            "dst_wire": "IOB_O_OUT0",
+            "is_directional": "1",
+            "is_pass_transistor": 0,
+            "is_pseudo": "1",
+            "src_to_dst": {
+                "delay": [
+                    "0.001",
+                    "0.001",
+                    "0.001",
+                    "0.001"
+                ],
+                "in_cap": null,
+                "res": "0.0"
+            },
+            "src_wire": "IOB_O0"
+        },
+        "RIOB33.IOB_O_OUT0->IOB_O_IN1": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "dst_wire": "IOB_O_IN1",
+            "is_directional": "1",
+            "is_pass_transistor": 1,
+            "is_pseudo": "0",
+            "src_to_dst": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "src_wire": "IOB_O_OUT0"
+        },
+        "RIOB33.IOB_PADOUT0->IOB_DIFFI_IN1": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "dst_wire": "IOB_DIFFI_IN1",
+            "is_directional": "1",
+            "is_pass_transistor": 1,
+            "is_pseudo": "0",
+            "src_to_dst": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "src_wire": "IOB_PADOUT0"
+        },
+        "RIOB33.IOB_PADOUT0->RIOB_MONITOR_P": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "dst_wire": "RIOB_MONITOR_P",
+            "is_directional": "1",
+            "is_pass_transistor": 1,
+            "is_pseudo": "0",
+            "src_to_dst": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "src_wire": "IOB_PADOUT0"
+        },
+        "RIOB33.IOB_PADOUT1->IOB_DIFFI_IN0": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "dst_wire": "IOB_DIFFI_IN0",
+            "is_directional": "1",
+            "is_pass_transistor": 1,
+            "is_pseudo": "0",
+            "src_to_dst": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "src_wire": "IOB_PADOUT1"
+        },
+        "RIOB33.IOB_PADOUT1->RIOB_MONITOR_N": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "dst_wire": "RIOB_MONITOR_N",
+            "is_directional": "1",
+            "is_pass_transistor": 1,
+            "is_pseudo": "0",
+            "src_to_dst": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "src_wire": "IOB_PADOUT1"
+        },
+        "RIOB33.IOB_T0->>IOB_T_OUT0": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": [
+                    "0.000",
+                    "0.000",
+                    "0.000",
+                    "0.000"
+                ],
+                "in_cap": null,
+                "res": "0.0"
+            },
+            "dst_wire": "IOB_T_OUT0",
+            "is_directional": "1",
+            "is_pass_transistor": 0,
+            "is_pseudo": "1",
+            "src_to_dst": {
+                "delay": [
+                    "0.000",
+                    "0.000",
+                    "0.000",
+                    "0.000"
+                ],
+                "in_cap": null,
+                "res": "0.0"
+            },
+            "src_wire": "IOB_T0"
+        },
+        "RIOB33.IOB_T_OUT0->IOB_T_IN1": {
+            "can_invert": "0",
+            "dst_to_src": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "dst_wire": "IOB_T_IN1",
+            "is_directional": "1",
+            "is_pass_transistor": 1,
+            "is_pseudo": "0",
+            "src_to_dst": {
+                "delay": null,
+                "in_cap": null,
+                "res": "0.000"
+            },
+            "src_wire": "IOB_T_OUT0"
+        }
+    },
+    "sites": [
+        {
+            "name": "X0Y0",
+            "prefix": "IOB",
+            "site_pins": {
+                "DIFFI_IN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_DIFFI_IN1"
+                },
+                "DIFFO_IN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_DIFFO_IN1"
+                },
+                "DIFFO_OUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_DIFFO_OUT1"
+                },
+                "DIFF_TERM_INT_EN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_DIFF_TERM_INT_EN"
+                },
+                "I": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_IBUF1"
+                },
+                "IBUFDISABLE": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_IBUF_DISABLE1"
+                },
+                "INTERMDISABLE": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "LIOB_IN_TERM1"
+                },
+                "KEEPER_INT_EN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_KEEPER_INT_EN_0"
+                },
+                "O": {
+                    "cap": "0.001",
+                    "delay": [
+                        "0.001",
+                        "0.001",
+                        "0.001",
+                        "0.001"
+                    ],
+                    "wire": "IOB_O1"
+                },
+                "O_IN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_O_IN1"
+                },
+                "O_OUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_O_OUT1"
+                },
+                "PADOUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_PADOUT1"
+                },
+                "PD_INT_EN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_PD_INT_EN_0"
+                },
+                "PU_INT_EN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_PU_INT_EN_0"
+                },
+                "T": {
+                    "cap": "0.001",
+                    "delay": [
+                        "0.001",
+                        "0.001",
+                        "0.001",
+                        "0.001"
+                    ],
+                    "wire": "IOB_T1"
+                },
+                "T_IN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_T_IN1"
+                },
+                "T_OUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_T_OUT1"
+                }
+            },
+            "type": "IOB33S",
+            "x_coord": 0,
+            "y_coord": 0
+        },
+        {
+            "name": "X0Y1",
+            "prefix": "IOB",
+            "site_pins": {
+                "DIFFI_IN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_DIFFI_IN0"
+                },
+                "DIFFO_IN": null,
+                "DIFFO_OUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_DIFFO_OUT0"
+                },
+                "DIFF_TERM_INT_EN": null,
+                "I": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_IBUF0"
+                },
+                "IBUFDISABLE": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_IBUF_DISABLE0"
+                },
+                "INTERMDISABLE": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "LIOB_IN_TERM0"
+                },
+                "KEEPER_INT_EN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_KEEPER_INT_EN_1"
+                },
+                "O": {
+                    "cap": "0.001",
+                    "delay": [
+                        "0.001",
+                        "0.001",
+                        "0.001",
+                        "0.001"
+                    ],
+                    "wire": "IOB_O0"
+                },
+                "O_IN": null,
+                "O_OUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_O_OUT0"
+                },
+                "PADOUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_PADOUT0"
+                },
+                "PD_INT_EN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_PD_INT_EN_1"
+                },
+                "PU_INT_EN": {
+                    "cap": "0.000",
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "wire": "IOB_PU_INT_EN_1"
+                },
+                "T": {
+                    "cap": "0.001",
+                    "delay": [
+                        "0.001",
+                        "0.001",
+                        "0.001",
+                        "0.001"
+                    ],
+                    "wire": "IOB_T0"
+                },
+                "T_IN": null,
+                "T_OUT": {
+                    "delay": [
+                        "0.000",
+                        "0.000",
+                        "0.000",
+                        "0.000"
+                    ],
+                    "res": "0.0",
+                    "wire": "IOB_T_OUT0"
+                }
+            },
+            "type": "IOB33M",
+            "x_coord": 0,
+            "y_coord": 1
+        }
+    ],
+    "tile_type": "RIOB33",
+    "wires": {
+        "IOB_DIFFI_IN0": null,
+        "IOB_DIFFI_IN1": null,
+        "IOB_DIFFO_IN0": null,
+        "IOB_DIFFO_IN1": null,
+        "IOB_DIFFO_OUT0": null,
+        "IOB_DIFFO_OUT1": null,
+        "IOB_DIFF_TERM_INT_EN": null,
+        "IOB_DIFF_TERM_INT_EN_STUB": null,
+        "IOB_IBUF0": null,
+        "IOB_IBUF1": null,
+        "IOB_IBUF_DISABLE0": null,
+        "IOB_IBUF_DISABLE1": null,
+        "IOB_KEEPER_INT_EN_0": null,
+        "IOB_KEEPER_INT_EN_1": null,
+        "IOB_O0": null,
+        "IOB_O1": null,
+        "IOB_O_IN0": null,
+        "IOB_O_IN1": null,
+        "IOB_O_OUT0": null,
+        "IOB_O_OUT1": null,
+        "IOB_PADOUT0": null,
+        "IOB_PADOUT1": null,
+        "IOB_PD_INT_EN_0": null,
+        "IOB_PD_INT_EN_1": null,
+        "IOB_PU_INT_EN_0": null,
+        "IOB_PU_INT_EN_1": null,
+        "IOB_T0": null,
+        "IOB_T1": null,
+        "IOB_T_IN0": null,
+        "IOB_T_IN1": null,
+        "IOB_T_OUT0": null,
+        "IOB_T_OUT1": null,
+        "LIOB_IN_TERM0": null,
+        "LIOB_IN_TERM1": null,
+        "RIOB_EE2A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE2BEG3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4B3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4BEG3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EE4C3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_EL1BEG3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_ER1BEG3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_LH10_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH10_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH11_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH11_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH12_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH12_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH1_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH1_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH2_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH2_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH3_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH3_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH4_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH4_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH5_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH5_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH6_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH6_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH7_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH7_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH8_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH8_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH9_0": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_LH9_1": {
+            "cap": "194.420",
+            "res": "48.990"
+        },
+        "RIOB_MONITOR_N": null,
+        "RIOB_MONITOR_P": null,
+        "RIOB_NE2A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE2A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE2A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE2A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE2A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE2A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE2A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE2A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4BEG3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NE4C3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW2A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_NW4END3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE2A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4BEG3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SE4C3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW2A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_SW4END3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WL1END3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WR1END3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW2END3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4A3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4B3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4C3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END0_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END0_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END1_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END1_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END2_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END2_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END3_0": {
+            "cap": "150.000",
+            "res": "1024.400"
+        },
+        "RIOB_WW4END3_1": {
+            "cap": "150.000",
+            "res": "1024.400"
+        }
+    }
+}
