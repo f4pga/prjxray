@@ -70,7 +70,7 @@ class TestStringMethods(unittest.TestCase):
 
             fout = StringIO()
             fasm2frames.run(
-                self.filename_test_data('db'), None, fin.name, fout, **kw)
+            self.filename_test_data('db'), "xc7", fin.name, fout, **kw)
 
             return fout.getvalue()
 

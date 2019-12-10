@@ -7,6 +7,9 @@ import argparse
 import json
 import os
 import os.path
+import csv
+
+from collections import defaultdict
 
 from prjxray import fasm_assembler
 from prjxray.db import Database
@@ -78,6 +81,16 @@ def find_pudc_b(db):
 
     return pudc_b_tile_site
 
+def get_iob_sites(db, tile_name):
+    """
+    Yields prjxray site names for given IOB tile name
+    """
+    grid = db.grid()
+    gridinfo = grid.gridinfo_at_tilename(tile_name)
+
+    for site in gridinfo.sites:
+        site_y = int(site[-1]) % 2
+        yield "IOB_Y{}".format(site_y)
 
 def run(
         db_root,
@@ -90,6 +103,25 @@ def run(
         emit_pudc_b_pullup=False):
     db = Database(db_root)
     assembler = fasm_assembler.FasmAssembler(db)
+
+    set_features = set()
+    def feature_callback(feature):
+        set_features.add(feature)
+
+    assembler.set_feature_callback(feature_callback)    
+
+    # Build mapping of tile to IO bank
+    tile_to_bank = {}
+    bank_to_tile = defaultdict(lambda: set())
+
+    if part is not None:
+        with open(os.path.join(db_root, part+"_package_pins.csv"), "r") as fp:
+            reader = csv.DictReader(fp)
+            package_pins = [l for l in reader]
+
+        for pin in package_pins:
+            bank_to_tile[pin["bank"]].add(pin["tile"])
+            tile_to_bank[pin["tile"]] = pin["bank"]
 
     if emit_pudc_b_pullup:
         pudc_b_in_use = False
@@ -143,6 +175,41 @@ def run(
                 site=pudc_b_tile_site[1],
         )):
             assembler.add_fasm_line(line, missing_features)
+
+        if missing_features:
+            raise fasm_assembler.FasmLookupError('\n'.join(missing_features))
+
+    if part is not None:
+        # Make a set of all used IOB tiles and sites. Look for the "STEPDOWN"
+        # feature. If one is set for an IOB then set it for all other IOBs of
+        # the same bank.
+        stepdown_tags = set()
+        stepdown_banks = set()
+        used_iob_sites = set()
+
+        for set_feature in set_features:
+            feature = set_feature.feature
+            tile, site, tag = feature.split(".", maxsplit=2)            
+            if "IOB33" in tile:
+                used_iob_sites.add((tile, site,))
+            if "STEPDOWN" in tag:
+                stepdown_banks.add(tile_to_bank[tile])
+                stepdown_tags.add(tag)
+
+        # Set the feature for unused IOBs
+        missing_features = []
+
+        for bank in stepdown_banks:
+            for tile in bank_to_tile[bank]:
+                for site in get_iob_sites(db, tile):
+
+                    if (tile, site) in used_iob_sites:
+                        continue
+
+                    for tag in stepdown_tags:
+                        feature = "{}.{}.{}".format(tile, site, tag)
+                        for line in fasm.parse_fasm_string(feature):
+                            assembler.add_fasm_line(line, missing_features)                        
 
         if missing_features:
             raise fasm_assembler.FasmLookupError('\n'.join(missing_features))
