@@ -168,9 +168,9 @@ class Database(object):
         of fasm features.
         """
 
-        # No required features in the db or part not given, return empty list
-        if self.required_features is None or part is None:
+        # No required features in the db, return empty list
+        if self.required_features is None:
             return set()
 
         # Return list of part specific features
-        return self.required_features[part]
+        return self.required_features.get(part, set())
