@@ -314,6 +314,7 @@ module top();
 
     site_to_cmt = dict(read_site_to_cmt())
 
+    is_zynq = os.getenv('XRAY_DATABASE') == 'zynq7'
     clock_sources = ClockSources()
 
     # To ensure that all left or right sources are used, sometimes only MMCM/PLL
@@ -530,6 +531,30 @@ module top();
                     ))
                 break
             break
+
+    if is_zynq:
+        for loc, _, site in gen_sites('PS7'):
+            print("""
+    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+    PS7 ps7_{site} (
+        .FCLKCLK({fclk3, fclk2, fclk1, fclk0}),
+        .TESTPLLCLKOUT({testpllclkout2, testpllclkout1, testpllclkout0}),
+        .TESTPLLNEWCLK({testpllnewclk2, testpllnewclk1, testpllnewclk0}),
+    );
+            """.format(
+                    site=site,
+                    fclk0=,
+                    fclk1=,
+                    fclk2=,
+                    fclk3=,
+                    testpllclkout2=,
+                    testpllclkout1=,
+                    testpllclkout0=,
+                    testpllnewclk2=,
+                    testpllnewclk1=,
+                    testpllnewclk0=,
+                ))
+
 
     for l in luts.create_wires_and_luts():
         print(l)
