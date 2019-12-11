@@ -460,11 +460,11 @@ module top();
         print("")
     
         for wire in clocks:
-            cmt = site_to_cmt[site]
             cmt_tile = [d["tile"] for d in pss_clocks if d["pin"] == wire][0]
             cmt_loc = get_cmt_loc(cmt_tile)
 
-            clock_sources.add_clock_source(wire, cmt, cmt_loc)
+            # FIXME: HACK
+            clock_sources.add_clock_source(wire, "X0Y0", cmt_loc)
             print("    wire {};".format(wire))
 
         print("""
@@ -479,8 +479,6 @@ module top();
             fclk2=clocks[2],
             fclk3=clocks[3]
             ))
-
-    used_pss_clocks = set()
 
     luts = LutMaker()
     bufhs = StringIO()
@@ -552,11 +550,10 @@ module top();
             if random.random() > .05:
                 wire_name = clock_sources.get_random_source(site_to_cmt[site])
 
+                # FIXME: HACK
                 if wire_name is not None and wire_name.startswith("PSS"):
-                    if wire_name not in used_pss_clocks:
-                        used_pss_clocks.add(wire_name)
-                    else:
-                        wire_name = None
+                    if "BOT" not in tile_name:
+                        continue
 
                 if wire_name is None:
                     continue
@@ -608,9 +605,8 @@ module top();
         if random.randint(0, 1):
             wire_name = clock_sources.get_bufg_source(
                 loc, tile_type, site, todos, 1, used_only)
-            if wire_name is not None and wire_name not in used_pss_clocks:
-                if wire_name.startswith("PSS"):
-                    used_pss_clocks.add(wire_name)
+
+            if wire_name is not None:
                 print(
                     """
     assign I1_{site} = {wire_name};""".format(
@@ -621,9 +617,8 @@ module top();
         if random.randint(0, 1):
             wire_name = clock_sources.get_bufg_source(
                 loc, tile_type, site, todos, 0, used_only)
-            if wire_name is not None and wire_name not in used_pss_clocks:
-                if wire_name.startswith("PSS"):
-                    used_pss_clocks.add(wire_name)
+
+            if wire_name is not None:
                 print(
                     """
     assign I0_{site} = {wire_name};""".format(
