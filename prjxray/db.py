@@ -42,6 +42,8 @@ class Database(object):
         self.tile_segbits = {}
         self.site_types = {}
 
+        self.required_features = {}
+
         for f in os.listdir(self.db_root):
             if f.endswith('.json') and f.startswith('tile_type_'):
                 tile_type = f[len('tile_type_'):-len('.json')].lower()
@@ -84,6 +86,18 @@ class Database(object):
                 site_type_name = f[len('site_type_'):-len('.json')]
 
                 self.site_types[site_type_name] = os.path.join(self.db_root, f)
+
+            if f.endswith('_required_features.fasm'):
+                part = f[:-len('_required_features.fasm')]
+
+                with open(os.path.join(self.db_root, f), "r") as fp:
+                    features = []
+                    for line in fp:
+                        line = line.strip()
+                        if len(line) > 0:
+                            features.append(line)
+
+                    self.required_features[part] = set(features)
 
         self.tile_types_obj = {}
 
@@ -147,3 +161,16 @@ class Database(object):
                 self.tile_types[tile_type.upper()])
 
         return self.tile_segbits[tile_type]
+
+    def get_required_fasm_features(self, part=None):
+        """
+        Assembles a set of required fasm features for given part. Returns a list
+        of fasm features.
+        """
+
+        # No required features in the db, return empty list
+        if self.required_features is None:
+            return set()
+
+        # Return list of part specific features
+        return self.required_features.get(part, set())

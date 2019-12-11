@@ -81,6 +81,7 @@ def find_pudc_b(db):
 
 def run(
         db_root,
+        part,
         filename_in,
         f_out,
         sparse=False,
@@ -119,6 +120,10 @@ def run(
         if 'required_features' in roi_j:
             extra_features = fasm.parse_fasm_string(
                 '\n'.join(roi_j['required_features']))
+
+    # Get required extra features for the part
+    required_features = db.get_required_fasm_features(part)
+    extra_features += fasm.parse_fasm_string('\n'.join(required_features))
 
     assembler.parse_fasm_filename(filename_in, extra_features=extra_features)
 
@@ -165,7 +170,19 @@ def main():
         db_root_kwargs['required'] = False
         db_root_kwargs['default'] = os.path.join(database_dir, database)
 
+    db_part = os.getenv("XRAY_PART")
+    db_part_kwargs = {}
+    if db_part is None:
+        db_part_kwargs['required'] = True
+    else:
+        db_part_kwargs['required'] = False
+        db_part_kwargs['default'] = db_part
+
     parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
+    parser.add_argument(
+        '--part',
+        help="Part name. When not given defaults to XRAY_PART env. var.",
+        **db_part_kwargs)
     parser.add_argument(
         '--sparse', action='store_true', help="Don't zero fill all frames")
     parser.add_argument(
@@ -187,6 +204,7 @@ def main():
     args = parser.parse_args()
     run(
         db_root=args.db_root,
+        part=args.part,
         filename_in=args.fn_in,
         f_out=open(args.fn_out, 'w'),
         sparse=args.sparse,
