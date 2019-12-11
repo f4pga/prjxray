@@ -5,14 +5,19 @@ import re
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
+from prjxray.grid_types import GridLoc
 from prjxray.db import Database
 from prjxray.lut_maker import LutMaker
 from io import StringIO
+import csv
+import sys
 
 CMT_XY_FUN = util.create_xy_fun(prefix='')
 BUFGCTRL_XY_FUN = util.create_xy_fun('BUFGCTRL_')
 BUFHCE_XY_FUN = util.create_xy_fun('BUFHCE_')
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 def gen_sites(desired_site_type):
     db = Database(util.get_db_root())
@@ -41,6 +46,10 @@ def gen_bufhce_sites():
         if sites:
             yield tile_name, sorted(sites)
 
+def get_cmt_loc(cmt_tile_name):
+    db = Database(util.get_db_root())
+    grid = db.grid()
+    return grid.loc_of_tilename(cmt_tile_name)
 
 def read_site_to_cmt():
     """ Yields clock sources and which CMT they route within. """
@@ -50,6 +59,11 @@ def read_site_to_cmt():
             site, cmt = l.strip().split(',')
             yield (site, cmt)
 
+def read_pss_clocks():
+    with open(os.path.join(os.getenv('FUZDIR'), 'build',
+                            'pss_clocks.csv')) as f:
+        for l in csv.DictReader(f):
+            yield l
 
 class ClockSources(object):
     """ Class for tracking clock sources.
@@ -147,7 +161,7 @@ class ClockSources(object):
                 if src_loc is None:
                     continue
                 if src_loc.grid_y <= loc.grid_y:
-                    bufg_sources.extend(cmt_sources)
+                    bufg_sources.extend(cmt_sources)                
         elif bottom:
             for src_loc, cmt_sources in self.sources_by_loc.items():
                 if src_loc is None:
@@ -305,17 +319,22 @@ def main():
         PLLE2_ADV
         BUFGCTRL
         Local INT connect
-
+        PS7 (Zynq)
     """
 
     print('''
+// SEED={}
 module top();
-    ''')
+    '''.format(os.getenv('SEED')))
 
-    site_to_cmt = dict(read_site_to_cmt())
 
     is_zynq = os.getenv('XRAY_DATABASE') == 'zynq7'
     clock_sources = ClockSources()
+
+    site_to_cmt = dict(read_site_to_cmt())
+
+    if is_zynq:
+        pss_clocks = list(read_pss_clocks())
 
     # To ensure that all left or right sources are used, sometimes only MMCM/PLL
     # sources are allowed.  The force of ODD/EVEN/BOTH further biases the
@@ -427,6 +446,42 @@ module top();
         .O(O_{site})
         );""".format(site=site))
 
+    if is_zynq:
+
+        clocks = [
+        "PSS_FCLKCLK0",
+        "PSS_FCLKCLK1",
+        "PSS_FCLKCLK2",
+        "PSS_FCLKCLK3",
+        ]
+
+        loc, _, site = next(gen_sites('PS7'))
+
+        print("")
+    
+        for wire in clocks:
+            cmt = site_to_cmt[site]
+            cmt_tile = [d["tile"] for d in pss_clocks if d["pin"] == wire][0]
+            cmt_loc = get_cmt_loc(cmt_tile)
+
+            clock_sources.add_clock_source(wire, cmt, cmt_loc)
+            print("    wire {};".format(wire))
+
+        print("""
+    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
+    PS7 ps7_{site} (
+        .FCLKCLK({{{fclk3}, {fclk2}, {fclk1}, {fclk0}}})
+    );
+        """.format(
+            site=site,
+            fclk0=clocks[0],
+            fclk1=clocks[1],
+            fclk2=clocks[2],
+            fclk3=clocks[3]
+            ))
+
+    used_pss_clocks = set()
+
     luts = LutMaker()
     bufhs = StringIO()
     bufgs = StringIO()
@@ -497,6 +552,12 @@ module top();
             if random.random() > .05:
                 wire_name = clock_sources.get_random_source(site_to_cmt[site])
 
+                if wire_name is not None and wire_name.startswith("PSS"):
+                    if wire_name not in used_pss_clocks:
+                        used_pss_clocks.add(wire_name)
+                    else:
+                        wire_name = None
+
                 if wire_name is None:
                     continue
 
@@ -532,28 +593,6 @@ module top();
                 break
             break
 
-    if is_zynq:
-        for loc, _, site in gen_sites('PS7'):
-            print("""
-    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    PS7 ps7_{site} (
-        .FCLKCLK({fclk3, fclk2, fclk1, fclk0}),
-        .TESTPLLCLKOUT({testpllclkout2, testpllclkout1, testpllclkout0}),
-        .TESTPLLNEWCLK({testpllnewclk2, testpllnewclk1, testpllnewclk0}),
-    );
-            """.format(
-                    site=site,
-                    fclk0=,
-                    fclk1=,
-                    fclk2=,
-                    fclk3=,
-                    testpllclkout2=,
-                    testpllclkout1=,
-                    testpllclkout0=,
-                    testpllnewclk2=,
-                    testpllnewclk1=,
-                    testpllnewclk0=,
-                ))
 
 
     for l in luts.create_wires_and_luts():
@@ -569,7 +608,9 @@ module top();
         if random.randint(0, 1):
             wire_name = clock_sources.get_bufg_source(
                 loc, tile_type, site, todos, 1, used_only)
-            if wire_name is not None:
+            if wire_name is not None and wire_name not in used_pss_clocks:
+                if wire_name.startswith("PSS"):
+                    used_pss_clocks.add(wire_name)
                 print(
                     """
     assign I1_{site} = {wire_name};""".format(
@@ -580,7 +621,9 @@ module top();
         if random.randint(0, 1):
             wire_name = clock_sources.get_bufg_source(
                 loc, tile_type, site, todos, 0, used_only)
-            if wire_name is not None:
+            if wire_name is not None and wire_name not in used_pss_clocks:
+                if wire_name.startswith("PSS"):
+                    used_pss_clocks.add(wire_name)
                 print(
                     """
     assign I0_{site} = {wire_name};""".format(
