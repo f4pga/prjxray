@@ -193,15 +193,17 @@ def run(
 
         for set_feature in set_features:
             feature = set_feature.feature
-            tile, site, tag = feature.split(".", maxsplit=2)
-            if "IOB33" in tile:
-                used_iob_sites.add((
-                    tile,
-                    site,
-                ))
-            if "STEPDOWN" in tag:
-                stepdown_banks.add(tile_to_bank[tile])
-                stepdown_tags.add(tag)
+            parts = feature.split(".")
+            if len(parts) >= 3:
+                tile, site, tag = feature.split(".", maxsplit=2)
+                if "IOB33" in tile:
+                    used_iob_sites.add((
+                        tile,
+                        site,
+                    ))
+                if "STEPDOWN" in tag:
+                    stepdown_banks.add(tile_to_bank[tile])
+                    stepdown_tags.add(tag)
 
         # Set the feature for unused IOBs
         missing_features = []
