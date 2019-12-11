@@ -81,6 +81,7 @@ def find_pudc_b(db):
 
     return pudc_b_tile_site
 
+
 def get_iob_sites(db, tile_name):
     """
     Yields prjxray site names for given IOB tile name
@@ -91,6 +92,7 @@ def get_iob_sites(db, tile_name):
     for site in gridinfo.sites:
         site_y = int(site[-1]) % 2
         yield "IOB_Y{}".format(site_y)
+
 
 def run(
         db_root,
@@ -105,17 +107,19 @@ def run(
     assembler = fasm_assembler.FasmAssembler(db)
 
     set_features = set()
+
     def feature_callback(feature):
         set_features.add(feature)
 
-    assembler.set_feature_callback(feature_callback)    
+    assembler.set_feature_callback(feature_callback)
 
     # Build mapping of tile to IO bank
     tile_to_bank = {}
     bank_to_tile = defaultdict(lambda: set())
 
     if part is not None:
-        with open(os.path.join(db_root, part+"_package_pins.csv"), "r") as fp:
+        with open(os.path.join(db_root, part + "_package_pins.csv"),
+                  "r") as fp:
             reader = csv.DictReader(fp)
             package_pins = [l for l in reader]
 
@@ -189,9 +193,12 @@ def run(
 
         for set_feature in set_features:
             feature = set_feature.feature
-            tile, site, tag = feature.split(".", maxsplit=2)            
+            tile, site, tag = feature.split(".", maxsplit=2)
             if "IOB33" in tile:
-                used_iob_sites.add((tile, site,))
+                used_iob_sites.add((
+                    tile,
+                    site,
+                ))
             if "STEPDOWN" in tag:
                 stepdown_banks.add(tile_to_bank[tile])
                 stepdown_tags.add(tag)
@@ -209,7 +216,7 @@ def run(
                     for tag in stepdown_tags:
                         feature = "{}.{}.{}".format(tile, site, tag)
                         for line in fasm.parse_fasm_string(feature):
-                            assembler.add_fasm_line(line, missing_features)                        
+                            assembler.add_fasm_line(line, missing_features)
 
         if missing_features:
             raise fasm_assembler.FasmLookupError('\n'.join(missing_features))

@@ -168,10 +168,13 @@ CLBLM_L_X10Y102.SLICEM_X0.SRUSEDMUX 1
         self.assertGreaterEqual(len(fout_full_txt), len(fout_sparse_txt) * 4)
 
     def test_stepdown_1(self):
-        self.bitread_frm_equals('iob/liob_stepdown.fasm', 'iob/liob_stepdown.bits')
+        self.bitread_frm_equals(
+            'iob/liob_stepdown.fasm', 'iob/liob_stepdown.bits')
 
     def test_stepdown_2(self):
-        self.bitread_frm_equals('iob/riob_stepdown.fasm', 'iob/riob_stepdown.bits')
+        self.bitread_frm_equals(
+            'iob/riob_stepdown.fasm', 'iob/riob_stepdown.bits')
+
 
 if __name__ == '__main__':
     unittest.main()
