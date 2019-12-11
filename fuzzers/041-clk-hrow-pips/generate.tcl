@@ -246,16 +246,8 @@ proc run {} {
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets]
 
     place_design
-
-    puts "Routing design #1"
     route_design -directive Quick
-    write_checkpoint -force design_initially_routed.dcp
-
-    puts "Routing TODOs"
     route_todo
-    write_checkpoint -force design_todo_routed.dcp
-
-    puts "Routing design #2"
     route_design -directive Quick
 
     write_checkpoint -force design.dcp
