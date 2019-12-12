@@ -39,11 +39,13 @@ DB_SIMPLE=\
     $(addsuffix _r, $(DB_SIMPLE_LR) $(DB_SIMPLE_R)) \
     segbits_cmt_top_l_upper_t \
     segbits_cmt_top_r_upper_t \
-    segbits_lioi3 \
     segbits_rioi3 \
-    segbits_liob33 \
     segbits_riob33 \
     segbits_hclk_ioi3 \
+
+ifneq (${XRAY_DATABASE}, zynq7)
+DB_SIMPLE += segbits_lioi3 segbits_liob33
+endif
 
 BLOCK_RAM_EXTRA_FOR=\
       mask_bram \

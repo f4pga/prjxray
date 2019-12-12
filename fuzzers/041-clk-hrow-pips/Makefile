@@ -9,7 +9,7 @@ N = 50
 
 # These PIPs all appear to be either a 2 bit solutions.
 SEGMATCH_FLAGS=-c 2
-SPECIMENS_DEPS=build/cmt_regions.csv
+SPECIMENS_DEPS=build/dump.ok
 A_PIPLIST=clk_hrow_bot_r.txt
 
 include ../pip_loop.mk
@@ -37,9 +37,18 @@ database: build/segbits_clk_hrow_bot_r.rdb build/segbits_clk_hrow_top_r.rdb
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} clk_hrow_bot_r build/segbits_clk_hrow_bot_r.db
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} clk_hrow_top_r build/segbits_clk_hrow_top_r.db
 
-build/cmt_regions.csv: output_cmt.tcl
+ifeq (${XRAY_DATABASE}, zynq7)
+build/dump.ok: output_cmt.tcl output_pss_clocks.tcl
 	mkdir -p build
 	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
+	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_pss_clocks.tcl
+	touch build/dump.ok
+else
+build/dump.ok: output_cmt.tcl
+	mkdir -p build
+	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
+	touch build/dump.ok
+endif
 
 generate: $(SPECIMENS_OK)
 
