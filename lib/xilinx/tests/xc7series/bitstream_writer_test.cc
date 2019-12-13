@@ -132,8 +132,10 @@ TEST(BitstreamWriterTest, WriteHeader) {
 	std::vector<uint32_t> words(writer.begin(), writer.end());
 
 	// Per UG470 pg 80: Bus Width Auto Detection
-	std::vector<uint32_t> ref_header{0xFFFFFFFF, 0x000000BB, 0x11220044,
-	                                 0xFFFFFFFF, 0xFFFFFFFF, 0xAA995566};
+	std::vector<uint32_t> ref_header{
+	    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+	    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x000000BB, 0x11220044,
+	    0xFFFFFFFF, 0xFFFFFFFF, 0xAA995566};
 	EXPECT_EQ(words, ref_header);
 
 	// dump_packets(writer);
@@ -146,11 +148,13 @@ TEST(BitstreamWriterTest, WriteType0) {
 	BitstreamWriter<Series7> writer(packets);
 	// dump_packets(writer, false);
 	std::vector<uint32_t> words(writer.begin(), writer.end());
-	std::vector<uint32_t> ref{// Bus width + sync
-	                          0x0FFFFFFFF, 0x0000000BB, 0x011220044,
-	                          0x0FFFFFFFF, 0x0FFFFFFFF, 0x0AA995566,
-	                          // Type 0
-	                          0x00000000};
+	std::vector<uint32_t> ref{
+	    // Bus width + sync
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0000000BB, 0x011220044,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0AA995566,
+	    // Type 0
+	    0x00000000};
 	EXPECT_EQ(words, ref);
 }
 TEST(BitstreamWriterTest, WriteType1) {
@@ -160,11 +164,13 @@ TEST(BitstreamWriterTest, WriteType1) {
 	BitstreamWriter<Series7> writer(packets);
 	// dump_packets(writer, false);
 	std::vector<uint32_t> words(writer.begin(), writer.end());
-	std::vector<uint32_t> ref{// Bus width + sync
-	                          0x0FFFFFFFF, 0x0000000BB, 0x011220044,
-	                          0x0FFFFFFFF, 0x0FFFFFFFF, 0x0AA995566,
-	                          // Type 1
-	                          0x030006002, 0x0000000AA, 0x0000000BB};
+	std::vector<uint32_t> ref{
+	    // Bus width + sync
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0000000BB, 0x011220044,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0AA995566,
+	    // Type 1
+	    0x030006002, 0x0000000AA, 0x0000000BB};
 	EXPECT_EQ(words, ref);
 }
 
@@ -177,8 +183,9 @@ TEST(BitstreamWriterTest, WriteType2) {
 	std::vector<uint32_t> words(writer.begin(), writer.end());
 	std::vector<uint32_t> ref{
 	    // Bus width + sync
-	    0x0FFFFFFFF, 0x0000000BB, 0x011220044, 0x0FFFFFFFF, 0x0FFFFFFFF,
-	    0x0AA995566,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0000000BB, 0x011220044,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0AA995566,
 	    // Type 1 + type 2 header
 	    0x030006000, 0x04800000C, 0x000000001, 0x000000002, 0x000000003,
 	    0x000000004, 0x000000005, 0x000000006, 0x000000007, 0x000000008,
@@ -198,8 +205,9 @@ TEST(BitstreamWriterTest, WriteMulti) {
 	std::vector<uint32_t> words(writer.begin(), writer.end());
 	std::vector<uint32_t> ref{
 	    // Bus width + sync
-	    0x0FFFFFFFF, 0x0000000BB, 0x011220044, 0x0FFFFFFFF, 0x0FFFFFFFF,
-	    0x0AA995566,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0FFFFFFFF, 0x0000000BB, 0x011220044,
+	    0x0FFFFFFFF, 0x0FFFFFFFF, 0x0AA995566,
 	    // Type1
 	    0x030006002, 0x0000000AA, 0x0000000BB,
 	    // Type1
