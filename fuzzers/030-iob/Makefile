@@ -23,10 +23,8 @@ build/segbits_hclk_ioi3.db: build/segbits_hclk_ioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db hclk_bits.dbf --seg-fn-in build/segbits_hclk_ioi3.rdb --seg-fn-out $@
 
 pushdb:
-ifneq (${XRAY_DATABASE}, zynq7)
 	${XRAY_MERGEDB} liob33 build/segbits_xiob33.db
 	${XRAY_MERGEDB} mask_liob33 build/mask_xiob33.db
-endif
 	${XRAY_MERGEDB} riob33 build/segbits_xiob33.db
 	${XRAY_MERGEDB} mask_riob33 build/mask_xiob33.db
 

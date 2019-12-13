@@ -43,9 +43,7 @@ DB_SIMPLE=\
     segbits_riob33 \
     segbits_hclk_ioi3 \
 
-ifneq (${XRAY_DATABASE}, zynq7)
 DB_SIMPLE += segbits_lioi3 segbits_liob33
-endif
 
 BLOCK_RAM_EXTRA_FOR=\
       mask_bram \

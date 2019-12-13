@@ -4,8 +4,6 @@ import json
 import util as localutil
 import os.path
 
-ZERO_CANDIDATES = '<0 candidates>'
-
 
 def check_frames(tagstr, addrlist):
     frames = set()
@@ -36,11 +34,6 @@ def load_db(fn):
         l = l.strip()
         # FIXME: add offset to name
         # IOB_X0Y101.DFRAME:27.DWORD:3.DBIT:3 00020027_003_03
-
-        # Skip <0 candidates> frames. This happens with unbounded IOBs
-        if ZERO_CANDIDATES in l:
-            continue
-
         parts = l.split(' ')
         tagstr = parts[0]
         addrlist = parts[1:]
