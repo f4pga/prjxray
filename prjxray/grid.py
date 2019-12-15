@@ -1,6 +1,9 @@
 from prjxray import segment_map
-from prjxray.grid_types import BlockType, GridLoc, GridInfo, BitAlias, Bits, BitsInfo
+from prjxray.grid_types import BlockType, GridLoc, GridInfo, BitAlias, Bits, BitsInfo, ClockRegion
 from prjxray.tile_segbits_alias import TileSegbitsAlias
+import re
+
+CLOCK_REGION_RE = re.compile('X([0-9])Y([0-9])')
 
 
 class Grid(object):
@@ -15,6 +18,8 @@ class Grid(object):
         self.tilegrid = tilegrid
         self.loc = {}
         self.tileinfo = {}
+
+        clock_regions = {}
 
         for tile in self.tilegrid:
             tileinfo = self.tilegrid[tile]
@@ -46,11 +51,26 @@ class Grid(object):
                         alias=alias,
                     )
 
+            clock_region = None
+            if 'clock_region' in tileinfo:
+                if tileinfo['clock_region'] is not None:
+                    if tileinfo['clock_region'] not in clock_regions:
+                        m = CLOCK_REGION_RE.fullmatch(tileinfo['clock_region'])
+                        assert m is not None, tileinfo['clock_region']
+
+                        clock_regions[tileinfo['clock_region']] = ClockRegion(
+                            name=tileinfo['clock_region'],
+                            x=int(m.group(1)),
+                            y=int(m.group(2)))
+
+                    clock_region = clock_regions[tileinfo['clock_region']]
+
             self.tileinfo[tile] = GridInfo(
                 bits=bits,
                 sites=tileinfo['sites'],
                 tile_type=tileinfo['type'],
                 pin_functions=tileinfo.get('pin_functions', {}),
+                clock_region=clock_region,
             )
 
         x, y = zip(*self.loc.keys())
