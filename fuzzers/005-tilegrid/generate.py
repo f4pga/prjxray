@@ -17,15 +17,22 @@ def load_tiles(tiles_fn):
             tile_type, tile_name, grid_x, grid_y = record[0:4]
             grid_x, grid_y = int(grid_x), int(grid_y)
             sites = {}
-            for i in range(4, len(record), 2):
-                site_type, site_name = record[i:i + 2]
-                sites[site_name] = site_type
+            clock_region = None
+            if len(record) >= 5:
+                clock_region = record[4]
+                if clock_region == "NA":
+                    clock_region = None
+                for i in range(5, len(record), 2):
+                    site_type, site_name = record[i:i + 2]
+                    sites[site_name] = site_type
+
             tile = {
                 'type': tile_type,
                 'name': tile_name,
                 'grid_x': grid_x,
                 'grid_y': grid_y,
                 'sites': sites,
+                'clock_region': clock_region,
             }
             tiles.append(tile)
 
@@ -58,6 +65,9 @@ def make_database(tiles, pin_func):
             "bits": {},
             "pin_functions": {},
         }
+
+        if tile["clock_region"]:
+            database[tile["name"]]["clock_region"] = tile["clock_region"]
 
         for site in database[tile["name"]]["sites"]:
             if site in pin_func:
