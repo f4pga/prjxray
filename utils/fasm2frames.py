@@ -132,6 +132,7 @@ def run(
         pudc_b_tile_site = find_pudc_b(db)
 
         def check_for_pudc_b(set_feature):
+            feature_callback(set_feature)
             parts = set_feature.feature.split('.')
 
             if parts[0] == pudc_b_tile_site[0] and parts[
