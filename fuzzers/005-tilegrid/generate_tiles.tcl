@@ -14,6 +14,8 @@ proc write_tiles_txt {} {
         set sites [get_sites -quiet -of_objects $tile]
         set typed_sites {}
 
+        set clock_region "NA"
+
         if [llength $sites] {
             set site_types [get_property SITE_TYPE $sites]
             foreach t $site_types s $sites {
@@ -23,10 +25,15 @@ proc write_tiles_txt {} {
                 if [llength $package_pin] {
                     puts $fp_pin "$s [get_property PIN_FUNC $package_pin]"
                 }
+                set clock_region [get_property CLOCK_REGION $s]
             }
         }
+        if {[llength $clock_region] == 0} {
+            set clock_region "NA"
+        }
 
-        puts $fp "$type $tile $grid_x $grid_y $typed_sites"
+
+        puts $fp "$type $tile $grid_x $grid_y $clock_region $typed_sites"
     }
     close $fp_pin
     close $fp
