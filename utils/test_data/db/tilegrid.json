@@ -190,5 +190,55 @@
             "IOB_X1Y4": "IOB33M"
         },
         "type": "RIOB33"
+    },
+    "HCLK_IOI3_X113Y26": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00401580",
+                "frames": 42,
+                "offset": 50,
+                "words": 1
+            }
+        },
+        "grid_x": 113,
+        "grid_y": 130,
+        "pin_functions": {},
+        "sites": {
+            "BUFIO_X1Y0": "BUFIO",
+            "BUFIO_X1Y1": "BUFIO",
+            "BUFIO_X1Y2": "BUFIO",
+            "BUFIO_X1Y3": "BUFIO",
+            "BUFR_X1Y0": "BUFR",
+            "BUFR_X1Y1": "BUFR",
+            "BUFR_X1Y2": "BUFR",
+            "BUFR_X1Y3": "BUFR",
+            "IDELAYCTRL_X1Y0": "IDELAYCTRL"
+        },
+        "type": "HCLK_IOI3"
+    },
+    "HCLK_IOI3_X1Y26": {
+        "bits": {
+            "CLB_IO_CLK": {
+                "baseaddr": "0x00400000",
+                "frames": 42,
+                "offset": 50,
+                "words": 1
+            }
+        },
+        "grid_x": 1,
+        "grid_y": 130,
+        "pin_functions": {},
+        "sites": {
+            "BUFIO_X0Y0": "BUFIO",
+            "BUFIO_X0Y1": "BUFIO",
+            "BUFIO_X0Y2": "BUFIO",
+            "BUFIO_X0Y3": "BUFIO",
+            "BUFR_X0Y0": "BUFR",
+            "BUFR_X0Y1": "BUFR",
+            "BUFR_X0Y2": "BUFR",
+            "BUFR_X0Y3": "BUFR",
+            "IDELAYCTRL_X0Y0": "IDELAYCTRL"
+        },
+        "type": "HCLK_IOI3"
     }
 }
