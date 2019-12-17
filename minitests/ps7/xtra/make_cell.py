@@ -7,7 +7,6 @@ from collections import defaultdict
 
 # =============================================================================
 
-
 def main():
 
     BUS_REGEX = re.compile("(.*[A-Z_])([0-9]+)$")
@@ -41,10 +40,18 @@ def main():
             idx = 0
 
         # Get direction
-        if int(pin["is_input"]):
+        is_input = int(pin["is_input"])
+        is_output = int(pin["is_output"])
+        is_bidir = int(pin["is_bidir"])
+
+        if is_input and not is_output and not is_bidir:
             direction = "input"
-        if int(pin["is_output"]):
+        elif not is_input and is_output and not is_bidir:
             direction = "output"
+        elif not is_input and not is_output and is_bidir:
+            direction = "inout"
+        else:
+            assert False, pin
 
         # Add to bus
         bus = buses[name]
@@ -90,9 +97,12 @@ def main():
 
     # .....................................................
     # Generate XML model
+    pb_name = "PS7"
+    blif_model = "PS7_VPR"
+
     model_xml = """<models>
-  <model name="PS7">
-"""
+  <model name="{}">
+""".format(blif_model)
 
     # Inputs
     model_xml += """    <input_ports>
@@ -101,7 +111,7 @@ def main():
         bus = buses[name]
 
         # Skip not relevant pins
-        if bus["class"] not in ["normal", "mio"]:
+        if bus["class"] not in ["normal"]:
             continue
 
         if bus["direction"] != "input":
@@ -117,7 +127,7 @@ def main():
         bus = buses[name]
 
         # Skip not relevant pins
-        if bus["class"] not in ["normal", "mio"]:
+        if bus["class"] not in ["normal"]:
             continue
 
         if bus["direction"] != "output":
@@ -136,9 +146,6 @@ def main():
 
     # .....................................................
     # Generate XML pb_type
-    pb_name = "PS7"
-    blif_model = "PS7"
-
     pb_xml = """<pb_type name="{}" blif_model=".subckt {}" num_pb="1">
 """.format(pb_name, blif_model)
 
@@ -146,7 +153,7 @@ def main():
         bus = buses[name]
 
         # Skip not relevant pins
-        if bus["class"] not in ["normal", "mio"]:
+        if bus["class"] not in ["normal"]:
             continue
 
         pb_xml += "  <{} name=\"{}\" num_pins=\"{}\"/>\n".format(
@@ -159,8 +166,42 @@ def main():
         fp.write(pb_xml)
 
     # .....................................................
-    # Prepare Verilog module definition for the PS7
-    pin_strs = []
+    # Prepare Verilog module definition for the PS7_VPR
+    port_defs = []
+    for name in sorted(buses.keys()):
+        bus = buses[name]
+
+        # Skip not relevant pins (eg. MIO and DDR)
+        if bus["class"] not in ["normal"]:
+            continue
+
+        # Generate port definition
+        if bus["width"] > 1:
+            port_str = "  {} [{:>2d}:{:>2d}] {}".format(
+                bus["direction"].ljust(6), bus["max"], bus["min"], name)
+        else:
+            port_str = "  {}         {}".format(bus["direction"].ljust(6), name)
+
+        port_defs.append(port_str)
+
+    verilog = """(* blackbox *)
+module PS7_VPR (
+{}
+);
+
+endmodule
+""".format(",\n".join(port_defs))
+
+    with open("ps7_sim.v", "w") as fp:
+        fp.write(verilog)
+
+    # .....................................................
+    # Prepare techmap that maps PS7 to PS7_VPR and handles
+    # unconnected inputs (ties them to GND)
+    port_defs = []
+    port_conns = []
+    param_defs = []
+    wire_defs = []
     for name in sorted(buses.keys()):
         bus = buses[name]
 
@@ -168,25 +209,81 @@ def main():
         if bus["class"] not in ["normal", "mio"]:
             continue
 
+        # Generate port definition
         if bus["width"] > 1:
-            pin_str = "  {} [{:>2d}:{:>2d}] {}".format(
+            port_str = "  {} [{:>2d}:{:>2d}] {}".format(
                 bus["direction"].ljust(6), bus["max"], bus["min"], name)
         else:
-            pin_str = "  {}         {}".format(bus["direction"].ljust(6), name)
+            port_str = "  {}         {}".format(bus["direction"].ljust(6), name)
 
-        pin_strs.append(pin_str)
+        port_defs.append(port_str)
 
-    verilog = """(* blackbox *)
-module PS7 (
-{}
+        # MIO and DDR pins are not mapped as they are dummy
+        if bus["class"] == "mio":
+            continue
+
+        # This is an input port, needs to be tied to GND if unconnected
+        if bus["direction"] == "input":
+
+            # Techmap parameter definition
+            param_defs.append("  parameter _TECHMAP_CONSTMSK_{}_ = 0;".format(name.upper()))
+            param_defs.append("  parameter _TECHMAP_CONSTVAL_{}_ = 0;".format(name.upper()))
+
+            # Wire definition using generate statement. Necessary for detection
+            # of unconnected ports.
+            wire_defs.append("""
+  generate if((_TECHMAP_CONSTMSK_{name_upr}_ == {N}'d0) && (_TECHMAP_CONSTVAL_{name_upr}_ == {N}'d0))
+    wire [{M}:0] {name_lwr} = {N}'d0;
+  else
+    wire [{M}:0] {name_lwr} = {name};
+  end""".format(
+                name=name,
+                name_upr=name.upper(),
+                name_lwr=name.lower(),
+                N=bus["width"],
+                M=bus["width"]-1
+            ))
+
+            # Connection to the "generated" wire.
+            port_conns.append("  .{name:<25}({name_lwr})".format(
+                name=name,
+                name_lwr=name.lower()
+            ))
+
+        # An output port
+        else:
+            
+            # Direct connection
+            port_conns.append("  .{name:<25}({name})".format(name=name))
+
+    # Format the final verilog.
+    verilog = """module PS7 (
+{port_defs}
 );
 
-endmodule
-""".format(",\n".join(pin_strs))
+  // Techmap specific parameters.
+{param_defs}
 
-    with open("ps7.v", "w") as fp:
+  // Detect all unconnected inputs and tie them to 0.
+{wire_defs}
+
+  // Replacement cell.
+  PS7_VPR _TECHMAP_REPLACE_ (
+{port_conns}
+  );
+
+endmodule
+""".format(
+        port_defs=",\n".join(port_defs),
+        param_defs="\n".join(param_defs),
+        wire_defs="\n".join(wire_defs),
+        port_conns=",\n".join(port_conns)
+    )
+
+    with open("ps7_map.v", "w") as fp:
         fp.write(verilog)
 
+# =============================================================================
 
 if __name__ == "__main__":
     main()
