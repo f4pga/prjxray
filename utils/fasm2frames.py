@@ -15,6 +15,12 @@ from prjxray import fasm_assembler
 from prjxray.db import Database
 from prjxray.roi import Roi
 
+import sys
+
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 
 class FASMSyntaxError(SyntaxError):
     pass
@@ -123,6 +129,14 @@ def run(
             reader = csv.DictReader(fp)
             package_pins = [l for l in reader]
 
+        with open(os.path.join(db_root, part + ".json"), "r") as fp:
+            part_data = json.load(fp)
+
+        for bank, loc in part_data["iobanks"].items():
+            tile = "HCLK_IOI3_" + loc
+            bank_to_tile[bank].add(tile)
+            tile_to_bank[tile] = bank
+
         for pin in package_pins:
             bank_to_tile[pin["bank"]].add(pin["tile"])
             tile_to_bank[pin["tile"]] = pin["bank"]
@@ -132,6 +146,7 @@ def run(
         pudc_b_tile_site = find_pudc_b(db)
 
         def check_for_pudc_b(set_feature):
+            feature_callback(set_feature)
             parts = set_feature.feature.split('.')
 
             if parts[0] == pudc_b_tile_site[0] and parts[
@@ -154,12 +169,13 @@ def run(
         assembler.mark_roi_frames(Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2))
 
         if 'required_features' in roi_j:
-            extra_features = fasm.parse_fasm_string(
-                '\n'.join(roi_j['required_features']))
+            extra_features = list(
+                fasm.parse_fasm_string('\n'.join(roi_j['required_features'])))
 
     # Get required extra features for the part
     required_features = db.get_required_fasm_features(part)
-    extra_features += fasm.parse_fasm_string('\n'.join(required_features))
+    extra_features += list(
+        fasm.parse_fasm_string('\n'.join(required_features)))
 
     assembler.parse_fasm_filename(filename_in, extra_features=extra_features)
 
@@ -187,11 +203,14 @@ def run(
         # Make a set of all used IOB tiles and sites. Look for the "STEPDOWN"
         # feature. If one is set for an IOB then set it for all other IOBs of
         # the same bank.
-        stepdown_tags = set()
+        stepdown_tags = defaultdict(lambda: set())
         stepdown_banks = set()
         used_iob_sites = set()
 
         for set_feature in set_features:
+            if set_feature.value == 0:
+                continue
+
             feature = set_feature.feature
             parts = feature.split(".")
             if len(parts) >= 3:
@@ -201,24 +220,39 @@ def run(
                         tile,
                         site,
                     ))
-                if "STEPDOWN" in tag:
-                    stepdown_banks.add(tile_to_bank[tile])
-                    stepdown_tags.add(tag)
 
-        # Set the feature for unused IOBs
+                # Store STEPDOWN related tags.
+                if "STEPDOWN" in tag:
+                    bank = tile_to_bank[tile]
+                    stepdown_banks.add(bank)
+                    stepdown_tags[bank].add(tag)
+
+        # Set the feature for unused IOBs, loop over all banks which were
+        # observed to have the STEPDOWN feature set.
         missing_features = []
 
         for bank in stepdown_banks:
             for tile in bank_to_tile[bank]:
-                for site in get_iob_sites(db, tile):
 
-                    if (tile, site) in used_iob_sites:
-                        continue
+                # This is an IOB33 tile. Set the STEPDOWN feature in it but
+                # only if it is unused.
+                if "IOB33" in tile:
+                    for site in get_iob_sites(db, tile):
 
-                    for tag in stepdown_tags:
-                        feature = "{}.{}.{}".format(tile, site, tag)
-                        for line in fasm.parse_fasm_string(feature):
-                            assembler.add_fasm_line(line, missing_features)
+                        if (tile, site) in used_iob_sites:
+                            continue
+
+                        for tag in stepdown_tags[bank]:
+                            feature = "{}.{}.{}".format(tile, site, tag)
+                            for line in fasm.parse_fasm_string(feature):
+                                assembler.add_fasm_line(line, missing_features)
+
+                # This is a HCLK_IOI3 tile, set the stepdown feature for it
+                # too.
+                if "HCLK_IOI3" in tile:
+                    feature = "{}.STEPDOWN".format(tile)
+                    for line in fasm.parse_fasm_string(feature):
+                        assembler.add_fasm_line(line, missing_features)
 
         if missing_features:
             raise fasm_assembler.FasmLookupError('\n'.join(missing_features))
