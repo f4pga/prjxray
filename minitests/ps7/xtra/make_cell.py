@@ -7,6 +7,7 @@ from collections import defaultdict
 
 # =============================================================================
 
+
 def main():
 
     BUS_REGEX = re.compile("(.*[A-Z_])([0-9]+)$")
@@ -87,6 +88,10 @@ def main():
         # A MIO/DDR pin.
         elif name.startswith("MIO") or name.startswith("DDR") and \
             name != "DDRARB":
+            cls = "mio"
+
+        # PS7 clock/reset
+        elif name in ["PSCLK", "PSPORB", "PSSRSTB"]:
             cls = "mio"
 
         # "Normal" pin
@@ -180,7 +185,8 @@ def main():
             port_str = "  {} [{:>2d}:{:>2d}] {}".format(
                 bus["direction"].ljust(6), bus["max"], bus["min"], name)
         else:
-            port_str = "  {}         {}".format(bus["direction"].ljust(6), name)
+            port_str = "  {}         {}".format(
+                bus["direction"].ljust(6), name)
 
         port_defs.append(port_str)
 
@@ -214,7 +220,8 @@ endmodule
             port_str = "  {} [{:>2d}:{:>2d}] {}".format(
                 bus["direction"].ljust(6), bus["max"], bus["min"], name)
         else:
-            port_str = "  {}         {}".format(bus["direction"].ljust(6), name)
+            port_str = "  {}         {}".format(
+                bus["direction"].ljust(6), name)
 
         port_defs.append(port_str)
 
@@ -226,33 +233,34 @@ endmodule
         if bus["direction"] == "input":
 
             # Techmap parameter definition
-            param_defs.append("  parameter _TECHMAP_CONSTMSK_{}_ = 0;".format(name.upper()))
-            param_defs.append("  parameter _TECHMAP_CONSTVAL_{}_ = 0;".format(name.upper()))
+            param_defs.append(
+                "  parameter _TECHMAP_CONSTMSK_{}_ = 0;".format(name.upper()))
+            param_defs.append(
+                "  parameter _TECHMAP_CONSTVAL_{}_ = 0;".format(name.upper()))
 
             # Wire definition using generate statement. Necessary for detection
             # of unconnected ports.
-            wire_defs.append("""
+            wire_defs.append(
+                """
   generate if((_TECHMAP_CONSTMSK_{name_upr}_ == {N}'d0) && (_TECHMAP_CONSTVAL_{name_upr}_ == {N}'d0))
     wire [{M}:0] {name_lwr} = {N}'d0;
   else
     wire [{M}:0] {name_lwr} = {name};
-  end""".format(
-                name=name,
-                name_upr=name.upper(),
-                name_lwr=name.lower(),
-                N=bus["width"],
-                M=bus["width"]-1
-            ))
+  endgenerate""".format(
+                    name=name,
+                    name_upr=name.upper(),
+                    name_lwr=name.lower(),
+                    N=bus["width"],
+                    M=bus["width"] - 1))
 
             # Connection to the "generated" wire.
-            port_conns.append("  .{name:<25}({name_lwr})".format(
-                name=name,
-                name_lwr=name.lower()
-            ))
+            port_conns.append(
+                "  .{name:<25}({name_lwr})".format(
+                    name=name, name_lwr=name.lower()))
 
         # An output port
         else:
-            
+
             # Direct connection
             port_conns.append("  .{name:<25}({name})".format(name=name))
 
@@ -277,11 +285,11 @@ endmodule
         port_defs=",\n".join(port_defs),
         param_defs="\n".join(param_defs),
         wire_defs="\n".join(wire_defs),
-        port_conns=",\n".join(port_conns)
-    )
+        port_conns=",\n".join(port_conns))
 
     with open("ps7_map.v", "w") as fp:
         fp.write(verilog)
+
 
 # =============================================================================
 
