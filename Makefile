@@ -191,9 +191,7 @@ db-extras-zynq7-parts:
 	@true
 
 db-extras-zynq7-harness:
-	+source minitests/roi_harness/zybo-swbut.sh && \
-		$(MAKE) -C minitests/roi_harness \
-			HARNESS_DIR=$(XRAY_DATABASE_DIR)/zynq7/harness/zybo/swbut run copy
+	@true
 
 db-check:
 	@true
