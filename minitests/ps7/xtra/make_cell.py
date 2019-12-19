@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import csv
+import json
 import re
 
 from collections import defaultdict
@@ -99,6 +100,27 @@ def main():
             cls = "normal"
 
         bus["class"] = cls
+
+    # .....................................................
+    # Generate JSON with PS7 pins grouped by direction
+
+    ps7_pins = {"input": [], "output": [], "inout": []}
+    for name in sorted(buses.keys()):
+        bus = buses[name]
+
+        # Skip not relevant pins
+        if bus["class"] not in ["normal", "mio"]:
+            continue
+
+        if bus["width"] > 1:
+            for i in range(bus["min"], bus["max"]+1):
+                pin_name = "{}{}".format(name, i)
+                ps7_pins[bus["direction"]].append(pin_name)
+        else:
+            ps7_pins[bus["direction"]].append(name)
+    
+    with open("ps7_pins.json", "w") as fp:
+        json.dump(ps7_pins, fp, sort_keys=True, indent=2)
 
     # .....................................................
     # Generate XML model

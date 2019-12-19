@@ -6,6 +6,7 @@ clean:
 	rm -rf xtra.ok
 	rm -rf ps7_sim.v
 	rm -rf ps7_map.v
+	rm -rf ps7_pins.json
 	rm -rf ps7.csv
 	rm -rf *.xml
 	rm -rf *.log
