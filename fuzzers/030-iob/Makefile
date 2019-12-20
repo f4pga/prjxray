@@ -13,7 +13,8 @@ build/segbits_xiob33.rdb: $(SPECIMENS_OK)
 
 build/segbits_xiob33.db: build/segbits_xiob33.rdb process_rdb.py bits.dbf
 	python3 process_rdb.py build/segbits_xiob33.rdb > build/segbits_xiob33_processed.rdb
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in build/segbits_xiob33_processed.rdb --seg-fn-out $@
+	python3 group.py -g tag_groups.txt -i build/segbits_xiob33_processed.rdb -o build/segbits_xiob33_processed.rdb2
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in build/segbits_xiob33_processed.rdb2 --seg-fn-out $@
 	${XRAY_MASKMERGE} build/mask_xiob33.db $$(find -name segdata_liob33.txt) $$(find -name segdata_riob33.txt)
 
 build/segbits_hclk_ioi3.rdb: $(SPECIMENS_OK)
