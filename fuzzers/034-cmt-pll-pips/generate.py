@@ -22,15 +22,8 @@ def main():
     ppipdata = {}
     ignpip = set()
 
-    # Zynq7 do not have R CMTs
-    if os.getenv("XRAY_DATABASE") == "zynq7":
-        piplists = ['cmt_top_l_upper_t.txt']
-        ppiplists = ['ppips_cmt_top_l_upper_t.db']
-    else:
-        piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
-        ppiplists = [
-            'ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db'
-        ]
+    piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
+    ppiplists = ['ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db']
 
     # Load PIP lists
     print("Loading PIP lists...")
