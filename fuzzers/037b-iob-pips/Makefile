@@ -13,17 +13,10 @@ SPECIMENS_DEPS=build/cmt_regions.csv
 
 include ../pip_loop.mk
 
-SIX_BIT_PIPS="OLOGIC[01]_CLKDIV"
-
 build/segbits_ioi3_x.rdb: $(SPECIMENS_OK)
 	# Most pips are 3 bits, force a 3 bit solution
-	${XRAY_SEGMATCH} -c 3 -m 20 -M 50 -o build/segbits_ioi3_x_match_3.rdb \
+	${XRAY_SEGMATCH} -c 3 -m 20 -M 50 -o build/segbits_ioi3_x.rdb \
 		$(shell find build -name segdata_lioi3*.txt) $(shell find build -name segdata_rioi3*.txt)
-	# Some are 6 bit solutions, solve for 6 bits and merge respectively
-	${XRAY_SEGMATCH} -c 6 -m 20 -M 50 -o build/segbits_ioi3_x_match_6.rdb \
-		$(shell find build -name segdata_lioi3*.txt) $(shell find build -name segdata_rioi3*.txt)
-	grep -v ${SIX_BIT_PIPS} build/segbits_ioi3_x_match_3.rdb  > build/segbits_ioi3_x.rdb
-	grep    ${SIX_BIT_PIPS} build/segbits_ioi3_x_match_6.rdb >> build/segbits_ioi3_x.rdb
 
 RDBS = build/segbits_ioi3_x.rdb
 
