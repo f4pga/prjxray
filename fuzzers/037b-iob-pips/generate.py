@@ -6,7 +6,7 @@ import os.path
 
 
 def bitfilter(frame, word):
-    if frame < 28:
+    if frame < 30:
         return False
     return True
 
