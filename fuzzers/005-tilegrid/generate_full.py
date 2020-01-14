@@ -395,15 +395,10 @@ def propagate_IOI_Y9(database, tiles_by_grid):
     higher than the rest, just like for some of the SING tiles.
 
     """
-    arch = os.getenv('XRAY_DATABASE')
-    if arch in 'artix7':
-        tiles = ['RIOI3_X43Y9', 'LIOI3_X0Y9']
-    elif arch in 'kintex7':
-        tiles = ['LIOI3_X0Y9']
-    elif arch in 'zynq7':
-        tiles = ['RIOI3_X31Y9']
-    else:
-        assert False, "Unsupported architecture"
+    ioi_tiles = os.getenv('XRAY_IOI3_TILES')
+
+    assert ioi_tiles is not None, "XRAY_IOI3_TILES env variable not set"
+    tiles = ioi_tiles.split(" ")
 
     for tile in tiles:
         prev_tile = tiles_by_grid[(
