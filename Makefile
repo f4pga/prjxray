@@ -139,9 +139,31 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 
 .PHONY: db-extras-artix7 db-extras-kintex7 db-extras-zynq7
 
+# Targets related to Project X-Ray parts
+# --------------------------------------
+
+ARTIX_PARTS=artix50t artix200t
+ZYNQ_PARTS=zynq020
+KINTEX_PARTS=kintex70t
+
+XRAY_PARTS=${ARTIX_PARTS} ${ZYNQ_PARTS} ${KINTEX_PARTS}
+
+define multiple-parts
+
+# $(1): PART to be used
+
+db-part-only-$(1):
+	+source settings/$(1).sh && $(MAKE) -C fuzzers part_only
+
+endef
+
+$(foreach PART,$(XRAY_PARTS),$(eval $(call multiple-parts,$(PART))))
+
+db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
+
 db-extras-artix7:
-	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers part_only
-	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers part_only
+	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers roi_only
+	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/basys3/swbut run copy
@@ -158,6 +180,8 @@ db-extras-artix7:
 	+source minitests/roi_harness/arty-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/swbut run copy
+	# Generate multiple part support
+	+$(MAKE) db-extras-artix7-parts
 
 db-extras-kintex7:
 	@true

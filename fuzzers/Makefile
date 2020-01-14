@@ -127,11 +127,46 @@ $(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid))
 quick:
 	$(MAKE) QUICK=Y
 
-# part_only runs the fuzzers required for supporting additional parts.
-# Note: In theory this includes 005-tilegrid, but there isn't support for
-# multiple tilegrid's per family at this time.
-part_only:
+# roi_only runs the fuzzers required for supporting additional parts when building
+# an roi harness.
+roi_only:
 	+$(MAKE) -C 001-part-yaml run
 	+$(MAKE) -C 075-pins run
 
-.PHONY: all clean clean_fuzzers clean_logs quick part_only
+# Part only targets
+# -----------------
+
+part_only_yaml:
+	echo ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
+	+$(MAKE) -C 001-part-yaml run
+	cp ${XRAY_FAMILY_DIR}/${XRAY_PART}.yaml ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
+	cp ${XRAY_FAMILY_DIR}/${XRAY_PART}.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.json
+
+part_only_tilegrid:
+	+$(MAKE) -C 005-tilegrid run
+	cp ${XRAY_FAMILY_DIR}/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
+
+part_only_tileconn:
+	+$(MAKE) -C 072-ordered_wires run
+	+$(MAKE) -C 073-get_counts run
+	+$(MAKE) -C 074-dump_all run
+	cp ${XRAY_FAMILY_DIR}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
+
+part_only_pins:
+	+$(MAKE) -C 075-pins run
+	cp ${XRAY_FAMILY_DIR}/${XRAY_PART}_package_pins.csv ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
+
+part_only:
+	# Create PART-specific directory
+	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
+	# Generate YAML
+	+$(MAKE) part_only_yaml
+	# Generate Tile grid
+	+$(MAKE) part_only_tilegrid
+	# Generate Tile connections
+	+$(MAKE) part_only_tileconn
+	# Generate package pins
+	+$(MAKE) part_only_pins
+
+
+.PHONY: all clean clean_fuzzers clean_logs quick part_only roi_only

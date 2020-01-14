@@ -138,10 +138,10 @@ proc assign_iobs {} {
 
 proc make_project {} {
     # Generate .bit only over ROI
-    make_project_roi XRAY_ROI_TILEGRID
+    make_project_roi XRAY_ROI_TILEGRID XRAY_EXCLUDE_ROI_TILEGRID
 }
 
-proc make_project_roi { roi_var } {
+proc make_project_roi { roi_var exclude_roi_var } {
     # 6 CMTs in our reference part
     # What is the largest?
     set n_di 16
@@ -158,6 +158,13 @@ proc make_project_roi { roi_var } {
     foreach roi "$::env($roi_var)" {
         puts "ROI: $roi"
         resize_pblock [get_pblocks roi] -add "$roi"
+    }
+
+    create_pblock exclude_roi
+    add_cells_to_pblock [get_pblocks roi] [get_cells roi]
+    foreach roi "$::env($exclude_roi_var)" {
+        puts "ROI: $roi"
+        resize_pblock [get_pblocks exclude_roi] -add "$roi"
     }
 
     set_property CFGBVS VCCO [current_design]

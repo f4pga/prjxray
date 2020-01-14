@@ -3,6 +3,7 @@ source "$::env(FUZDIR)/util.tcl"
 proc write_tiles_txt {} {
     # Get all tiles, ie not just the selected LUTs
     set tiles [get_tiles]
+    set not_allowed_sites [get_sites -of_objects [get_pblocks exclude_roi]]
 
     # Write tiles.txt with site metadata
     set fp [open "tiles.txt" w]
@@ -12,6 +13,23 @@ proc write_tiles_txt {} {
         set grid_x [get_property GRID_POINT_X $tile]
         set grid_y [get_property GRID_POINT_Y $tile]
         set sites [get_sites -quiet -of_objects $tile]
+
+        # There are some sites which are not allowed to be placed.
+        # This check excludes tiles in the EXCLUDE_ROI pblock
+        # be added to tilegrid.json
+        set skip_tile 0
+        foreach site $sites {
+            set res [lsearch $not_allowed_sites $site]
+            if { $res != -1 } {
+                set skip_tile 1
+                break
+            }
+        }
+
+        if { $skip_tile == 1 } {
+            continue
+        }
+
         set typed_sites {}
 
         set clock_region "NA"
@@ -41,7 +59,7 @@ proc write_tiles_txt {} {
 
 proc run {} {
     # Generate grid of entire part
-    make_project_roi XRAY_ROI_TILEGRID
+    make_project_roi XRAY_ROI_TILEGRID XRAY_EXCLUDE_ROI_TILEGRID
 
     place_design
     route_design
