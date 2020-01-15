@@ -428,6 +428,7 @@ def load_tiles(db_root):
 
 def run(
         db_root,
+        part,
         bits_file,
         segnames,
         omit_empty_segs=False,
@@ -436,7 +437,7 @@ def run(
         flag_decode_omit=False,
         bit_only=False,
         verbose=False):
-    db = prjxraydb.Database(db_root)
+    db = prjxraydb.Database(db_root, part)
     tiles = load_tiles(db_root)
     segments = mk_segments(tiles)
     bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
@@ -477,6 +478,7 @@ def main():
         description="Decode bits within a tile's address space")
 
     util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument(
         '-z',
@@ -503,6 +505,7 @@ def main():
 
     run(
         args.db_root,
+        args.part,
         args.bits_file,
         args.segnames,
         args.z,

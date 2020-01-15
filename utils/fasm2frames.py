@@ -109,7 +109,7 @@ def run(
         roi=None,
         debug=False,
         emit_pudc_b_pullup=False):
-    db = Database(db_root)
+    db = Database(db_root, part)
     assembler = fasm_assembler.FasmAssembler(db)
 
     set_features = set()
@@ -124,12 +124,11 @@ def run(
     bank_to_tile = defaultdict(lambda: set())
 
     if part is not None:
-        with open(os.path.join(db_root, part + "_package_pins.csv"),
-                  "r") as fp:
+        with open(os.path.join(db_root, part, "package_pins.csv"), "r") as fp:
             reader = csv.DictReader(fp)
             package_pins = [l for l in reader]
 
-        with open(os.path.join(db_root, part + ".json"), "r") as fp:
+        with open(os.path.join(db_root, part, "part.json"), "r") as fp:
             part_data = json.load(fp)
 
         for bank, loc in part_data["iobanks"].items():

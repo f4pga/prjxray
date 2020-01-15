@@ -37,8 +37,8 @@ def make_connection(wires, connection):
         wires[wire] = wire_a_set
 
 
-def make_connections(db_root):
-    db = prjxray.db.Database(db_root)
+def make_connections(db_root, part):
+    db = prjxray.db.Database(db_root, part)
     c = db.connections()
 
     wires = {}
@@ -61,6 +61,7 @@ def read_json5(fname):
 def main():
     parser = argparse.ArgumentParser(
         description="Tests database against raw node list.")
+
     util.db_root_arg(parser)
     util.part_arg(parser)
     parser.add_argument('--raw_node_root', required=True)

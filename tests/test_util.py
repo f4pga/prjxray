@@ -10,6 +10,7 @@ from unittest import TestCase, main
 # in the current subdirectory, which will be a temporary one, to allow concurent
 # testing.
 environ['XRAY_DATABASE_ROOT'] = '.'
+environ['XRAY_PART'] = './'
 
 from prjxray.util import get_roi
 
