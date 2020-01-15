@@ -3,13 +3,14 @@ import shutil
 import sys
 import subprocess
 import signal
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 from itertools import chain
 import argparse
 
 # Can be used to redirect vivado tons of output
 # stdout=DEVNULL in subprocess.check_call
 
+MP_LOCK = Lock()
 
 # Worker function called from threads
 def start_pips(argList):
@@ -20,6 +21,24 @@ def start_pips(argList):
         str(blockID) + " " + str(start) + " " + str(stop),
         shell=True)
 
+    uphill_wires = "wires/uphill_wires_{}.txt".format(blockID)
+    downhill_wires = "wires/downhill_wires_{}.txt".format(blockID)
+
+    # Locking to write on final file and remove the temporary one
+    MP_LOCK.acquire()
+    with open("uphill_wires.txt", "a") as wfd:
+        f = uphill_wires
+        with open(f, "r") as fd:
+            shutil.copyfileobj(fd, wfd)
+
+    with open("downhill_wires.txt", "a") as wfd:
+        f = downhill_wires
+        with open(f, "r") as fd:
+            shutil.copyfileobj(fd, wfd)
+    MP_LOCK.release()
+
+    os.remove(uphill_wires)
+    os.remove(downhill_wires)
 
 # Function called once to get the total numbers of pips to list
 def get_nb_pips():
@@ -115,20 +134,6 @@ def main(argv):
 
     pipsFileCount = run_pool(
         pipscount, nbPipsBlock, blockPipsSize, nbParBlock, start_pips)
-
-    print("Generating final files")
-
-    with open("uphill_wires.txt", "w") as wfd:
-        for j in range(0, pipsFileCount):
-            f = "wires/uphill_wires_" + str(j) + ".txt"
-            with open(f, "r") as fd:
-                shutil.copyfileobj(fd, wfd)
-
-    with open("downhill_wires.txt", "w") as wed:
-        for j in range(0, pipsFileCount):
-            e = "wires/downhill_wires_" + str(j) + ".txt"
-            with open(e, "r") as ed:
-                shutil.copyfileobj(ed, wed)
 
     print("Work done !")
     return 0

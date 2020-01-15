@@ -2,8 +2,8 @@
 N := 1
 SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
-MAX_VIVADO_PROCESS ?= 4
-MAX_PIPS_INSTANCE ?= 340000
+MAX_VIVADO_PROCESS ?= 8
+MAX_PIPS_INSTANCE ?= 680000
 
 database: $(SPECIMENS_OK)
 	true
