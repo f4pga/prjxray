@@ -153,7 +153,7 @@ define multiple-parts
 # $(1): PART to be used
 
 db-part-only-$(1):
-	+source settings/$(1).sh && $(MAKE) -C fuzzers part_only
+	+source settings/$(1).sh && $$(MAKE) -C fuzzers part_only
 
 endef
 
