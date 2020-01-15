@@ -5,6 +5,7 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 database: $(SPECIMENS_OK)
 
 pushdb:
+	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}/
 	cp build/specimen_001/*_package_pins.csv ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
 
 $(SPECIMENS_OK):
