@@ -40,7 +40,7 @@ endif
 database: build/tilegrid.json
 
 pushdb: build/tilegrid.json
-	cp build/tilegrid.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/tilegrid.json
+	cp build/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
 
 build/tiles/tiles.txt:
 	bash generate.sh build/tiles tiles

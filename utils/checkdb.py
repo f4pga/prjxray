@@ -142,13 +142,13 @@ def check_tile_overlap(db, verbose=False):
     print("Checked %s tiles, %s bits" % (tiles_checked, len(mall)))
 
 
-def run(db_root, verbose=False):
+def run(db_root, part, verbose=False):
     # Start by running a basic check on db files
     print("Checking individual .db...")
     parsedb_all(db_root, verbose=verbose)
 
     # Now load and verify tile consistency
-    db = prjxraydb.Database(db_root)
+    db = prjxraydb.Database(db_root, part)
     db._read_tilegrid()
     '''
     these don't load properly without .json files

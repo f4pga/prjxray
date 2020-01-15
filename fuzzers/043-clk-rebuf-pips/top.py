@@ -26,7 +26,7 @@ def get_xy(s):
 
 
 def gen_sites(desired_site_type):
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
 
     for tile_name in sorted(grid.tiles()):
@@ -38,7 +38,7 @@ def gen_sites(desired_site_type):
 
 
 def gen_bufhce_sites():
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
     for tile_name in sorted(grid.tiles()):
         loc = grid.loc_of_tilename(tile_name)

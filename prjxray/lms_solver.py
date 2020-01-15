@@ -824,7 +824,8 @@ def main():
 
     # Build (baseaddr, offset) -> tile name map
     database_dir = os.path.join(
-        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"))
+        os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
+        os.getenv("XRAY_PART"))
     tilegrid_file = os.path.join(database_dir, "tilegrid.json")
     address_map = build_address_map(tilegrid_file)
 

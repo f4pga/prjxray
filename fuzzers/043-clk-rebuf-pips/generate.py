@@ -2,7 +2,7 @@
 
 from prjxray.segmaker import Segmaker
 from prjxray.db import Database
-from prjxray.util import get_db_root
+from prjxray.util import get_db_root, get_part
 import re
 
 REBUF_GCLK = re.compile('^CLK_BUFG_REBUF_R_CK_GCLK([0-9]+)_BOT$')
@@ -17,8 +17,8 @@ def gclk_of_wire(wire):
 
 
 class ClockColumn(object):
-    def __init__(self, db_root):
-        db = Database(db_root)
+    def __init__(self, db_root, part):
+        db = Database(db_root, part)
         grid = db.grid()
 
         tiles_in_gclk_columns = []

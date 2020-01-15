@@ -13,9 +13,10 @@ $(SPECIMENS): Makefile.specimen
 	$(MAKE) -C $@ -f ../../Makefile.specimen
 
 pushdb:
-	cp build/part.yaml ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}.yaml
-	cp build/part.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}.json
-	cp build/${XRAY_PART}_required_features.fasm ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/${XRAY_PART}_required_features.fasm 2>/dev/null || true
+	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
+	cp build/part.json $(XRAY_FAMILY_DIR)/${XRAY_PART}/part.json
+	cp build/part.yaml $(XRAY_FAMILY_DIR)/${XRAY_PART}/part.yaml
+	cp build/${XRAY_PART}_required_features.fasm ${XRAY_FAMILY_DIR}/${XRAY_PART}/required_features.fasm 2>/dev/null || true
 
 run:
 	$(MAKE) clean

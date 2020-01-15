@@ -23,7 +23,7 @@ def read_site_to_cmt():
 
 def gen_sites():
     ''' Return dict of ISERDES/OSERDES locations. '''
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
 
     xy_fun = util.create_xy_fun('\S+')

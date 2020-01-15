@@ -2,18 +2,21 @@
 import argparse
 from prjxray.db import Database
 from prjxray.grid import BlockType
+from prjxray import util
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Tool for checking which tiles have bits defined.")
-    parser.add_argument('db_root')
+
+    util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument('--show-only-missing', action='store_true')
     parser.add_argument('--verbose', action='store_true')
 
     args = parser.parse_args()
 
-    db = Database(args.db_root)
+    db = Database(args.db_root, args.part)
     grid = db.grid()
 
     tile_types = {}

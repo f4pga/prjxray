@@ -5,7 +5,7 @@ SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 database: $(SPECIMENS_OK)
 
 pushdb:
-	cp build/specimen_001/*_package_pins.csv ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
+	cp build/specimen_001/*_package_pins.csv ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@)

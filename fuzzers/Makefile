@@ -137,10 +137,7 @@ roi_only:
 # -----------------
 
 part_only_yaml:
-	echo ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
 	+$(MAKE) -C 001-part-yaml run
-	cp ${XRAY_FAMILY_DIR}/${XRAY_PART}.yaml ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
-	cp ${XRAY_FAMILY_DIR}/${XRAY_PART}.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.json
 
 part_only_tilegrid:
 	+$(MAKE) -C 005-tilegrid run
@@ -150,11 +147,9 @@ part_only_tileconn:
 	+$(MAKE) -C 072-ordered_wires run
 	+$(MAKE) -C 073-get_counts run
 	+$(MAKE) -C 074-dump_all run
-	cp ${XRAY_FAMILY_DIR}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
 
 part_only_pins:
 	+$(MAKE) -C 075-pins run
-	cp ${XRAY_FAMILY_DIR}/${XRAY_PART}_package_pins.csv ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
 
 part_only:
 	# Create PART-specific directory

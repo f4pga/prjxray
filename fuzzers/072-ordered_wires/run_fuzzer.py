@@ -12,6 +12,7 @@ import argparse
 
 MP_LOCK = Lock()
 
+
 # Worker function called from threads
 def start_pips(argList):
     blockID, start, stop, total = argList
@@ -39,6 +40,7 @@ def start_pips(argList):
 
     os.remove(uphill_wires)
     os.remove(downhill_wires)
+
 
 # Function called once to get the total numbers of pips to list
 def get_nb_pips():

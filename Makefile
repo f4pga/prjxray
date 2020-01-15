@@ -118,7 +118,7 @@ db-check-$(1):
 	@echo
 	@echo "Checking $(1) database"
 	@echo "============================"
-	@$(IN_ENV) python3 utils/checkdb.py --db-root database/$(1)
+	@$(IN_ENV) python3 utils/checkdb.py
 
 db-format-$(1):
 	@echo
@@ -142,7 +142,7 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 # Targets related to Project X-Ray parts
 # --------------------------------------
 
-ARTIX_PARTS=artix50t artix200t
+ARTIX_PARTS=artix200t
 ZYNQ_PARTS=zynq020
 KINTEX_PARTS=kintex70t
 

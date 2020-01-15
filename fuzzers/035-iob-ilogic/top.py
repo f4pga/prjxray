@@ -16,7 +16,7 @@ def gen_sites():
     IOB33: not a diff pair. Relatively rare (at least in ROI...2 of them?)
     Focus on IOB33S to start
     '''
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
     for tile_name in sorted(grid.tiles()):
         loc = grid.loc_of_tilename(tile_name)

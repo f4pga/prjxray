@@ -27,8 +27,8 @@ def bit_to_bits(bitread, part_yaml, bit_file, bits_file, frame_range=None):
         shell=True)
 
 
-def bits_to_fasm(db_root, bits_file, verbose, canonical):
-    db = Database(db_root)
+def bits_to_fasm(db_root, part, bits_file, verbose, canonical):
+    db = Database(db_root, part)
     grid = db.grid()
     disassembler = fasm_disassembler.FasmDisassembler(db)
 
@@ -102,14 +102,15 @@ def main():
 
         bit_to_bits(
             bitread=args.bitread,
-            part_yaml=os.path.join(args.db_root, '{}.yaml'.format(args.part)),
+            part_yaml=os.path.join(args.db_root, args.part, "part.yaml"),
             bit_file=args.bit_file,
             bits_file=bits_file.name,
             frame_range=args.frame_range,
         )
 
         bits_to_fasm(
-            args.db_root, bits_file.name, args.verbose, args.canonical)
+            args.db_root, args.part, bits_file.name, args.verbose,
+            args.canonical)
 
 
 if __name__ == '__main__':
