@@ -17,7 +17,7 @@ if [ -e "${XRAY_DIR}/env/bin/activate" ]; then
 fi
 
 # misc
-export XRAY_PART_YAML="${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/${XRAY_PART}.yaml"
+export XRAY_PART_YAML="${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/${XRAY_PART}/part.yaml"
 export PYTHONPATH="${XRAY_DIR}:${XRAY_DIR}/third_party/fasm:$PYTHONPATH"
 
 # tools

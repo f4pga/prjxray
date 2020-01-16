@@ -45,85 +45,85 @@ pushdb: build/tilegrid.json
 build/tiles/tiles.txt:
 	bash generate.sh build/tiles tiles
 
-build/basicdb/tilegrid.json: generate.py build/tiles/tiles.txt
-	mkdir -p build/basicdb
+build/basicdb/${XRAY_PART}/tilegrid.json: generate.py build/tiles/tiles.txt
+	mkdir -p build/basicdb/${XRAY_PART}
 	cd build && python3 ${FUZDIR}/generate.py \
 		--tiles $(FUZDIR)/build/tiles/tiles.txt \
 		--pin_func $(FUZDIR)/build/tiles/pin_func.txt \
-		--out ${BUILD_DIR}/basicdb/tilegrid.json
+		--out ${BUILD_DIR}/basicdb/${XRAY_PART}/tilegrid.json
 
-clb/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+clb/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd clb && $(MAKE)
 
-clb_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+clb_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd clb_int && $(MAKE)
 
-cfg/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+cfg/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd cfg && $(MAKE)
 
-iob/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+iob/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd iob && $(MAKE)
 
-iob_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+iob_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd iob_int && $(MAKE)
 
-ioi/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+ioi/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd ioi && $(MAKE)
 
-mmcm/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+mmcm/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd mmcm && $(MAKE)
 
-pll/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+pll/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd pll && $(MAKE)
 
-ps7_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+ps7_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd ps7_int && $(MAKE)
 
-monitor/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+monitor/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd monitor && $(MAKE)
 
-monitor_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+monitor_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd monitor_int && $(MAKE)
 
-bram/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+bram/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd bram && $(MAKE)
 
-bram_block/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+bram_block/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd bram_block && $(MAKE)
 
-bram_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+bram_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd bram_int && $(MAKE)
 
-dsp/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+dsp/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd dsp && $(MAKE)
 
-dsp_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+dsp_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd dsp_int && $(MAKE)
 
-fifo_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+fifo_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd fifo_int && $(MAKE)
 
-cfg_int/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+cfg_int/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd cfg_int && $(MAKE)
 
-orphan_int_column/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+orphan_int_column/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd orphan_int_column && $(MAKE)
 
-clk_hrow/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+clk_hrow/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd clk_hrow && $(MAKE)
 
-clk_bufg/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+clk_bufg/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd clk_bufg && $(MAKE)
 
-hclk_cmt/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+hclk_cmt/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd hclk_cmt && $(MAKE)
 
-hclk_ioi/build/segbits_tilegrid.tdb: build/basicdb/tilegrid.json
+hclk_ioi/build/segbits_tilegrid.tdb: build/basicdb/${XRAY_PART}/tilegrid.json
 	cd hclk_ioi && $(MAKE)
 
 build/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
-		--fn-in build/basicdb/tilegrid.json \
+		--fn-in build/basicdb/${XRAY_PART}/tilegrid.json \
 		--fn-out build/tilegrid_tdb.json
 
 build/tilegrid.json: generate_full.py build/tilegrid_tdb.json
