@@ -72,8 +72,9 @@ class ClockColumn(object):
 
 def main():
     db_root = get_db_root()
+    part = get_part()
 
-    clock_column = ClockColumn(db_root)
+    clock_column = ClockColumn(db_root, part)
 
     segmk = Segmaker("design.bits")
 
