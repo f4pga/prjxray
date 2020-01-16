@@ -17,7 +17,6 @@ def get_db_root():
 
 def get_part():
     ret = os.getenv("XRAY_PART", None)
-    assert ret
 
     return ret
 

@@ -80,6 +80,7 @@ class Segmaker:
         self.part = part
         if self.part is None:
             self.part = util.get_part()
+            assert self.part, "No part specified."
 
         self.verbose = verbose if verbose is not None else os.getenv(
             'VERBOSE', 'N') == 'Y'
