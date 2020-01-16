@@ -72,10 +72,14 @@ def add_site_group_zero(segmk, site, prefix, vals, zero_val, val):
 
 
 class Segmaker:
-    def __init__(self, bitsfile, verbose=None, db_root=None):
+    def __init__(self, bitsfile, verbose=None, db_root=None, part=None):
         self.db_root = db_root
         if self.db_root is None:
             self.db_root = util.get_db_root()
+
+        self.part = part
+        if self.part is None:
+            self.part = util.get_part()
 
         self.verbose = verbose if verbose is not None else os.getenv(
             'VERBOSE', 'N') == 'Y'
@@ -113,7 +117,7 @@ class Segmaker:
 
     def load_grid(self):
         '''Load self.grid holding tile addresses'''
-        with open(os.path.join(self.db_root, "tilegrid.json"), "r") as f:
+        with open(os.path.join(self.db_root, self.part, "tilegrid.json"), "r") as f:
             self.grid = json.load(f)
         assert "segments" not in self.grid, "Old format tilegrid.json"
 
