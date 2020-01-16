@@ -173,7 +173,7 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
 
             if tile['bits']['CLB_IO_CLK']['offset'] == 99:
                 assert next_tile_type in [
-                    'T_TERM_INT', 'BRKH_INT', 'BRKH_TERM_INT'
+                    'T_TERM_INT', 'BRKH_INT', 'BRKH_TERM_INT', 'BRKH_INT_PSS'
                 ], next_tile_type
                 break
 
