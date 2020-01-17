@@ -13,9 +13,23 @@ set root_fp [open "root_node_${blocknb}.csv" w]
 
 set nodes [get_nodes]
 
-for {set j $start } { $j < $stop } { incr j } {
+create_pblock exclude_roi
+foreach roi "$::env(XRAY_EXCLUDE_ROI_TILEGRID)" {
+puts "ROI: $roi"
+resize_pblock [get_pblocks exclude_roi] -add "$roi"
+}
 
+set not_allowed_sites [get_sites -of_objects [get_pblocks exclude_roi]]
+set not_allowed_nodes [get_nodes -of_objects [get_tiles -of_objects $not_allowed_sites]]
+
+for {set j $start } { $j < $stop } { incr j } {
     set node [lindex $nodes $j]
+
+    # If node is not allowed, skip it
+    set res [lsearch $not_allowed_nodes $node]
+    if { $res != -1 } {
+        continue
+    }
 
     file mkdir [file dirname "${node}"]
     set fname $node.json5
