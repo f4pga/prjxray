@@ -170,10 +170,11 @@ def main():
         description="Parse a db repository, checking for consistency")
 
     util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument('--verbose', action='store_true', help='')
     args = parser.parse_args()
 
-    run(args.db_root, verbose=args.verbose)
+    run(args.db_root, args.part, verbose=args.verbose)
 
 
 if __name__ == '__main__':
