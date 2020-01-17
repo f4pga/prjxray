@@ -15,8 +15,8 @@ set nodes [get_nodes]
 
 create_pblock exclude_roi
 foreach roi "$::env(XRAY_EXCLUDE_ROI_TILEGRID)" {
-puts "ROI: $roi"
-resize_pblock [get_pblocks exclude_roi] -add "$roi"
+    puts "ROI: $roi"
+    resize_pblock [get_pblocks exclude_roi] -add "$roi"
 }
 
 set not_allowed_sites [get_sites -of_objects [get_pblocks exclude_roi]]
