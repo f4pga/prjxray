@@ -21,7 +21,7 @@ make pushdb
 popd
 popd
 EOF
-stat ${XRAY_DIR}/database/${XRAY_DATABASE}/${XRAY_PART}.yaml >/dev/null
+stat ${XRAY_PART_YAML} >/dev/null
 
 # 6x by 18y CLBs (108)
 if [ "$SMALL" = Y ] ; then
