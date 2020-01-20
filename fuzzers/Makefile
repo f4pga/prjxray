@@ -130,19 +130,24 @@ quick:
 # Part only targets
 # -----------------
 
-part_only_yaml: ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.json
-	+$(MAKE) -C 001-part-yaml run
+${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml:
+	$(MAKE) -C 001-part-yaml run
 
+${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv:
+	$(MAKE) -C 075-pins run
+
+${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json:
+	$(MAKE) -C 005-tilegrid run
+
+${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json:
+	$(MAKE) -C 072-ordered_wires run
+	$(MAKE) -C 073-get_counts run
+	$(MAKE) -C 074-dump_all run
+
+part_only_yaml: ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
 part_only_tilegrid: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
-	+$(MAKE) -C 005-tilegrid run
-
 part_only_tileconn: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
-	+$(MAKE) -C 072-ordered_wires run
-	+$(MAKE) -C 073-get_counts run
-	+$(MAKE) -C 074-dump_all run
-
 part_only_pins: ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
-	+$(MAKE) -C 075-pins run
 
 # part_only runs the fuzzers required to support additional parts
 part_only:
