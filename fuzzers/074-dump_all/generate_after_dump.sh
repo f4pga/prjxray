@@ -11,4 +11,4 @@ python3 create_node_tree.py \
   --output_dir build/output
 python3 reduce_site_types.py --output_dir build/output
 python3 generate_grid.py --root_dir build/specimen_001/ --output_dir build/output \
-  --ignored_wires ${XRAY_DATABASE}_ignored_wires.txt
+  --ignored_wires ignored_wires/${XRAY_DATABASE}/${XRAY_PART}_ignored_wires.txt
