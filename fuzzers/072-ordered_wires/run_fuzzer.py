@@ -10,10 +10,12 @@ import argparse
 # Can be used to redirect vivado tons of output
 # stdout=DEVNULL in subprocess.check_call
 
-MP_LOCK = Lock()
 
-
-# Worker function called from threads
+# Worker function called from threads.
+# Once the worker completes the job, the temporary files
+# get merged with the final outputs in a thread-safe way
+# and deleted to save disk usage.
+# To do so, a global Lock is provided at the Pool initialization.
 def start_pips(argList):
     blockID, start, stop, total = argList
     print("Running instance :" + str(blockID) + " / " + str(total))
@@ -26,7 +28,7 @@ def start_pips(argList):
     downhill_wires = "wires/downhill_wires_{}.txt".format(blockID)
 
     # Locking to write on final file and remove the temporary one
-    MP_LOCK.acquire()
+    Lock.acquire()
     with open("uphill_wires.txt", "a") as wfd:
         f = uphill_wires
         with open(f, "r") as fd:
@@ -36,7 +38,7 @@ def start_pips(argList):
         f = downhill_wires
         with open(f, "r") as fd:
             shutil.copyfileobj(fd, wfd)
-    MP_LOCK.release()
+    Lock.release()
 
     os.remove(uphill_wires)
     os.remove(downhill_wires)
@@ -50,6 +52,11 @@ def get_nb_pips():
         shell=True)
     countfile = open("nb_pips.txt", "r")
     return int(countfile.readline())
+
+
+def pool_init(lock):
+    global Lock
+    Lock = lock
 
 
 def run_pool(itemcount, nbBlocks, blocksize, nbParBlock, workFunc):
@@ -78,9 +85,12 @@ def run_pool(itemcount, nbBlocks, blocksize, nbParBlock, workFunc):
         startI = chain(startI, [intitemcount])
         stopI = chain(stopI, [itemcount])
 
+    mpLock = Lock()
+
     argList = zip(blockId, startI, stopI, totalBlock)
 
-    with Pool(processes=nbParBlock) as pool:
+    with Pool(processes=nbParBlock, initializer=pool_init,
+              initargs=(mpLock, )) as pool:
         pool.map(workFunc, argList)
 
     return nbBlocks
