@@ -11,7 +11,7 @@ import csv
 
 from collections import defaultdict
 
-from prjxray import fasm_assembler
+from prjxray import fasm_assembler, util
 from prjxray.db import Database
 from prjxray.roi import Roi
 
