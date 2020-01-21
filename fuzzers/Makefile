@@ -169,9 +169,10 @@ roi_only:
 	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
 	# Generate YAML
 	+$(MAKE) part_only_yaml
-	# Generate Tile grid
-	+$(MAKE) part_only_tilegrid
 	# Generate package pins
 	+$(MAKE) part_only_pins
+	# Copy tilegrid and tileconn
+	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
+	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
 
 .PHONY: all clean clean_fuzzers clean_logs quick part_only roi_only
