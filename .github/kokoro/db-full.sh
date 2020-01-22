@@ -91,7 +91,8 @@ echo "----------------------------------------"
 # Generate extra files (additional part yaml's, harness, etc).
 set +e
 # Attempt to generate extras here, but don't check until after diff reporting.
-make db-extras-${XRAY_SETTINGS}
+make db-extras-${XRAY_SETTINGS}-harness
+make db-extras-${XRAY_SETTINGS}-parts -j $CORES
 EXTRAS_RET=$?
 set -e
 # Format the database
