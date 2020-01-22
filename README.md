@@ -29,6 +29,10 @@ that shell. The Vivado wrapper utils/vivado.sh makes sure that the environment
 variables from XRAY_VIVADO_SETTINGS are automatically sourced in a separate
 shell that is then only used to run Vivado to avoid these problems.
 
+**Why 2017.2?** Currently the fuzzers only work on `2017.2`, see [Issue #14 on prjxray](https://github.com/SymbiFlow/prjxray/issues/14).
+
+**Is 2017.2 really required?** Yes, only `2017.2` works. Until Issue #14 is solved, **only** `2017.2` works and will be supported.
+
 ### Step 2: ###
 Pull submodules:
 
