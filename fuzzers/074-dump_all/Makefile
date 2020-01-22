@@ -10,10 +10,10 @@ database: $(SPECIMENS_OK)
 	true
 
 pushdb:
-	cp build/output/tile_type_*.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
-	rm ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/tile_type_*_site_type_*.json
-	cp build/output/site_type_*.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
-	cp build/output/tileconn.json ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
+	cp build/output/tile_type_*.json ${XRAY_FAMILY_DIR}/
+	rm ${XRAY_FAMILY_DIR}/tile_type_*_site_type_*.json
+	cp build/output/site_type_*.json ${XRAY_FAMILY_DIR}/
+	cp build/output/tileconn.json ${XRAY_FAMILY_DIR}/$(XRAY_PART)/
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@) -p=$(MAX_VIVADO_PROCESS) -t=$(MAX_TILES_INSTANCE) -n=$(MAX_NODES_INSTANCE)
