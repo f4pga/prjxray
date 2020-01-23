@@ -86,14 +86,11 @@ echo "----------------------------------------"
 )
 echo "----------------------------------------"
 
-# Check the database
-#make checkdb-${XRAY_SETTINGS} || true
 # Generate extra files (additional part yaml's, harness, etc).
 set +e
-# Attempt to generate extras here, but don't check until after diff reporting.
+# Attempt to generate extra harnesses here, but don't check until after diff reporting.
 make db-extras-${XRAY_SETTINGS}-harness
-make db-extras-${XRAY_SETTINGS}-parts -j $CORES
-EXTRAS_RET=$?
+EXTRAS_HARNESS_RET=$?
 set -e
 # Format the database
 make db-format-${XRAY_SETTINGS}
@@ -186,11 +183,24 @@ echo "----------------------------------------"
 )
 echo "----------------------------------------"
 
+# Calculating extra parts here, to avoid the huge diff issue by the introduction
+# of new parts
+set +e
+make db-extras-${XRAY_SETTINGS}-parts -j $CORES
+EXTRAS_PARTS_RET=$?
+set -e
+
 # Check the database and fail if it is broken.
 make db-check-${XRAY_SETTINGS}
-if [[ $EXTRAS_RET != 0 ]] ; then
-    echo "A failure occurred during extras generation."
-    exit $EXTRAS_RET
+
+if [[ $EXTRAS_HARNESS_RET != 0 ]] ; then
+    echo "A failure occurred during extra harnesses generation."
+    exit $EXTRAS_HARNESS_RET
+fi
+
+if [[ $EXTRAS_PARTS_RET != 0 ]] ; then
+    echo "A failure occurred during extra parts generation."
+    exit $EXTRAS_PARTS_RET
 fi
 
 # If we get here, then all the fuzzers completed fine. Hence we are
