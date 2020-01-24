@@ -129,13 +129,6 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 	git diff --stat --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
 
-	# Output the actually diff
-	echo
-	echo "----------------------------------------"
-	echo " Database Diff"
-	echo "----------------------------------------"
-	git diff --color --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
-
 	# Save the diff to be uploaded as an artifact
 	echo
 	echo "----------------------------------------"
@@ -146,17 +139,49 @@ echo "----------------------------------------"
 		--patch-with-stat --no-color --irreversible-delete --find-renames --find-copies origin/master \
 		> diff.patch
 
-	# Pretty HTML file version
-	diff2html --summary=open --file diff.html --format html \
-		-- \
-		--irreversible-delete --find-renames --find-copies \
-		--ignore-all-space origin/master || true
+	MAX_DIFF_LINES=50000
+	DIFF_LINES="$(wc -l diff.patch | sed -e's/ .*$//')"
+	if [ $DIFF_LINES -gt $MAX_DIFF_LINES ]; then
+		echo
+		echo "----------------------------------------"
+		echo " Database Diff"
+		echo "----------------------------------------"
+		echo "diff has $DIFF_LINES lines which is too large to display!"
 
-	# Programmatic JSON version
-	diff2html --file diff.json --format json \
-		-- \
-		--irreversible-delete --find-renames --find-copies \
-		--ignore-all-space origin/master || true
+		echo
+		echo "----------------------------------------"
+		echo " Generating pretty diff output"
+		echo "----------------------------------------"
+		echo "diff has $DIFF_LINES lines which is too large for HTML output!"
+	else
+		# Output the actually diff
+		echo
+		echo "----------------------------------------"
+		echo " Database Diff"
+		echo "----------------------------------------"
+		git diff --color --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
+
+		echo
+		echo "----------------------------------------"
+		echo " Generating pretty diff output"
+		echo "----------------------------------------"
+		(
+			# Allow the diff2html to fail.
+			set +e
+
+			# Pretty HTML file version
+			diff2html --summary=open --file diff.html --format html \
+				-- \
+				--irreversible-delete --find-renames --find-copies \
+				--ignore-all-space origin/master || true
+
+			# Programmatic JSON version
+			diff2html --file diff.json --format json \
+				-- \
+				--irreversible-delete --find-renames --find-copies \
+				--ignore-all-space origin/master || true
+		) || true
+	fi
 )
 echo "----------------------------------------"
 
