@@ -1,5 +1,6 @@
 # XC7A35TICSG324-1L
 export XRAY_PART=xc7a35tcsg324-1
+export XRAY_EQUIV_PART=xc7a50tfgg484-1
 
 if [ -z "$XRAY_PINCFG" ]; then
 	echo "XRAY_PINCFG not set"

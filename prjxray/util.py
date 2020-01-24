@@ -15,6 +15,12 @@ def get_db_root():
         os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"))
 
 
+def get_part():
+    ret = os.getenv("XRAY_PART", None)
+
+    return ret
+
+
 def roi_xy():
     x1 = int(os.getenv('XRAY_ROI_GRID_X1', 0))
     x2 = int(os.getenv('XRAY_ROI_GRID_X2', 58))
@@ -73,7 +79,7 @@ def slice_xy():
 def get_roi():
     from .db import Database
     (x1, x2), (y1, y2) = roi_xy()
-    db = Database(get_db_root())
+    db = Database(get_db_root(), get_part())
     return Roi(db=db, x1=x1, x2=x2, y1=y1, y2=y2)
 
 
@@ -113,6 +119,20 @@ def db_root_arg(parser):
         db_root_kwargs['required'] = False
         db_root_kwargs['default'] = os.path.join(database_dir, database)
     parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
+
+
+def part_arg(parser):
+    part = os.getenv("XRAY_PART")
+    part_kwargs = {}
+    if part is None:
+        part_kwargs['required'] = True
+    else:
+        part_kwargs['required'] = False
+        part_kwargs['default'] = part
+    parser.add_argument(
+        '--part',
+        help="Part name. When not given defaults to XRAY_PART env. var.",
+        **part_kwargs)
 
 
 def parse_db_line(line):

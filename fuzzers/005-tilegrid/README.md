@@ -19,6 +19,21 @@ Finally, generate.py calculates the segment word offsets based on known segment 
 This environment variable must be set with a valid ROI.
 See database for example values
 
+### XRAY_EXCLUDE_ROI_TILEGRID
+This environment variable must be set in case the part selected does not allow some tiles to be
+locked.
+
+Error example (when using the artix 200T part):
+`ERROR: [Place 30-25] Component carry4_SLICE_X82Y249 has been locked to a prohibited site SLICE_X82Y249.`
+
+To avoid this error, the `XRAY_EXCLUDE_ROI_TILEGRID` defines an ROI that is not taken into account
+when building the tilegrid, therefore excluding the problematic un-lockable sites.
+
+As the resulting output file, `tilegrid.json`, is going to be checked against the one produced in
+the `074-dump_all` fuzzer, also the latter one needs to produce a reduced tilegrid, with the excluded
+tiles specified with the environment variable.
+
+
 ### XRAY_ROI_FRAMES
 This can be set to a specific value to speed up processing and reduce disk space
 If you don't know where your ROI is, just set to to include all values (0x00000000:0xfffffff)

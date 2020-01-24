@@ -178,7 +178,7 @@ def main():
     adv_clock_sources = ClockSources()
     site_to_cmt = dict(read_site_to_cmt())
 
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
 
     def gen_sites(desired_site_type):

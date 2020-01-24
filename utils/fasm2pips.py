@@ -8,6 +8,7 @@ from __future__ import print_function
 import os.path
 import fasm
 from prjxray import db
+from prjxray import util
 
 
 def main():
@@ -17,20 +18,12 @@ def main():
         description=
         'Outputs a Vivavo highlight_objects command from a FASM file.')
 
-    database_dir = os.getenv("XRAY_DATABASE_DIR")
-    database = os.getenv("XRAY_DATABASE")
-    db_root_kwargs = {}
-    if database_dir is None or database is None:
-        db_root_kwargs['required'] = True
-    else:
-        db_root_kwargs['required'] = False
-        db_root_kwargs['default'] = os.path.join(database_dir, database)
-
-    parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
+    util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument('fn_in', help='Input FPGA assembly (.fasm) file')
 
     args = parser.parse_args()
-    database = db.Database(args.db_root)
+    database = db.Database(args.db_root, args.part)
     grid = database.grid()
 
     def inner():

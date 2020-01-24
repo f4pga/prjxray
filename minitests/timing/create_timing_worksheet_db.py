@@ -6,6 +6,7 @@ from prjxray.timing import Outpin, Inpin, Wire, Buffer, \
         PassTransistor, IntristicDelay, RcElement, PvtCorner
 from prjxray.math_models import ExcelMathModel
 from prjxray.db import Database
+from prjxray import util
 
 FAST = PvtCorner.FAST
 SLOW = PvtCorner.SLOW
@@ -443,8 +444,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create timing worksheet for 7-series timing analysis.")
 
+    util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument('--timing_json', required=True)
-    parser.add_argument('--db_root', required=True)
     parser.add_argument('--output_xlsx', required=True)
 
     args = parser.parse_args()
@@ -452,7 +454,7 @@ def main():
     with open(args.timing_json) as f:
         timing = json.load(f)
 
-    db = Database(args.db_root)
+    db = Database(args.db_root, args.part)
 
     nodes = {}
     for net in timing:

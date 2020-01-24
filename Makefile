@@ -118,7 +118,7 @@ db-check-$(1):
 	@echo
 	@echo "Checking $(1) database"
 	@echo "============================"
-	@$(IN_ENV) python3 utils/checkdb.py --db-root database/$(1)
+	@$(IN_ENV) python3 utils/checkdb.py
 
 db-format-$(1):
 	@echo
@@ -139,16 +139,38 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 
 .PHONY: db-extras-artix7 db-extras-kintex7 db-extras-zynq7
 
-db-extras-artix7:
-	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers part_only
-	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers part_only
+# Targets related to Project X-Ray parts
+# --------------------------------------
+
+ARTIX_PARTS=artix200t
+ZYNQ_PARTS=zynq020
+KINTEX_PARTS=kintex70t
+
+XRAY_PARTS=${ARTIX_PARTS} ${ZYNQ_PARTS} ${KINTEX_PARTS}
+
+define multiple-parts
+
+# $(1): PART to be used
+
+db-part-only-$(1):
+	+source settings/$(1).sh && $$(MAKE) -C fuzzers part_only
+
+endef
+
+$(foreach PART,$(XRAY_PARTS),$(eval $(call multiple-parts,$(PART))))
+
+db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
+
+db-extras-artix7-harness:
+	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers roi_only
+	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/basys3/swbut run copy
 	+source minitests/roi_harness/basys3-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
 			XRAY_ROIV=../roi_base_div2.v \
-			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/basys3/swbut_50 run copy
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/basys3/swbut_50 copy
 	+source minitests/roi_harness/arty-uart.sh && \
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/uart run copy
@@ -159,14 +181,19 @@ db-extras-artix7:
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/swbut run copy
 
-db-extras-kintex7:
+db-extras-kintex7-parts:
 	@true
 
-db-extras-zynq7:
-	+source minitests/roi_harness/zybo-swbut.sh && $(MAKE) -C fuzzers part_only
+db-extras-kintex7-harness:
+	@true
+
+db-extras-zynq7-parts:
+	@true
+
+db-extras-zynq7-harness:
 	+source minitests/roi_harness/zybo-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
-			HARNESS_DIR=$(XRAY_DATABASE_DIR)/zynq7/harness/zybo/swbut run
+			HARNESS_DIR=$(XRAY_DATABASE_DIR)/zynq7/harness/zybo/swbut run copy
 
 db-check:
 	@true

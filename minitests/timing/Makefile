@@ -27,7 +27,8 @@ build/$(2)_$(1)/timing_$(2)_$(1).json5: build/.touch runme.tcl $(3)
 build/timing_$(2)_$(1).xlsx: build/$(2)_$(1)/timing_$(2)_$(1).json create_timing_worksheet_db.py
 	python3 create_timing_worksheet_db.py \
 		--timing_json build/$(2)_$(1)/timing_$(2)_$(1).json \
-		--db_root ${XRAY_DATABASE_DIR}/${XRAY_DATABASE} \
+		--db_root ${XRAY_FAMILY_DIR} \
+		--part ${XRAY_PART} \
 		--output_xlsx build/timing_$(2)_$(1).xlsx
 
 build/$(2)_$(1)/design_$(2)_$(1).fasm: build/$(2)_$(1)/timing_$(2)_$(1).json

@@ -2,8 +2,6 @@
 
 from __future__ import print_function
 import argparse
-import prjxray.lib
-import prjxray.util
 import pyjson5 as json5
 import multiprocessing
 import progressbar
@@ -14,6 +12,7 @@ import pickle
 import sys
 
 from utils import xjson
+from prjxray import util, lib
 
 
 def get_tile_grid_info(fname):
@@ -563,7 +562,7 @@ def main():
 
     args = parser.parse_args()
 
-    tiles, nodes = prjxray.lib.read_root_csv(args.root_dir)
+    tiles, nodes = lib.read_root_csv(args.root_dir)
 
     processes = min(multiprocessing.cpu_count(), 10)
     print('{} Running {} processes'.format(datetime.datetime.now(), processes))
@@ -575,7 +574,8 @@ def main():
     wire_map_file = os.path.join(args.output_dir, 'wiremap.pickle')
 
     print('{} Reading tilegrid'.format(datetime.datetime.now()))
-    with open(os.path.join(prjxray.util.get_db_root(), 'tilegrid.json')) as f:
+    with open(os.path.join(util.get_db_root(), util.get_part(),
+                           'tilegrid.json')) as f:
         grid = json.load(f)
 
     if not args.verify_only:
@@ -643,7 +643,7 @@ def main():
 
     print('{} Verifing tileconn'.format(datetime.datetime.now()))
     error_nodes = []
-    prjxray.lib.verify_nodes(
+    lib.verify_nodes(
         [
             (node['node'], tuple(wire['wire']
                                  for wire in node['wires']))
@@ -661,7 +661,7 @@ def main():
             with open(ignored_wires_file) as f:
                 ignored_wires = set(l.strip() for l in f)
 
-        if not prjxray.lib.check_errors(error_nodes, ignored_wires):
+        if not lib.check_errors(error_nodes, ignored_wires):
             print(
                 '{} errors detected, see {} for details.'.format(
                     len(error_nodes), error_nodes_file))

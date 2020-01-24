@@ -3,7 +3,7 @@ import shutil
 import sys
 import subprocess
 import signal
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 from itertools import chain
 import argparse
 
@@ -11,7 +11,11 @@ import argparse
 # stdout=DEVNULL in subprocess.check_call
 
 
-# Worker function called from threads
+# Worker function called from threads.
+# Once the worker completes the job, the temporary files
+# get merged with the final outputs in a thread-safe way
+# and deleted to save disk usage.
+# To do so, a global Lock is provided at the Pool initialization.
 def start_pips(argList):
     blockID, start, stop, total = argList
     print("Running instance :" + str(blockID) + " / " + str(total))
@@ -19,6 +23,25 @@ def start_pips(argList):
         "${XRAY_VIVADO} -mode batch -source $FUZDIR/job.tcl -tclargs " +
         str(blockID) + " " + str(start) + " " + str(stop),
         shell=True)
+
+    uphill_wires = "wires/uphill_wires_{}.txt".format(blockID)
+    downhill_wires = "wires/downhill_wires_{}.txt".format(blockID)
+
+    # Locking to write on final file and remove the temporary one
+    Lock.acquire()
+    with open("uphill_wires.txt", "a") as wfd:
+        f = uphill_wires
+        with open(f, "r") as fd:
+            shutil.copyfileobj(fd, wfd)
+
+    with open("downhill_wires.txt", "a") as wfd:
+        f = downhill_wires
+        with open(f, "r") as fd:
+            shutil.copyfileobj(fd, wfd)
+    Lock.release()
+
+    os.remove(uphill_wires)
+    os.remove(downhill_wires)
 
 
 # Function called once to get the total numbers of pips to list
@@ -29,6 +52,11 @@ def get_nb_pips():
         shell=True)
     countfile = open("nb_pips.txt", "r")
     return int(countfile.readline())
+
+
+def pool_init(lock):
+    global Lock
+    Lock = lock
 
 
 def run_pool(itemcount, nbBlocks, blocksize, nbParBlock, workFunc):
@@ -57,9 +85,12 @@ def run_pool(itemcount, nbBlocks, blocksize, nbParBlock, workFunc):
         startI = chain(startI, [intitemcount])
         stopI = chain(stopI, [itemcount])
 
+    mpLock = Lock()
+
     argList = zip(blockId, startI, stopI, totalBlock)
 
-    with Pool(processes=nbParBlock) as pool:
+    with Pool(processes=nbParBlock, initializer=pool_init,
+              initargs=(mpLock, )) as pool:
         pool.map(workFunc, argList)
 
     return nbBlocks
@@ -115,20 +146,6 @@ def main(argv):
 
     pipsFileCount = run_pool(
         pipscount, nbPipsBlock, blockPipsSize, nbParBlock, start_pips)
-
-    print("Generating final files")
-
-    with open("uphill_wires.txt", "w") as wfd:
-        for j in range(0, pipsFileCount):
-            f = "wires/uphill_wires_" + str(j) + ".txt"
-            with open(f, "r") as fd:
-                shutil.copyfileobj(fd, wfd)
-
-    with open("downhill_wires.txt", "w") as wed:
-        for j in range(0, pipsFileCount):
-            e = "wires/downhill_wires_" + str(j) + ".txt"
-            with open(e, "r") as ed:
-                shutil.copyfileobj(ed, wed)
 
     print("Work done !")
     return 0

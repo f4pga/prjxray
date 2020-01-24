@@ -5,7 +5,7 @@ import sys
 import fasm
 from prjxray.db import Database
 from prjxray.roi import Roi
-from prjxray.util import get_db_root
+from prjxray.util import get_db_root, get_part
 
 
 def set_port_wires(ports, name, pin, wires_outside_roi):
@@ -42,7 +42,7 @@ def main():
 
             design_json['info'][name] = int(value)
 
-    db = Database(get_db_root())
+    db = Database(get_db_root(), get_part())
     grid = db.grid()
 
     roi = Roi(

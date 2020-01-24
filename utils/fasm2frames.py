@@ -11,7 +11,7 @@ import csv
 
 from collections import defaultdict
 
-from prjxray import fasm_assembler
+from prjxray import fasm_assembler, util
 from prjxray.db import Database
 from prjxray.roi import Roi
 
@@ -109,7 +109,7 @@ def run(
         roi=None,
         debug=False,
         emit_pudc_b_pullup=False):
-    db = Database(db_root)
+    db = Database(db_root, part)
     assembler = fasm_assembler.FasmAssembler(db)
 
     set_features = set()
@@ -124,12 +124,11 @@ def run(
     bank_to_tile = defaultdict(lambda: set())
 
     if part is not None:
-        with open(os.path.join(db_root, part + "_package_pins.csv"),
-                  "r") as fp:
+        with open(os.path.join(db_root, part, "package_pins.csv"), "r") as fp:
             reader = csv.DictReader(fp)
             package_pins = [l for l in reader]
 
-        with open(os.path.join(db_root, part + ".json"), "r") as fp:
+        with open(os.path.join(db_root, part, "part.json"), "r") as fp:
             part_data = json.load(fp)
 
         for bank, loc in part_data["iobanks"].items():
@@ -271,28 +270,8 @@ def main():
         'Convert FPGA configuration description ("FPGA assembly") into binary frame equivalent'
     )
 
-    database_dir = os.getenv("XRAY_DATABASE_DIR")
-    database = os.getenv("XRAY_DATABASE")
-    db_root_kwargs = {}
-    if database_dir is None or database is None:
-        db_root_kwargs['required'] = True
-    else:
-        db_root_kwargs['required'] = False
-        db_root_kwargs['default'] = os.path.join(database_dir, database)
-
-    db_part = os.getenv("XRAY_PART")
-    db_part_kwargs = {}
-    if db_part is None:
-        db_part_kwargs['required'] = True
-    else:
-        db_part_kwargs['required'] = False
-        db_part_kwargs['default'] = db_part
-
-    parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
-    parser.add_argument(
-        '--part',
-        help="Part name. When not given defaults to XRAY_PART env. var.",
-        **db_part_kwargs)
+    util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument(
         '--sparse', action='store_true', help="Don't zero fill all frames")
     parser.add_argument(

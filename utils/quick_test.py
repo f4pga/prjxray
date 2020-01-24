@@ -1,10 +1,11 @@
 from __future__ import print_function
 import prjxray.db
+import prjxray.util
 import argparse
 
 
-def quick_test(db_root):
-    db = prjxray.db.Database(db_root)
+def quick_test(db_root, part):
+    db = prjxray.db.Database(db_root, part)
     g = db.grid()
 
     # Verify that we have some tile information for every tile in grid.
@@ -47,11 +48,13 @@ def quick_test(db_root):
 def main():
     parser = argparse.ArgumentParser(
         description="Runs a sanity check on a prjxray database.")
-    parser.add_argument('--db-root', required=True)
+
+    util.db_root_arg(parser)
+    util.part_arg(parser)
 
     args = parser.parse_args()
 
-    quick_test(args.db_root)
+    quick_test(args.db_root, args.part)
 
 
 if __name__ == '__main__':

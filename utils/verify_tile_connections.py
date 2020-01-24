@@ -8,6 +8,7 @@ import multiprocessing
 import pyjson5 as json5
 import json
 import sys
+from prjxray import util
 
 
 def full_wire_name(wire_in_grid):
@@ -36,8 +37,8 @@ def make_connection(wires, connection):
         wires[wire] = wire_a_set
 
 
-def make_connections(db_root):
-    db = prjxray.db.Database(db_root)
+def make_connections(db_root, part):
+    db = prjxray.db.Database(db_root, part)
     c = db.connections()
 
     wires = {}
@@ -60,7 +61,9 @@ def read_json5(fname):
 def main():
     parser = argparse.ArgumentParser(
         description="Tests database against raw node list.")
-    parser.add_argument('--db-root', required=True)
+
+    util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument('--raw_node_root', required=True)
     parser.add_argument('--error_nodes', default="error_nodes.json")
     parser.add_argument('--ignored_wires')
@@ -88,7 +91,7 @@ def main():
             bar.update(idx + 1)
 
     print('{} Creating connections'.format(datetime.datetime.now()))
-    generated_nodes = make_connections(args.db_root)
+    generated_nodes = make_connections(args.db_root, args.part)
 
     print('{} Verifying connections'.format(datetime.datetime.now()))
     error_nodes = []

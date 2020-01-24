@@ -127,11 +127,52 @@ $(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid))
 quick:
 	$(MAKE) QUICK=Y
 
-# part_only runs the fuzzers required for supporting additional parts.
-# Note: In theory this includes 005-tilegrid, but there isn't support for
-# multiple tilegrid's per family at this time.
-part_only:
-	+$(MAKE) -C 001-part-yaml run
-	+$(MAKE) -C 075-pins run
+# Part only targets
+# -----------------
 
-.PHONY: all clean clean_fuzzers clean_logs quick part_only
+$(addprefix ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.,yaml json):
+	$(MAKE) -C 001-part-yaml run
+
+${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv:
+	$(MAKE) -C 075-pins run
+
+${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json:
+	$(MAKE) -C 005-tilegrid run
+
+${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json:
+	$(MAKE) -C 072-ordered_wires run
+	$(MAKE) -C 073-get_counts run
+	$(MAKE) -C 074-dump_all run
+
+part_only_yaml: $(addprefix ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.,yaml json)
+part_only_tilegrid: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
+part_only_tileconn: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
+part_only_pins: ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
+
+# part_only runs the fuzzers required to support additional parts
+part_only:
+	# Create PART-specific directory
+	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
+	# Generate YAML
+	+$(MAKE) part_only_yaml
+	# Generate Tile grid
+	+$(MAKE) part_only_tilegrid
+	# Generate Tile connections
+	+$(MAKE) part_only_tileconn
+	# Generate package pins
+	+$(MAKE) part_only_pins
+
+# roi_only runs the fuzzers required for supporting additional parts when building
+# a roi harness.
+roi_only:
+	# Create PART-specific directory
+	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
+	# Generate YAML
+	+$(MAKE) part_only_yaml
+	# Generate package pins
+	+$(MAKE) part_only_pins
+	# Copy tilegrid and tileconn
+	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
+	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
+
+.PHONY: all clean clean_fuzzers clean_logs quick part_only roi_only

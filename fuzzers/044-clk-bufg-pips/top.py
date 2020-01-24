@@ -118,7 +118,7 @@ module top();
 
     clock_sources = ClockSources()
 
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
 
     def gen_sites(desired_site_type):

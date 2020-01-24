@@ -86,14 +86,20 @@ echo "----------------------------------------"
 )
 echo "----------------------------------------"
 
-# Check the database
-#make checkdb-${XRAY_SETTINGS} || true
-# Generate extra files (additional part yaml's, harness, etc).
+# Generate extra harness files (additional part yaml's, harness).
 set +e
-# Attempt to generate extras here, but don't check until after diff reporting.
-make db-extras-${XRAY_SETTINGS}
-EXTRAS_RET=$?
+# Attempt to generate extra harnesses here, but don't check until after diff reporting.
+make db-extras-${XRAY_SETTINGS}-harness
+EXTRAS_HARNESS_RET=$?
 set -e
+
+# Generate extra parts file (tilegrid, tileconn, part yaml, part json and package_pin)
+# TODO: Disabled for now as for big parts it takes a huge amount of time
+#set +e
+#make db-extras-${XRAY_SETTINGS}-parts -j $CORES
+EXTRAS_PARTS_RET=0
+#set -e
+
 # Format the database
 make db-format-${XRAY_SETTINGS}
 # Update the database/Info.md file
@@ -187,9 +193,15 @@ echo "----------------------------------------"
 
 # Check the database and fail if it is broken.
 make db-check-${XRAY_SETTINGS}
-if [[ $EXTRAS_RET != 0 ]] ; then
-    echo "A failure occurred during extras generation."
-    exit $EXTRAS_RET
+
+if [[ $EXTRAS_HARNESS_RET != 0 ]] ; then
+    echo "A failure occurred during extra harnesses generation."
+    exit $EXTRAS_HARNESS_RET
+fi
+
+if [[ $EXTRAS_PARTS_RET != 0 ]] ; then
+    echo "A failure occurred during extra parts generation."
+    exit $EXTRAS_PARTS_RET
 fi
 
 # If we get here, then all the fuzzers completed fine. Hence we are

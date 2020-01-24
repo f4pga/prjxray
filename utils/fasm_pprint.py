@@ -13,8 +13,8 @@ import fasm
 from prjxray import db
 
 
-def process_fasm(db_root, fasm_file, canonical):
-    database = db.Database(db_root)
+def process_fasm(db_root, part, fasm_file, canonical):
+    database = db.Database(db_root, part)
     grid = database.grid()
 
     for fasm_line in fasm.parse_fasm_filename(fasm_file):
@@ -56,10 +56,11 @@ def process_fasm(db_root, fasm_file, canonical):
             yield fasm_line
 
 
-def run(db_root, fasm_file, canonical):
+def run(db_root, part, fasm_file, canonical):
     print(
         fasm.fasm_tuple_to_string(
-            process_fasm(db_root, fasm_file, canonical), canonical=canonical))
+            process_fasm(db_root, part, fasm_file, canonical),
+            canonical=canonical))
 
 
 def main():
@@ -67,22 +68,14 @@ def main():
 
     parser = argparse.ArgumentParser(description='Pretty print a FASM file.')
 
-    database_dir = os.getenv("XRAY_DATABASE_DIR")
-    database = os.getenv("XRAY_DATABASE")
-    db_root_kwargs = {}
-    if database_dir is None or database is None:
-        db_root_kwargs['required'] = True
-    else:
-        db_root_kwargs['required'] = False
-        db_root_kwargs['default'] = os.path.join(database_dir, database)
-
-    parser.add_argument('--db-root', help="Database root.", **db_root_kwargs)
+    util.db_root_arg(parser)
+    util.part_arg(parser)
     parser.add_argument('fasm_file', help='Input FASM file')
     parser.add_argument(
         '--canonical', help='Output canonical bitstream.', action='store_true')
     args = parser.parse_args()
 
-    run(args.db_root, args.fasm_file, args.canonical)
+    run(args.db_root, args.part, args.fasm_file, args.canonical)
 
 
 if __name__ == '__main__':

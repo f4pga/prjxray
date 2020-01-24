@@ -9,7 +9,7 @@ random.seed(int(os.getenv("SEED"), 16))
 
 
 def bram_count():
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
 
     count = 0

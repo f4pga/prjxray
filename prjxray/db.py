@@ -25,7 +25,7 @@ def get_available_databases(prjxray_root):
 
 
 class Database(object):
-    def __init__(self, db_root):
+    def __init__(self, db_root, part):
         """ Create project x-ray Database at given db_root.
 
     db_root: Path to directory containing settings.sh, *.db, tilegrid.json and
@@ -33,6 +33,7 @@ class Database(object):
 
     """
         self.db_root = db_root
+        self.part = part
         # tilegrid.json JSON object
         self.tilegrid = None
         self.tileconn = None
@@ -87,17 +88,17 @@ class Database(object):
 
                 self.site_types[site_type_name] = os.path.join(self.db_root, f)
 
-            if f.endswith('_required_features.fasm'):
-                part = f[:-len('_required_features.fasm')]
+        required_features_path = os.path.join(
+            self.db_root, self.part, "required_features.fasm")
+        if os.path.isfile(required_features_path):
+            with open(required_features_path, "r") as fp:
+                features = []
+                for line in fp:
+                    line = line.strip()
+                    if len(line) > 0:
+                        features.append(line)
 
-                with open(os.path.join(self.db_root, f), "r") as fp:
-                    features = []
-                    for line in fp:
-                        line = line.strip()
-                        if len(line) > 0:
-                            features.append(line)
-
-                    self.required_features[part] = set(features)
+                self.required_features[self.part] = set(features)
 
         self.tile_types_obj = {}
 
@@ -116,13 +117,15 @@ class Database(object):
     def _read_tilegrid(self):
         """ Read tilegrid database if not already read. """
         if not self.tilegrid:
-            with open(os.path.join(self.db_root, 'tilegrid.json')) as f:
+            with open(os.path.join(self.db_root, self.part,
+                                   'tilegrid.json')) as f:
                 self.tilegrid = json.load(f)
 
     def _read_tileconn(self):
         """ Read tileconn database if not already read. """
         if not self.tileconn:
-            with open(os.path.join(self.db_root, 'tileconn.json')) as f:
+            with open(os.path.join(self.db_root, self.part,
+                                   'tileconn.json')) as f:
                 self.tileconn = json.load(f)
 
     def grid(self):

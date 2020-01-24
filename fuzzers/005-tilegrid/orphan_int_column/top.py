@@ -321,7 +321,7 @@ module top();
 
     int_tiles = []
 
-    db = Database(util.get_db_root())
+    db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
     params = {}
     for int_l_column, int_r_column in gen_orphan_ints(grid):

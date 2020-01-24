@@ -13,6 +13,16 @@ set root_fp [open "root_${blocknb}.csv" w]
 #puts $root_fp "filetype,subtype,filename"
 
 set tiles [get_tiles]
+
+create_pblock exclude_roi
+foreach roi "$::env(XRAY_EXCLUDE_ROI_TILEGRID)" {
+    puts "ROI: $roi"
+    resize_pblock [get_pblocks exclude_roi] -add "$roi"
+}
+
+set not_allowed_sites [get_sites -of_objects [get_pblocks exclude_roi]]
+set not_allowed_tiles [get_tiles -of_objects $not_allowed_sites]
+
 # Convert DRIVE from ??? units to 10^(-3 to -6) Ohms
 set MAGIC 0.6875
 
@@ -41,6 +51,12 @@ proc lookup_speed_model_name {name} {
 for {set j $start } { $j < $stop } { incr j } {
 
     set tile [lindex $tiles $j]
+
+    # If tile is not allowed, skip it
+    set res [lsearch $not_allowed_tiles $tile]
+    if { $res != -1 } {
+        continue
+    }
 
     set fname tile_$tile.json5
     set tile_type [get_property TYPE $tile]
