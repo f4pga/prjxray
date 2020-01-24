@@ -86,12 +86,20 @@ echo "----------------------------------------"
 )
 echo "----------------------------------------"
 
-# Generate extra files (additional part yaml's, harness, etc).
+# Generate extra harness files (additional part yaml's, harness).
 set +e
 # Attempt to generate extra harnesses here, but don't check until after diff reporting.
 make db-extras-${XRAY_SETTINGS}-harness
 EXTRAS_HARNESS_RET=$?
 set -e
+
+# Generate extra parts file (tilegrid, tileconn, part yaml, part json and package_pin)
+# TODO: Disabled for now as for big parts it takes a huge amount of time
+#set +e
+#make db-extras-${XRAY_SETTINGS}-parts -j $CORES
+EXTRAS_PARTS_RET=0
+#set -e
+
 # Format the database
 make db-format-${XRAY_SETTINGS}
 # Update the database/Info.md file
@@ -182,13 +190,6 @@ echo "----------------------------------------"
 	fi
 )
 echo "----------------------------------------"
-
-# Calculating extra parts here, to avoid the huge diff issue by the introduction
-# of new parts
-set +e
-make db-extras-${XRAY_SETTINGS}-parts -j $CORES
-EXTRAS_PARTS_RET=$?
-set -e
 
 # Check the database and fail if it is broken.
 make db-check-${XRAY_SETTINGS}
