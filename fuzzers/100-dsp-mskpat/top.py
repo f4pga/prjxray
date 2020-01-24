@@ -49,14 +49,14 @@ def run():
         ports['A'] = '{30{1\'b1}}'
         ports['ACIN'] = '{30{1\'b1}}'
         ports['ACOUT'] = '30\'b0'
-        ports['ALUMODE'] = '4\'b1'
+        ports['ALUMODE'] = 'din[3:0]'
         ports['B'] = '{18{1\'b1}}'
         ports['BCIN'] = '{18{1\'b1}}'
         ports['BCOUT'] = '18\'b0'
         ports['C'] = '{48{1\'b1}}'
         ports['CARRYCASCIN'] = '1\'b1'
         ports['CARRYCASCOUT'] = '1\'b0'
-        ports['CARRYIN'] = '1\'b1'
+        ports['CARRYIN'] = 'din[4]'
         ports['CARRYINSEL'] = '3\'b000'
         ports['CARRYOUT'] = '4\'b0'
         ports['CEA1'] = '1\'b1'
@@ -72,12 +72,12 @@ def run():
         ports['CEINMODE'] = '1\'b1'
         ports['CEM'] = '1\'b1'
         ports['CEP'] = '1\'b1'
-        ports['CLK'] = '1\'b1'
+        ports['CLK'] = 'clk'
         ports['D'] = '{25{1\'b1}}'
-        ports['INMODE'] = '5\'b11111'
+        ports['INMODE'] = 'din[9:5]'
         #ports['MULTISIGNIN'] = '1\'b1'
         #ports['MULTISIGNOUT'] = '1\'b0'
-        ports['OPMODE'] = '7\'b1111111'
+        ports['OPMODE'] = 'din[16:10]'
         ports['OVERFLOW'] = '1\'b0'
         ports['P'] = '48\'b0'
         ports['PATTERNBDETECT'] = '1\'b0'
@@ -132,6 +132,12 @@ def run():
             fuzz(('MASK', 'C', 'ROUNDING_MODE1', 'ROUNDING_MODE2')))
         params['USE_PATTERN_DETECT'] = verilog.quote(
             fuzz(('NO_PATDET', 'PATDET')))
+
+        params['IS_ALUMODE_INVERTED'] = fuzz(4)
+        params['IS_CARRYIN_INVERTED'] = fuzz((0, 1))
+        params['IS_CLK_INVERTED'] = fuzz((0, 1))
+        params['IS_INMODE_INVERTED'] = fuzz(5)
+        params['IS_OPMODE_INVERTED'] = fuzz(7)
 
         verilog.instance(synthesis + ' ' + module, instance, ports, params)
 
