@@ -142,7 +142,7 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 # Targets related to Project X-Ray parts
 # --------------------------------------
 
-ARTIX_PARTS=artix200t
+ARTIX_PARTS=
 ZYNQ_PARTS=zynq7010
 KINTEX_PARTS=kintex70t
 
@@ -187,7 +187,7 @@ db-extras-kintex7-parts:
 db-extras-kintex7-harness:
 	@true
 
-db-extras-zynq7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
+db-extras-zynq7-parts: $(addprefix db-part-only-,$(ZYNQ_PARTS))
 
 db-extras-zynq7-harness:
 	@true
