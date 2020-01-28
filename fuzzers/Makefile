@@ -120,6 +120,9 @@ $(eval $(call fuzzer,072-ordered_wires,))
 $(eval $(call fuzzer,073-get_counts,))
 $(eval $(call fuzzer,074-dump_all,005-tilegrid 072-ordered_wires))
 $(eval $(call fuzzer,075-pins,))
+ifeq ($(XRAY_DATABASE),zynq7)
+$(eval $(call fuzzer,076-ps7,))
+endif
 endif
 endif
 $(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid))

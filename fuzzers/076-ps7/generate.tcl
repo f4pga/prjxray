@@ -1,8 +1,8 @@
-create_project -force -in_memory -name design -part xc7z020clg400-1
+create_project -force -name design -part $::env(XRAY_PART)
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
-set fp [open ps7.csv w]
+set fp [open ps7_pins.csv w]
 puts $fp "name,is_input,is_output,is_bidir"
 
 set pins [get_bel_pins -of_objects [get_bels -of_objects [get_sites PS7* -of_objects [get_tiles PSS*]]]]
