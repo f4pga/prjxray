@@ -147,7 +147,7 @@ ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json:
 	$(MAKE) -C 073-get_counts run
 	$(MAKE) -C 074-dump_all run
 
-part_only_yaml: $(addprefix ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.,yaml json)
+part_only_yaml: ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
 part_only_tilegrid: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
 part_only_tileconn: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
 part_only_pins: ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
