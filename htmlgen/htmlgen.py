@@ -225,9 +225,9 @@ class Tweaks():
         pass
 
 
-def load_tilegrid(db_dir, verbose=False, allow_fake=False):
+def load_tilegrid(db_dir, part, verbose=False, allow_fake=False):
     print("Loading tilegrid.")
-    with db_open("tilegrid.json", db_dir) as f:
+    with db_open(os.path.join(part, "tilegrid.json"), db_dir) as f:
         data = f.read()
         if not data:
             assert allow_fake, 'No tilegrid.json found'
@@ -969,7 +969,11 @@ def run(settings, output, verbose=False, allow_fake=False):
 
     # Load source data
     dbstate = DBState()
-    grid = load_tilegrid(db_dir, verbose=verbose, allow_fake=allow_fake)
+    grid = load_tilegrid(
+        db_dir,
+        get_setting("XRAY_PART"),
+        verbose=verbose,
+        allow_fake=allow_fake)
     db_reads(dbstate, db_dir)
 
     # Create pages
