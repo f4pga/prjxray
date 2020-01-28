@@ -95,10 +95,10 @@ set -e
 
 # Generate extra parts file (tilegrid, tileconn, part yaml, part json and package_pin)
 # TODO: Disabled for now as for big parts it takes a huge amount of time
-#set +e
-#make db-extras-${XRAY_SETTINGS}-parts -j $CORES
-EXTRAS_PARTS_RET=0
-#set -e
+set +e
+make db-extras-${XRAY_SETTINGS}-parts -j $CORES
+EXTRAS_PARTS_RET=$?
+set -e
 
 # Format the database
 make db-format-${XRAY_SETTINGS}
