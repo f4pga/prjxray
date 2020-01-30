@@ -287,6 +287,9 @@ def mem_convert(s):
     62.0
     """
     units = {
+        'Gi': pow(2, 30),
+        'Mi': pow(2, 20),
+        'Ki': pow(2, 10),
         'G': 1e9,
         'M': 1e6,
         'K': 1e3,
