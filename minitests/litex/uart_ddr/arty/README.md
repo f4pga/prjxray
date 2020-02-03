@@ -1,12 +1,21 @@
 # LiteX UART DDR minitest
 
-
-
 This test aims at providing a minimal DDR design.
 The design is tested with a python script that provides memory control signals to the DDR controller
 using an UART bridge.
 
 The script performs the calbiration process, therfore it looks for the bitslip as well as the delay values.
+
+### Litex environment
+
+The litex module used is LiteDRAM, which should be checked-out at the correct commit:
+
+    | Repo URL | SHA |
+    |    ---   | --- |
+    | <https://github.com/antmicro/litex>         | 3350d33  |
+    | <https://github.com/enjoy-digital/litedram> | d8f3feb  |
+    | <https://github.com/m-labs/migen>           | d11565a  |
+
 
 ### Implementation
 
