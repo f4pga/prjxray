@@ -11,6 +11,7 @@ import argparse
 import prjxray.lib
 import prjxray.node_lookup
 import datetime
+import subprocess
 import os.path
 import pyjson5 as json5
 import progressbar
@@ -242,18 +243,18 @@ def get_speed_model_indices(reduced_tile):
 
     for site in reduced_tile['sites']:
         for site_pin in site['site_pins'].keys():
-            speed_model_indices.add(site['site_pins'][site_pin]['speed_model_index'])
+            speed_model_indices.add('site_pin,{}'.format(site['site_pins'][site_pin]['speed_model_index']))
 
     for pip in reduced_tile['pips'].keys():
-        speed_model_indices.add(reduced_tile['pips'][pip]['speed_model_index'])
+        speed_model_indices.add('pip,{}'.format(reduced_tile['pips'][pip]['speed_model_index']))
 
     for wire in reduced_tile['wires'].keys():
-        speed_model_indices.add(reduced_tile['wires'][wire])
+        speed_model_indices.add('wire,{}'.format(reduced_tile['wires'][wire]))
 
     return speed_model_indices
 
 
-def annotate_speed_model(tile_type, reduced_tile, output_dir):
+def annotate_speed_model(tile_type, reduced_tile, output_dir, root_dir):
     """ Updates the reduced tile with the correct speed information """
 
     speed_model_indices = get_speed_model_indices(reduced_tile)
@@ -264,6 +265,15 @@ def annotate_speed_model(tile_type, reduced_tile, output_dir):
         for index in speed_model_indices:
             print(index, file=f)
 
+    subprocess.check_call(
+        "vivado -mode batch -source get_speed_model.tcl -tclargs {}".format(tmp_indices_file),
+        shell=True, stdout=subprocess.DEVNULL)
+
+    with open(tmp_indices_file, "r") as f:
+        speed_model_data = json5.load(f)
+
+    with open(tmp_indices_file, "w") as f:
+        xjson.pprint(f, speed_model_data)
 
 def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
     sites = None
@@ -369,7 +379,7 @@ def main():
         reduced_tile = reduce_tile(
             pool, site_types, tile_type, tiles[tile_type], database_file)
 
-        annotate_speed_model(tile_type, reduced_tile, args.output_dir)
+        annotate_speed_model(tile_type, reduced_tile, args.output_dir, args.root_dir)
 
         for site_type in site_types:
             with open(os.path.join(
