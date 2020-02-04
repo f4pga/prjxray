@@ -23,29 +23,6 @@ foreach roi "$::env(XRAY_EXCLUDE_ROI_TILEGRID)" {
 set not_allowed_sites [get_sites -of_objects [get_pblocks exclude_roi]]
 set not_allowed_tiles [get_tiles -of_objects $not_allowed_sites]
 
-# Convert DRIVE from ??? units to 10^(-3 to -6) Ohms
-set MAGIC 0.6875
-
-set speed_model_index_map [dict create]
-
-# For BSW_INT_LONG_MUX, use the model from BSW_INT_HLONG_MUX.
-# This isn't exactly correct, but it is a better model to use.
-# BSW_INT_LONG_MUX is a tl_buffer (which we don't really understand), and
-# BSW_INT_HLONG_MUX is not.  This subsitution appears good enough for now.
-set int_hlong_mux [lookup_speed_model_name BSW_INT_HLONG_MUX]
-set int_long_mux [lookup_speed_model_name BSW_INT_LONG_MUX]
-
-set long_forward [get_property FORWARD $int_long_mux]
-set hlong_forward [get_property FORWARD $int_hlong_mux]
-dict set speed_model_name_map $long_forward [lookup_speed_model_name $hlong_forward]
-
-set long_reverse [get_property REVERSE $int_long_mux]
-set hlong_reverse [get_property REVERSE $int_hlong_mux]
-dict set speed_model_name_map $long_forward [lookup_speed_model_name $hlong_reverse]
-
-# Same here!
-dict set speed_model_name_map _BSW_LONG_TLREVERSE [lookup_speed_model_name _BSW_LONG_NONTLFORWARD]
-
 for {set j $start } { $j < $stop } { incr j } {
 
     set tile [lindex $tiles $j]
