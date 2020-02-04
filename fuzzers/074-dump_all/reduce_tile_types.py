@@ -340,9 +340,13 @@ def annotate_speed_model(tile_type, reduced_tile, output_dir, root_dir):
         for index in speed_model_indices:
             print(index, file=f)
 
+    # Get vivado path
+    vivado = os.getenv('XRAY_VIVADO')
+    assert vivado is not None
+
     subprocess.check_call(
-        "vivado -mode batch -source get_speed_model.tcl -tclargs {}".format(
-            tmp_indices_file),
+        "{} -mode batch -source get_speed_model.tcl -tclargs {}".format(
+            vivado, tmp_indices_file),
         shell=True,
         stdout=subprocess.DEVNULL)
 
