@@ -243,6 +243,9 @@ def get_speed_model_indices(reduced_tile):
 
     for site in reduced_tile['sites']:
         for site_pin in site['site_pins'].keys():
+            if site['site_pins'][site_pin] is None:
+                continue
+
             speed_model_indices.add(
                 'site_pin,{}'.format(
                     site['site_pins'][site_pin]['speed_model_index']))
@@ -285,6 +288,9 @@ def annotate_site_pins_speed_model(site_pins, speed_data):
     """ Updates the site_pins with correct timing data """
 
     for site_pin_name, pin_data in site_pins.items():
+        if pin_data is None:
+            continue
+
         speed_model_index = pin_data['speed_model_index']
 
         pin_speed_data = speed_data[speed_model_index]
