@@ -1,7 +1,7 @@
 export XRAY_PART = xc7a35tcsg324-1
 export XRAY_PART_YAML = $(XRAY_DATABASE_DIR)/$(XRAY_DATABASE)/$(XRAY_PART)/part.yaml
 YOSYS = $(XRAY_DIR)/third_party/yosys/yosys
-SOURCES = ../verilog/mem.init ../verilog/mem_1.init ../verilog/top.v
+SOURCES = ../generated/mem.init ../generated/mem_1.init ../generated/top.v ../generated/top.xdc
 PORT ?= /dev/ttyUSB1
 
 all: top.f2b.bit
@@ -24,7 +24,7 @@ $(YOSYS):
 top.edif: $(YOSYS) synth.ys $(SOURCES)
 	$(YOSYS) -s synth.ys -l yosys.log
 
-top.bit: $(VIVADO) top.edif top.xdc top.tcl
+top.bit: $(VIVADO) top.edif top.tcl
 	mkdir -p build
 	cd build && $(XRAY_VIVADO) -mode batch -source ../top.tcl -nojournal -tempDir build -log vivado.log -verbose
 	python3 $(XRAY_DIR)/minitests/timing/clean_json5.py < build/iobuf_report.json5 > build/iobuf_report.json

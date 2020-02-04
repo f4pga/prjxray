@@ -1,6 +1,6 @@
 PART = xc7a35tcsg324-1
 BIT2FASM_ARGS = --part "$(XRAY_DIR)/database/artix7/$(PART)" --verbose
-SOURCES = ../verilog/mem.init ../verilog/mem_1.init ../verilog/top.v
+SOURCES = ../generated/mem.init ../generated/mem_1.init ../generated/top.v ../generated/top.xdc
 
 all: top.fasm top.bits segprint.log
 
@@ -14,7 +14,7 @@ clean:
 
 .PHONY: all clean
 
-top.bit: $(VIVADO) $(SOURCES) top.xdc top.tcl
+top.bit: $(VIVADO) $(SOURCES) top.tcl
 	mkdir -p build
 	cd build && $(XRAY_VIVADO) -mode batch -source ../top.tcl -nojournal -tempDir build -log vivado.log -verbose
 	cp build/*.bit ./

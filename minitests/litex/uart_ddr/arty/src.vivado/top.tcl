@@ -1,6 +1,6 @@
 create_project -force -name top -part xc7a35ticsg324-1L
-add_files {../../verilog/top.v}
-read_xdc ../top.xdc
+add_files {../../generated/top.v}
+read_xdc ../../generated/top.xdc
 synth_design -top top -part xc7a35ticsg324-1L
 report_timing_summary -file top_timing_synth.rpt
 report_utilization -hierarchical -file top_utilization_hierarchical_synth.rpt

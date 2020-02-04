@@ -29,7 +29,7 @@ proc write_iobuf_report {filename} {
 }
 
 create_project -force -name top -part xc7a35ticsg324-1L
-read_xdc ../top.xdc
+read_xdc ../../generated/top.xdc
 read_edif ../top.edif
 link_design -top top -part xc7a35ticsg324-1L
 report_timing_summary -file top_timing_synth.rpt
