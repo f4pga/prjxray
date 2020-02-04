@@ -41,14 +41,8 @@ def flatten_site_pins(tile, site, site_pins, site_pin_node_to_wires):
 
             pin_info = {
                 'wire': wires[0],
-                'delay': site_pin['delay'],
+                'speed_model_index': site_pin['speed_model_index'],
             }
-
-            if 'cap' in site_pin:
-                pin_info['cap'] = site_pin['cap']
-
-            if 'res' in site_pin:
-                pin_info['res'] = site_pin['res']
 
             yield (
                 check_and_strip_prefix(site_pin['site_pin'], site + '/'),
@@ -114,18 +108,8 @@ def get_pips(tile, pips):
             pip['is_directional'],
             'can_invert':
             pip['can_invert'],
-            'is_pass_transistor':
-            pip['is_pass_transistor'],
-            'src_to_dst': {
-                'delay': pip.get('forward_delay', None),
-                'in_cap': pip.get('forward_in_cap', None),
-                'res': pip.get('forward_res', None),
-            },
-            'dst_to_src': {
-                'delay': pip.get('reverse_delay', None),
-                'in_cap': pip.get('reverse_in_cap', None),
-                'res': pip.get('reverse_res', None),
-            },
+            'speed_model_index':
+            pip['speed_model_index'],
         }
 
     return proto_pips
@@ -231,15 +215,9 @@ def read_json5(fname, database_file):
         for wire in tile['wires']:
             assert wire['wire'].startswith(tile['tile'] + '/')
 
-            if wire['res'] != '0.000' or wire['cap'] != '0.000':
-                wire_delay_model = {
-                    'res': wire['res'],
-                    'cap': wire['cap'],
-                }
-            else:
-                wire_delay_model = None
+            wire_speed_model_index = wire['speed_model_index']
 
-            yield wire['wire'][len(tile['tile']) + 1:], wire_delay_model
+            yield wire['wire'][len(tile['tile']) + 1:], wire_speed_model_index
 
     wires = {k: v for (k, v) in inner()}
     wires_from_nodes = set(node_lookup.wires_for_tile(tile['tile']))
@@ -255,6 +233,36 @@ def compare_and_update_wires(wires, new_wires):
             wires[wire] = new_wires
         else:
             assert wires[wire] == new_wires[wire]
+
+
+def get_speed_model_indices(reduced_tile):
+    """ Extracts the speed model indices for the data structure """
+
+    speed_model_indices = set()
+
+    for site in reduced_tile['sites']:
+        for site_pin in site['site_pins'].keys():
+            speed_model_indices.add(site['site_pins'][site_pin]['speed_model_index'])
+
+    for pip in reduced_tile['pips'].keys():
+        speed_model_indices.add(reduced_tile['pips'][pip]['speed_model_index'])
+
+    for wire in reduced_tile['wires'].keys():
+        speed_model_indices.add(reduced_tile['wires'][wire])
+
+    return speed_model_indices
+
+
+def annotate_speed_model(tile_type, reduced_tile, output_dir):
+    """ Updates the reduced tile with the correct speed information """
+
+    speed_model_indices = get_speed_model_indices(reduced_tile)
+
+    tmp_indices_file = os.path.join(output_dir, '{}_speed_index.tmp'.format(tile_type))
+
+    with open(tmp_indices_file, "w") as f:
+        for index in speed_model_indices:
+            print(index, file=f)
 
 
 def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
@@ -360,6 +368,9 @@ def main():
                 datetime.datetime.now(), tile_type))
         reduced_tile = reduce_tile(
             pool, site_types, tile_type, tiles[tile_type], database_file)
+
+        annotate_speed_model(tile_type, reduced_tile, args.output_dir)
+
         for site_type in site_types:
             with open(os.path.join(
                     args.output_dir, 'tile_type_{}_site_type_{}.json'.format(
