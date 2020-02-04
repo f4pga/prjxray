@@ -23,11 +23,6 @@ foreach roi "$::env(XRAY_EXCLUDE_ROI_TILEGRID)" {
 set not_allowed_sites [get_sites -of_objects [get_pblocks exclude_roi]]
 set not_allowed_tiles [get_tiles -of_objects $not_allowed_sites]
 
-# Convert DRIVE from ??? units to 10^(-3 to -6) Ohms
-set MAGIC 0.6875
-
-set speed_model_index_map [dict create]
-
 for {set j $start } { $j < $stop } { incr j } {
 
     set tile [lindex $tiles $j]

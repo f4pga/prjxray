@@ -13,6 +13,7 @@ set fp [open $filename w]
 
 set indices [split $file_data "\n"]
 
+# Convert DRIVE from ??? units to 10^(-3 to -6) Ohms
 set MAGIC 0.6875
 
 proc get_speed_model_name {name} {
