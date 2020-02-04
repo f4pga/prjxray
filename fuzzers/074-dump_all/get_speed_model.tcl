@@ -61,13 +61,14 @@ foreach index $indices {
             set FAST_MAX [get_property FAST_MAX $speed_model]
             set SLOW_MIN [get_property SLOW_MIN $speed_model]
             set SLOW_MAX [get_property SLOW_MAX $speed_model]
-
         }
 
-        puts $fp "\t\t\t\"fast_min\":\"$FAST_MIN\","
-        puts $fp "\t\t\t\"fast_max\":\"$FAST_MAX\","
-        puts $fp "\t\t\t\"slow_min\":\"$SLOW_MIN\","
-        puts $fp "\t\t\t\"slow_max\":\"$SLOW_MAX\""
+        puts $fp "\t\t\t\"delay\": \["
+        puts $fp "\t\t\t\t\"$FAST_MIN\","
+        puts $fp "\t\t\t\t\"$FAST_MAX\","
+        puts $fp "\t\t\t\t\"$SLOW_MIN\","
+        puts $fp "\t\t\t\t\"$SLOW_MAX\""
+        puts $fp "\t\t\t\],"
     } elseif {$resource == "pip"} {
         # Getting all site_pin information
         set speed_model [get_speed_models -filter "SPEED_INDEX == $resource_index"]
@@ -80,6 +81,7 @@ foreach index $indices {
         set forward_speed_model_type [get_property TYPE $forward_speed_model]
         set reverse_speed_model_type [get_property TYPE $reverse_speed_model]
         set is_pass_transistor [expr {"$forward_speed_model_type" == "pass_transistor"}]
+        puts $fp "\t\t\t\"is_pass_transistor\":$is_pass_transistor,"
         if { !$is_pass_transistor } {
             puts $fp "\t\t\t\"forward_delay\":\["
             puts $fp "\t\t\t\t\"[get_property FAST_MIN $forward_speed_model]\","

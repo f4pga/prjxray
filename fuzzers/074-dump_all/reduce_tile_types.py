@@ -243,10 +243,13 @@ def get_speed_model_indices(reduced_tile):
 
     for site in reduced_tile['sites']:
         for site_pin in site['site_pins'].keys():
-            speed_model_indices.add('site_pin,{}'.format(site['site_pins'][site_pin]['speed_model_index']))
+            speed_model_indices.add(
+                'site_pin,{}'.format(
+                    site['site_pins'][site_pin]['speed_model_index']))
 
     for pip in reduced_tile['pips'].keys():
-        speed_model_indices.add('pip,{}'.format(reduced_tile['pips'][pip]['speed_model_index']))
+        speed_model_indices.add(
+            'pip,{}'.format(reduced_tile['pips'][pip]['speed_model_index']))
 
     for wire in reduced_tile['wires'].keys():
         speed_model_indices.add('wire,{}'.format(reduced_tile['wires'][wire]))
@@ -254,26 +257,98 @@ def get_speed_model_indices(reduced_tile):
     return speed_model_indices
 
 
+def annotate_pips_speed_model(pips, speed_data):
+    """ Updates the pips with correct timing data """
+
+    for pip_name, pip_data in pips.items():
+        speed_model_index = pip_data['speed_model_index']
+
+        pip_speed_data = speed_data[speed_model_index]
+        assert pip_speed_data['resource_name'] == 'pip', (
+            pip_speed_data['resource_name'], speed_model_index)
+
+        pips[pip_name]['is_pass_transistor'] = pip_speed_data[
+            'is_pass_transistor']
+        pips[pip_name]['src_to_dst'] = {
+            'delay': pip_speed_data.get('forward_delay', None),
+            'in_cap': pip_speed_data.get('forward_in_cap', None),
+            'res': pip_speed_data.get('forward_res', None),
+        }
+        pips[pip_name]['dst_to_src'] = {
+            'delay': pip_speed_data.get('reverse_delay', None),
+            'in_cap': pip_speed_data.get('reverse_in_cap', None),
+            'res': pip_speed_data.get('reverse_res', None),
+        }
+
+
+def annotate_site_pins_speed_model(site_pins, speed_data):
+    """ Updates the site_pins with correct timing data """
+
+    for site_pin_name, pin_data in site_pins.items():
+        speed_model_index = pin_data['speed_model_index']
+
+        pin_speed_data = speed_data[speed_model_index]
+        assert pin_speed_data['resource_name'] == 'site_pin', (
+            pin_speed_data['resource_name'], speed_model_index)
+
+        site_pins[site_pin_name]['delay'] = pin_speed_data['delay'],
+
+        cap = pin_speed_data['cap']
+        res = pin_speed_data['res']
+        if cap != 'null':
+            site_pins[site_pin_name]['cap'] = cap
+        if res != 'null':
+            site_pins[site_pin_name]['res'] = res
+
+
+def annotate_wires_speed_model(wires, speed_data):
+    """ Updates the wires with correct timing data """
+
+    for wire_name, wire_data in wires.items():
+        speed_model_index = wire_data
+
+        wire_speed_data = speed_data[speed_model_index]
+        assert wire_speed_data['resource_name'] == 'wire', (
+            wire_speed_data['resource_name'], speed_model_index)
+
+        cap = wire_speed_data['cap']
+        res = wire_speed_data['res']
+        if cap != '0.000' and res != '0.000':
+            wires[wire_name] = {
+                'cap': cap,
+                'res': res,
+            }
+        else:
+            wires[wire_name] = None
+
+
 def annotate_speed_model(tile_type, reduced_tile, output_dir, root_dir):
     """ Updates the reduced tile with the correct speed information """
 
     speed_model_indices = get_speed_model_indices(reduced_tile)
 
-    tmp_indices_file = os.path.join(output_dir, '{}_speed_index.tmp'.format(tile_type))
+    tmp_indices_file = os.path.join(
+        output_dir, '{}_speed_index.tmp'.format(tile_type))
 
     with open(tmp_indices_file, "w") as f:
         for index in speed_model_indices:
             print(index, file=f)
 
     subprocess.check_call(
-        "vivado -mode batch -source get_speed_model.tcl -tclargs {}".format(tmp_indices_file),
-        shell=True, stdout=subprocess.DEVNULL)
+        "vivado -mode batch -source get_speed_model.tcl -tclargs {}".format(
+            tmp_indices_file),
+        shell=True,
+        stdout=subprocess.DEVNULL)
 
     with open(tmp_indices_file, "r") as f:
         speed_model_data = json5.load(f)
 
-    with open(tmp_indices_file, "w") as f:
-        xjson.pprint(f, speed_model_data)
+    for site in reduced_tile['sites']:
+        annotate_site_pins_speed_model(site['site_pins'], speed_model_data)
+
+    annotate_pips_speed_model(reduced_tile['pips'], speed_model_data)
+    annotate_wires_speed_model(reduced_tile['wires'], speed_model_data)
+
 
 def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
     sites = None
@@ -379,7 +454,8 @@ def main():
         reduced_tile = reduce_tile(
             pool, site_types, tile_type, tiles[tile_type], database_file)
 
-        annotate_speed_model(tile_type, reduced_tile, args.output_dir, args.root_dir)
+        annotate_speed_model(
+            tile_type, reduced_tile, args.output_dir, args.root_dir)
 
         for site_type in site_types:
             with open(os.path.join(
