@@ -283,6 +283,8 @@ def annotate_pips_speed_model(pips, speed_data):
             'res': pip_speed_data.get('reverse_res', None),
         }
 
+        del pips[pip_name]['speed_model_index']
+
 
 def annotate_site_pins_speed_model(site_pins, speed_data):
     """ Updates the site_pins with correct timing data """
@@ -305,6 +307,8 @@ def annotate_site_pins_speed_model(site_pins, speed_data):
             site_pins[site_pin_name]['cap'] = cap
         if res != 'null':
             site_pins[site_pin_name]['res'] = res
+
+        del site_pins[site_pin_name]['speed_model_index']
 
 
 def annotate_wires_speed_model(wires, speed_data):
