@@ -134,18 +134,18 @@ quick:
 # -----------------
 
 $(addprefix ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.,yaml json):
-	$(MAKE) -C 001-part-yaml run
+	$(MAKE) 001-part-yaml/run.ok
 
 ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv:
-	$(MAKE) -C 075-pins run
+	$(MAKE) 075-pins/run.ok
 
 ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json:
-	$(MAKE) -C 005-tilegrid run
+	$(MAKE) 005-tilegrid/run.ok
 
 ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json:
-	$(MAKE) -C 072-ordered_wires run
-	$(MAKE) -C 073-get_counts run
-	$(MAKE) -C 074-dump_all run
+	$(MAKE) 072-ordered_wires/run.ok
+	$(MAKE) 073-get_counts/run.ok
+	$(MAKE) 074-dump_all/run.ok
 
 part_only_yaml: ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
 part_only_tilegrid: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
@@ -154,6 +154,7 @@ part_only_pins: ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
 
 # part_only runs the fuzzers required to support additional parts
 part_only:
+	+$(MAKE) clean_fuzzers
 	# Create PART-specific directory
 	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
 	# Generate YAML
