@@ -328,13 +328,13 @@ def annotate_wires_speed_model(wires, speed_data):
             wires[wire_name] = None
 
 
-def annotate_speed_model(tile_type, reduced_tile, output_dir, root_dir):
+def annotate_speed_model(tile_type, reduced_tile, root_dir):
     """ Updates the reduced tile with the correct speed information """
 
     speed_model_indices = get_speed_model_indices(reduced_tile)
 
     tmp_indices_file = os.path.join(
-        output_dir, '{}_speed_index.tmp'.format(tile_type))
+        root_dir, '{}_speed_index.tmp'.format(tile_type))
 
     with open(tmp_indices_file, "w") as f:
         for index in speed_model_indices:
@@ -464,8 +464,7 @@ def main():
         reduced_tile = reduce_tile(
             pool, site_types, tile_type, tiles[tile_type], database_file)
 
-        annotate_speed_model(
-            tile_type, reduced_tile, args.output_dir, args.root_dir)
+        annotate_speed_model(tile_type, reduced_tile, args.root_dir)
 
         for site_type in site_types:
             with open(os.path.join(
