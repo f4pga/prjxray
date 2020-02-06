@@ -299,7 +299,7 @@ def annotate_site_pins_speed_model(site_pins, speed_data):
         assert pin_speed_data['resource_name'] == 'site_pin', (
             pin_speed_data['resource_name'], speed_model_index)
 
-        site_pins[site_pin_name]['delay'] = pin_speed_data['delay'],
+        site_pins[site_pin_name]['delay'] = pin_speed_data['delay']
 
         cap = pin_speed_data['cap']
         res = pin_speed_data['res']
