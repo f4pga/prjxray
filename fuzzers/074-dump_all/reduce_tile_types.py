@@ -323,7 +323,7 @@ def annotate_wires_speed_model(wires, speed_data):
 
         cap = wire_speed_data['cap']
         res = wire_speed_data['res']
-        if cap != '0.000' and res != '0.000':
+        if cap != '0.000' or res != '0.000':
             wires[wire_name] = {
                 'cap': cap,
                 'res': res,
