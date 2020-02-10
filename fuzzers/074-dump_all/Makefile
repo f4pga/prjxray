@@ -23,6 +23,8 @@ run:
 	$(MAKE) clean
 	$(MAKE) database
 	$(MAKE) pushdb
+	# Clean up intermediate files after successful pushdb.
+	find build -name "*.json5" -delete
 	touch run.ok
 
 clean:

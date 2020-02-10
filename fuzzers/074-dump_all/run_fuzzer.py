@@ -1,8 +1,6 @@
-import os
 import shutil
 import sys
 import subprocess
-import signal
 from multiprocessing import Pool
 from itertools import chain
 import argparse
