@@ -31,6 +31,7 @@ def sort(data):
                 key=lambda o: (extract_numbers(o[0]), extract_numbers(o[1])))
 
         data.sort(key=lambda o: (o['tile_types'], o['grid_deltas']))
+        return data
     else:
 
         def key(o):
