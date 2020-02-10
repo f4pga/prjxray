@@ -356,8 +356,6 @@ def sort_csv(pathname):
         rows.extend(reader)
         del reader
 
-    fields.sort()
-
     def sort_key(r):
         v = []
         for field in fields:
