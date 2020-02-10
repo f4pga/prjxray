@@ -95,7 +95,10 @@ set -e
 
 # Generate extra parts file (tilegrid, tileconn, part yaml, part json and package_pin)
 set +e
-make db-extras-${XRAY_SETTINGS}-parts -j $CORES
+(
+	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
+	make db-extras-${XRAY_SETTINGS}-parts -j $CORES
+)
 EXTRAS_PARTS_RET=$?
 set -e
 
