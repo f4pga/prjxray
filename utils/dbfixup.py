@@ -199,21 +199,12 @@ class ZeroGroups(object):
                 bits.add("!" + bit)
 
 
-def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
-    '''
-    Add multibit entries
-    This requires adding some zero bits (ex: !31_09)
-    If an entry has any of the
-    '''
-
-    zero_groups = ZeroGroups(zero_db)
-
+def read_segbits(fn_in):
+    """
+    Reads a segbits file. Removes duplcated lines. Returns a list of the lines.
+    """
     lines = []
-    new_lines = set()
-    changes = 0
-
     llast = None
-    drops = 0
 
     with open(fn_in, "r") as f:
         for line in f:
@@ -225,10 +216,29 @@ def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
 
             lines.append(line)
 
-            tag, bits, mode, _ = util.parse_db_line(line)
+    return lines
 
-            if bits is not None and mode is None:
-                zero_groups.add_tag_bits(tag, bits)
+
+def add_zero_bits(fn_in, lines, zero_db, clb_int=False, strict=True, verbose=False):
+    '''
+    Add multibit entries
+    This requires adding some zero bits (ex: !31_09)
+    If an entry has any of the
+    '''
+
+    zero_groups = ZeroGroups(zero_db)
+
+    new_lines = set()
+    changes = 0
+
+    drops = 0
+
+    for line in lines:
+
+        tag, bits, mode, _ = util.parse_db_line(line)
+
+        if bits is not None and mode is None:
+            zero_groups.add_tag_bits(tag, bits)
 
     if verbose:
         zero_groups.print_groups()
@@ -396,8 +406,16 @@ def update_seg_fns(
         if lazy and not os.path.exists(fn_in):
             continue
 
+        lines = read_segbits(fn_in)
+
         changes, new_lines = add_zero_bits(
-            fn_in, zero_db, clb_int=clb_int, strict=strict, verbose=verbose)
+            fn_in,
+            lines,
+            zero_db,
+            clb_int=clb_int,
+            strict=strict,
+            verbose=verbose
+        )
 
         new_changes, final_lines = remove_ambiguous_solutions(
             fn_in,
