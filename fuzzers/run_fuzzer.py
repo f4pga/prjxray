@@ -504,8 +504,9 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
     # Play nice with make's jobserver.
     # See https://www.gnu.org/software/make/manual/html_node/POSIX-Jobserver.html#POSIX-Jobserver  # noqa
     job_fds = []
-    if '--jobserver-fds' in make_flags:
-        job_re = re.search('--jobserver-fds=([0-9]+),([0-9]+)', make_flags)
+    if '--jobserver-fds' in make_flags or '--jobserver-auth' in make_flags:
+        job_re = re.search(
+            '--jobserver-(?:fds|auth)=([0-9]+),([0-9]+)', make_flags)
         assert job_re, make_flags
         job_rd, job_wr = job_re.groups()
 
