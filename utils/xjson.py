@@ -5,6 +5,7 @@ import re
 import sys
 
 from collections import OrderedDict
+from ordered_set import OrderedSet
 
 
 def extract_numbers(s):
@@ -24,6 +25,31 @@ def extract_numbers(s):
 
 
 def sort(data):
+    """Sort data types via "natural" numbers.
+
+    Supports all the basic Python data types.
+    >>> o = sort({
+    ...    't1': {'c','b'},          # Set
+    ...    't2': ('a2', 'a10', 'e'), # Tuple
+    ...    't3': [5, 3, 2],          # List
+    ...    't4': {                   # Dictionary
+    ...        'a4': ('b2', 'b3'),
+    ...        'a2': ['c1', 'c2', 'c0', 'c10'],
+    ...    },
+    ...    't5': ['a1b5', 'a2b1', 'a1b1'],
+    ... })
+    >>> for t in o:
+    ...    print(t+':', o[t])
+    t1: OrderedSet(['b', 'c'])
+    t2: ('a2', 'a10', 'e')
+    t3: (2, 3, 5)
+    t4: OrderedDict([('a2', ('c0', 'c1', 'c2', 'c10')), ('a4', ('b2', 'b3'))])
+    t5: ('a1b1', 'a1b5', 'a2b1')
+
+    Don't mangle "pairs"
+    >>> sort([('b', 'c'), ('2', '1')])
+    [('b', 'c'), ('2', '1')]
+    """
     # FIXME: We assume that a list is a tileconn.json format...
     if isinstance(data, list) and len(data) > 0 and 'wire_pairs' in data[0]:
         for o in data:
@@ -41,10 +67,12 @@ def sort(data):
                 return extract_numbers(o)
             elif isinstance(o, int):
                 return o
-            elif isinstance(o, list):
-                return [key(i) for i in o]
+            elif isinstance(o, (list, tuple)):
+                return tuple(key(i) for i in o)
             elif isinstance(o, dict):
-                return [(key(k), key(v)) for k, v in o.items()]
+                return tuple((key(k), key(v)) for k, v in o.items())
+            elif isinstance(o, set):
+                return tuple(key(k) for k in o)
             raise ValueError(repr(o))
 
         def rsorter(o):
@@ -59,7 +87,18 @@ def sort(data):
                     new_dict[k] = v
                 return new_dict
 
-            elif isinstance(o, list):
+            elif isinstance(o, set):
+                nitems = []
+                for k in o:
+                    nitems.append((key(k), k))
+                nitems.sort(key=lambda n: n[0])
+
+                new_set = OrderedSet()
+                for _, k in nitems:
+                    new_set.add(k)
+                return new_set
+
+            elif isinstance(o, (tuple, list)):
                 if len(o) == 2:
                     return o
 
@@ -71,7 +110,7 @@ def sort(data):
                 new_list = []
                 for _, i in nlist:
                     new_list.append(i)
-                return new_list
+                return tuple(new_list)
             else:
                 return o
 

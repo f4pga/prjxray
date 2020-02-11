@@ -2,6 +2,7 @@
 intervaltree
 junit-xml
 numpy
+ordered-set
 parse
 progressbar2
 pyjson5
