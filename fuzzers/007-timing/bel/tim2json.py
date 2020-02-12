@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
+import re
 import argparse
 import json
+import functools
+import progressbar
+
+NUMBER_RE = re.compile(r'\d+$')
 
 
 def check_sequential(speed_model):
@@ -120,7 +125,7 @@ def instance_in_model(instance, model):
         return instance in model
 
 
-def pin_in_model(pin, pin_aliases, model, direction=None):
+def create_pin_in_model(pin_aliases, model):
     """
     Checks if a given pin belongs to the model.
 
@@ -166,24 +171,29 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
 
     # strip site location
     model = model.split(':')[0]
-    extended_pin_name = pin
-    aliased_pin, aliased_pin_name = find_aliased_pin(
-        pin.upper(), model, pin_aliases)
 
-    # some timings reports pins with their directions
-    # this happens for e.g. CLB reg_init D pin, which
-    # timing is reported as DIN
-    if direction is not None:
-        extended_pin_name = pin + direction
+    @functools.lru_cache(maxsize=10000)
+    def pin_in_model(pin, direction=None):
+        extended_pin_name = pin
+        aliased_pin, aliased_pin_name = find_aliased_pin(
+            pin.upper(), model, pin_aliases)
 
-    if instance_in_model(pin, model):
-        return True, pin
-    elif instance_in_model(extended_pin_name, model):
-        return True, extended_pin_name
-    elif aliased_pin:
-        return True, aliased_pin_name
-    else:
-        return False, None
+        # some timings reports pins with their directions
+        # this happens for e.g. CLB reg_init D pin, which
+        # timing is reported as DIN
+        if direction is not None:
+            extended_pin_name = pin + direction
+
+        if instance_in_model(pin, model):
+            return True, pin
+        elif instance_in_model(extended_pin_name, model):
+            return True, extended_pin_name
+        elif aliased_pin:
+            return True, aliased_pin_name
+        else:
+            return False, None
+
+    return pin_in_model
 
 
 def remove_pin_from_model(pin, model):
@@ -225,6 +235,43 @@ def remove_pin_from_model(pin, model):
     else:
         # pin name is multi word, search for a string
         return "_".join(list(filter(None, model.replace(pin, '').split('_'))))
+
+
+def merged_dict(itr):
+    """ Create a merged dict of dict (of dict) based on input.
+
+    Input is an iteratable of (keys, value).
+
+    Return value is root dictionary
+
+    Keys are successive dictionaries indicies.  For example:
+    (('a', 'b', 'c'), 1)
+
+    would set:
+
+    output['a']['b']['c'] = 1
+
+    This function returns an error if two values conflict.
+
+    >>> merged_dict(((('a', 'b', 'c'), 1), (('a', 'b', 'd'), 2)))
+    {'a': {'b': {'c': 1, 'd': 2}}}
+
+    """
+
+    output = {}
+    for keys, value in itr:
+        target = output
+        for key in keys[:-1]:
+            if key not in target:
+                target[key] = {}
+            target = target[key]
+
+        if keys[-1] in target:
+            assert target[keys[-1]] == value, (keys, value, target[keys[-1]])
+        else:
+            target[keys[-1]] = value
+
+    return output
 
 
 def extract_properties(tile, site, bel, properties, model):
@@ -526,107 +573,140 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
 
 
 def read_bel_properties(properties_file, properties_map):
+    def inner():
+        with open(properties_file, 'r') as f:
+            for line in f:
+                raw_props = line.split()
+                tile = raw_props[0]
+                sites_count = int(raw_props[1])
+                prop_loc = 2
 
-    properties = dict()
-    with open(properties_file, 'r') as f:
-        for line in f:
-            raw_props = line.split()
-            tile = raw_props[0]
-            sites_count = int(raw_props[1])
-            prop_loc = 2
-            properties[tile] = dict()
-            for site in range(0, sites_count):
-                site_name = raw_props[prop_loc]
-                bels_count = int(raw_props[prop_loc + 1])
-                prop_loc += 2
-                properties[tile][site_name] = dict()
-                for bel in range(0, bels_count):
-                    bel_name = raw_props[prop_loc]
-                    bel_name = clean_bname(bel_name)
-                    bel_name = bel_name.lower()
-                    bel_properties_count = int(raw_props[prop_loc + 1])
-                    properties[tile][site_name][bel_name] = dict()
+                if sites_count == 0:
+                    yield (tile,), {}
+
+                for site in range(0, sites_count):
+                    site_name = raw_props[prop_loc]
+                    bels_count = int(raw_props[prop_loc + 1])
                     prop_loc += 2
-                    for prop in range(0, bel_properties_count):
-                        prop_name = raw_props[prop_loc]
-                        # the name always starts with "CONFIG." and ends with ".VALUES"
-                        # let's get rid of that
-                        prop_name = prop_name[7:-7]
-                        # append name prop name mappings
-                        if bel_name in properties_map:
-                            if prop_name in properties_map[bel_name]:
-                                prop_name = properties_map[bel_name][prop_name]
-                        prop_values_count = int(raw_props[prop_loc + 1])
-                        properties[tile][site_name][bel_name][
-                            prop_name] = raw_props[prop_loc + 2:prop_loc + 2 +
-                                                   prop_values_count]
-                        prop_loc += 2 + prop_values_count
 
-    return properties
+                    for bel in range(0, bels_count):
+                        bel_name = raw_props[prop_loc]
+                        bel_name = clean_bname(bel_name)
+                        bel_name = bel_name.lower()
+                        bel_properties_count = int(raw_props[prop_loc + 1])
+
+                        props = 0
+                        prop_loc += 2
+                        for prop in range(0, bel_properties_count):
+                            prop_name = raw_props[prop_loc]
+
+                            # the name always starts with "CONFIG." and ends with ".VALUES"
+                            # let's get rid of that
+                            if prop_name.startswith(
+                                    'CONFIG.') and prop_name.endswith(
+                                        '.VALUES'):
+                                prop_name = prop_name[7:-7]
+
+                            prop_values_count = int(raw_props[prop_loc + 1])
+
+                            if prop_name not in [
+                                    'RAM_MODE',
+                                    'WRITE_WIDTH_A',
+                                    'WRITE_WIDTH_B',
+                                    'READ_WIDTH_A',
+                                    'READ_WIDTH_B',
+                            ]:
+                                if bel_name in properties_map:
+                                    if prop_name in properties_map[bel_name]:
+                                        prop_name = properties_map[bel_name][
+                                            prop_name]
+
+                                yield (tile, site_name, bel_name, prop_name), \
+                                        raw_props[prop_loc + 2:prop_loc + 2 +
+                                                        prop_values_count]
+                                props += 1
+
+                            prop_loc += 2 + prop_values_count
+
+                        if props == 0:
+                            yield (tile, site_name, bel_name), {}
+
+    return merged_dict(inner())
 
 
 def read_bel_pins(pins_file):
+    def inner():
+        with open(pins_file, 'r') as f:
+            for line in f:
+                raw_pins = line.split()
+                tile = raw_pins[0]
+                sites_count = int(raw_pins[1])
+                pin_loc = 2
 
-    pins = dict()
-    with open(pins_file, 'r') as f:
-        for line in f:
-            raw_pins = line.split()
-            tile = raw_pins[0]
-            sites_count = int(raw_pins[1])
-            pin_loc = 2
-            pins[tile] = dict()
-            for site in range(0, sites_count):
-                site_name = raw_pins[pin_loc]
-                bels_count = int(raw_pins[pin_loc + 1])
-                pin_loc += 2
-                pins[tile][site_name] = dict()
-                for bel in range(0, bels_count):
-                    bel_name = raw_pins[pin_loc]
-                    bel_name = clean_bname(bel_name)
-                    bel_name = bel_name.lower()
-                    bel_pins_count = int(raw_pins[pin_loc + 1])
-                    pins[tile][site_name][bel_name] = dict()
+                if sites_count == 0:
+                    yield (tile,), {}
+
+                for site in range(0, sites_count):
+                    site_name = raw_pins[pin_loc]
+                    bels_count = int(raw_pins[pin_loc + 1])
                     pin_loc += 2
-                    for pin in range(0, bel_pins_count):
-                        pin_name = raw_pins[pin_loc]
-                        pin_direction = raw_pins[pin_loc + 1]
-                        pin_is_clock = raw_pins[pin_loc + 2]
-                        pins[tile][site_name][bel_name][pin_name] = dict()
-                        pins[tile][site_name][bel_name][pin_name][
-                            'direction'] = pin_direction
-                        pins[tile][site_name][bel_name][pin_name][
-                            'is_clock'] = int(pin_is_clock) == 1
-                        pin_loc += 3
-    return pins
+
+                    for bel in range(0, bels_count):
+                        bel_name = raw_pins[pin_loc]
+                        bel_name = clean_bname(bel_name)
+                        bel_name = bel_name.lower()
+                        bel_pins_count = int(raw_pins[pin_loc + 1])
+
+                        pin_loc += 2
+                        for pin in range(0, bel_pins_count):
+                            pin_name = raw_pins[pin_loc]
+                            pin_direction = raw_pins[pin_loc + 1]
+                            pin_is_clock = raw_pins[pin_loc + 2]
+
+                            yield (
+                                tile, site_name, bel_name, pin_name,
+                                'direction'), pin_direction
+                            yield (
+                                tile, site_name, bel_name, pin_name,
+                                'is_clock'), int(pin_is_clock) == 1
+                            pin_loc += 3
+
+    return merged_dict(inner())
 
 
 def read_site_pins(pins_file):
+    def inner():
+        with open(pins_file, 'r') as f:
+            for line in f:
+                raw_pins = line.split()
+                tile = raw_pins[0]
+                site_count = int(raw_pins[1])
+                pin_loc = 2
 
-    pins = dict()
-    with open(pins_file, 'r') as f:
-        for line in f:
-            raw_pins = line.split()
-            tile = raw_pins[0]
-            site_count = int(raw_pins[1])
-            pin_loc = 2
-            pins[tile] = dict()
-            for site in range(0, site_count):
-                site_name = raw_pins[pin_loc]
-                site_name = site_name.lower()
-                site_pins_count = int(raw_pins[pin_loc + 1])
-                pins[tile][site_name] = dict()
-                pin_loc += 2
-                for pin in range(0, site_pins_count):
-                    pin_name = raw_pins[pin_loc]
-                    pin_direction = raw_pins[pin_loc + 1]
-                    pins[tile][site_name][pin_name] = dict()
-                    pins[tile][site_name][pin_name][
-                        'direction'] = pin_direction
-                    # site clock pins are always named 'CLK'
-                    pins[tile][site_name][pin_name][
-                        'is_clock'] = pin_name.lower() == 'clk'
+                if site_count == 0:
+                    yield (tile,), {}
+
+                for site in range(0, site_count):
+                    site_name = raw_pins[pin_loc]
+                    site_name = site_name.lower()
+                    site_pins_count = int(raw_pins[pin_loc + 1])
+
                     pin_loc += 2
-    return pins
+                    for pin in range(0, site_pins_count):
+                        pin_name = raw_pins[pin_loc]
+                        pin_direction = raw_pins[pin_loc + 1]
+
+                        yield (
+                            (tile, site_name, pin_name, 'direction'),
+                            pin_direction)
+                        yield (
+                            (tile, site_name, pin_name, 'is_clock'),
+                            pin_name.lower() == 'clk')
+
+                        # site clock pins are always named 'CLK'
+                        pin_loc += 2
+
+    return merged_dict(inner())
 
 
 def main():
