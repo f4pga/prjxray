@@ -559,12 +559,13 @@ def main():
     parser.add_argument('--output_dir', required=True)
     parser.add_argument('--verify_only', action='store_true')
     parser.add_argument('--ignored_wires')
+    parser.add_argument('--max_cpu', type=int, default=10)
 
     args = parser.parse_args()
 
     tiles, nodes = lib.read_root_csv(args.root_dir)
 
-    processes = min(multiprocessing.cpu_count(), 10)
+    processes = min(multiprocessing.cpu_count(), args.max_cpu)
     print('{} Running {} processes'.format(datetime.datetime.now(), processes))
     pool = multiprocessing.Pool(processes=processes)
 
