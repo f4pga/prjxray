@@ -17,8 +17,7 @@ import progressbar
 import multiprocessing
 import os
 import functools
-
-from utils import xjson
+import json
 
 
 def check_and_strip_prefix(name, prefix):
@@ -364,10 +363,10 @@ def main():
             with open(os.path.join(
                     args.output_dir, 'tile_type_{}_site_type_{}.json'.format(
                         tile_type, site_types[site_type]['type'])), 'w') as f:
-                xjson.pprint(f, site_types[site_type])
+                json.dump(site_types[site_type], f, indent=2, sort_keys=True)
 
         with open(tile_type_file, 'w') as f:
-            xjson.pprint(f, reduced_tile)
+            json.dump(reduced_tile, f, indent=2, sort_keys=True)
 
 
 if __name__ == '__main__':
