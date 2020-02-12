@@ -56,8 +56,9 @@ proc dump_tile_timings {tile timing_fp config_fp pins_fp tile_pins_fp} {
 
         foreach pin $site_pins {
             set direction [get_property DIRECTION $pin]
+            set is_part_of_bus [get_property IS_PART_OF_BUS $pin]
             regexp {\/(.*)$} $pin -> pin
-            lappend tile_pins_line $pin $direction
+            lappend tile_pins_line $pin $direction $is_part_of_bus
         }
 
         # dump bel pins, speed_models and configs
@@ -78,8 +79,9 @@ proc dump_tile_timings {tile timing_fp config_fp pins_fp tile_pins_fp} {
             foreach pin $bel_pins {
                 set direction [get_property DIRECTION $pin]
                 set is_clock [get_property IS_CLOCK $pin]
+                set is_part_of_bus [get_property IS_PART_OF_BUS $pin]
                 regexp {\/.*\/(.*)$} $pin -> pin
-                lappend pins_line $pin $direction $is_clock
+                lappend pins_line $pin $direction $is_clock $is_part_of_bus
             }
 
             lappend config_line $bel_type

@@ -407,7 +407,8 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
 
                 if pim:
                     if pins[slice][site_name][delay_btype_orig][orig_pin][
-                            'is_clock']:
+                            'is_clock'] and not pins[slice][site_name][
+                                delay_btype_orig][orig_pin]['is_part_of_bus']:
                         bel_clock = pin
                         bel_clock_orig_pin = orig_pin
                     elif pins[slice][site_name][delay_btype_orig][orig_pin][
@@ -425,8 +426,9 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                     orig_pin = pin
                     pim, pin = pin_in_model(pin.lower(), speed_model_clean)
                     if pim:
-                        if site_pins[slice][site_name.
-                                            lower()][orig_pin]['is_clock']:
+                        if site_pins[slice][site_name.lower(
+                        )][orig_pin]['is_clock'] and not site_pins[slice][
+                                site_name.lower()][orig_pin]['is_part_of_bus']:
                             bel_clock = pin
                             bel_clock_orig_pin = orig_pin
                             speed_model_clean = remove_pin_from_model(
@@ -655,6 +657,7 @@ def read_bel_pins(pins_file):
                             pin_name = raw_pins[pin_loc]
                             pin_direction = raw_pins[pin_loc + 1]
                             pin_is_clock = raw_pins[pin_loc + 2]
+                            pin_is_part_of_bus = raw_pins[pin_loc + 3]
 
                             yield (
                                 tile, site_name, bel_name, pin_name,
@@ -662,7 +665,11 @@ def read_bel_pins(pins_file):
                             yield (
                                 tile, site_name, bel_name, pin_name,
                                 'is_clock'), int(pin_is_clock) == 1
-                            pin_loc += 3
+                            yield (
+                                tile, site_name, bel_name, pin_name,
+                                'is_part_of_bus'
+                            ), int(pin_is_part_of_bus) == 1
+                            pin_loc += 4
 
     return merged_dict(inner())
 
@@ -688,6 +695,7 @@ def read_site_pins(pins_file):
                     for pin in range(0, site_pins_count):
                         pin_name = raw_pins[pin_loc]
                         pin_direction = raw_pins[pin_loc + 1]
+                        pin_is_part_of_bus = raw_pins[pin_loc + 2]
 
                         yield (
                             (tile, site_name, pin_name, 'direction'),
@@ -695,9 +703,12 @@ def read_site_pins(pins_file):
                         yield (
                             (tile, site_name, pin_name, 'is_clock'),
                             pin_name.lower() == 'clk')
+                        yield (
+                            (tile, site_name, pin_name, 'is_part_of_bus'),
+                            int(pin_is_part_of_bus))
 
                         # site clock pins are always named 'CLK'
-                        pin_loc += 2
+                        pin_loc += 3
 
     return merged_dict(inner())
 

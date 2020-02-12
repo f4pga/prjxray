@@ -56,7 +56,7 @@ def fix_line(line, site, filetype):
                         entries.append(line[loc])
                         loc += 1
                 elif filetype == 'pins':
-                    for pin_word in range(0, 3):
+                    for pin_word in range(0, 4):
                         entries.append(line[loc])
                         loc += 1
                 elif filetype == 'properties':
