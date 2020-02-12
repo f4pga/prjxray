@@ -123,6 +123,17 @@ proc dump {} {
         set tile [randsample_list 1 [get_tiles -filter "TYPE == $type"]]
         dump_tile_timings $tile $timing_fp $property_fp $pins_fp $tile_pins_fp
     }
+
+    set other_site_types [list ISERDESE2 OSERDESE2]
+    foreach site_type $other_site_types {
+        set cell [create_cell -reference $site_type test]
+        place_design
+        set tile [get_tiles -of [get_sites -of $cell]]
+        dump_tile_timings $tile $timing_fp $property_fp $pins_fp $tile_pins_fp
+        unplace_cell $cell
+        remove_cell $cell
+    }
+
     close $pins_fp
     close $timing_fp
     close $property_fp
