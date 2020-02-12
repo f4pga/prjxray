@@ -97,6 +97,10 @@ set -e
 set +e
 (
 	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
+
+	# Use all the memory available on the system for generating the final
+	# grid and tileconn.
+	export MAX_GRID_CPU=${MAX_CPU_PER_GRID}
 	make db-extras-${XRAY_SETTINGS}-parts -j $CORES
 )
 EXTRAS_PARTS_RET=$?
