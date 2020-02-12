@@ -4,7 +4,6 @@ import re
 import argparse
 import json
 import functools
-import progressbar
 
 NUMBER_RE = re.compile(r'\d+$')
 
@@ -343,8 +342,7 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
 
         pin_in_models = {}
 
-        for slice, site_name, bel, speed_model, timing in progressbar.progressbar(
-                raw):
+        for slice, site_name, bel, speed_model, timing in raw:
             btype = bel.lower()
             delay_btype = clean_bname(btype)
             delay_btype_orig = delay_btype
