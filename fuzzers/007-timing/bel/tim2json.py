@@ -398,8 +398,7 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
             # Get pin alias map
             if delay_btype not in pin_in_models:
                 pin_aliases = pin_alias_map.get(delay_btype, None)
-                pin_in_models[delay_btype] = create_pin_in_model(
-                    pin_aliases)
+                pin_in_models[delay_btype] = create_pin_in_model(pin_aliases)
 
             pin_in_model = pin_in_models[delay_btype]
 
@@ -439,7 +438,8 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                 # search site inputs
                 for pin in site_pins[slice][site_name.lower()]:
                     orig_pin = pin
-                    pim, pin = pin_in_model(pin.lower(), speed_model_clean, 'in')
+                    pim, pin = pin_in_model(
+                        pin.lower(), speed_model_clean, 'in')
                     if pim:
                         if site_pins[slice][site_name.lower(
                         )][orig_pin]['direction'] == 'IN':
@@ -476,12 +476,14 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
                     if number is not None:
                         orig_pin = pin[:-(len(str(number.group())))]
                         orig_pin_full = pin
-                        pim, pin = pin_in_model(orig_pin.lower(), speed_model_clean)
+                        pim, pin = pin_in_model(
+                            orig_pin.lower(), speed_model_clean)
                         if not pim:
                             # some inputs pins are named with unsignificant zeros
                             # remove ti and try again
                             orig_pin = orig_pin + str(int(number.group()))
-                            pim, pin = pin_in_model(orig_pin.lower(), speed_model_clean)
+                            pim, pin = pin_in_model(
+                                orig_pin.lower(), speed_model_clean)
 
                         if pim:
                             if pins[slice][site_name][delay_btype_orig][orig_pin_full]['direction'] == 'IN' \
@@ -575,7 +577,7 @@ def read_bel_properties(properties_file, properties_map):
                 prop_loc = 2
 
                 if sites_count == 0:
-                    yield (tile,), {}
+                    yield (tile, ), {}
 
                 for site in range(0, sites_count):
                     site_name = raw_props[prop_loc]
@@ -637,7 +639,7 @@ def read_bel_pins(pins_file):
                 pin_loc = 2
 
                 if sites_count == 0:
-                    yield (tile,), {}
+                    yield (tile, ), {}
 
                 for site in range(0, sites_count):
                     site_name = raw_pins[pin_loc]
@@ -677,7 +679,7 @@ def read_site_pins(pins_file):
                 pin_loc = 2
 
                 if site_count == 0:
-                    yield (tile,), {}
+                    yield (tile, ), {}
 
                 for site in range(0, site_count):
                     site_name = raw_pins[pin_loc]
