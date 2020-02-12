@@ -149,22 +149,22 @@ def create_pin_in_model(pin_aliases):
         The second returned value contains found pin name. If the
         pin is not found, None is returned.
 
-    >>> pin_in_model("d", None, "ff_init_din_q", "in")
+    >>> create_pin_in_model(None)("d", "ff_init_din_q", "in")
     (True, 'din')
 
-    >>> pin_in_model("q", None, "ff_init_clk_q", None)
+    >>> create_pin_in_model(None)("q", "ff_init_clk_q", None)
     (True, 'q')
 
-    >>> pin_in_model("q", {"Q": {"names" : ["QL", "QH"], "is_property_related" : True}}, "ff_init_clk_ql", None)
+    >>> create_pin_in_model({"Q": {"names" : ["QL", "QH"], "is_property_related" : True}})("q", "ff_init_clk_ql", None)
     (True, 'q')
 
-    >>> pin_in_model("logic_out", None, "my_cell_i_logic_out", None)
+    >>> create_pin_in_model(None)("logic_out", "my_cell_i_logic_out", None)
     (True, 'logic_out')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}}, "my_cell_i_logic_o", None)
+    >>> create_pin_in_model({"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}})("logic_out", "my_cell_i_logic_o", None)
     (True, 'logic_o')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}}, "my_cell_i_o", None)
+    >>> create_pin_in_model({"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}})("logic_out", "my_cell_i_o", None)
     (True, 'o')
     """
 
