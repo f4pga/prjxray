@@ -17,6 +17,22 @@ set_property IOSTANDARD LVCMOS33 [get_ports cpu_reset]
 set_property LOC E3 [get_ports clk100]
 set_property IOSTANDARD LVCMOS33 [get_ports clk100]
 
+# led[0]
+set_property LOC H5 [get_ports led[0]]
+set_property IOSTANDARD LVCMOS33 [get_ports led[0]]
+
+# led[1]
+set_property LOC J5 [get_ports led[1]]
+set_property IOSTANDARD LVCMOS33 [get_ports led[1]]
+
+# led[2]
+set_property LOC T9 [get_ports led[2]]
+set_property IOSTANDARD LVCMOS33 [get_ports led[2]]
+
+# led[3]
+set_property LOC T10 [get_ports led[3]]
+set_property IOSTANDARD LVCMOS33 [get_ports led[3]]
+
 # ddram:0.a
 set_property LOC R2 [get_ports ddram_a[0]]
 set_property SLEW FAST [get_ports ddram_a[0]]

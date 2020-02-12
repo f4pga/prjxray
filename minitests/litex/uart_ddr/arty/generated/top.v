@@ -20,9 +20,63 @@ module top(
 	output ddram_clk_n,
 	output ddram_cke,
 	output ddram_odt,
-	output ddram_reset_n
+	output ddram_reset_n,
+	output [3:0] led
 );
 
+wire [3:0] led;
+
+assign led[0] = main_locked;
+assign led[1] = idelayctl_rdy;
+assign led[2] = 0;
+assign led[3] = 0;
+
+// Manually inserted OBUFs
+wire [13:0] ddram_a_iob;
+wire [ 2:0] ddram_ba_iob;
+wire        ddram_ras_n_iob;
+wire        ddram_cas_n_iob;
+wire        ddram_we_n_iob;
+wire        ddram_cs_n_iob;
+wire [ 1:0] ddram_dm_iob;
+wire        ddram_cke_iob;
+wire        ddram_odt_iob;
+wire        ddram_reset_n_iob;
+
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a0  (.I(ddram_a_iob[ 0]), .O(ddram_a[ 0]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a1  (.I(ddram_a_iob[ 1]), .O(ddram_a[ 1]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a2  (.I(ddram_a_iob[ 2]), .O(ddram_a[ 2]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a3  (.I(ddram_a_iob[ 3]), .O(ddram_a[ 3]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a4  (.I(ddram_a_iob[ 4]), .O(ddram_a[ 4]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a5  (.I(ddram_a_iob[ 5]), .O(ddram_a[ 5]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a6  (.I(ddram_a_iob[ 6]), .O(ddram_a[ 6]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a7  (.I(ddram_a_iob[ 7]), .O(ddram_a[ 7]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a8  (.I(ddram_a_iob[ 8]), .O(ddram_a[ 8]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a9  (.I(ddram_a_iob[ 9]), .O(ddram_a[ 9]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a10 (.I(ddram_a_iob[10]), .O(ddram_a[10]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a11 (.I(ddram_a_iob[11]), .O(ddram_a[11]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a12 (.I(ddram_a_iob[12]), .O(ddram_a[12]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_a13 (.I(ddram_a_iob[13]), .O(ddram_a[13]));
+
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_ba0 (.I(ddram_ba_iob[0]), .O(ddram_ba[0]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_ba1 (.I(ddram_ba_iob[1]), .O(ddram_ba[1]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_ba2 (.I(ddram_ba_iob[2]), .O(ddram_ba[2]));
+
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_dm0 (.I(ddram_dm_iob[0]), .O(ddram_dm[0]));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_dm1 (.I(ddram_dm_iob[1]), .O(ddram_dm[1]));
+
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_ras (.I(ddram_ras_n_iob), .O(ddram_ras_n));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_cas (.I(ddram_cas_n_iob), .O(ddram_cas_n));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_we  (.I(ddram_we_n_iob),  .O(ddram_we_n));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_cs  (.I(ddram_cs_n_iob),  .O(ddram_cs_n));
+
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_cke (.I(ddram_cke_iob),  .O(ddram_cke));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_odt (.I(ddram_odt_iob),  .O(ddram_odt));
+OBUF #(.IOSTANDARD("SSTL135"), .SLEW("FAST")) obuf_rst (.I(ddram_reset_n_iob),.O(ddram_reset_n));
+
+// End manually inserted OBUFs
+
+wire idelayctl_rdy;
 reg main_ctrl_reset_storage = 1'd0;
 reg main_ctrl_reset_re = 1'd0;
 reg [31:0] main_ctrl_scratch_storage = 32'd305419896;
@@ -154,12 +208,13 @@ reg main_interface0_wb_sdram_err = 1'd0;
 wire sys_clk;
 wire sys_rst;
 wire sys4x_clk;
+wire sys4x_clkb;
 wire sys4x_dqs_clk;
 wire clk200_clk;
 wire clk200_rst;
 wire main_reset;
 wire main_locked;
-wire main_clkin;
+wire main_pll_clkin;
 wire main_clkout0;
 wire main_clkout_buf0;
 wire main_clkout1;
@@ -168,6 +223,7 @@ wire main_clkout2;
 wire main_clkout_buf2;
 wire main_clkout3;
 wire main_clkout_buf3;
+wire main_clkout_buf4;
 reg [3:0] main_reset_counter = 4'd15;
 reg main_ic_reset = 1'd1;
 reg [4:0] main_a7ddrphy_half_sys8x_taps_storage = 5'd16;
@@ -2388,9 +2444,9 @@ always @(*) begin
 	endcase
 end
 assign main_reset = (~cpu_reset);
-assign main_clkin = clk100;
 assign sys_clk = main_clkout_buf0;
 assign sys4x_clk = main_clkout_buf1;
+assign sys4x_clkb = main_clkout_buf4;
 assign sys4x_dqs_clk = main_clkout_buf2;
 assign clk200_clk = main_clkout_buf3;
 always @(*) begin
@@ -9652,30 +9708,50 @@ initial begin
 	$readmemh("mem_1.init", mem_1);
 end
 
+(* LOC="BUFGCTRL_X0Y16" *)
 BUFG BUFG(
+	.I(clk100),
+	.O(main_pll_clkin)
+);
+
+(* LOC="BUFGCTRL_X0Y0" *)
+BUFG BUFG_1(
 	.I(main_clkout0),
 	.O(main_clkout_buf0)
 );
 
-BUFG BUFG_1(
+(* LOC="BUFGCTRL_X0Y1" *)
+BUFG BUFG_2(
 	.I(main_clkout1),
 	.O(main_clkout_buf1)
 );
 
-BUFG BUFG_2(
+(* LOC="BUFGCTRL_X0Y3" *)
+BUFG BUFG_3(
 	.I(main_clkout2),
 	.O(main_clkout_buf2)
 );
 
-BUFG BUFG_3(
+(* LOC="BUFGCTRL_X0Y2" *)
+BUFG BUFG_4(
 	.I(main_clkout3),
 	.O(main_clkout_buf3)
 );
 
+(* LOC="BUFGCTRL_X0Y4" *)
+BUFG BUFG_5(
+	.I((~main_clkout_buf1)),
+	.O(main_clkout_buf4)
+);
+
+(* LOC="IDELAYCTRL_X1Y0" *)
 IDELAYCTRL IDELAYCTRL(
 	.REFCLK(clk200_clk),
-	.RST(main_ic_reset)
+	.RST(main_ic_reset),
+	.RDY(idelayctl_rdy)
 );
+
+wire tq;
 
 OSERDESE2 #(
 	.DATA_RATE_OQ("DDR"),
@@ -9696,13 +9772,17 @@ OSERDESE2 #(
 	.D8(1'd1),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(main_a7ddrphy_sd_clk_se_nodelay)
+	.OQ(main_a7ddrphy_sd_clk_se_nodelay),
+	.TQ(tq),
+	.TCE(1'd1),
+	.T1(1'b0)
 );
 
-OBUFDS OBUFDS(
+OBUFTDS OBUFTDS_2(
 	.I(main_a7ddrphy_sd_clk_se_nodelay),
 	.O(ddram_clk_p),
-	.OB(ddram_clk_n)
+	.OB(ddram_clk_n),
+	.T(tq)
 );
 
 OSERDESE2 #(
@@ -9724,7 +9804,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[0]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[0])
+	.OQ(ddram_a_iob[0])
 );
 
 OSERDESE2 #(
@@ -9746,7 +9826,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[1]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[1])
+	.OQ(ddram_a_iob[1])
 );
 
 OSERDESE2 #(
@@ -9768,7 +9848,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[2]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[2])
+	.OQ(ddram_a_iob[2])
 );
 
 OSERDESE2 #(
@@ -9790,7 +9870,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[3]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[3])
+	.OQ(ddram_a_iob[3])
 );
 
 OSERDESE2 #(
@@ -9812,7 +9892,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[4]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[4])
+	.OQ(ddram_a_iob[4])
 );
 
 OSERDESE2 #(
@@ -9834,7 +9914,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[5]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[5])
+	.OQ(ddram_a_iob[5])
 );
 
 OSERDESE2 #(
@@ -9856,7 +9936,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[6]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[6])
+	.OQ(ddram_a_iob[6])
 );
 
 OSERDESE2 #(
@@ -9878,7 +9958,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[7]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[7])
+	.OQ(ddram_a_iob[7])
 );
 
 OSERDESE2 #(
@@ -9900,7 +9980,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[8]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[8])
+	.OQ(ddram_a_iob[8])
 );
 
 OSERDESE2 #(
@@ -9922,7 +10002,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[9]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[9])
+	.OQ(ddram_a_iob[9])
 );
 
 OSERDESE2 #(
@@ -9944,7 +10024,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[10]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[10])
+	.OQ(ddram_a_iob[10])
 );
 
 OSERDESE2 #(
@@ -9966,7 +10046,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[11]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[11])
+	.OQ(ddram_a_iob[11])
 );
 
 OSERDESE2 #(
@@ -9988,7 +10068,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[12]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[12])
+	.OQ(ddram_a_iob[12])
 );
 
 OSERDESE2 #(
@@ -10010,7 +10090,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_address[13]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_a[13])
+	.OQ(ddram_a_iob[13])
 );
 
 OSERDESE2 #(
@@ -10032,7 +10112,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_bank[0]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_ba[0])
+	.OQ(ddram_ba_iob[0])
 );
 
 OSERDESE2 #(
@@ -10054,7 +10134,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_bank[1]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_ba[1])
+	.OQ(ddram_ba_iob[1])
 );
 
 OSERDESE2 #(
@@ -10076,7 +10156,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_bank[2]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_ba[2])
+	.OQ(ddram_ba_iob[2])
 );
 
 OSERDESE2 #(
@@ -10098,7 +10178,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_ras_n),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_ras_n)
+	.OQ(ddram_ras_n_iob)
 );
 
 OSERDESE2 #(
@@ -10120,7 +10200,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_cas_n),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_cas_n)
+	.OQ(ddram_cas_n_iob)
 );
 
 OSERDESE2 #(
@@ -10142,7 +10222,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_we_n),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_we_n)
+	.OQ(ddram_we_n_iob)
 );
 
 OSERDESE2 #(
@@ -10164,7 +10244,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_cke),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_cke)
+	.OQ(ddram_cke_iob)
 );
 
 OSERDESE2 #(
@@ -10186,7 +10266,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_odt),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_odt)
+	.OQ(ddram_odt_iob)
 );
 
 OSERDESE2 #(
@@ -10208,7 +10288,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_reset_n),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_reset_n)
+	.OQ(ddram_reset_n_iob)
 );
 
 OSERDESE2 #(
@@ -10230,7 +10310,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_cs_n),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_cs_n)
+	.OQ(ddram_cs_n_iob)
 );
 
 OSERDESE2 #(
@@ -10252,7 +10332,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_wrdata_mask[2]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_dm[0])
+	.OQ(ddram_dm_iob[0])
 );
 
 OSERDESE2 #(
@@ -10307,7 +10387,7 @@ OSERDESE2 #(
 	.D8(main_a7ddrphy_dfi_p3_wrdata_mask[3]),
 	.OCE(1'd1),
 	.RST(sys_rst),
-	.OQ(ddram_dm[1])
+	.OQ(ddram_dm_iob[1])
 );
 
 OSERDESE2 #(
@@ -10379,7 +10459,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed0),
 	.RST(sys_rst),
@@ -10455,7 +10535,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed1),
 	.RST(sys_rst),
@@ -10531,7 +10611,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed2),
 	.RST(sys_rst),
@@ -10607,7 +10687,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed3),
 	.RST(sys_rst),
@@ -10683,7 +10763,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed4),
 	.RST(sys_rst),
@@ -10759,7 +10839,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed5),
 	.RST(sys_rst),
@@ -10835,7 +10915,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed6),
 	.RST(sys_rst),
@@ -10911,7 +10991,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed7),
 	.RST(sys_rst),
@@ -10987,7 +11067,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed8),
 	.RST(sys_rst),
@@ -11063,7 +11143,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed9),
 	.RST(sys_rst),
@@ -11139,7 +11219,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed10),
 	.RST(sys_rst),
@@ -11215,7 +11295,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed11),
 	.RST(sys_rst),
@@ -11291,7 +11371,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed12),
 	.RST(sys_rst),
@@ -11367,7 +11447,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed13),
 	.RST(sys_rst),
@@ -11443,7 +11523,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed14),
 	.RST(sys_rst),
@@ -11519,7 +11599,7 @@ ISERDESE2 #(
 	.BITSLIP(1'd0),
 	.CE1(1'd1),
 	.CLK(sys4x_clk),
-	.CLKB((~sys4x_clk)),
+	.CLKB(sys4x_clkb),
 	.CLKDIV(sys_clk),
 	.DDLY(main_a7ddrphy_dq_i_delayed15),
 	.RST(sys_rst),
@@ -11681,6 +11761,7 @@ end
 
 assign main_tag_port_dat_r = tag_mem[memadr_2];
 
+(* LOC="PLLE2_ADV_X1Y0" *)
 PLLE2_ADV #(
 	.CLKFBOUT_MULT(5'd16),
 	.CLKIN1_PERIOD(10.0),
@@ -11697,7 +11778,7 @@ PLLE2_ADV #(
 	.STARTUP_WAIT("FALSE")
 ) PLLE2_ADV (
 	.CLKFBIN(builder_pll_fb),
-	.CLKIN1(main_clkin),
+	.CLKIN1(main_pll_clkin),
 	.RST(main_reset),
 	.CLKFBOUT(builder_pll_fb),
 	.CLKOUT0(main_clkout0),
