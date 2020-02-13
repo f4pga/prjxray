@@ -1,4 +1,5 @@
 -e third_party/fasm
+-e third_party/python-sdf-timing
 intervaltree
 junit-xml
 numpy

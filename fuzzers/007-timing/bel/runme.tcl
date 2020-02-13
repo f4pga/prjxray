@@ -56,8 +56,9 @@ proc dump_tile_timings {tile timing_fp config_fp pins_fp tile_pins_fp} {
 
         foreach pin $site_pins {
             set direction [get_property DIRECTION $pin]
+            set is_part_of_bus [get_property IS_PART_OF_BUS $pin]
             regexp {\/(.*)$} $pin -> pin
-            lappend tile_pins_line $pin $direction
+            lappend tile_pins_line $pin $direction $is_part_of_bus
         }
 
         # dump bel pins, speed_models and configs
@@ -78,8 +79,9 @@ proc dump_tile_timings {tile timing_fp config_fp pins_fp tile_pins_fp} {
             foreach pin $bel_pins {
                 set direction [get_property DIRECTION $pin]
                 set is_clock [get_property IS_CLOCK $pin]
+                set is_part_of_bus [get_property IS_PART_OF_BUS $pin]
                 regexp {\/.*\/(.*)$} $pin -> pin
-                lappend pins_line $pin $direction $is_clock
+                lappend pins_line $pin $direction $is_clock $is_part_of_bus
             }
 
             lappend config_line $bel_type
@@ -123,6 +125,17 @@ proc dump {} {
         set tile [randsample_list 1 [get_tiles -filter "TYPE == $type"]]
         dump_tile_timings $tile $timing_fp $property_fp $pins_fp $tile_pins_fp
     }
+
+    set other_site_types [list ISERDESE2 OSERDESE2]
+    foreach site_type $other_site_types {
+        set cell [create_cell -reference $site_type test]
+        place_design
+        set tile [get_tiles -of [get_sites -of $cell]]
+        dump_tile_timings $tile $timing_fp $property_fp $pins_fp $tile_pins_fp
+        unplace_cell $cell
+        remove_cell $cell
+    }
+
     close $pins_fp
     close $timing_fp
     close $property_fp

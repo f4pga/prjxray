@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
+import re
 import argparse
 import json
+import functools
+
+NUMBER_RE = re.compile(r'\d+$')
 
 
 def check_sequential(speed_model):
@@ -120,7 +124,7 @@ def instance_in_model(instance, model):
         return instance in model
 
 
-def pin_in_model(pin, pin_aliases, model, direction=None):
+def create_pin_in_model(pin_aliases):
     """
     Checks if a given pin belongs to the model.
 
@@ -145,45 +149,50 @@ def pin_in_model(pin, pin_aliases, model, direction=None):
         The second returned value contains found pin name. If the
         pin is not found, None is returned.
 
-    >>> pin_in_model("d", None, "ff_init_din_q", "in")
+    >>> create_pin_in_model(None)("d", "ff_init_din_q", "in")
     (True, 'din')
 
-    >>> pin_in_model("q", None, "ff_init_clk_q", None)
+    >>> create_pin_in_model(None)("q", "ff_init_clk_q", None)
     (True, 'q')
 
-    >>> pin_in_model("q", {"Q": {"names" : ["QL", "QH"], "is_property_related" : True}}, "ff_init_clk_ql", None)
+    >>> create_pin_in_model({"Q": {"names" : ["QL", "QH"], "is_property_related" : True}})("q", "ff_init_clk_ql", None)
     (True, 'q')
 
-    >>> pin_in_model("logic_out", None, "my_cell_i_logic_out", None)
+    >>> create_pin_in_model(None)("logic_out", "my_cell_i_logic_out", None)
     (True, 'logic_out')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}}, "my_cell_i_logic_o", None)
+    >>> create_pin_in_model({"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}})("logic_out", "my_cell_i_logic_o", None)
     (True, 'logic_o')
 
-    >>> pin_in_model("logic_out", {"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}}, "my_cell_i_o", None)
+    >>> create_pin_in_model({"LOGIC_OUT": {"names" : ["LOGIC_O", "O"], "is_property_related" : False}})("logic_out", "my_cell_i_o", None)
     (True, 'o')
     """
 
-    # strip site location
-    model = model.split(':')[0]
-    extended_pin_name = pin
-    aliased_pin, aliased_pin_name = find_aliased_pin(
-        pin.upper(), model, pin_aliases)
+    @functools.lru_cache(maxsize=10000)
+    def pin_in_model(pin, model, direction=None):
+        # strip site location
+        model = model.split(':')[0]
 
-    # some timings reports pins with their directions
-    # this happens for e.g. CLB reg_init D pin, which
-    # timing is reported as DIN
-    if direction is not None:
-        extended_pin_name = pin + direction
+        extended_pin_name = pin
+        aliased_pin, aliased_pin_name = find_aliased_pin(
+            pin.upper(), model, pin_aliases)
 
-    if instance_in_model(pin, model):
-        return True, pin
-    elif instance_in_model(extended_pin_name, model):
-        return True, extended_pin_name
-    elif aliased_pin:
-        return True, aliased_pin_name
-    else:
-        return False, None
+        # some timings reports pins with their directions
+        # this happens for e.g. CLB reg_init D pin, which
+        # timing is reported as DIN
+        if direction is not None:
+            extended_pin_name = pin + direction
+
+        if instance_in_model(pin, model):
+            return True, pin
+        elif instance_in_model(extended_pin_name, model):
+            return True, extended_pin_name
+        elif aliased_pin:
+            return True, aliased_pin_name
+        else:
+            return False, None
+
+    return pin_in_model
 
 
 def remove_pin_from_model(pin, model):
@@ -227,6 +236,43 @@ def remove_pin_from_model(pin, model):
         return "_".join(list(filter(None, model.replace(pin, '').split('_'))))
 
 
+def merged_dict(itr):
+    """ Create a merged dict of dict (of dict) based on input.
+
+    Input is an iteratable of (keys, value).
+
+    Return value is root dictionary
+
+    Keys are successive dictionaries indicies.  For example:
+    (('a', 'b', 'c'), 1)
+
+    would set:
+
+    output['a']['b']['c'] = 1
+
+    This function returns an error if two values conflict.
+
+    >>> merged_dict(((('a', 'b', 'c'), 1), (('a', 'b', 'd'), 2)))
+    {'a': {'b': {'c': 1, 'd': 2}}}
+
+    """
+
+    output = {}
+    for keys, value in itr:
+        target = output
+        for key in keys[:-1]:
+            if key not in target:
+                target[key] = {}
+            target = target[key]
+
+        if keys[-1] in target:
+            assert target[keys[-1]] == value, (keys, value, target[keys[-1]])
+        else:
+            target[keys[-1]] = value
+
+    return output
+
+
 def extract_properties(tile, site, bel, properties, model):
 
     if tile not in properties:
@@ -254,18 +300,11 @@ def extract_properties(tile, site, bel, properties, model):
     return model_properties
 
 
-def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
-
-    timings = dict()
+def parse_raw_timing(fin):
     with open(fin, "r") as f:
         for line in f:
-
             raw_data = line.split()
             slice = raw_data[0]
-
-            #XXX: debug
-            if slice.startswith('DSP'):
-                continue
 
             sites_count = int(raw_data[1])
             loc = 2
@@ -273,360 +312,405 @@ def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
 
                 site_name = raw_data[loc]
                 bels_count = int(raw_data[loc + 1])
-                print(slice, site_name)
 
                 # read all BELs data within
                 loc += 2
                 for bel in range(0, bels_count):
-                    btype = (raw_data[loc]).lower()
+                    bel = raw_data[loc]
                     delay_count = int(raw_data[loc + 1])
 
                     # get all the delays
                     loc += 2
                     for delay in range(0, delay_count):
                         speed_model = raw_data[loc]
-                        delay_btype = clean_bname(btype)
-                        delay_btype_orig = delay_btype
-                        # all the bel names seem to start with "bel_d_"
-                        # let's get rid of it
-                        if speed_model.startswith('bel_d_'):
-                            speed_model = speed_model[6:]
-
-                        # keep original speed model string to use as unique dict entry
-                        speed_model_orig = speed_model
-
-                        # if more than one BEL type exists in the slice
-                        # location is added at the end of the name
-                        tmp = speed_model.split(':')
-                        speed_model = tmp[0]
-
-                        bel_location = site_name
-                        if len(tmp) > 2:
-                            bel_location += "/" + "/".join(tmp[2:])
-
-                        bel_location = bel_location.upper()
-
-                        sequential = check_sequential(speed_model)
-                        if sequential is not None:
-                            tmp = speed_model.split('_')
-                            tmp.remove(sequential[0])
-                            speed_model = '_'.join(tmp)
-
-                        bel_input = None
-                        bel_output = None
-                        bel_clock = None
-
-                        # strip btype from speed model so we can search for pins
-                        speed_model_clean = speed_model
-                        if speed_model.startswith(delay_btype):
-                            speed_model_clean = speed_model[len(delay_btype):]
-
-                        # remove properties from the model
-                        speed_model_properties = extract_properties(
-                            slice, site_name, delay_btype_orig, properties,
-                            speed_model_clean)
-                        if speed_model_properties is not None:
-                            for prop in speed_model_properties:
-                                # properties values in the model always follow properties name
-                                prop_string = "_".join(
-                                    [prop, speed_model_properties[prop]])
-                                speed_model_clean = remove_pin_from_model(
-                                    prop_string.lower(), speed_model_clean)
-
-                        # Get pin alias map
-                        pin_aliases = pin_alias_map.get(delay_btype, None)
-
-                        # locate pins
-                        for pin in pins[slice][site_name][delay_btype_orig]:
-                            orig_pin = pin
-                            pim, pin = pin_in_model(
-                                pin.lower(), pin_aliases, speed_model_clean,
-                                'in')
-
-                            if pim:
-                                if pins[slice][site_name][delay_btype_orig][
-                                        orig_pin]['is_clock']:
-                                    bel_clock = pin
-                                    bel_clock_orig_pin = orig_pin
-                                elif pins[slice][site_name][delay_btype_orig][
-                                        orig_pin]['direction'] == 'IN':
-                                    bel_input = pin
-                                elif pins[slice][site_name][delay_btype_orig][
-                                        orig_pin]['direction'] == 'OUT':
-                                    bel_output = pin
-                                speed_model_clean = remove_pin_from_model(
-                                    pin.lower(), speed_model_clean)
-
-                        # Some speed models describe delays from/to site pins instead of BEL pins
-                        if bel_clock is None:
-                            for pin in site_pins[slice][site_name.lower()]:
-                                orig_pin = pin
-                                pim, pin = pin_in_model(
-                                    pin.lower(), pin_aliases,
-                                    speed_model_clean)
-                                if pim:
-                                    if site_pins[slice][site_name.lower(
-                                    )][orig_pin]['is_clock']:
-                                        bel_clock = pin
-                                        bel_clock_orig_pin = orig_pin
-                                        speed_model_clean = remove_pin_from_model(
-                                            pin.lower(), speed_model_clean)
-
-                        if bel_input is None:
-                            # search site inputs
-                            for pin in site_pins[slice][site_name.lower()]:
-                                orig_pin = pin
-                                pim, pin = pin_in_model(
-                                    pin.lower(), pin_aliases,
-                                    speed_model_clean, 'in')
-                                if pim:
-                                    if site_pins[slice][site_name.lower(
-                                    )][orig_pin]['direction'] == 'IN':
-                                        bel_input = pin
-                                        speed_model_clean = remove_pin_from_model(
-                                            pin.lower(), speed_model_clean)
-
-                        if bel_output is None:
-                            for pin in site_pins[slice][site_name.lower()]:
-                                orig_pin = pin
-                                pim, pin = pin_in_model(
-                                    pin.lower(), pin_aliases,
-                                    speed_model_clean)
-                                if pim:
-                                    if site_pins[slice][site_name.lower(
-                                    )][orig_pin]['direction'] == 'OUT':
-                                        bel_output = pin
-                                        speed_model_clean = remove_pin_from_model(
-                                            pin.lower(), speed_model_clean)
-
-                        # if we couldn't find input, check if the clock is the
-                        # only input. This applies only to combinational paths
-                        if (sequential is None) and (bel_input is None) and (
-                                bel_clock is not None):
-                            if bel_clock_orig_pin in site_pins[slice][site_name.lower()] and \
-                            site_pins[slice][site_name.lower(
-                            )][bel_clock_orig_pin]['direction'] == 'IN':
-                                bel_input = bel_clock
-
-                        # if we still don't have the input check if the input
-                        # is wider than 1 bit and timing defined for the whole
-                        # port
-                        import re
-                        if (bel_input is None) or (bel_output is None):
-                            for pin in pins[slice][site_name][
-                                    delay_btype_orig]:
-                                number = re.search(r'\d+$', pin)
-                                if number is not None:
-                                    orig_pin = pin[:-(
-                                        len(str(number.group())))]
-                                    orig_pin_full = pin
-                                    pim, pin = pin_in_model(
-                                        orig_pin.lower(), pin_aliases,
-                                        speed_model_clean)
-                                    if not pim:
-                                        # some inputs pins are named with unsignificant zeros
-                                        # remove ti and try again
-                                        orig_pin = orig_pin + str(
-                                            int(number.group()))
-                                        pim, pin = pin_in_model(
-                                            orig_pin.lower(), pin_aliases,
-                                            speed_model_clean)
-
-                                    if pim:
-                                        if pins[slice][site_name][delay_btype_orig][orig_pin_full]['direction'] == 'IN' \
-                                            and bel_input is None:
-                                            bel_input = pin
-                                        if pins[slice][site_name][delay_btype_orig][orig_pin_full]['direction'] == 'OUT' \
-                                            and bel_output is None:
-                                            bel_output = pin
-                                        speed_model_clean = remove_pin_from_model(
-                                            orig_pin.lower(),
-                                            speed_model_clean)
-
-                        # check if the input is not a BEL property
-                        if bel_input is None:
-                            # if there is anything not yet decoded
-                            if len(speed_model_clean.split("_")) > 1:
-                                if len(speed_model_properties.keys()) == 1:
-                                    bel_input = list(
-                                        speed_model_properties.keys())[0]
-
-                        # if we still don't have input, give up
-                        if bel_input is None:
-                            loc += 6
-                            continue
-
-                        # restore speed model name
-                        speed_model = delay_btype + speed_model_clean
-
-                        if sequential is not None:
-                            if bel_output is None and bel_clock is None or \
-                               bel_output is None and bel_clock == bel_input:
-                                loc += 6
-                                continue
-                        else:
-                            if bel_input is None or bel_output is None:
-                                loc += 6
-                                continue
-
-                        delay_btype = speed_model
-                        # add properties to the delay_btype
-                        for prop in sorted(speed_model_properties):
-                            prop_string = "_".join(
-                                [prop, speed_model_properties[prop]])
-                            delay_btype += "_" + prop_string
-                        extra_ports = None
-
-                        if slice not in timings:
-                            timings[slice] = dict()
-
-                        if bel_location not in timings[slice]:
-                            timings[slice][bel_location] = dict()
-
-                        if delay_btype not in timings[slice][bel_location]:
-                            timings[slice][bel_location][delay_btype] = dict()
-
-                        timings[slice][bel_location][delay_btype][
-                            speed_model_orig] = dict()
-                        timings[slice][bel_location][delay_btype][
-                            speed_model_orig]['type'] = btype.upper()
-                        timings[slice][bel_location][delay_btype][
-                            speed_model_orig]['input'] = bel_input.upper()
-
-                        if bel_output is not None:
-                            timings[slice][bel_location][delay_btype][
-                                speed_model_orig]['output'] = bel_output.upper(
-                                )
-                        if bel_clock is not None:
-                            timings[slice][bel_location][delay_btype][
-                                speed_model_orig]['clock'] = bel_clock.upper()
-                        timings[slice][bel_location][delay_btype][
-                            speed_model_orig]['location'] = bel_location.upper(
-                            )
-
-                        #XXX: debug
-                        timings[slice][bel_location][delay_btype][
-                            speed_model_orig]['model'] = speed_model_orig
-                        if sequential is not None:
-                            timings[slice][bel_location][delay_btype][
-                                speed_model_orig]['sequential'] = sequential[1]
-                        if extra_ports is not None:
-                            timings[slice][bel_location][delay_btype][
-                                speed_model_orig]['extra_ports'] = extra_ports
 
                         # each timing entry reports 5 delays
-                        for d in range(0, 5):
-                            (t, v) = raw_data[d + 1 + loc].split(':')
-                            timings[slice][bel_location][delay_btype][
-                                speed_model_orig][t] = v
+                        timing = [
+                            raw_data[d + 1 + loc].split(':')
+                            for d in range(0, 5)
+                        ]
+
+                        yield slice, site_name, bel, speed_model, timing
 
                         # 5 delay values + name
                         loc += 6
-    return timings
+
+
+def read_raw_timings(fin, properties, pins, site_pins, pin_alias_map):
+    def inner():
+        raw = list(parse_raw_timing(fin))
+
+        pin_in_models = {}
+
+        for slice, site_name, bel, speed_model, timing in raw:
+            btype = bel.lower()
+            delay_btype = clean_bname(btype)
+            delay_btype_orig = delay_btype
+
+            # all the bel names seem to start with "bel_d_"
+            # let's get rid of it
+            if speed_model.startswith('bel_d_'):
+                speed_model = speed_model[6:]
+
+            # keep original speed model string to use as unique dict entry
+            speed_model_orig = speed_model
+
+            # if more than one BEL type exists in the slice
+            # location is added at the end of the name
+            tmp = speed_model.split(':')
+            speed_model = tmp[0]
+
+            bel_location = site_name
+            if len(tmp) > 2:
+                bel_location += "/" + "/".join(tmp[2:])
+
+            bel_location = bel_location.upper()
+
+            sequential = check_sequential(speed_model)
+            if sequential is not None:
+                tmp = speed_model.split('_')
+                tmp.remove(sequential[0])
+                speed_model = '_'.join(tmp)
+
+            bel_input = None
+            bel_output = None
+            bel_clock = None
+
+            # strip btype from speed model so we can search for pins
+            speed_model_clean = speed_model
+            if speed_model.startswith(delay_btype):
+                speed_model_clean = speed_model[len(delay_btype):]
+
+            # remove properties from the model
+            speed_model_properties = extract_properties(
+                slice, site_name, delay_btype_orig, properties,
+                speed_model_clean)
+            if speed_model_properties is not None:
+                for prop in speed_model_properties:
+                    # properties values in the model always follow properties name
+                    prop_string = "_".join(
+                        [prop, speed_model_properties[prop]])
+                    speed_model_clean = remove_pin_from_model(
+                        prop_string.lower(), speed_model_clean)
+
+            # Get pin alias map
+            if delay_btype not in pin_in_models:
+                pin_aliases = pin_alias_map.get(delay_btype, None)
+                pin_in_models[delay_btype] = create_pin_in_model(pin_aliases)
+
+            pin_in_model = pin_in_models[delay_btype]
+
+            # locate pins
+            for pin in pins[slice][site_name][delay_btype_orig]:
+                orig_pin = pin
+                pim, pin = pin_in_model(pin.lower(), speed_model_clean, 'in')
+
+                if pim:
+                    if pins[slice][site_name][delay_btype_orig][orig_pin][
+                            'is_clock'] and not pins[slice][site_name][
+                                delay_btype_orig][orig_pin]['is_part_of_bus']:
+                        bel_clock = pin
+                        bel_clock_orig_pin = orig_pin
+                    elif pins[slice][site_name][delay_btype_orig][orig_pin][
+                            'direction'] == 'IN':
+                        bel_input = pin
+                    elif pins[slice][site_name][delay_btype_orig][orig_pin][
+                            'direction'] == 'OUT':
+                        bel_output = pin
+                    speed_model_clean = remove_pin_from_model(
+                        pin.lower(), speed_model_clean)
+
+            # Some speed models describe delays from/to site pins instead of BEL pins
+            if bel_clock is None:
+                for pin in site_pins[slice][site_name.lower()]:
+                    orig_pin = pin
+                    pim, pin = pin_in_model(pin.lower(), speed_model_clean)
+                    if pim:
+                        if site_pins[slice][site_name.lower(
+                        )][orig_pin]['is_clock'] and not site_pins[slice][
+                                site_name.lower()][orig_pin]['is_part_of_bus']:
+                            bel_clock = pin
+                            bel_clock_orig_pin = orig_pin
+                            speed_model_clean = remove_pin_from_model(
+                                pin.lower(), speed_model_clean)
+
+            if bel_input is None:
+                # search site inputs
+                for pin in site_pins[slice][site_name.lower()]:
+                    orig_pin = pin
+                    pim, pin = pin_in_model(
+                        pin.lower(), speed_model_clean, 'in')
+                    if pim:
+                        if site_pins[slice][site_name.lower(
+                        )][orig_pin]['direction'] == 'IN':
+                            bel_input = pin
+                            speed_model_clean = remove_pin_from_model(
+                                pin.lower(), speed_model_clean)
+
+            if bel_output is None:
+                for pin in site_pins[slice][site_name.lower()]:
+                    orig_pin = pin
+                    pim, pin = pin_in_model(pin.lower(), speed_model_clean)
+                    if pim:
+                        if site_pins[slice][site_name.lower(
+                        )][orig_pin]['direction'] == 'OUT':
+                            bel_output = pin
+                            speed_model_clean = remove_pin_from_model(
+                                pin.lower(), speed_model_clean)
+
+            # if we couldn't find input, check if the clock is the
+            # only input. This applies only to combinational paths
+            if (sequential is None) and (bel_input is None) and (bel_clock is
+                                                                 not None):
+                if bel_clock_orig_pin in site_pins[slice][site_name.lower()] and \
+                site_pins[slice][site_name.lower(
+                )][bel_clock_orig_pin]['direction'] == 'IN':
+                    bel_input = bel_clock
+
+            # if we still don't have the input check if the input
+            # is wider than 1 bit and timing defined for the whole
+            # port
+            if (bel_input is None) or (bel_output is None):
+                for pin in pins[slice][site_name][delay_btype_orig]:
+                    number = NUMBER_RE.search(pin)
+                    if number is not None:
+                        orig_pin = pin[:-(len(str(number.group())))]
+                        orig_pin_full = pin
+                        pim, pin = pin_in_model(
+                            orig_pin.lower(), speed_model_clean)
+                        if not pim:
+                            # some inputs pins are named with unsignificant zeros
+                            # remove ti and try again
+                            orig_pin = orig_pin + str(int(number.group()))
+                            pim, pin = pin_in_model(
+                                orig_pin.lower(), speed_model_clean)
+
+                        if pim:
+                            if pins[slice][site_name][delay_btype_orig][orig_pin_full]['direction'] == 'IN' \
+                                and bel_input is None:
+                                bel_input = pin
+                            if pins[slice][site_name][delay_btype_orig][orig_pin_full]['direction'] == 'OUT' \
+                                and bel_output is None:
+                                bel_output = pin
+                            speed_model_clean = remove_pin_from_model(
+                                orig_pin.lower(), speed_model_clean)
+
+            # check if the input is not a BEL property
+            if bel_input is None:
+                # if there is anything not yet decoded
+                if len(speed_model_clean.split("_")) > 1:
+                    if len(speed_model_properties.keys()) == 1:
+                        bel_input = list(speed_model_properties.keys())[0]
+
+            # if we still don't have input, give up
+            if bel_input is None:
+                continue
+
+            # restore speed model name
+            speed_model = delay_btype + speed_model_clean
+
+            if sequential is not None:
+                if bel_clock is None:
+                    continue
+
+                if bel_output is None and bel_clock is None or \
+                    bel_output is None and bel_clock == bel_input:
+                    continue
+            else:
+                if bel_input is None or bel_output is None:
+                    continue
+
+            delay_btype = speed_model
+            # add properties to the delay_btype
+            if speed_model_properties is not None:
+                for prop in sorted(speed_model_properties):
+                    prop_string = "_".join(
+                        [prop, speed_model_properties[prop]])
+                    delay_btype += "_" + prop_string
+
+            yield (slice, bel_location, delay_btype, speed_model_orig,
+                   'type'), btype.upper()
+            yield (
+                slice, bel_location, delay_btype, speed_model_orig,
+                'input'), bel_input.upper()
+
+            if bel_output is not None:
+                yield (
+                    slice, bel_location, delay_btype, speed_model_orig,
+                    'output'), bel_output.upper()
+
+            if bel_clock is not None:
+                yield (
+                    slice, bel_location, delay_btype, speed_model_orig,
+                    'clock'), bel_clock.upper()
+
+            yield (
+                slice, bel_location, delay_btype, speed_model_orig,
+                'location'), bel_location.upper()
+
+            #XXX: debug
+            yield (
+                slice, bel_location, delay_btype, speed_model_orig,
+                'model'), speed_model_orig
+
+            if sequential is not None:
+                assert bel_clock is not None, (
+                    slice, bel_location, delay_btype, speed_model_orig)
+                yield (
+                    slice, bel_location, delay_btype, speed_model_orig,
+                    'sequential'), sequential[1]
+
+            for t, v in timing:
+                yield (
+                    slice, bel_location, delay_btype, speed_model_orig, t), v
+
+    return merged_dict(inner())
 
 
 def read_bel_properties(properties_file, properties_map):
+    def inner():
+        with open(properties_file, 'r') as f:
+            for line in f:
+                raw_props = line.split()
+                tile = raw_props[0]
+                sites_count = int(raw_props[1])
+                prop_loc = 2
 
-    properties = dict()
-    with open(properties_file, 'r') as f:
-        for line in f:
-            raw_props = line.split()
-            tile = raw_props[0]
-            sites_count = int(raw_props[1])
-            prop_loc = 2
-            properties[tile] = dict()
-            for site in range(0, sites_count):
-                site_name = raw_props[prop_loc]
-                bels_count = int(raw_props[prop_loc + 1])
-                prop_loc += 2
-                properties[tile][site_name] = dict()
-                for bel in range(0, bels_count):
-                    bel_name = raw_props[prop_loc]
-                    bel_name = clean_bname(bel_name)
-                    bel_name = bel_name.lower()
-                    bel_properties_count = int(raw_props[prop_loc + 1])
-                    properties[tile][site_name][bel_name] = dict()
+                if sites_count == 0:
+                    yield (tile, ), {}
+
+                for site in range(0, sites_count):
+                    site_name = raw_props[prop_loc]
+                    bels_count = int(raw_props[prop_loc + 1])
                     prop_loc += 2
-                    for prop in range(0, bel_properties_count):
-                        prop_name = raw_props[prop_loc]
-                        # the name always starts with "CONFIG." and ends with ".VALUES"
-                        # let's get rid of that
-                        prop_name = prop_name[7:-7]
-                        # append name prop name mappings
-                        if bel_name in properties_map:
-                            if prop_name in properties_map[bel_name]:
-                                prop_name = properties_map[bel_name][prop_name]
-                        prop_values_count = int(raw_props[prop_loc + 1])
-                        properties[tile][site_name][bel_name][
-                            prop_name] = raw_props[prop_loc + 2:prop_loc + 2 +
-                                                   prop_values_count]
-                        prop_loc += 2 + prop_values_count
 
-    return properties
+                    for bel in range(0, bels_count):
+                        bel_name = raw_props[prop_loc]
+                        bel_name = clean_bname(bel_name)
+                        bel_name = bel_name.lower()
+                        bel_properties_count = int(raw_props[prop_loc + 1])
+
+                        props = 0
+                        prop_loc += 2
+                        for prop in range(0, bel_properties_count):
+                            prop_name = raw_props[prop_loc]
+
+                            # the name always starts with "CONFIG." and ends with ".VALUES"
+                            # let's get rid of that
+                            if prop_name.startswith(
+                                    'CONFIG.') and prop_name.endswith(
+                                        '.VALUES'):
+                                prop_name = prop_name[7:-7]
+
+                            prop_values_count = int(raw_props[prop_loc + 1])
+
+                            if prop_name not in [
+                                    'RAM_MODE',
+                                    'WRITE_WIDTH_A',
+                                    'WRITE_WIDTH_B',
+                                    'READ_WIDTH_A',
+                                    'READ_WIDTH_B',
+                            ]:
+                                if bel_name in properties_map:
+                                    if prop_name in properties_map[bel_name]:
+                                        prop_name = properties_map[bel_name][
+                                            prop_name]
+
+                                yield (tile, site_name, bel_name, prop_name), \
+                                        raw_props[prop_loc + 2:prop_loc + 2 +
+                                                        prop_values_count]
+                                props += 1
+
+                            prop_loc += 2 + prop_values_count
+
+                        if props == 0:
+                            yield (tile, site_name, bel_name), {}
+
+    return merged_dict(inner())
 
 
 def read_bel_pins(pins_file):
+    def inner():
+        with open(pins_file, 'r') as f:
+            for line in f:
+                raw_pins = line.split()
+                tile = raw_pins[0]
+                sites_count = int(raw_pins[1])
+                pin_loc = 2
 
-    pins = dict()
-    with open(pins_file, 'r') as f:
-        for line in f:
-            raw_pins = line.split()
-            tile = raw_pins[0]
-            sites_count = int(raw_pins[1])
-            pin_loc = 2
-            pins[tile] = dict()
-            for site in range(0, sites_count):
-                site_name = raw_pins[pin_loc]
-                bels_count = int(raw_pins[pin_loc + 1])
-                pin_loc += 2
-                pins[tile][site_name] = dict()
-                for bel in range(0, bels_count):
-                    bel_name = raw_pins[pin_loc]
-                    bel_name = clean_bname(bel_name)
-                    bel_name = bel_name.lower()
-                    bel_pins_count = int(raw_pins[pin_loc + 1])
-                    pins[tile][site_name][bel_name] = dict()
+                if sites_count == 0:
+                    yield (tile, ), {}
+
+                for site in range(0, sites_count):
+                    site_name = raw_pins[pin_loc]
+                    bels_count = int(raw_pins[pin_loc + 1])
                     pin_loc += 2
-                    for pin in range(0, bel_pins_count):
-                        pin_name = raw_pins[pin_loc]
-                        pin_direction = raw_pins[pin_loc + 1]
-                        pin_is_clock = raw_pins[pin_loc + 2]
-                        pins[tile][site_name][bel_name][pin_name] = dict()
-                        pins[tile][site_name][bel_name][pin_name][
-                            'direction'] = pin_direction
-                        pins[tile][site_name][bel_name][pin_name][
-                            'is_clock'] = int(pin_is_clock) == 1
-                        pin_loc += 3
-    return pins
+
+                    for bel in range(0, bels_count):
+                        bel_name = raw_pins[pin_loc]
+                        bel_name = clean_bname(bel_name)
+                        bel_name = bel_name.lower()
+                        bel_pins_count = int(raw_pins[pin_loc + 1])
+
+                        pin_loc += 2
+                        for pin in range(0, bel_pins_count):
+                            pin_name = raw_pins[pin_loc]
+                            pin_direction = raw_pins[pin_loc + 1]
+                            pin_is_clock = raw_pins[pin_loc + 2]
+                            pin_is_part_of_bus = raw_pins[pin_loc + 3]
+
+                            yield (
+                                tile, site_name, bel_name, pin_name,
+                                'direction'), pin_direction
+                            yield (
+                                tile, site_name, bel_name, pin_name,
+                                'is_clock'), int(pin_is_clock) == 1
+                            yield (
+                                tile, site_name, bel_name, pin_name,
+                                'is_part_of_bus'
+                            ), int(pin_is_part_of_bus) == 1
+                            pin_loc += 4
+
+    return merged_dict(inner())
 
 
 def read_site_pins(pins_file):
+    def inner():
+        with open(pins_file, 'r') as f:
+            for line in f:
+                raw_pins = line.split()
+                tile = raw_pins[0]
+                site_count = int(raw_pins[1])
+                pin_loc = 2
 
-    pins = dict()
-    with open(pins_file, 'r') as f:
-        for line in f:
-            raw_pins = line.split()
-            tile = raw_pins[0]
-            site_count = int(raw_pins[1])
-            pin_loc = 2
-            pins[tile] = dict()
-            for site in range(0, site_count):
-                site_name = raw_pins[pin_loc]
-                site_name = site_name.lower()
-                site_pins_count = int(raw_pins[pin_loc + 1])
-                pins[tile][site_name] = dict()
-                pin_loc += 2
-                for pin in range(0, site_pins_count):
-                    pin_name = raw_pins[pin_loc]
-                    pin_direction = raw_pins[pin_loc + 1]
-                    pins[tile][site_name][pin_name] = dict()
-                    pins[tile][site_name][pin_name][
-                        'direction'] = pin_direction
-                    # site clock pins are always named 'CLK'
-                    pins[tile][site_name][pin_name][
-                        'is_clock'] = pin_name.lower() == 'clk'
+                if site_count == 0:
+                    yield (tile, ), {}
+
+                for site in range(0, site_count):
+                    site_name = raw_pins[pin_loc]
+                    site_name = site_name.lower()
+                    site_pins_count = int(raw_pins[pin_loc + 1])
+
                     pin_loc += 2
-    return pins
+                    for pin in range(0, site_pins_count):
+                        pin_name = raw_pins[pin_loc]
+                        pin_direction = raw_pins[pin_loc + 1]
+                        pin_is_part_of_bus = raw_pins[pin_loc + 2]
+
+                        yield (
+                            (tile, site_name, pin_name, 'direction'),
+                            pin_direction)
+                        yield (
+                            (tile, site_name, pin_name, 'is_clock'),
+                            pin_name.lower() == 'clk')
+                        yield (
+                            (tile, site_name, pin_name, 'is_part_of_bus'),
+                            int(pin_is_part_of_bus))
+
+                        # site clock pins are always named 'CLK'
+                        pin_loc += 3
+
+    return merged_dict(inner())
 
 
 def main():
