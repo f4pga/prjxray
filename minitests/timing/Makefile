@@ -8,7 +8,7 @@ build/.touch:
 	touch build/.touch
 
 %.json: %.json5
-	python3 clean_json5.py < $< > $@
+	python3 ${XRAY_UTILS_DIR}/clean_json5.py < $< > $@
 
 CURDIR=$(shell pwd)
 
@@ -18,14 +18,14 @@ define output_timing
 # $(2) - DESIGN_NAME
 # $(3) - VERILOGS
 
-build/$(2)_$(1)/timing_$(2)_$(1).json5: build/.touch runme.tcl $(3)
+build/$(2)_$(1)/timing_$(2)_$(1).json5: build/.touch runme.tcl ${XRAY_UTILS_DIR}/write_timing_info.tcl $(3)
 	rm -rf build/$(2)_$(1)
 	mkdir -p build/$(2)_$(1)
 	export ITER=$(1) DESIGN_NAME=$(2) VERILOGS="$(3)" && cd build/$(2)_$(1) && \
 		 ${XRAY_VIVADO} -mode batch -source ${CURDIR}/runme.tcl > design_$(2)_$(1)_vivado.log
 
-build/timing_$(2)_$(1).xlsx: build/$(2)_$(1)/timing_$(2)_$(1).json create_timing_worksheet_db.py
-	python3 create_timing_worksheet_db.py \
+build/timing_$(2)_$(1).xlsx: build/$(2)_$(1)/timing_$(2)_$(1).json ${XRAY_UTILS_DIR}/create_timing_worksheet_db.py
+	python3 ${XRAY_UTILS_DIR}/create_timing_worksheet_db.py \
 		--timing_json build/$(2)_$(1)/timing_$(2)_$(1).json \
 		--db_root ${XRAY_FAMILY_DIR} \
 		--part ${XRAY_PART} \

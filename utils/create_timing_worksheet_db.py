@@ -1,3 +1,8 @@
+""" This takes a JSON file generated with write_timing_info.tcl and generates
+a spreadsheet with the prjxray timing model and compares it with the
+interconnect timing output from Vivado.
+
+"""
 import argparse
 import json
 from openpyxl import Workbook, utils
@@ -92,7 +97,8 @@ class Net(object):
         self.models = {}
 
         for ipin in net['ipins']:
-            self.ipin_nodes[ipin['node']] = ipin
+            for ipin_node in ipin['node'].strip().split(' '):
+                self.ipin_nodes[ipin_node] = ipin
 
         # Map of wire name to parent node
         self.wire_to_node = {}
@@ -112,7 +118,7 @@ class Net(object):
             dst_wire = pip['dst_wire'].split('/')[1]
             self.pips[(src_node, dst_wire)] = pip
 
-            if not pip['is_directional']:
+            if not int(pip['is_directional']):
                 dst_node = self.wire_to_node[pip['dst_wire']]['name']
                 src_wire = pip['src_wire'].split('/')[1]
                 self.pips[(dst_node, src_wire)] = pip
@@ -235,7 +241,10 @@ class Net(object):
         self.row += 1
 
         if current_node in self.ipin_nodes:
-            assert route[route_idx] == '}'
+            assert route[route_idx] in ['}', 'IOB_O_OUT0', 'IOB_T_OUT0'], (
+                route_idx,
+                route[route_idx],
+            )
             route_idx += 1
 
         node = self.node_name_to_node[current_node]
@@ -251,7 +260,7 @@ class Net(object):
             ws['A{}'.format(self.row)] = ipin['name']
             ws['B{}'.format(self.row)] = 'Inpin'
 
-            site_pin = timing_lookup.find_site_pin(ipin['node'], node_idx=-1)
+            site_pin = timing_lookup.find_site_pin(current_node, node_idx=-1)
             assert isinstance(site_pin.timing, InPinTiming)
 
             cells = {}
@@ -421,8 +430,9 @@ class Net(object):
 
 
 def add_net(wb, net, timing_lookup):
+    replace_underscore = str.maketrans('[]\\:/', '_____')
     ws = wb.create_sheet(
-        title="Net {}".format(net['net'].replace('[', '_').replace(']', '_')))
+        title="Net {}".format(net['net'].translate(replace_underscore)))
 
     # Header
     ws['A1'] = 'Name'
@@ -478,13 +488,14 @@ def main():
         cur_col = chr(ord(cur_col) + 3)
 
     summary_row = 2
-    for net in timing:
+    for idx, net in enumerate(timing):
         if '<' in net['route']:
             print(
                 "WARNING: Skipping net {} because it has complicated route description."
                 .format(net['net']))
             continue
 
+        print('Process net {} ({} / {})'.format(net['net'], idx, len(timing)))
         for summary_cells in add_net(wb, net, timing_lookup):
             summary_ws['A{}'.format(summary_row)] = summary_cells['Name']
 
