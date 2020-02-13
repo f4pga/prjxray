@@ -450,6 +450,28 @@ def add_net(wb, net, timing_lookup):
     yield from net_obj.walk_route(ws, timing_lookup)
 
 
+def build_wire_filter(wire_filter):
+    wires_to_include = set()
+
+    with open(wire_filter) as f:
+        for l in f:
+            wire = l.strip()
+            if not wire:
+                continue
+            wires_to_include.add(wire)
+
+    def filter_net(net):
+        wires_in_net = set()
+
+        for node in net['nodes']:
+            for wire in node['wires']:
+                wires_in_net.add(wire['name'])
+
+        return len(wires_in_net & wires_to_include) > 0
+
+    return filter_net
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Create timing worksheet for 7-series timing analysis.")
@@ -458,6 +480,9 @@ def main():
     util.part_arg(parser)
     parser.add_argument('--timing_json', required=True)
     parser.add_argument('--output_xlsx', required=True)
+    parser.add_argument(
+        '--wire_filter',
+        help='List of wires that must be present in a net to be output')
 
     args = parser.parse_args()
 
@@ -474,7 +499,7 @@ def main():
     timing_lookup = TimingLookup(db, nodes)
 
     wb = Workbook()
-    summary_ws = wb.get_sheet_by_name(wb.sheetnames[0])
+    summary_ws = wb[wb.sheetnames[0]]
     summary_ws.title = 'Summary'
 
     summary_ws['A1'] = 'Name'
@@ -487,7 +512,14 @@ def main():
         summary_ws['{}1'.format(cur_col)] = 'Computed ' + col
         cur_col = chr(ord(cur_col) + 3)
 
+    if args.wire_filter:
+        wire_filter = build_wire_filter(args.wire_filter)
+    else:
+        wire_filter = lambda x: True
+
     summary_row = 2
+
+    timing = [net for net in timing if wire_filter(net)]
     for idx, net in enumerate(timing):
         if '<' in net['route']:
             print(
