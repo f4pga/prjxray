@@ -4,6 +4,9 @@ import json
 import re
 import sys
 
+from collections import OrderedDict
+from ordered_set import OrderedSet
+
 
 def extract_numbers(s):
     """
@@ -22,6 +25,31 @@ def extract_numbers(s):
 
 
 def sort(data):
+    """Sort data types via "natural" numbers.
+
+    Supports all the basic Python data types.
+    >>> o = sort({
+    ...    't1': {'c','b'},          # Set
+    ...    't2': ('a2', 'a10', 'e'), # Tuple
+    ...    't3': [5, 3, 2],          # List
+    ...    't4': {                   # Dictionary
+    ...        'a4': ('b2', 'b3'),
+    ...        'a2': ['c1', 'c2', 'c0', 'c10'],
+    ...    },
+    ...    't5': ['a1b5', 'a2b1', 'a1b1'],
+    ... })
+    >>> for t in o:
+    ...    print(t+':', o[t])
+    t1: OrderedSet(['b', 'c'])
+    t2: ('a2', 'a10', 'e')
+    t3: (2, 3, 5)
+    t4: OrderedDict([('a2', ('c0', 'c1', 'c2', 'c10')), ('a4', ('b2', 'b3'))])
+    t5: ('a1b1', 'a1b5', 'a2b1')
+
+    Don't mangle "pairs"
+    >>> sort([('b', 'c'), ('2', '1')])
+    [('b', 'c'), ('2', '1')]
+    """
     # FIXME: We assume that a list is a tileconn.json format...
     if isinstance(data, list) and len(data) > 0 and 'wire_pairs' in data[0]:
         for o in data:
@@ -29,25 +57,64 @@ def sort(data):
                 key=lambda o: (extract_numbers(o[0]), extract_numbers(o[1])))
 
         data.sort(key=lambda o: (o['tile_types'], o['grid_deltas']))
+        return data
     else:
 
-        def walker(o, f):
+        def key(o):
+            if o is None:
+                return None
+            elif isinstance(o, str):
+                return extract_numbers(o)
+            elif isinstance(o, int):
+                return o
+            elif isinstance(o, (list, tuple)):
+                return tuple(key(i) for i in o)
+            elif isinstance(o, dict):
+                return tuple((key(k), key(v)) for k, v in o.items())
+            elif isinstance(o, set):
+                return tuple(key(k) for k in o)
+            raise ValueError(repr(o))
+
+        def rsorter(o):
             if isinstance(o, dict):
-                for i in o.values():
-                    walker(i, f)
-            elif isinstance(o, list):
+                nitems = []
+                for k, v in o.items():
+                    nitems.append((key(k), k, rsorter(v)))
+                nitems.sort(key=lambda n: n[0])
+
+                new_dict = OrderedDict()
+                for _, k, v in nitems:
+                    new_dict[k] = v
+                return new_dict
+
+            elif isinstance(o, set):
+                nitems = []
+                for k in o:
+                    nitems.append((key(k), k))
+                nitems.sort(key=lambda n: n[0])
+
+                new_set = OrderedSet()
+                for _, k in nitems:
+                    new_set.add(k)
+                return new_set
+
+            elif isinstance(o, (tuple, list)):
+                if len(o) == 2:
+                    return o
+
+                nlist = []
                 for i in o:
-                    walker(i, f)
-            f(o)
+                    nlist.append((key(i), rsorter(i)))
+                nlist.sort(key=lambda n: n[0])
 
-        def f(o):
-            if isinstance(o, list):
-                if len(o) > 2:
-                    strings = all(isinstance(x, str) for x in o)
-                    if strings:
-                        o.sort()
+                new_list = []
+                for _, i in nlist:
+                    new_list.append(i)
+                return tuple(new_list)
+            else:
+                return o
 
-        walker(data, f)
+        return rsorter(data)
 
 
 def pprint(f, data):
@@ -55,8 +122,8 @@ def pprint(f, data):
     if not isinstance(f, io.TextIOBase):
         detach = True
         f = io.TextIOWrapper(f)
-    sort(data)
-    json.dump(data, f, sort_keys=True, indent=4)
+    data = sort(data)
+    json.dump(data, f, indent=4)
     f.write('\n')
     f.flush()
     if detach:

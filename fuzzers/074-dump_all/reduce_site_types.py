@@ -13,8 +13,6 @@ import os.path
 import re
 import json
 
-from utils import xjson
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -57,7 +55,7 @@ def main():
         with open(os.path.join(args.output_dir,
                                'site_type_{}.json'.format(site_type)),
                   'w') as f:
-            xjson.pprint(f, proto_site_type)
+            json.dump(proto_site_type, f)
 
 
 if __name__ == '__main__':

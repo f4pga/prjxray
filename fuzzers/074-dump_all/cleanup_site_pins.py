@@ -15,8 +15,6 @@ import re
 import sys
 import copy
 
-from utils import xjson
-
 # All site names appear to follow the pattern <type>_X<abs coord>Y<abs coord>.
 # Generally speaking, only the tile relatively coordinates are required to
 # assemble arch defs, so we re-origin the coordinates to be relative to the tile
@@ -115,7 +113,7 @@ def main():
 
             site_pin['name'] = site_pin['name'][len(orig_site_name) + 1:]
 
-    xjson.pprint(sys.stdout, output_site_pins)
+    json.dumps(output_site_pins, indent=2, sort_keys=True)
 
 
 if __name__ == "__main__":

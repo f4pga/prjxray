@@ -47,6 +47,7 @@ sort sets (lists where the order doesn't matter).
 
 """
 
+import csv
 import os
 import random
 import re
@@ -284,16 +285,35 @@ def sortable_line_from_segbits(l):
     return (tag, tuple(bits)), l
 
 
-def sort_db(filename):
+def sortable_line_from_origin_segbits(l):
+    tag, origin, sbit = l.split(' ', 2)
+    tag = sortable_tag(tag)
+
+    bits = bit.parseline(sbit)
+
+    return (tag, tuple(bits)), l
+
+
+def sort_db(pathname):
     """Sort a XXX.db file."""
+    filename = os.path.split(pathname)[-1]
     if filename.startswith('segbits_'):
-        sortable_line_from_dbfile = sortable_line_from_segbits
+        if 'origin_info' in filename:
+            sortable_line_from_dbfile = sortable_line_from_origin_segbits
+        else:
+            sortable_line_from_dbfile = sortable_line_from_segbits
+    elif 'origin_info' in filename:
+        return False
     elif filename.startswith('ppips_'):
+        sortable_line_from_dbfile = sortable_line_from_ppips
+    elif filename.startswith('grid-'):
         sortable_line_from_dbfile = sortable_line_from_ppips
     elif filename.startswith('mask_'):
         sortable_line_from_dbfile = sortable_line_from_mask
+    else:
+        return False
 
-    lines = open(filename).readlines()
+    lines = open(pathname).readlines()
 
     tosort = []
     for l in lines:
@@ -305,19 +325,50 @@ def sort_db(filename):
     tosort.sort(key=cmp.cmp_key)
 
     # Make sure the sort is stable
-    for i in range(0, 4):
-        copy = tosort.copy()
-        random.shuffle(copy)
-        copy.sort(key=cmp.cmp_key)
-        assert len(copy) == len(tosort)
-        for i in range(0, len(copy)):
-            assert copy[i] == tosort[i], "\n%r\n != \n%r\n" % (
-                copy[i], tosort[i])
+    #for i in range(0, 4):
+    #    copy = tosort.copy()
+    #    random.shuffle(copy)
+    #    copy.sort(key=cmp.cmp_key)
+    #    assert len(copy) == len(tosort)
+    #    for i in range(0, len(copy)):
+    #        assert copy[i] == tosort[i], "\n%r\n != \n%r\n" % (
+    #            copy[i], tosort[i])
 
-    with open(filename, 'w') as f:
+    with open(pathname, 'w') as f:
         for _, l in tosort:
             f.write(l)
             f.write('\n')
+
+    return True
+
+
+def sort_csv(pathname):
+    rows = []
+    fields = []
+    delimiter = None
+    with open(pathname, newline='') as f:
+        if pathname.endswith('.csv'):
+            delimiter = ','
+        elif pathname.endswith('.txt'):
+            delimiter = ' '
+        reader = csv.DictReader(f, delimiter=delimiter)
+        fields.extend(reader.fieldnames)
+        rows.extend(reader)
+        del reader
+
+    def sort_key(r):
+        v = []
+        for field in fields:
+            v.append(sortable_tag(r[field]))
+        return tuple(v)
+
+    rows.sort(key=sort_key)
+
+    with open(pathname, 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f, fields, delimiter=delimiter, lineterminator='\n')
+        writer.writeheader()
+        writer.writerows(rows)
 
     return True
 
@@ -326,7 +377,8 @@ def sort_json(filename):
     """Sort a XXX.json file."""
     try:
         d = json.load(open(filename))
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(e)
         return False
 
     with open(filename, 'w') as f:
@@ -335,30 +387,75 @@ def sort_json(filename):
     return True
 
 
+def sort_db_text(n):
+    rows = []
+    with open(n) as f:
+        for l in f:
+            rows.append(([extract_num(s) for s in l.split()], l))
+
+    rows.sort(key=lambda i: i[0])
+
+    with open(n, 'w') as f:
+        for l in rows:
+            f.write(l[-1])
+
+    return True
+
+
+def sort_file(n):
+
+    assert os.path.exists(n)
+
+    base, ext = os.path.splitext(n)
+    dirname, base = os.path.split(base)
+
+    # Leave db files with fuzzer of origin untouched
+    if "origin_info" in n and not base.startswith('segbits'):
+        print("Ignoring     file {:45s}".format(n), flush=True)
+        return
+
+    if ext == '.db':
+        print("Sorting DB   file {:45s}".format(n), end=" ", flush=True)
+        x = sort_db(n)
+    elif ext == '.json':
+        print("Sorting JSON file {:45s}".format(n), end=" ", flush=True)
+        x = sort_json(n)
+    elif ext in ('.csv', '.txt'):
+        if n.endswith('-db.txt'):
+            print("Sorting txt  file {:45s}".format(n), end=" ", flush=True)
+            x = sort_db_text(n)
+        else:
+            print("Sorting CSV  file {:45s}".format(n), end=" ", flush=True)
+            x = sort_csv(n)
+    else:
+        print("Ignoring     file {:45s}".format(n), end=" ", flush=True)
+        x = True
+    if x:
+        print(".. success.")
+    else:
+        print(".. failed.")
+
+
+def sort_dir(dirname):
+    for n in sorted(os.listdir(dirname)):
+        n = os.path.join(dirname, n)
+        if os.path.isdir(n):
+            print("Entering     dir  {:45s}".format(n), flush=True)
+            sort_dir(n)
+            continue
+        elif not os.path.isfile(n):
+            print("Ignoring non-file {:45s}".format(n), flush=True)
+            continue
+
+        sort_file(n)
+
+
 def main(argv):
-    for n in sorted(os.listdir()):
-        if not os.path.isfile(n):
-            continue
-        # Leave db files with fuzzer of origin untouched
-        if "origin_info" in n:
-            continue
-
-        base, ext = os.path.splitext(n)
-
-        if ext == '.db':
-            print("Sorting DB   file {:40s}".format(n), end=" ", flush=True)
-            x = sort_db(n)
-        elif ext == '.json':
-            print("Sorting JSON file {:40s}".format(n), end=" ", flush=True)
-            x = sort_json(n)
-        else:
-            print("Ignoring    file {:40s}".format(n), end=" ", flush=True)
-            x = True
-        if x:
-            print(".. success.")
-        else:
-            print(".. failed.")
-
+    if argv[1:]:
+        for n in argv[1:]:
+            sort_file(n)
+    else:
+        sort_dir('.')
     return 0
 
 
