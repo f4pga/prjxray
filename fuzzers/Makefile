@@ -169,6 +169,7 @@ part_only:
 # roi_only runs the fuzzers required for supporting additional parts when building
 # a roi harness.
 roi_only:
+	+$(MAKE) clean_fuzzers
 	# Create PART-specific directory
 	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
 	# Generate YAML
