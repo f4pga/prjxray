@@ -17,6 +17,19 @@ set indices [split $file_data "\n"]
 set MAGIC 0.6875
 
 proc get_speed_model_name {name} {
+    # For BSW_INT_LONG_MUX, use the model from BSW_INT_HLONG_MUX.
+    # This isn't exactly correct, but it is a better model to use.
+    # BSW_INT_LONG_MUX is a tl_buffer (which we don't really understand), and
+    # BSW_INT_HLONG_MUX is not.  This subsitution appears good enough for now.
+    if { $name == "BSW_INT_LONG_MUX" } {
+        set name "BSW_INT_HLONG_MUX"
+    }
+
+    # Same here!
+    if { $name == "_BSW_LONG_TLREVERSE" } {
+        set name "_BSW_LONG_NONTLFORWARD"
+    }
+
     return [get_speed_models -filter "NAME == $name"]
 }
 
