@@ -87,7 +87,7 @@ def sort(data):
                 return new_dict
 
             elif isinstance(o, set):
-                return tuple(sorted(o))
+                return tuple(sorted(o, key=key))
             elif isinstance(o, (tuple, list)):
                 return tuple(o)
             else:
