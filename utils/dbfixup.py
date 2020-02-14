@@ -483,24 +483,23 @@ def update_seg_fns(
         if lazy and not os.path.exists(fn_in):
             continue
 
-        org_lines = read_segbits(fn_in)
+        lines = read_segbits(fn_in)
 
         changes, lines = add_zero_bits(
             fn_in,
-            org_lines,
+            lines,
             zero_db,
             clb_int=clb_int,
             strict=strict,
             verbose=verbose)
 
-        new_changes, new_lines = remove_ambiguous_solutions(
+        new_changes, lines = remove_ambiguous_solutions(
             fn_in,
             lines,
             strict=strict,
             verbose=verbose,
         )
         changes += new_changes
-        lines |= new_lines
 
         # Find common bits for tag groups
         bit_groups = find_common_bits_for_tag_groups(lines, tag_groups)
