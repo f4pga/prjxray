@@ -365,6 +365,10 @@ def main():
                         tile_type, site_types[site_type]['type'])), 'w') as f:
                 json.dump(site_types[site_type], f, indent=2, sort_keys=True)
 
+        reduced_tile['sites'] = sorted(
+            reduced_tile['sites'],
+            key=lambda site: '{}_{}'.format(site['name'], site['prefix']))
+
         with open(tile_type_file, 'w') as f:
             json.dump(reduced_tile, f, indent=2, sort_keys=True)
 

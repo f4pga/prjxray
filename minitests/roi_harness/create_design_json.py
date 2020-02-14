@@ -11,7 +11,7 @@ from prjxray.util import get_db_root, get_part
 def set_port_wires(ports, name, pin, wires_outside_roi):
     for port in ports:
         if name == port['name']:
-            port['wires_outside_roi'] = wires_outside_roi
+            port['wires_outside_roi'] = sorted(wires_outside_roi)
             assert port['pin'] == pin
             return
 
@@ -104,8 +104,11 @@ def main():
         if not_in_roi:
             required_features.append(fasm_line)
 
-    design_json['required_features'] = fasm.fasm_tuple_to_string(
-        required_features, canonical=True).split('\n')
+    design_json['required_features'] = sorted(
+        fasm.fasm_tuple_to_string(required_features,
+                                  canonical=True).split('\n'))
+
+    design_json['ports'].sort(key=lambda x: x['name'])
 
     xjson.pprint(sys.stdout, design_json)
 

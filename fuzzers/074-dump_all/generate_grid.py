@@ -605,6 +605,13 @@ def main():
         tileconn, raw_node_data = generate_tileconn(
             pool, node_tree, nodes, wire_map, grid)
 
+        for data in tileconn:
+            data['wire_pairs'] = tuple(sorted(data['wire_pairs']))
+
+        tileconn = tuple(
+            sorted(
+                tileconn, key=lambda x: (x['tile_types'], x['grid_deltas'])))
+
         print('{} Writing tileconn'.format(datetime.datetime.now()))
         with open(tileconn_file, 'w') as f:
             json.dump(tileconn, f, indent=2, sort_keys=True)
