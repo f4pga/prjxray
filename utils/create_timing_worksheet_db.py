@@ -125,7 +125,13 @@ class Net(object):
 
     def extend_rc_tree(self, ws, current_rc_root, timing_lookup, node):
         rc_elements = []
-        for wire in node['wires']:
+
+        # LV nodes have a workaround applied because of a working in the
+        # pip timing.
+        is_lv_node = any(
+            wire['name'].split('/')[1].startswith('LV')
+            for wire in node['wires'])
+        for idx, wire in enumerate(node['wires']):
             wire_timing = timing_lookup.find_wire(wire['name'])
             ws['A{}'.format(self.row)] = wire['name']
             ws['B{}'.format(self.row)] = 'Part of wire'
@@ -134,8 +140,20 @@ class Net(object):
                 cells = {}
                 cells['R'] = 'C{}'.format(self.row)
                 cells['C'] = 'D{}'.format(self.row)
-                ws[cells['R']] = wire_timing.resistance
-                ws[cells['C']] = wire_timing.capacitance
+                if not is_lv_node:
+                    ws[cells['R']] = wire_timing.resistance
+                    ws[cells['C']] = wire_timing.capacitance
+                else:
+                    # Only use first 2 wire RC's, ignore the rest.  It appears
+                    # that some of the RC constant was lumped into the switch
+                    # timing, so don't double count.
+                    if idx < 2:
+                        ws[cells['R']] = wire_timing.resistance
+                        ws[cells['C']] = wire_timing.capacitance
+                    else:
+                        ws[cells['R']] = 0
+                        ws[cells['C']] = 0
+
                 rc_elements.append(
                     RcElement(
                         resistance=cells['R'],
