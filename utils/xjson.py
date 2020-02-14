@@ -5,7 +5,6 @@ import re
 import sys
 
 from collections import OrderedDict
-from ordered_set import OrderedSet
 
 
 def extract_numbers(s):
@@ -40,15 +39,15 @@ def sort(data):
     ... })
     >>> for t in o:
     ...    print(t+':', o[t])
-    t1: OrderedSet(['b', 'c'])
+    t1: ('b', 'c')
     t2: ('a2', 'a10', 'e')
-    t3: (2, 3, 5)
-    t4: OrderedDict([('a2', ('c0', 'c1', 'c2', 'c10')), ('a4', ('b2', 'b3'))])
-    t5: ('a1b1', 'a1b5', 'a2b1')
+    t3: (5, 3, 2)
+    t4: OrderedDict([('a2', ('c1', 'c2', 'c0', 'c10')), ('a4', ('b2', 'b3'))])
+    t5: ('a1b5', 'a2b1', 'a1b1')
 
     Don't mangle "pairs"
     >>> sort([('b', 'c'), ('2', '1')])
-    [('b', 'c'), ('2', '1')]
+    (('b', 'c'), ('2', '1'))
     """
     # FIXME: We assume that a list is a tileconn.json format...
     if isinstance(data, list) and len(data) > 0 and 'wire_pairs' in data[0]:
@@ -88,29 +87,9 @@ def sort(data):
                 return new_dict
 
             elif isinstance(o, set):
-                nitems = []
-                for k in o:
-                    nitems.append((key(k), k))
-                nitems.sort(key=lambda n: n[0])
-
-                new_set = OrderedSet()
-                for _, k in nitems:
-                    new_set.add(k)
-                return new_set
-
+                return tuple(sorted(o))
             elif isinstance(o, (tuple, list)):
-                if len(o) == 2:
-                    return o
-
-                nlist = []
-                for i in o:
-                    nlist.append((key(i), rsorter(i)))
-                nlist.sort(key=lambda n: n[0])
-
-                new_list = []
-                for _, i in nlist:
-                    new_list.append(i)
-                return tuple(new_list)
+                return tuple(o)
             else:
                 return o
 
