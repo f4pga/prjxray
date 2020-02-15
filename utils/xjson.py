@@ -4,7 +4,7 @@ import json
 import re
 import sys
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from ordered_set import OrderedSet
 
 
@@ -28,93 +28,113 @@ def sort(data):
     """Sort data types via "natural" numbers.
 
     Supports all the basic Python data types.
+
+    Don't mangle "pairs"
+    >>> sort(('b', 'c'))
+    ('b', 'c')
+    >>> sort(('2', '1'))
+    ('2', '1')
+    >>> sort(['b', '2'])
+    ('b', '2')
+    >>> sort([('b', 'c'), ('2', '1')])
+    (('2', '1'), ('b', 'c'))
+
     >>> o = sort({
     ...    't1': {'c','b'},          # Set
     ...    't2': ('a2', 'a10', 'e'), # Tuple
-    ...    't3': [5, 3, 2],          # List
-    ...    't4': {                   # Dictionary
+    ...    't3': {                   # Dictionary
     ...        'a4': ('b2', 'b3'),
     ...        'a2': ['c1', 'c2', 'c0', 'c10'],
     ...    },
-    ...    't5': ['a1b5', 'a2b1', 'a1b1'],
+    ...    't4': ['a1b5', 'a2b1', 'a1b1'],
+    ...    't5': [5, 3, 2],          # List
+    ...    't6': [5.0, 3.0, 2.0],    # List
+    ...    't6': [5, 3.0, 2.0],      # List
     ... })
     >>> for t in o:
     ...    print(t+':', o[t])
     t1: OrderedSet(['b', 'c'])
     t2: ('a2', 'a10', 'e')
-    t3: (2, 3, 5)
-    t4: OrderedDict([('a2', ('c0', 'c1', 'c2', 'c10')), ('a4', ('b2', 'b3'))])
-    t5: ('a1b1', 'a1b5', 'a2b1')
+    t3: OrderedDict([('a2', ('c0', 'c1', 'c2', 'c10')), ('a4', ('b2', 'b3'))])
+    t4: ('a1b1', 'a1b5', 'a2b1')
+    t5: (5, 3, 2)
+    t6: (5, 3.0, 2.0)
 
-    Don't mangle "pairs"
-    >>> sort([('b', 'c'), ('2', '1')])
-    [('b', 'c'), ('2', '1')]
     """
-    # FIXME: We assume that a list is a tileconn.json format...
-    if isinstance(data, list) and len(data) > 0 and 'wire_pairs' in data[0]:
-        for o in data:
-            o['wire_pairs'].sort(
-                key=lambda o: (extract_numbers(o[0]), extract_numbers(o[1])))
+    def key(o):
+        if o is None:
+            return None
+        elif isinstance(o, str):
+            o = extract_numbers(o)
+            # Convert numbers back to strings with lots of leading zeros so
+            # Python3 can sort them
+            n = []
+            for i in o:
+                if not i:
+                    n.append('')
+                elif type(i) == int:
+                    n.append("{:10d}".format(i))
+                else:
+                    n.append(i)
+            return tuple(n)
+        elif isinstance(o, (int, float)):
+            return o
+        elif isinstance(o, (list, tuple)):
+            return tuple(key(i) for i in o)
+        elif isinstance(o, dict):
+            return tuple((key(k), key(v)) for k, v in o.items())
+        elif isinstance(o, set):
+            return tuple(key(k) for k in o)
+        raise ValueError(repr(o))
 
-        data.sort(key=lambda o: (o['tile_types'], o['grid_deltas']))
-        return data
-    else:
+    def rsorter(o):
+        if isinstance(o, dict):
+            nitems = []
+            for k, v in o.items():
+                nitems.append((key(k), k, rsorter(v)))
+            nitems.sort(key=lambda n: n[0])
 
-        def key(o):
-            if o is None:
-                return None
-            elif isinstance(o, str):
-                return extract_numbers(o)
-            elif isinstance(o, int):
-                return o
-            elif isinstance(o, (list, tuple)):
-                return tuple(key(i) for i in o)
-            elif isinstance(o, dict):
-                return tuple((key(k), key(v)) for k, v in o.items())
-            elif isinstance(o, set):
-                return tuple(key(k) for k in o)
-            raise ValueError(repr(o))
+            new_dict = OrderedDict()
+            for _, k, v in nitems:
+                new_dict[k] = v
+            return new_dict
 
-        def rsorter(o):
-            if isinstance(o, dict):
-                nitems = []
-                for k, v in o.items():
-                    nitems.append((key(k), k, rsorter(v)))
-                nitems.sort(key=lambda n: n[0])
+        elif isinstance(o, set):
+            nitems = []
+            for k in o:
+                nitems.append((key(k), k))
+            nitems.sort(key=lambda n: n[0])
 
-                new_dict = OrderedDict()
-                for _, k, v in nitems:
-                    new_dict[k] = v
-                return new_dict
+            new_set = OrderedSet()
+            for _, k in nitems:
+                new_set.add(k)
+            return new_set
 
-            elif isinstance(o, set):
-                nitems = []
-                for k in o:
-                    nitems.append((key(k), k))
-                nitems.sort(key=lambda n: n[0])
+        elif isinstance(o, (tuple, list)):
+            nlist = []
+            ntypes = defaultdict(lambda: 0)
+            for v in o:
+                ntypes[type(v)] += 1
+                nlist.append((key(v), rsorter(v)))
 
-                new_set = OrderedSet()
-                for _, k in nitems:
-                    new_set.add(k)
-                return new_set
+            # FIXME: These are gross hacks!
+            # Ignore pairs of strings
+            if len(nlist) == 2 and ntypes[str] == 2:
+                return tuple(o)
+            # Ignore lists of numbers
+            if ntypes[int]+ntypes[float] == len(nlist):
+                return tuple(o)
 
-            elif isinstance(o, (tuple, list)):
-                if len(o) == 2:
-                    return o
+            nlist.sort(key=lambda n: n[0])
 
-                nlist = []
-                for i in o:
-                    nlist.append((key(i), rsorter(i)))
-                nlist.sort(key=lambda n: n[0])
+            new_list = []
+            for _, v in nlist:
+                new_list.append(v)
+            return tuple(new_list)
+        else:
+            return o
 
-                new_list = []
-                for _, i in nlist:
-                    new_list.append(i)
-                return tuple(new_list)
-            else:
-                return o
-
-        return rsorter(data)
+    return rsorter(data)
 
 
 def pprint(f, data):
