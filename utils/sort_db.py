@@ -380,15 +380,19 @@ def sort_lists_in_json(pathname):
     converting = []
 
     if fname.startswith('tile_type_'):
-        converting = ['sites$',]
-        keeping = ['delay$',]
+        converting = [
+            'sites$',
+        ]
+        keeping = [
+            'delay$',
+        ]
 
     elif fname == 'design.json':
-        converting = ['ports$','wires_outside_roi$','required_features$']
+        converting = ['ports$', 'wires_outside_roi$', 'required_features$']
 
     elif fname == 'tileconn.json':
         converting = ['^$', 'wire_pairs$']
-        keeping = ['grid_deltas$','tile_types$','wire_pairs\[[0-9]+\]$']
+        keeping = ['grid_deltas$', 'tile_types$', 'wire_pairs\[[0-9]+\]$']
 
     keeping = [re.compile(i) for i in keeping]
     converting = [re.compile(i) for i in converting]
@@ -398,6 +402,7 @@ def sort_lists_in_json(pathname):
             if n.search(name):
                 return True
         return False
+
     def convert_cb(name):
         for n in converting:
             if n.search(name):
@@ -439,6 +444,7 @@ def sort_tileconn(filename):
                 yield v
             for v in x['grid_deltas']:
                 yield v
+
         return list(i())
 
     c.sort(key=keyf)

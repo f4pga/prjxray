@@ -64,13 +64,14 @@ def setify(data, should_keep_list, should_convert_list):
             new = {}
             for k, v in data.items():
                 vname = '{}.{}'.format(name, k)
-                new[convert(name, k)]=convert(vname, v)
+                new[convert(name, k)] = convert(vname, v)
             return tuple(new.items())
         elif isinstance(data, (list, tuple)):
             keep_list = should_keep_list(name)
             convert_list = should_convert_list(name)
             if not keep_list and not convert_list:
-                raise TypeError("Unknown list with name: {} - {}".format(name, data))
+                raise TypeError(
+                    "Unknown list with name: {} - {}".format(name, data))
             if keep_list:
                 new = []
                 new_add = new.append
@@ -124,6 +125,7 @@ def sort(data, should_keep_list, should_convert_list):
     t6: (5, 3.0, 2.0)
 
     """
+
     def key(o):
         if o is None:
             return None
@@ -178,7 +180,8 @@ def sort(data, should_keep_list, should_convert_list):
             keep_list = should_keep_list(name)
             convert_list = should_convert_list(name)
             if not keep_list and not convert_list:
-                raise TypeError("Unknown list with name: {} - {}".format(name, o))
+                raise TypeError(
+                    "Unknown list with name: {} - {}".format(name, o))
 
             nlist = []
             for i, v in enumerate(o):
