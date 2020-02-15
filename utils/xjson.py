@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import io
 import json
+import os
 import re
 import sys
 
@@ -24,7 +25,69 @@ def extract_numbers(s):
     return tuple(bits)
 
 
-def sort(data):
+def setify(data, should_keep_list, should_convert_list):
+    """Recursively convert lists into sets.
+
+    >>> keep_lists = []
+    >>> convert_lists = []
+    >>> keep = lambda x: x in keep_lists
+    >>> convert = lambda x: x in convert_lists
+    >>> setify({'a': 1, 2: None}, keep, convert)
+    {'a': 1, 2: None}
+    >>> setify({'a': [1, 0], 2: None}, keep, convert)
+    Traceback (most recent call last):
+       ...
+    TypeError: Unknown list with name: data.a - [1, 0]
+    >>> convert_lists.append('data.a')
+    >>> setify({'a': [1, 0], 2: None}, keep, convert)
+    {'a': {0, 1}, 2: None}
+    >>> setify({'b': [1, 0], 2: None}, keep, convert)
+    Traceback (most recent call last):
+       ...
+    TypeError: Unknown list with name: data.b - [1, 0]
+    >>> keep_lists.append('data.c')
+    >>> setify({'c': [1, 0], 2: None}, keep, convert)
+    {'c': (1, 0), 2: None}
+    >>> setify({'a': {'b': [1, 0]}, 2: None}, keep, convert)
+    Traceback (most recent call last):
+       ...
+    TypeError: Unknown list with name: data.a.b - [1, 0]
+    >>> setify({'a': {'c': [1, 0]}, 2: None}, keep, convert)
+    Traceback (most recent call last):
+       ...
+    TypeError: Unknown list with name: data.a.c - [1, 0]
+
+    """
+
+    def convert(name, data):
+        if isinstance(data, dict):
+            new = {}
+            for k, v in data.items():
+                vname = '{}.{}'.format(name, k)
+                new[convert(name, k)]=convert(vname, v)
+            return tuple(new.items())
+        elif isinstance(data, (list, tuple)):
+            keep_list = should_keep_list(name)
+            convert_list = should_convert_list(name)
+            if not keep_list and not convert_list:
+                raise TypeError("Unknown list with name: {} - {}".format(name, data))
+            if keep_list:
+                new = []
+                new_add = new.append
+            else:
+                new = set()
+                new_add = new.add
+
+            for i, v in enumerate(data):
+                vname = '{}[{}]'.format(name, i)
+                new_add(convert(vname, v))
+            return tuple(new)
+        return data
+
+    return convert('data', data)
+
+
+def sort(data, should_keep_list, should_convert_list):
     """Sort data types via "natural" numbers.
 
     Supports all the basic Python data types.
@@ -87,11 +150,12 @@ def sort(data):
             return tuple(key(k) for k in o)
         raise ValueError(repr(o))
 
-    def rsorter(o):
+    def rsorter(name, o):
         if isinstance(o, dict):
             nitems = []
             for k, v in o.items():
-                nitems.append((key(k), k, rsorter(v)))
+                vname = '{}.{}'.format(name, k)
+                nitems.append((key(k), k, rsorter(vname, v)))
             nitems.sort(key=lambda n: n[0])
 
             new_dict = OrderedDict()
@@ -111,21 +175,18 @@ def sort(data):
             return new_set
 
         elif isinstance(o, (tuple, list)):
+            keep_list = should_keep_list(name)
+            convert_list = should_convert_list(name)
+            if not keep_list and not convert_list:
+                raise TypeError("Unknown list with name: {} - {}".format(name, o))
+
             nlist = []
-            ntypes = defaultdict(lambda: 0)
-            for v in o:
-                ntypes[type(v)] += 1
-                nlist.append((key(v), rsorter(v)))
+            for i, v in enumerate(o):
+                vname = '{}[{}]'.format(name, i)
+                nlist.append((key(v), rsorter(vname, v)))
 
-            # FIXME: These are gross hacks!
-            # Ignore pairs of strings
-            if len(nlist) == 2 and ntypes[str] == 2:
-                return tuple(o)
-            # Ignore lists of numbers
-            if ntypes[int]+ntypes[float] == len(nlist):
-                return tuple(o)
-
-            nlist.sort(key=lambda n: n[0])
+            if convert_list:
+                nlist.sort(key=lambda n: n[0])
 
             new_list = []
             for _, v in nlist:
@@ -134,15 +195,15 @@ def sort(data):
         else:
             return o
 
-    return rsorter(data)
+    return rsorter('', data)
 
 
-def pprint(f, data):
+def pprint(f, data, *args):
     detach = False
     if not isinstance(f, io.TextIOBase):
         detach = True
         f = io.TextIOWrapper(f)
-    data = sort(data)
+    data = sort(data, *args)
     json.dump(data, f, indent=4)
     f.write('\n')
     f.flush()
@@ -157,4 +218,4 @@ if __name__ == "__main__":
     else:
         assert len(sys.argv) == 2
         d = json.load(open(sys.argv[1]))
-        pprint(sys.stdout, d)
+        pprint(sys.stdout, d, lambda x: False, lambda x: False)

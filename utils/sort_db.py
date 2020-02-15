@@ -373,6 +373,40 @@ def sort_csv(pathname):
     return True
 
 
+def sort_lists_in_json(pathname):
+    pname, fname = os.path.split(pathname)
+
+    keeping = []
+    converting = []
+
+    if fname.startswith('tile_type_'):
+        converting = ['sites$',]
+        keeping = ['delay$',]
+
+    elif fname == 'design.json':
+        converting = ['ports$','wires_outside_roi$','required_features$']
+
+    elif fname == 'tileconn.json':
+        converting = ['^$', 'wire_pairs$']
+        keeping = ['grid_deltas$','tile_types$','wire_pairs\[[0-9]+\]$']
+
+    keeping = [re.compile(i) for i in keeping]
+    converting = [re.compile(i) for i in converting]
+
+    def keep_cb(name):
+        for n in keeping:
+            if n.search(name):
+                return True
+        return False
+    def convert_cb(name):
+        for n in converting:
+            if n.search(name):
+                return True
+        return False
+
+    return keep_cb, convert_cb
+
+
 def sort_json(filename):
     """Sort a XXX.json file."""
     try:
@@ -382,7 +416,36 @@ def sort_json(filename):
         return False
 
     with open(filename, 'w') as f:
-        xjson.pprint(f, d)
+        xjson.pprint(f, d, *sort_lists_in_json(filename))
+
+    return True
+
+
+def sort_tileconn(filename):
+    """Sort a tileconn.json file."""
+    try:
+        d = json.load(open(filename))
+    except json.JSONDecodeError as e:
+        print(e)
+        return False
+
+    c = []
+    for v in d:
+        c.append(xjson.sort(v, *sort_lists_in_json(filename)))
+
+    def keyf(x):
+        def i():
+            for v in x['tile_types']:
+                yield v
+            for v in x['grid_deltas']:
+                yield v
+        return list(i())
+
+    c.sort(key=keyf)
+
+    with open(filename, 'w') as f:
+        json.dump(c, f, indent=4)
+        f.write('\n')
 
     return True
 
@@ -419,7 +482,10 @@ def sort_file(n):
         x = sort_db(n)
     elif ext == '.json':
         print("Sorting JSON file {:45s}".format(n), end=" ", flush=True)
-        x = sort_json(n)
+        if base == 'tileconn':
+            x = sort_tileconn(n)
+        else:
+            x = sort_json(n)
     elif ext in ('.csv', '.txt'):
         if n.endswith('-db.txt'):
             print("Sorting txt  file {:45s}".format(n), end=" ", flush=True)
