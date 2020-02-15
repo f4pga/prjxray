@@ -33,21 +33,21 @@ def setify(data, should_keep_list, should_convert_list):
     >>> keep = lambda x: x in keep_lists
     >>> convert = lambda x: x in convert_lists
     >>> setify({'a': 1, 2: None}, keep, convert)
-    {'a': 1, 2: None}
+    (('a', 1), (2, None))
     >>> setify({'a': [1, 0], 2: None}, keep, convert)
     Traceback (most recent call last):
        ...
     TypeError: Unknown list with name: data.a - [1, 0]
     >>> convert_lists.append('data.a')
     >>> setify({'a': [1, 0], 2: None}, keep, convert)
-    {'a': {0, 1}, 2: None}
+    (('a', (0, 1)), (2, None))
     >>> setify({'b': [1, 0], 2: None}, keep, convert)
     Traceback (most recent call last):
        ...
     TypeError: Unknown list with name: data.b - [1, 0]
     >>> keep_lists.append('data.c')
     >>> setify({'c': [1, 0], 2: None}, keep, convert)
-    {'c': (1, 0), 2: None}
+    (('c', (1, 0)), (2, None))
     >>> setify({'a': {'b': [1, 0]}, 2: None}, keep, convert)
     Traceback (most recent call last):
        ...
@@ -62,7 +62,7 @@ def setify(data, should_keep_list, should_convert_list):
     def convert(name, data):
         if isinstance(data, dict):
             new = {}
-            for k, v in data.items():
+            for k, v in sorted(data.items(), key=lambda x: str(x)):
                 vname = '{}.{}'.format(name, k)
                 new[convert(name, k)] = convert(vname, v)
             return tuple(new.items())
@@ -93,16 +93,6 @@ def sort(data, should_keep_list, should_convert_list):
 
     Supports all the basic Python data types.
 
-    Don't mangle "pairs"
-    >>> sort(('b', 'c'))
-    ('b', 'c')
-    >>> sort(('2', '1'))
-    ('2', '1')
-    >>> sort(['b', '2'])
-    ('b', '2')
-    >>> sort([('b', 'c'), ('2', '1')])
-    (('2', '1'), ('b', 'c'))
-
     >>> o = sort({
     ...    't1': {'c','b'},          # Set
     ...    't2': ('a2', 'a10', 'e'), # Tuple
@@ -114,16 +104,35 @@ def sort(data, should_keep_list, should_convert_list):
     ...    't5': [5, 3, 2],          # List
     ...    't6': [5.0, 3.0, 2.0],    # List
     ...    't6': [5, 3.0, 2.0],      # List
-    ... })
+    ... }, lambda x: False, lambda x: True)
     >>> for t in o:
     ...    print(t+':', o[t])
     t1: OrderedSet(['b', 'c'])
     t2: ('a2', 'a10', 'e')
     t3: OrderedDict([('a2', ('c0', 'c1', 'c2', 'c10')), ('a4', ('b2', 'b3'))])
     t4: ('a1b1', 'a1b5', 'a2b1')
+    t5: (2, 3, 5)
+    t6: (2.0, 3.0, 5)
+    >>> o = sort({
+    ...    't1': {'c','b'},          # Set
+    ...    't2': ('a2', 'a10', 'e'), # Tuple
+    ...    't3': {                   # Dictionary
+    ...        'a4': ('b2', 'b3'),
+    ...        'a2': ['c1', 'c2', 'c0', 'c10'],
+    ...    },
+    ...    't4': ['a1b5', 'a2b1', 'a1b1'],
+    ...    't5': [5, 3, 2],          # List
+    ...    't6': [5.0, 3.0, 2.0],    # List
+    ...    't6': [5, 3.0, 2.0],      # List
+    ... }, lambda x: True, lambda x: False)
+    >>> for t in o:
+    ...    print(t+':', o[t])
+    t1: OrderedSet(['b', 'c'])
+    t2: ('a2', 'a10', 'e')
+    t3: OrderedDict([('a2', ('c1', 'c2', 'c0', 'c10')), ('a4', ('b2', 'b3'))])
+    t4: ('a1b5', 'a2b1', 'a1b1')
     t5: (5, 3, 2)
     t6: (5, 3.0, 2.0)
-
     """
 
     def key(o):
