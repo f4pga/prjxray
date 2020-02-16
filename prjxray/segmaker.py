@@ -329,6 +329,7 @@ class Segmaker:
                     'RAMB18': name_bram18,
                     'IOB': name_y0y1,
                     'IDELAY': name_y0y1,
+                    'ODELAY': name_y0y1,
                     'ILOGIC': name_y0y1,
                     'OLOGIC': name_y0y1,
                     'IBUFDS_GTE2': name_y0y1,
@@ -390,6 +391,13 @@ class Segmaker:
                 tile_type_norm = 'GTP_COMMON'
             if 'GTP_INT_INTERFACE' in tile_type_norm:
                 tile_type_norm = 'GTP_INT_INTERFACE'
+
+            if tile_type_norm in ['LIOI', 'RIOI']:
+                tile_type_norm = 'IOI'
+            if tile_type_norm in ['LIOI_TBYTESRC', 'RIOI_TBYTESRC']:
+                tile_type_norm = 'IOI'
+            if tile_type_norm in ['LIOI_TBYTETERM', 'RIOI_TBYTETERM']:
+                tile_type_norm = 'IOI'
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:
