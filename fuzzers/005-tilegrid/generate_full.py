@@ -2,7 +2,6 @@
 import copy
 import json
 import os
-from utils import xjson
 '''
 Historically we grouped data into "segments"
 These were a region of the bitstream that encoded one or more tiles
@@ -452,7 +451,7 @@ def run(json_in_fn, json_out_fn, verbose=False):
     alias_HCLKs(database)
 
     # Save
-    xjson.pprint(open(json_out_fn, "w"), database)
+    json.dump(database, open(json_out_fn, "w"), indent=2, sort_keys=True)
 
 
 def main():

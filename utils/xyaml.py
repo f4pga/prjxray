@@ -20,7 +20,7 @@ def load(f):
 def tojson(f):
     d = load(f)
     o = io.StringIO()
-    xjson.pprint(o, d)
+    xjson.pprint(o, d, lambda x: False, lambda x: False)
     return o.getvalue()
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from utils import xjson
+import json
 
 
 def load_tiles(tiles_fn):
@@ -87,7 +87,7 @@ def run(tiles_fn, pin_func_fn, json_fn, verbose=False):
     database = make_database(tiles, pin_func)
 
     # Save
-    xjson.pprint(open(json_fn, 'w'), database)
+    json.dump(database, open(json_fn, 'w'), indent=2, sort_keys=True)
 
 
 def main():

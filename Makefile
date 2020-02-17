@@ -1,5 +1,5 @@
 SHELL = bash
-ALL_EXCLUDE = third_party .git env build docs/env
+ALL_EXCLUDE = third_party .git env build docs/venv docs/env
 
 # Check if root
 ifeq ($(shell id -u),0)
