@@ -44,13 +44,6 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 
 	# Run the fuzzers
-	#
-	# Cap MAX_VIVADO_PROCESS at 20 to limit memory usage of 074 fuzzer.
-	# At MAX_VIVADO_PROCESS=20:
-	# - 072 completes in ~35 minutes
-	# - 074 completes in ~60 minutes
-	# which is well before the 05x INT fuzzers complete.
-	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
 	set -x +e
 	tmp=`mktemp`
 	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS db-${XRAY_SETTINGS}-all" $tmp
