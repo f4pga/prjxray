@@ -5,6 +5,7 @@ from prjxray import segmaker
 from prjxray import verilog
 import os
 import json
+import csv
 
 
 def bitfilter(frame, word):
@@ -18,20 +19,6 @@ def mk_drive_opt(iostandard, drive):
     if drive is None:
         drive = '_FIXED'
     return '{}.DRIVE.I{}'.format(iostandard, drive)
-
-
-def skip_broken_tiles(d):
-    """ Skip tiles that appear to have bits always set.
-
-    This is likely caused by a defect?
-
-    """
-    if os.getenv('XRAY_DATABASE') == 'artix7' and d['tile'] == 'LIOB33_X0Y43':
-        return True
-    if os.getenv('XRAY_DATABASE') == 'zynq7' and d['tile'] == 'RIOB33_X31Y43':
-        return True
-
-    return False
 
 
 def drives_for_iostandard(iostandard):
@@ -71,6 +58,14 @@ def main():
     for iobank in iobanks:
         iobank_iostandards[iobank] = set()
 
+    # Load a list of PUDC_B pin function tiles. They are configured differently
+    # by the vendor tools so need to be skipped
+    pudc_tiles = set()
+    with open(os.path.join(os.getenv('FUZDIR'), 'build',
+                           'pudc_sites.csv')) as f:
+        for l in csv.DictReader(f):
+            pudc_tiles.add(l["tile"])
+
     print("Loading tags")
     segmk = Segmaker("design.bits")
     '''
@@ -90,7 +85,7 @@ def main():
         for d in design['tiles']:
             site = d['site']
 
-            if skip_broken_tiles(d):
+            if d['tile'] in pudc_tiles:
                 continue
 
             if site in diff_pairs:
