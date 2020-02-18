@@ -47,51 +47,42 @@ def sort(data):
     >>> sort([('b', 'c'), ('2', '1')])
     (('b', 'c'), ('2', '1'))
     """
-    # FIXME: We assume that a list is a tileconn.json format...
-    if isinstance(data, list) and len(data) > 0 and 'wire_pairs' in data[0]:
-        for o in data:
-            o['wire_pairs'].sort(
-                key=lambda o: (extract_numbers(o[0]), extract_numbers(o[1])))
 
-        data.sort(key=lambda o: (o['tile_types'], o['grid_deltas']))
-        return data
-    else:
+    def key(o):
+        if o is None:
+            return None
+        elif isinstance(o, str):
+            return extract_numbers(o)
+        elif isinstance(o, int):
+            return o
+        elif isinstance(o, (list, tuple)):
+            return tuple(key(i) for i in o)
+        elif isinstance(o, dict):
+            return tuple((key(k), key(v)) for k, v in o.items())
+        elif isinstance(o, set):
+            return tuple(key(k) for k in o)
+        raise ValueError(repr(o))
 
-        def key(o):
-            if o is None:
-                return None
-            elif isinstance(o, str):
-                return extract_numbers(o)
-            elif isinstance(o, int):
-                return o
-            elif isinstance(o, (list, tuple)):
-                return tuple(key(i) for i in o)
-            elif isinstance(o, dict):
-                return tuple((key(k), key(v)) for k, v in o.items())
-            elif isinstance(o, set):
-                return tuple(key(k) for k in o)
-            raise ValueError(repr(o))
+    def rsorter(o):
+        if isinstance(o, dict):
+            nitems = []
+            for k, v in o.items():
+                nitems.append((key(k), k, rsorter(v)))
+            nitems.sort(key=lambda n: n[0])
 
-        def rsorter(o):
-            if isinstance(o, dict):
-                nitems = []
-                for k, v in o.items():
-                    nitems.append((key(k), k, rsorter(v)))
-                nitems.sort(key=lambda n: n[0])
+            new_dict = OrderedDict()
+            for _, k, v in nitems:
+                new_dict[k] = v
+            return new_dict
 
-                new_dict = OrderedDict()
-                for _, k, v in nitems:
-                    new_dict[k] = v
-                return new_dict
+        elif isinstance(o, set):
+            return tuple(sorted((rsorter(v) for v in o), key=key))
+        elif isinstance(o, (tuple, list)):
+            return tuple(rsorter(v) for v in o)
+        else:
+            return o
 
-            elif isinstance(o, set):
-                return tuple(sorted((rsorter(v) for v in o), key=key))
-            elif isinstance(o, (tuple, list)):
-                return tuple(rsorter(v) for v in o)
-            else:
-                return o
-
-        return rsorter(data)
+    return rsorter(data)
 
 
 def pprint(f, data):
