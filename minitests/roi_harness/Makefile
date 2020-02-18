@@ -22,7 +22,7 @@ clean:
 	rm -rf build_* harness_*
 
 run:
-	make clean
-	make copy
+	+$(MAKE) clean
+	+$(MAKE) copy
 
 .PHONY: all clean copy run
