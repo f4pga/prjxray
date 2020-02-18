@@ -17,3 +17,19 @@ foreach site_type { IOB33M IOB33S IDELAYCTRL} {
     }
 }
 close $fp
+
+set fp [open "pudc_sites.csv" "w"]
+puts $fp "tile,site"
+foreach tile [get_tiles *IOB33*] {
+    foreach site [get_sites -of_objects $tile] {
+        set site_type [get_property SITE_TYPE $site]
+
+        set pin [get_package_pins -of_objects $site]
+        set pin_func [get_property PIN_FUNC $pin]
+
+        if {[string first "PUDC_B" $pin_func] != -1} {
+            puts $fp "$tile,$site,$site_type"
+        }
+    }
+}
+close $fp
