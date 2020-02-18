@@ -429,7 +429,8 @@ def main(argv):
     fuzzer_dir = os.path.join(fuzzers_dir, args.fuzzer)
     assert os.path.exists(fuzzer_dir), fuzzer_dir
 
-    fuzzer_logdir = os.path.join(fuzzer_dir, "logs")
+    fuzzer_logdir = os.path.join(
+        fuzzer_dir, "logs_{}".format(os.environ['XRAY_PART']))
     if not os.path.exists(fuzzer_logdir):
         os.makedirs(fuzzer_logdir)
     assert os.path.exists(fuzzer_logdir)

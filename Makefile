@@ -131,7 +131,6 @@ db-format-$(1):
 	@if [ -e database/Info.md ]; then $(IN_ENV) ./utils/info_md.py --keep; fi
 
 .PHONY: db-$(1) db-check-$(1) db-format-$(1) db-extras-$(1) db-extras-$(1)-parts db-extras-$(1)-harness
-.NOTPARALLEL: db-check-$(1) db-format-$(1)
 
 db-extras-$(1): db-extras-$(1)-parts db-extras-$(1)-harness
 
