@@ -38,7 +38,7 @@ clean_fuzzers::
 	$$(MAKE) -C $(1) clean
 
 clean_logs::
-	rm -rf $(1)/logs
+	rm -rf $(1)/logs_*
 
 # Describe how to create the fuzzer's run.ok file.
 # This command must start with a + to tell make to pass the jobserver
