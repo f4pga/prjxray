@@ -622,14 +622,23 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
         # Log the last 10,000 lines of stderr on a failure
         log(
             """\
-Failed @ {time_end} with exit code: {retcode}
 --------------------------------------------------------------------------
-{error_log}
+!Failed! @ {time_end} with exit code: {retcode}
 --------------------------------------------------------------------------
-Failed @ {time_end} with exit code: {retcode}
+- STDOUT:                                                                -
+--------------------------------------------------------------------------
+{stdout_log}
+--------------------------------------------------------------------------
+- STDERR:                                                                -
+--------------------------------------------------------------------------
+{stderr_log}
+--------------------------------------------------------------------------
+!Failed! @ {time_end} with exit code: {retcode}
+--------------------------------------------------------------------------
 """,
             retcode=retcode,
-            error_log=error_log,
+            stdout_log=open(fuzzer_stdout).read(),
+            stderr_log=open(fuzzer_stderr).read(),
             time_end=time_end.isoformat())
     else:
         # Log the last 100 lines of a successful run
