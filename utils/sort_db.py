@@ -392,7 +392,7 @@ def sort_lists_in_json(pathname):
 
     elif fname == 'tileconn.json':
         converting = ['^$', 'wire_pairs$']
-        keeping = ['grid_deltas$', 'tile_types$', 'wire_pairs\[[0-9]+\]$']
+        keeping = ['grid_deltas$', 'tile_types$', 'wire_pairs\\[[0-9]+\\]$']
 
     keeping = [re.compile(i) for i in keeping]
     converting = [re.compile(i) for i in converting]
