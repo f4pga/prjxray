@@ -13,14 +13,8 @@ $(SPECIMENS_OK):
 	GENERATE_ARGS=${GENERATE_ARGS} bash ../fuzzaddr/generate.sh $(subst /OK,,$@)
 	touch $@
 
-run:
-	rm -rf $(BUILD_DIR) run.${XRAY_PART}.ok
-	$(MAKE) database
-	$(MAKE) pushdb
-	touch run.${XRAY_PART}.ok
-
 clean:
-	rm -rf build_* run.*.ok
+	rm -rf build_*
 
-.PHONY: database pushdb run clean
+.PHONY: database clean
 
