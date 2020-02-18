@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from prjxray import xjson
 import json
 import util as localutil
 import os.path
@@ -116,12 +117,9 @@ def run(fn_in, fn_out, verbose=False):
             localutil.add_tile_bits(tile, tilej, frame, wordidx, frames, words)
 
     # Save
-    json.dump(
-        database,
+    xjson.pprint(
         open(fn_out, "w"),
-        sort_keys=True,
-        indent=4,
-        separators=(",", ": "))
+        database)
 
 
 def main():
