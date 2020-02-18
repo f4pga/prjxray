@@ -38,11 +38,9 @@ echo "========================================"
 echo "Running Database build"
 echo "----------------------------------------"
 (
-	cd fuzzers
-
 	# Output which fuzzers we are going to run
 	echo "make --dry-run"
-	make --dry-run
+	make --dry-run db-${XRAY_SETTINGS}-all
 	echo "----------------------------------------"
 
 	# Run the fuzzers
@@ -55,7 +53,7 @@ echo "----------------------------------------"
 	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
 	set -x +e
 	tmp=`mktemp`
-	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS" $tmp
+	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS db-${XRAY_SETTINGS}-all" $tmp
 	DATABASE_RET=$?
 	set +x -e
 
@@ -85,26 +83,6 @@ echo "----------------------------------------"
 	fi
 )
 echo "----------------------------------------"
-
-# Generate extra harness files (additional part yaml's, harness).
-set +e
-# Attempt to generate extra harnesses here, but don't check until after diff reporting.
-make db-extras-${XRAY_SETTINGS}-harness
-EXTRAS_HARNESS_RET=$?
-set -e
-
-# Generate extra parts file (tilegrid, tileconn, part yaml, part json and package_pin)
-set +e
-(
-	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
-
-	# Use all the memory available on the system for generating the final
-	# grid and tileconn.
-	export MAX_GRID_CPU=${MAX_CPU_PER_GRID}
-	make db-extras-${XRAY_SETTINGS}-parts -j $CORES
-)
-EXTRAS_PARTS_RET=$?
-set -e
 
 # Format the database
 make db-format-${XRAY_SETTINGS}

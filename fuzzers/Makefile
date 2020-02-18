@@ -23,9 +23,15 @@ define fuzzer
 
 # $(1) - Fuzzer name/directory
 # $(2) - Space seperated list of dependencies for the fuzzer.
+# $(3) - Is this fuzzer setting specific?
 
 # Make the all target depend on the run.ok file for the fuzzer.
+ifeq ($(3),Y)
+all: $(1)/run.$(XRAY_PART).ok
+part_only: $(1)/run.$(XRAY_PART).ok
+else
 all: $(1)/run.ok
+endif
 
 # Make the clean target run `make clean` in the fuzzer's directory.
 clean_fuzzers::
@@ -40,92 +46,123 @@ clean_logs::
 ifeq ($(VERBOSE),Y)
 
 # When verbose we just call make directory
-$(1)/run.ok: $(addsuffix /run.ok,$(2))
+ifeq ($(3),Y)
+
+$(1)/run.$(XRAY_PART).ok: $(addprefix fuzzer_, $(2))
 	$$(MAKE) -C $(1) run
+
+else
+
+$(1)/run.ok: $(addprefix fuzzer_, $(2))
+	$$(MAKE) -C $(1) run
+
+endif
 
 else
 
 # When not verbose, we use the run_fuzzer wrapper which will save the results
 # to log files.
-$(1)/run.ok: $(addsuffix /run.ok,$(2))
+ifeq ($(3),Y)
+
+$(1)/run.$(XRAY_PART).ok: $(addprefix fuzzer_, $(2))
+	+@$(SELF_DIR)/run_fuzzer.py $(1)
+
+else
+
+$(1)/run.ok: $(addprefix fuzzer_, $(2))
 	+@$(SELF_DIR)/run_fuzzer.py $(1)
 
 endif
 
+endif
+
+.PHONY:: fuzzer_$(1)
+
+ifeq ($(3),Y)
+
+fuzzer_$(1): $(1)/run.$(XRAY_PART).ok
+
+else
+
+fuzzer_$(1): $(1)/run.ok
+
+endif
+
+
 endef
 
-$(eval $(call fuzzer,000-init-db,))
+$(eval $(call fuzzer,000-init-db,,Y))
 
 ifneq ($(FUZZONLY),Y)
-$(eval $(call fuzzer,001-part-yaml,000-init-db))
-$(eval $(call fuzzer,005-tilegrid,001-part-yaml))
+$(eval $(call fuzzer,001-part-yaml,000-init-db,Y))
+$(eval $(call fuzzer,005-tilegrid,001-part-yaml,Y))
 else
 all:: 005-tilegrid/run.ok
 	touch 005-tilegrid/run.ok
 endif
 
 ifneq ($(XRAY_DATABASE),kintex7)
-$(eval $(call fuzzer,007-timing,005-tilegrid))
+$(eval $(call fuzzer,007-timing,005-tilegrid,N))
 endif
-$(eval $(call fuzzer,010-clb-lutinit,005-tilegrid))
-$(eval $(call fuzzer,011-clb-ffconfig,005-tilegrid))
-$(eval $(call fuzzer,012-clb-n5ffmux,005-tilegrid))
-$(eval $(call fuzzer,013-clb-ncy0,005-tilegrid))
-$(eval $(call fuzzer,014-clb-ffsrcemux,005-tilegrid))
-$(eval $(call fuzzer,015-clb-nffmux,005-tilegrid))
-$(eval $(call fuzzer,016-clb-noutmux,005-tilegrid))
-$(eval $(call fuzzer,017-clb-precyinit,005-tilegrid))
-$(eval $(call fuzzer,018-clb-ram,005-tilegrid))
-$(eval $(call fuzzer,019-clb-ndi1mux,005-tilegrid))
-$(eval $(call fuzzer,025-bram-config,005-tilegrid))
-$(eval $(call fuzzer,026-bram-data,005-tilegrid))
-$(eval $(call fuzzer,027-bram36-config,005-tilegrid))
-$(eval $(call fuzzer,028-fifo-config,005-tilegrid))
-$(eval $(call fuzzer,029-bram-fifo-config,005-tilegrid))
-$(eval $(call fuzzer,030-iob,005-tilegrid))
-$(eval $(call fuzzer,032-cmt-pll,005-tilegrid))
-$(eval $(call fuzzer,034-cmt-pll-pips,005-tilegrid 071-ppips))
-$(eval $(call fuzzer,035-iob-ilogic,005-tilegrid))
-$(eval $(call fuzzer,035a-iob-idelay,005-tilegrid))
-$(eval $(call fuzzer,036-iob-ologic,005-tilegrid))
-$(eval $(call fuzzer,037-iob-pips,005-tilegrid))
-$(eval $(call fuzzer,038-cfg,005-tilegrid))
-$(eval $(call fuzzer,039-hclk-config,005-tilegrid))
-$(eval $(call fuzzer,040-clk-hrow-config,005-tilegrid))
-$(eval $(call fuzzer,041-clk-hrow-pips,005-tilegrid))
-$(eval $(call fuzzer,042-clk-bufg-config,005-tilegrid))
-$(eval $(call fuzzer,043-clk-rebuf-pips,005-tilegrid))
-$(eval $(call fuzzer,044-clk-bufg-pips,046-clk-bufg-muxed-pips))
-$(eval $(call fuzzer,045-hclk-cmt-pips,005-tilegrid))
-$(eval $(call fuzzer,046-clk-bufg-muxed-pips,005-tilegrid))
-$(eval $(call fuzzer,047-hclk-ioi-pips,005-tilegrid))
-$(eval $(call fuzzer,047a-hclk-idelayctrl-pips,047-hclk-ioi-pips))
-$(eval $(call fuzzer,048-int-piplist,005-tilegrid))
-$(eval $(call fuzzer,049-int-imux-gfan,048-int-piplist))
-$(eval $(call fuzzer,050-pip-seed,048-int-piplist))
-$(eval $(call fuzzer,051-pip-imuxlout-bypalts,048-int-piplist))
-$(eval $(call fuzzer,052-pip-clkin,048-int-piplist))
-$(eval $(call fuzzer,053-pip-ctrlin,048-int-piplist))
-$(eval $(call fuzzer,054-pip-fan-alt,048-int-piplist))
-$(eval $(call fuzzer,055-pip-gnd,048-int-piplist))
-$(eval $(call fuzzer,056-pip-rem,049-int-imux-gfan 050-pip-seed 051-pip-imuxlout-bypalts 052-pip-clkin 053-pip-ctrlin 054-pip-fan-alt 055-pip-gnd 059-pip-byp-bounce))
-$(eval $(call fuzzer,057-pip-bi,056-pip-rem))
+$(eval $(call fuzzer,010-clb-lutinit,005-tilegrid,N))
+$(eval $(call fuzzer,011-clb-ffconfig,005-tilegrid,N))
+$(eval $(call fuzzer,012-clb-n5ffmux,005-tilegrid,N))
+$(eval $(call fuzzer,013-clb-ncy0,005-tilegrid,N))
+$(eval $(call fuzzer,014-clb-ffsrcemux,005-tilegrid,N))
+$(eval $(call fuzzer,015-clb-nffmux,005-tilegrid,N))
+$(eval $(call fuzzer,016-clb-noutmux,005-tilegrid,N))
+$(eval $(call fuzzer,017-clb-precyinit,005-tilegrid,N))
+$(eval $(call fuzzer,018-clb-ram,005-tilegrid,N))
+$(eval $(call fuzzer,019-clb-ndi1mux,005-tilegrid,N))
+$(eval $(call fuzzer,025-bram-config,005-tilegrid,N))
+$(eval $(call fuzzer,026-bram-data,005-tilegrid,N))
+$(eval $(call fuzzer,027-bram36-config,005-tilegrid,N))
+$(eval $(call fuzzer,028-fifo-config,005-tilegrid,N))
+$(eval $(call fuzzer,029-bram-fifo-config,005-tilegrid,N))
+$(eval $(call fuzzer,030-iob,005-tilegrid,N))
+$(eval $(call fuzzer,032-cmt-pll,005-tilegrid,N))
+$(eval $(call fuzzer,034-cmt-pll-pips,005-tilegrid 071-ppips,N))
+$(eval $(call fuzzer,035-iob-ilogic,005-tilegrid,N))
+$(eval $(call fuzzer,035a-iob-idelay,005-tilegrid,N))
+$(eval $(call fuzzer,036-iob-ologic,005-tilegrid,N))
+$(eval $(call fuzzer,037-iob-pips,005-tilegrid,N))
+$(eval $(call fuzzer,038-cfg,005-tilegrid,N))
+$(eval $(call fuzzer,039-hclk-config,005-tilegrid,N))
+$(eval $(call fuzzer,040-clk-hrow-config,005-tilegrid,N))
+$(eval $(call fuzzer,041-clk-hrow-pips,005-tilegrid,N))
+$(eval $(call fuzzer,042-clk-bufg-config,005-tilegrid,N))
+$(eval $(call fuzzer,043-clk-rebuf-pips,005-tilegrid,N))
+$(eval $(call fuzzer,044-clk-bufg-pips,046-clk-bufg-muxed-pips,N))
+$(eval $(call fuzzer,045-hclk-cmt-pips,005-tilegrid,N))
+$(eval $(call fuzzer,046-clk-bufg-muxed-pips,005-tilegrid,N))
+$(eval $(call fuzzer,047-hclk-ioi-pips,005-tilegrid,N))
+$(eval $(call fuzzer,047a-hclk-idelayctrl-pips,047-hclk-ioi-pips,N))
+$(eval $(call fuzzer,048-int-piplist,005-tilegrid,N))
+$(eval $(call fuzzer,049-int-imux-gfan,048-int-piplist,N))
+$(eval $(call fuzzer,050-pip-seed,048-int-piplist,N))
+$(eval $(call fuzzer,051-pip-imuxlout-bypalts,048-int-piplist,N))
+$(eval $(call fuzzer,052-pip-clkin,048-int-piplist,N))
+$(eval $(call fuzzer,053-pip-ctrlin,048-int-piplist,N))
+$(eval $(call fuzzer,054-pip-fan-alt,048-int-piplist,N))
+$(eval $(call fuzzer,055-pip-gnd,048-int-piplist,N))
+$(eval $(call fuzzer,056-pip-rem,049-int-imux-gfan 050-pip-seed 051-pip-imuxlout-bypalts 052-pip-clkin 053-pip-ctrlin 054-pip-fan-alt 055-pip-gnd 059-pip-byp-bounce,N))
+$(eval $(call fuzzer,057-pip-bi,056-pip-rem,N))
 ifneq ($(QUICK),Y)
-$(eval $(call fuzzer,058-pip-hclk,005-tilegrid))
-$(eval $(call fuzzer,059-pip-byp-bounce,048-int-piplist))
-$(eval $(call fuzzer,060-bram-cascades,005-tilegrid))
-$(eval $(call fuzzer,071-ppips,057-pip-bi 058-pip-hclk 060-bram-cascades))
+$(eval $(call fuzzer,058-pip-hclk,005-tilegrid,N))
+$(eval $(call fuzzer,059-pip-byp-bounce,048-int-piplist,N))
+$(eval $(call fuzzer,060-bram-cascades,005-tilegrid,N))
+$(eval $(call fuzzer,071-ppips,057-pip-bi 058-pip-hclk 060-bram-cascades,N))
 ifneq ($(BITONLY),Y)
-$(eval $(call fuzzer,072-ordered_wires,))
-$(eval $(call fuzzer,073-get_counts,))
-$(eval $(call fuzzer,074-dump_all,005-tilegrid 072-ordered_wires))
-$(eval $(call fuzzer,075-pins,))
+$(eval $(call fuzzer,072-ordered_wires,,Y))
+$(eval $(call fuzzer,073-get_counts,,Y))
+$(eval $(call fuzzer,074-dump_all,005-tilegrid 072-ordered_wires,Y))
+$(eval $(call fuzzer,075-pins,,Y))
 ifeq ($(XRAY_DATABASE),zynq7)
-$(eval $(call fuzzer,076-ps7,))
+$(eval $(call fuzzer,076-ps7,,N))
 endif
 endif
 endif
-$(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid))
+$(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid,N))
 
 quick:
 	$(MAKE) QUICK=Y
@@ -133,51 +170,11 @@ quick:
 # Part only targets
 # -----------------
 
-$(addprefix ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.,yaml json):
-	$(MAKE) 001-part-yaml/run.ok
-
-${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv:
-	$(MAKE) 075-pins/run.ok
-
-${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json:
-	$(MAKE) 005-tilegrid/run.ok
-
-${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json:
-	$(MAKE) 072-ordered_wires/run.ok
-	$(MAKE) 073-get_counts/run.ok
-	$(MAKE) 074-dump_all/run.ok
-
-part_only_yaml: ${XRAY_FAMILY_DIR}/${XRAY_PART}/part.yaml
-part_only_tilegrid: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
-part_only_tileconn: ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
-part_only_pins: ${XRAY_FAMILY_DIR}/${XRAY_PART}/package_pins.csv
-
-# part_only runs the fuzzers required to support additional parts
-part_only:
-	+$(MAKE) clean_fuzzers
-	# Create PART-specific directory
-	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
-	# Generate YAML
-	+$(MAKE) part_only_yaml
-	# Generate Tile grid
-	+$(MAKE) part_only_tilegrid
-	# Generate Tile connections
-	+$(MAKE) part_only_tileconn
-	# Generate package pins
-	+$(MAKE) part_only_pins
-
 # roi_only runs the fuzzers required for supporting additional parts when building
 # a roi harness.
-roi_only:
-	+$(MAKE) clean_fuzzers
-	# Create PART-specific directory
-	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
-	# Generate YAML
-	+$(MAKE) part_only_yaml
-	# Generate package pins
-	+$(MAKE) part_only_pins
+roi_only: 000-init-db/run.${XRAY_PART}.ok 001-part-yaml/run.${XRAY_PART}.ok 075-pins/run.${XRAY_PART}.ok
 	# Copy tilegrid and tileconn
 	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
 	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
 
-.PHONY: all clean clean_fuzzers clean_logs quick part_only roi_only
+.PHONY:: all clean clean_fuzzers clean_logs quick part_only roi_only

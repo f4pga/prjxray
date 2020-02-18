@@ -7,7 +7,7 @@ source ${XRAY_GENHEADER}
 
 # Some projects have hard coded top.v, others are generated
 if [ -f $FUZDIR/top.py ] ; then
-    XRAY_DATABASE_ROOT=$FUZDIR/../build/basicdb python3 $FUZDIR/top.py >top.v
+    XRAY_DATABASE_ROOT=$FUZDIR/../build_${XRAY_PART}/basicdb python3 $FUZDIR/top.py >top.v
 fi
 
 ${XRAY_VIVADO} -mode batch -source $FUZDIR/generate.tcl

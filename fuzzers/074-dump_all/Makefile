@@ -1,6 +1,7 @@
 
 N := 1
-SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
+BUILD_DIR = build_${XRAY_PART}
+SPECIMENS := $(addprefix $(BUILD_DIR)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 MAX_VIVADO_PROCESS ?= 4
 MAX_TILES_INSTANCE ?= 300
@@ -10,10 +11,10 @@ database: $(SPECIMENS_OK)
 	true
 
 pushdb:
-	cp build/output/tile_type_*.json ${XRAY_FAMILY_DIR}/
+	cp $(BUILD_DIR)/output/tile_type_*.json ${XRAY_FAMILY_DIR}/
 	rm ${XRAY_FAMILY_DIR}/tile_type_*_site_type_*.json
-	cp build/output/site_type_*.json ${XRAY_FAMILY_DIR}/
-	cp build/output/tileconn.json ${XRAY_FAMILY_DIR}/$(XRAY_PART)/
+	cp $(BUILD_DIR)/output/site_type_*.json ${XRAY_FAMILY_DIR}/
+	cp $(BUILD_DIR)/output/tileconn.json ${XRAY_FAMILY_DIR}/$(XRAY_PART)/
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@) -p=$(MAX_VIVADO_PROCESS) -t=$(MAX_TILES_INSTANCE) -n=$(MAX_NODES_INSTANCE)
@@ -24,11 +25,11 @@ run:
 	$(MAKE) database
 	$(MAKE) pushdb
 	# Clean up intermediate files after successful pushdb.
-	find build -name "*.json5" -delete
-	touch run.ok
+	find $(BUILD_DIR) -name "*.json5" -delete
+	touch run.${XRAY_PART}.ok
 
 clean:
-	rm -rf build run.ok
+	rm -rf build_* run.*.ok
 
 .PHONY: database pushdb run clean
 

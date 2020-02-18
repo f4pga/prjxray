@@ -114,6 +114,9 @@ define database
 
 # $(1) - Database name
 
+db-$(1):
+	+source settings/$(1).sh && $$(MAKE) -C fuzzers
+
 db-check-$(1):
 	@echo
 	@echo "Checking $(1) database"
@@ -127,8 +130,14 @@ db-format-$(1):
 	@$(IN_ENV) cd database/$(1); python3 ../../utils/sort_db.py
 	@if [ -e database/Info.md ]; then $(IN_ENV) ./utils/info_md.py --keep; fi
 
-.PHONY: db-check-$(1) db-format-$(1)
+.PHONY: db-$(1) db-check-$(1) db-format-$(1) db-extras-$(1) db-extras-$(1)-parts db-extras-$(1)-harness
 .NOTPARALLEL: db-check-$(1) db-format-$(1)
+
+db-extras-$(1): db-extras-$(1)-parts db-extras-$(1)-harness
+
+db-$(1)-all: db-$(1) db-extras-$(1)-parts
+	# Build harnesses after database is complete
+	$$(MAKE) db-extras-$(1)-harness
 
 db-check: db-check-$(1)
 db-format: db-format-$(1)
@@ -136,8 +145,6 @@ db-format: db-format-$(1)
 endef
 
 $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
-
-.PHONY: db-extras-artix7 db-extras-kintex7 db-extras-zynq7
 
 # Targets related to Project X-Ray parts
 # --------------------------------------
@@ -159,9 +166,12 @@ endef
 
 $(foreach PART,$(XRAY_PARTS),$(eval $(call multiple-parts,$(PART))))
 
+
 db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
 
 db-extras-artix7-harness:
+	+XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
+		XRAY_PART=xc7a35tftg256-1 XRAY_EQUIV_PART=xc7a50tfgg484-1 $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && \

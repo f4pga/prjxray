@@ -1,11 +1,13 @@
 env
 build
+build_*
 logs
 database
 .Xil
 **/specimen_*
 **/output
 run.ok
+run.*.ok
 __pycache__
 *.pyc
 *.swp

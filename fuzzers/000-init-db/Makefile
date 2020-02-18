@@ -55,17 +55,19 @@ BLOCK_RAM_EXTRA_DB_FILES=\
 DB_FILES=$(sort $(addsuffix .origin_info.db,$(DB_SIMPLE)) $(addsuffix .db,$(DB_SIMPLE)) $(BLOCK_RAM_EXTRA_DB_FILES))
 DB_FILES_PATH=$(addprefix $(XRAY_DATABASE_DIR)/$(XRAY_DATABASE)/,$(DB_FILES))
 
+BUILD_DIR = build_${XRAY_PART}
+
 check:
-	@mkdir -p build
-	@rm -f build/existing.txt
+	@mkdir -p build_
+	@rm -f $(BUILD_DIR)/existing.txt
 	@for DB_FILE in $(sort $(notdir $(wildcard $(XRAY_DATABASE_DIR)/$(XRAY_DATABASE)/*.db))); do \
-		echo $$DB_FILE >> build/existing.txt; \
+		echo $$DB_FILE >> $(BUILD_DIR)/existing.txt; \
 	done
-	@rm -f build/tocreate.txt
+	@rm -f $(BUILD_DIR)/tocreate.txt
 	@for DB_FILE in $(sort $(DB_FILES)); do \
-		echo $$DB_FILE >> build/tocreate.txt; \
+		echo $$DB_FILE >> $(BUILD_DIR)/tocreate.txt; \
 	done
-	diff -u build/existing.txt build/tocreate.txt
+	diff -u $(BUILD_DIR)/existing.txt $(BUILD_DIR)/tocreate.txt
 
 status:
 	@echo $(DB_FILES_PATH)
@@ -82,15 +84,18 @@ status:
 $(DB_FILES_PATH):
 	touch $@
 
-pushdb: $(DB_FILES_PATH)
+${XRAY_FAMILY_DIR}/${XRAY_PART}:
+	mkdir -p ${XRAY_FAMILY_DIR}/${XRAY_PART}
+
+pushdb: $(DB_FILES_PATH) ${XRAY_FAMILY_DIR}/${XRAY_PART}
 	@true
 
 run:
 	$(MAKE) clean
 	$(MAKE) pushdb
-	touch run.ok
+	touch run.${XRAY_PART}.ok
 
 clean:
-	rm -rf build run.ok
+	rm -rf build_* run.*.ok
 
 .PHONY: pushdb clean run
