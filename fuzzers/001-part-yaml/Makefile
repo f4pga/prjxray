@@ -1,7 +1,6 @@
 N := 1
-SPECIMENS := $(addprefix build_${XRAY_PART}/specimen_,$(shell seq -f '%03.0f' $(N)))
-
 BUILD_DIR = build_${XRAY_PART}
+SPECIMENS := $(addprefix $(BUILD_DIR)/specimen_,$(shell seq -f '%03.0f' $(N)))
 
 database: $(SPECIMENS)
 	mkdir -p $(BUILD_DIR)
@@ -21,7 +20,7 @@ pushdb:
 	cp $(BUILD_DIR)/${XRAY_PART}_required_features.fasm ${XRAY_FAMILY_DIR}/${XRAY_PART}/required_features.fasm 2>/dev/null || true
 
 run:
-	$(MAKE) clean
+	rm -rf $(BUILD_DIR) run.${XRAY_PART}.ok
 	$(MAKE) database
 	$(MAKE) pushdb
 	touch run.${XRAY_PART}.ok

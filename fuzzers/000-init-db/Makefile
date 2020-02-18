@@ -91,7 +91,7 @@ pushdb: $(DB_FILES_PATH) ${XRAY_FAMILY_DIR}/${XRAY_PART}
 	@true
 
 run:
-	$(MAKE) clean
+	rm -rf $(BUILD_DIR) run.${XRAY_PART}.ok
 	$(MAKE) pushdb
 	touch run.${XRAY_PART}.ok
 

@@ -133,7 +133,8 @@ $(BUILD_FOLDER)/tilegrid.json: generate_full.py $(BUILD_FOLDER)/tilegrid_tdb.jso
 	cd $(BUILD_FOLDER) && python3 ${FUZDIR}/generate_full.py \
         --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json
 run:
-	$(MAKE) clean
+	find -name $(BUILD_FOLDER) -exec rm -rf {} \;
+	find -name run.${XRAY_PART}.ok -delete
 	$(MAKE) database
 	$(MAKE) pushdb
 	touch run.${XRAY_PART}.ok

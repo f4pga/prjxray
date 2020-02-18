@@ -21,7 +21,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 run:
-	$(MAKE) clean
+	rm -rf $(BUILD_DIR) run.${XRAY_PART}.ok
 	$(MAKE) database
 	$(MAKE) pushdb
 	# Clean up intermediate files after successful pushdb.
