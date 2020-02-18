@@ -117,9 +117,7 @@ def run(fn_in, fn_out, verbose=False):
             localutil.add_tile_bits(tile, tilej, frame, wordidx, frames, words)
 
     # Save
-    xjson.pprint(
-        open(fn_out, "w"),
-        database)
+    xjson.pprint(open(fn_out, "w"), database)
 
 
 def main():
