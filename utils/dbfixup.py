@@ -484,14 +484,23 @@ def update_seg_fns(
             continue
 
         lines = read_segbits(fn_in)
+        changes = 0
 
-        changes, lines = add_zero_bits(
+        # Find common bits for tag groups
+        bit_groups = find_common_bits_for_tag_groups(lines, tag_groups)
+
+        # Group tags
+        new_changes, lines = group_tags(lines, tag_groups, bit_groups)
+        changes += new_changes
+
+        new_changes, lines = add_zero_bits(
             fn_in,
             lines,
             zero_db,
             clb_int=clb_int,
             strict=strict,
             verbose=verbose)
+        changes += new_changes
 
         new_changes, lines = remove_ambiguous_solutions(
             fn_in,
@@ -499,13 +508,6 @@ def update_seg_fns(
             strict=strict,
             verbose=verbose,
         )
-        changes += new_changes
-
-        # Find common bits for tag groups
-        bit_groups = find_common_bits_for_tag_groups(lines, tag_groups)
-
-        # Group tags
-        new_changes, lines = group_tags(lines, tag_groups, bit_groups)
         changes += new_changes
 
         with open(fn_out, "w") as f:
@@ -610,8 +612,6 @@ def find_common_bits_for_tag_groups(lines, tag_groups):
                 ones = set([b[1] for b in bits if b[0]])
                 bit_group |= ones
 
-        print(tag_group)
-        print(bit_group)
         bit_groups.append(bit_group)
 
     return bit_groups
