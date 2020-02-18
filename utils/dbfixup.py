@@ -1,6 +1,7 @@
 #/usr/bin/env python3
 
 import sys, os, re
+import itertools
 from prjxray import util
 
 clb_int_zero_db = [
@@ -199,7 +200,30 @@ class ZeroGroups(object):
                 bits.add("!" + bit)
 
 
-def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
+def read_segbits(fn_in):
+    """
+    Reads a segbits file. Removes duplcated lines. Returns a list of the lines.
+    """
+    lines = []
+    llast = None
+
+    with open(fn_in, "r") as f:
+        for line in f:
+            # Hack: skip duplicate lines
+            # This happens while merging a new multibit entry
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            if line == llast:
+                continue
+
+            lines.append(line)
+
+    return lines
+
+
+def add_zero_bits(
+        fn_in, lines, zero_db, clb_int=False, strict=True, verbose=False):
     '''
     Add multibit entries
     This requires adding some zero bits (ex: !31_09)
@@ -208,27 +232,17 @@ def add_zero_bits(fn_in, zero_db, clb_int=False, strict=True, verbose=False):
 
     zero_groups = ZeroGroups(zero_db)
 
-    lines = []
     new_lines = set()
     changes = 0
 
-    llast = None
     drops = 0
 
-    with open(fn_in, "r") as f:
-        for line in f:
-            # Hack: skip duplicate lines
-            # This happens while merging a new multibit entry
-            line = line.strip()
-            if line == llast:
-                continue
+    for line in lines:
 
-            lines.append(line)
+        tag, bits, mode, _ = util.parse_db_line(line)
 
-            tag, bits, mode, _ = util.parse_db_line(line)
-
-            if bits is not None and mode is None:
-                zero_groups.add_tag_bits(tag, bits)
+        if bits is not None and mode is None:
+            zero_groups.add_tag_bits(tag, bits)
 
     if verbose:
         zero_groups.print_groups()
@@ -366,7 +380,7 @@ def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
         return 0, db_lines
 
     drops = 0
-    output_lines = []
+    output_lines = set()
 
     for l in db_lines:
         parts = l.split()
@@ -374,7 +388,7 @@ def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
         bits = frozenset(parts[1:])
 
         if bits not in dropped_solutions:
-            output_lines.append(l)
+            output_lines.add(l)
             drops += 1
         else:
             if verbose:
@@ -387,8 +401,81 @@ def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
     return drops, output_lines
 
 
+def group_tags(lines, tag_groups, bit_groups):
+    """
+    Implements tag grouping. If a tag belongs to a group then the common bits
+    of that group are added to is as zeros.
+
+    >>> tg = [{"A", "B"}]
+    >>> bg = [{(1, 2), (3, 4)}]
+    >>> res = group_tags({"A 1_2", "B 3_4"}, tg, bg)
+    >>> (res[0], sorted(list(res[1])))
+    (2, ['A 1_2 !3_4', 'B !1_2 3_4'])
+
+    >>> tg = [{"A", "B"}]
+    >>> bg = [{(1, 2), (3, 4)}]
+    >>> res = group_tags({"A 1_2", "B 3_4", "C 1_2"}, tg, bg)
+    >>> (res[0], sorted(list(res[1])))
+    (2, ['A 1_2 !3_4', 'B !1_2 3_4', 'C 1_2'])
+    """
+
+    changes = 0
+    new_lines = set()
+
+    # Process lines
+    for line in lines:
+
+        line = line.strip()
+        if not len(line):
+            continue
+
+        # Parse the line
+        tag, bits, mode, _ = util.parse_db_line(line)
+        if not bits:
+            bits = set()
+        else:
+            bits = set([util.parse_tagbit(b) for b in bits])
+
+        # Check if the tag belongs to a group
+        for tag_group, bit_group in zip(tag_groups, bit_groups):
+            if tag in tag_group:
+
+                # Add zero bits to the tag if not already there
+                bit_coords = set([b[1] for b in bits])
+                for zero_bit in bit_group:
+                    if zero_bit not in bit_coords:
+                        bits.add((False, zero_bit))
+
+                # Format the line
+                bit_strs = []
+                for bit in sorted(list(bits), key=lambda b: b[1]):
+                    s = "!" if not bit[0] else ""
+                    s += "{}_{}".format(bit[1][0], bit[1][1])
+                    bit_strs.append(s)
+
+                new_line = " ".join([tag] + bit_strs)
+
+                # Add the line
+                new_lines.add(new_line)
+                changes += 1
+                break
+
+        # It does not, pass it through unchanged
+        else:
+            new_lines.add(line)
+
+    return changes, new_lines
+
+
 def update_seg_fns(
-        fn_inouts, zero_db, clb_int, lazy=False, strict=True, verbose=False):
+        fn_inouts,
+        zero_db,
+        tag_groups,
+        clb_int,
+        lazy=False,
+        strict=True,
+        verbose=False):
+
     seg_files = 0
     seg_lines = 0
     for fn_in, fn_out in fn_inouts:
@@ -396,20 +483,35 @@ def update_seg_fns(
         if lazy and not os.path.exists(fn_in):
             continue
 
-        changes, new_lines = add_zero_bits(
-            fn_in, zero_db, clb_int=clb_int, strict=strict, verbose=verbose)
+        lines = read_segbits(fn_in)
+        changes = 0
 
-        new_changes, final_lines = remove_ambiguous_solutions(
+        # Find common bits for tag groups
+        bit_groups = find_common_bits_for_tag_groups(lines, tag_groups)
+
+        # Group tags
+        new_changes, lines = group_tags(lines, tag_groups, bit_groups)
+        changes += new_changes
+
+        new_changes, lines = add_zero_bits(
             fn_in,
-            new_lines,
+            lines,
+            zero_db,
+            clb_int=clb_int,
+            strict=strict,
+            verbose=verbose)
+        changes += new_changes
+
+        new_changes, lines = remove_ambiguous_solutions(
+            fn_in,
+            lines,
             strict=strict,
             verbose=verbose,
         )
-
         changes += new_changes
 
         with open(fn_out, "w") as f:
-            for line in sorted(final_lines):
+            for line in sorted(lines):
                 print(line, file=f)
 
         if changes is not None:
@@ -453,6 +555,7 @@ def update_segs(
         seg_fn_in,
         seg_fn_out,
         zero_db_fn,
+        tag_groups,
         strict=True,
         verbose=False):
     if clb_int:
@@ -479,7 +582,72 @@ def update_segs(
     print("CLB INT mode: %s" % clb_int)
     print("Segbit groups: %s" % len(zero_db))
     update_seg_fns(
-        fn_inouts, zero_db, clb_int, lazy=lazy, strict=strict, verbose=verbose)
+        fn_inouts,
+        zero_db,
+        tag_groups,
+        clb_int,
+        lazy=lazy,
+        strict=strict,
+        verbose=verbose)
+
+
+def find_common_bits_for_tag_groups(lines, tag_groups):
+    """
+    For each tag group finds a common set of bits that have value of one.
+    """
+
+    bit_groups = []
+
+    for tag_group in tag_groups:
+        bit_group = set()
+
+        for line in lines:
+            tag, bits, mode, _ = util.parse_db_line(line)
+            if not bits:
+                continue
+
+            bits = set([util.parse_tagbit(b) for b in bits])
+
+            if tag in tag_group and len(bits):
+                ones = set([b[1] for b in bits if b[0]])
+                bit_group |= ones
+
+        bit_groups.append(bit_group)
+
+    return bit_groups
+
+
+def load_tag_groups(file_name):
+    """
+    Loads tag groups from a text file.
+
+    A tag group is defined by specifying a space separated list of tags within
+    a single line. Lines that are empty or start with '#' are ignored.
+    """
+    tag_groups = []
+
+    # Load tag group specifications
+    with open(file_name, "r") as fp:
+        for line in fp:
+            line = line.strip()
+
+            if len(line) == 0 or line.startswith("#"):
+                continue
+
+            group = set(line.split())
+            if len(group):
+                tag_groups.append(group)
+
+    # Check if all tag groups are exclusive
+    for tag_group_a, tag_group_b in itertools.combinations(tag_groups, 2):
+
+        tags = tag_group_a & tag_group_b
+        if len(tags):
+            raise RuntimeError(
+                "Tag(s) {} are present in multiple groups".format(
+                    " ".join(tags)))
+
+    return tag_groups
 
 
 def run(
@@ -488,11 +656,17 @@ def run(
         zero_db_fn=None,
         seg_fn_in=None,
         seg_fn_out=None,
+        groups_fn_in=None,
         strict=None,
         verbose=False):
 
     if strict is None:
         strict = not clb_int
+
+    # Load tag groups
+    tag_groups = []
+    if groups_fn_in is not None:
+        tag_groups = load_tag_groups(groups_fn_in)
 
     # Probably should split this into two programs
     update_segs(
@@ -501,6 +675,7 @@ def run(
         seg_fn_in=seg_fn_in,
         seg_fn_out=seg_fn_out,
         zero_db_fn=zero_db_fn,
+        tag_groups=tag_groups,
         strict=strict,
         verbose=verbose)
     if clb_int:
@@ -520,6 +695,14 @@ def main():
     parser.add_argument('--seg-fn-in', help='')
     parser.add_argument('--seg-fn-out', help='')
     util.add_bool_arg(parser, "--strict", default=False)
+
+    parser.add_argument(
+        "-g",
+        "--groups",
+        type=str,
+        default=None,
+        help="Input tag group definition file")
+
     args = parser.parse_args()
 
     run(
@@ -528,6 +711,7 @@ def main():
         args.zero_db,
         args.seg_fn_in,
         args.seg_fn_out,
+        args.groups,
         strict=args.strict,
         verbose=args.verbose)
 
