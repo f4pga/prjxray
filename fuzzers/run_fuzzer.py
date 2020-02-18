@@ -126,8 +126,11 @@ class Logger:
         running_for = time_log - self.time_start
         msg = msg.format(*args, **kw)
 
-        log_prefix = "{:s} - {:s} - {:>5s}: ".format(
+        time_log = time_log.replace(microsecond=0)
+
+        log_prefix = "{:s} - {}/{:s} - {:>5s}: ".format(
             time_log.isoformat(),
+            os.environ['XRAY_PART'],
             self.fuzzer,
             pretty_timedelta_str(running_for),
         )
