@@ -189,8 +189,6 @@ db-extras-artix7-harness:
 	+source minitests/roi_harness/arty-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/swbut run copy
-	+XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
-		XRAY_PART=xc7a35tftg256-1 XRAY_EQUIV_PART=xc7a50tfgg484-1 $(MAKE) -C fuzzers roi_only
 
 db-extras-kintex7-parts:
 	@true

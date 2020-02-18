@@ -58,7 +58,7 @@ DB_FILES_PATH=$(addprefix $(XRAY_DATABASE_DIR)/$(XRAY_DATABASE)/,$(DB_FILES))
 BUILD_DIR = build_${XRAY_PART}
 
 check:
-	@mkdir -p build_
+	@mkdir -p $(BUILD_DIR)
 	@rm -f $(BUILD_DIR)/existing.txt
 	@for DB_FILE in $(sort $(notdir $(wildcard $(XRAY_DATABASE_DIR)/$(XRAY_DATABASE)/*.db))); do \
 		echo $$DB_FILE >> $(BUILD_DIR)/existing.txt; \
