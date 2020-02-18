@@ -21,7 +21,7 @@ run:
 	touch run.${XRAY_PART}.ok
 
 clean:
-	rm -rf build_* run.${XRAY_PART}.ok
+	rm -rf build_* run.*.ok
 
 .PHONY: database pushdb run clean
 
