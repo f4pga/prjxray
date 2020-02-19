@@ -126,8 +126,8 @@ class Net(object):
     def extend_rc_tree(self, ws, current_rc_root, timing_lookup, node):
         rc_elements = []
 
-        # LV nodes have a workaround applied because of a working in the
-        # pip timing.
+        # LV nodes have a workaround applied because of a work around in the
+        # pip timing data.
         is_lv_node = any(
             wire['name'].split('/')[1].startswith('LV')
             for wire in node['wires'])

@@ -50,6 +50,8 @@ proc lookup_speed_model_name {name} {
 
 # For BSW_INT_LONG_MUX, use the model from BSW_INT_HLONG_MUX.
 # This isn't exactly correct, but it is a better model to use.
+# BSW_INT_LONG_MUX is a tl_buffer (which we don't really understand), and
+# BSW_INT_HLONG_MUX is not.  This subsitution appears good enough for now.
 set int_hlong_mux [lookup_speed_model_name BSW_INT_HLONG_MUX]
 set int_long_mux [lookup_speed_model_name BSW_INT_LONG_MUX]
 
