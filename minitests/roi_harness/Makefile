@@ -14,9 +14,12 @@ $(BUILD_DIR)/run.ok: runme.sh runme.tcl
 	./runme.sh
 	touch $(BUILD_DIR)/run.ok
 
-copy: $(BUILD_DIR)/run.ok
+$(BUILD_DIR)/copy.ok: $(BUILD_DIR)/run.ok
 	mkdir -p $(HARNESS_DIR)
 	cp $(HARNESS_FILES) $(HARNESS_DIR)
+	touch $(BUILD_DIR)/copy.ok
+
+copy: $(BUILD_DIR)/copy.ok
 
 clean:
 	rm -rf build_* harness_*

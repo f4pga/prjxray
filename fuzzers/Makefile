@@ -19,6 +19,12 @@ clean_locks:
 clean_piplists:
 	rm -rf $(XRAY_FUZZERS_DIR)/piplist/build
 
+fuzzer_ok:
+	mkdir -p fuzzer_ok
+
+clean_fuzzers::
+	rm -rf fuzzer_ok
+
 define fuzzer
 
 # $(1) - Fuzzer name/directory
@@ -48,12 +54,12 @@ ifeq ($(VERBOSE),Y)
 # When verbose we just call make directory
 ifeq ($(3),Y)
 
-$(1)/run.$(XRAY_PART).ok: $(addprefix fuzzer_, $(2))
+$(1)/run.$(XRAY_PART).ok: $(addsuffix _$(XRAY_PART).ok,$(addprefix fuzzer_ok/fuzzer_, $(2)))
 	$$(MAKE) -C $(1) run
 
 else
 
-$(1)/run.ok: $(addprefix fuzzer_, $(2))
+$(1)/run.ok: $(addsuffix _$(XRAY_PART).ok,$(addprefix fuzzer_ok/fuzzer_, $(2)))
 	$$(MAKE) -C $(1) run
 
 endif
@@ -64,30 +70,33 @@ else
 # to log files.
 ifeq ($(3),Y)
 
-$(1)/run.$(XRAY_PART).ok: $(addprefix fuzzer_, $(2))
+$(1)/run.$(XRAY_PART).ok: $(addsuffix _$(XRAY_PART).ok,$(addprefix fuzzer_ok/fuzzer_, $(2)))
 	+@$(SELF_DIR)/run_fuzzer.py $(1)
 
 else
 
-$(1)/run.ok: $(addprefix fuzzer_, $(2))
+$(1)/run.ok: $(addsuffix _$(XRAY_PART).ok,$(addprefix fuzzer_ok/fuzzer_, $(2)))
 	+@$(SELF_DIR)/run_fuzzer.py $(1)
 
 endif
 
 endif
-
-.PHONY:: fuzzer_$(1)
 
 ifeq ($(3),Y)
 
-fuzzer_$(1): $(1)/run.$(XRAY_PART).ok
+fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok: $(1)/run.$(XRAY_PART).ok fuzzer_ok
+	touch fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok
 
 else
 
-fuzzer_$(1): $(1)/run.ok
+fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok: $(1)/run.ok fuzzer_ok
+	touch fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok
 
 endif
 
+.PHONY: fuzzer_$(1)
+
+fuzzer_$(1): fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok
 
 endef
 
@@ -177,4 +186,4 @@ roi_only: 000-init-db/run.${XRAY_PART}.ok 001-part-yaml/run.${XRAY_PART}.ok 075-
 	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
 	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
 
-.PHONY:: all clean clean_fuzzers clean_logs quick part_only roi_only
+.PHONY: all clean clean_fuzzers clean_logs quick part_only roi_only
