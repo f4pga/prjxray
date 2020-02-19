@@ -25,7 +25,7 @@ echo "Total Memory (GB): $MEM_GB"
 
 # Approx memory per grid process
 export MEM_PER_RUN=8
-export MAX_CPU_PER_GRID=$(($MEM_GB/$MEM_PER_RUN))
+export MAX_GRID_CPU=$(($MEM_GB/$MEM_PER_RUN))
 export MAX_VIVADO_PROCESS=$(($MEM_GB/$MEM_PER_RUN))
 
 echo
