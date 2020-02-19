@@ -12,6 +12,7 @@ import pickle
 import sys
 
 from prjxray import util, lib
+from prjxray.xjson import extract_numbers
 
 
 def get_tile_grid_info(fname):
@@ -606,7 +607,10 @@ def main():
             pool, node_tree, nodes, wire_map, grid)
 
         for data in tileconn:
-            data['wire_pairs'] = tuple(sorted(data['wire_pairs']))
+            data['wire_pairs'] = tuple(
+                sorted(
+                    data['wire_pairs'],
+                    key=lambda x: tuple(extract_numbers(s) for s in x)))
 
         tileconn = tuple(
             sorted(
