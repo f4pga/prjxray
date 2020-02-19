@@ -84,12 +84,12 @@ endif
 
 ifeq ($(3),Y)
 
-fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok: $(1)/run.$(XRAY_PART).ok fuzzer_ok
+fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok: $(1)/run.$(XRAY_PART).ok | fuzzer_ok
 	touch fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok
 
 else
 
-fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok: $(1)/run.ok fuzzer_ok
+fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok: $(1)/run.ok | fuzzer_ok
 	touch fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok
 
 endif

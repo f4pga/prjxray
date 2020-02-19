@@ -60,20 +60,6 @@ echo "----------------------------------------"
 		rm $tmp
 		exit $DATABASE_RET
 	fi
-
-	# Check there is nothing to do after running...
-	echo
-	if [ $(make --dry-run | grep -v 'Nothing to be done' | wc -l) -gt 0 ]; then
-		echo "The following targets need to still run!"
-		make --dry-run
-		echo "----------------------------------------"
-		echo "Debug output on why they still need to run"
-		make --dry-run --debug
-		echo "----------------------------------------"
-		exit 1
-	else
-		echo "All good, nothing more to do!"
-	fi
 )
 echo "----------------------------------------"
 

@@ -466,6 +466,17 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
     if not should_run_submake(make_flags):
         return 0
 
+    fuzzer_runok = os.path.join(
+        fuzzer_dir, "run.{}.ok".format(os.environ['XRAY_PART']))
+    if os.path.exists(fuzzer_runok):
+        last_modified = datetime.fromtimestamp(os.stat(fuzzer_runok).st_mtime)
+
+        log(
+            "Skipping as run.{}.ok exists (updated @ {})",
+            os.environ['XRAY_PART'], last_modified.isoformat())
+
+        return 0
+
     fuzzer_runok = os.path.join(fuzzer_dir, "run.ok")
     if os.path.exists(fuzzer_runok):
         last_modified = datetime.fromtimestamp(os.stat(fuzzer_runok).st_mtime)
