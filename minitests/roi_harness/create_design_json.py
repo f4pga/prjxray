@@ -6,12 +6,14 @@ import fasm
 from prjxray.db import Database
 from prjxray.roi import Roi
 from prjxray.util import get_db_root, get_part
+from prjxray.xjson import extract_numbers
 
 
 def set_port_wires(ports, name, pin, wires_outside_roi):
     for port in ports:
         if name == port['name']:
-            port['wires_outside_roi'] = wires_outside_roi
+            port['wires_outside_roi'] = sorted(
+                wires_outside_roi, key=extract_numbers)
             assert port['pin'] == pin
             return
 
@@ -104,8 +106,12 @@ def main():
         if not_in_roi:
             required_features.append(fasm_line)
 
-    design_json['required_features'] = fasm.fasm_tuple_to_string(
-        required_features, canonical=True).split('\n')
+    design_json['required_features'] = sorted(
+        fasm.fasm_tuple_to_string(required_features,
+                                  canonical=True).split('\n'),
+        key=extract_numbers)
+
+    design_json['ports'].sort(key=lambda x: extract_numbers(x['name']))
 
     xjson.pprint(sys.stdout, design_json)
 

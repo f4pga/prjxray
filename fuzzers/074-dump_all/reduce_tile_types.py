@@ -18,6 +18,7 @@ import multiprocessing
 import os
 import functools
 import json
+from prjxray.xjson import extract_numbers
 
 
 def check_and_strip_prefix(name, prefix):
@@ -364,6 +365,11 @@ def main():
                     args.output_dir, 'tile_type_{}_site_type_{}.json'.format(
                         tile_type, site_types[site_type]['type'])), 'w') as f:
                 json.dump(site_types[site_type], f, indent=2, sort_keys=True)
+
+        reduced_tile['sites'] = sorted(
+            reduced_tile['sites'],
+            key=lambda site: extract_numbers(
+                '{}_{}'.format(site['name'], site['prefix'])))
 
         with open(tile_type_file, 'w') as f:
             json.dump(reduced_tile, f, indent=2, sort_keys=True)

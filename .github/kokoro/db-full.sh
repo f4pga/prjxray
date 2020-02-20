@@ -94,7 +94,6 @@ EXTRAS_HARNESS_RET=$?
 set -e
 
 # Generate extra parts file (tilegrid, tileconn, part yaml, part json and package_pin)
-# TODO: Disabled for now as for big parts it takes a huge amount of time
 set +e
 make db-extras-${XRAY_SETTINGS}-parts -j $CORES
 EXTRAS_PARTS_RET=$?
