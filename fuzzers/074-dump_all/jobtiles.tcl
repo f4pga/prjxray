@@ -30,7 +30,9 @@ for {set j $start } { $j < $stop } { incr j } {
     # If tile is not allowed, skip it
     set res [lsearch $not_allowed_tiles $tile]
     if { $res != -1 } {
-        continue
+        set ignored 1
+    } else {
+        set ignored 0
     }
 
     set fname tile_$tile.json5
@@ -40,6 +42,7 @@ for {set j $start } { $j < $stop } { incr j } {
     set fp [open "${fname}" w]
     puts $fp "\{"
     puts $fp "\t\"tile\": \"$tile\","
+    puts $fp "\t\"ignored\": \"$ignored\","
     # tile properties:
     # CLASS COLUMN DEVICE_ID FIRST_SITE_ID GRID_POINT_X GRID_POINT_Y INDEX
     # INT_TILE_X INT_TILE_Y IS_CENTER_TILE IS_DCM_TILE IS_GT_CLOCK_SITE_TILE

@@ -19,9 +19,16 @@ def get_tile_grid_info(fname):
     with open(fname, 'r') as f:
         tile = json5.load(f)
 
+    tile_type = tile['type']
+    ignored = int(tile['ignored']) != 0
+
+    if ignored:
+        tile_type = 'NULL'
+
     return {
         tile['tile']: {
-            'type': tile['type'],
+            'type': tile_type,
+            'ignored': ignored,
             'grid_x': tile['x'],
             'grid_y': tile['y'],
             'sites': dict(
@@ -592,6 +599,12 @@ def main():
 
         for tile in db_grid_keys:
             for k in grid2[tile]:
+                if k == 'ignored':
+                    continue
+
+                if k == 'sites' and grid2[tile]['ignored']:
+                    continue
+
                 assert k in grid[tile], k
                 assert grid[tile][k] == grid2[tile][k], (
                     tile, k, grid[tile][k], grid2[tile][k])
