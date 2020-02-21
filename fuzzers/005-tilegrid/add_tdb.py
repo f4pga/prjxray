@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from prjxray import xjson
 import json
 import util as localutil
 import os.path
@@ -37,6 +38,7 @@ def load_db(fn):
         parts = l.split(' ')
         tagstr = parts[0]
         addrlist = parts[1:]
+        assert not any(s == '<const0>' for s in addrlist), (fn, l)
         check_frames(tagstr, addrlist)
         # Take the first address in the list
         frame, wordidx, bitidx = parse_addr(addrlist[0])
@@ -76,34 +78,35 @@ def run(fn_in, fn_out, verbose=False):
     # FIXME: generate words from pitch
     int_frames, int_words = localutil.get_int_params()
     tdb_fns = [
-        ("iob/build/segbits_tilegrid.tdb", 42, 4),
-        ("ioi/build/segbits_tilegrid.tdb", 42, 4),
-        ("mmcm/build/segbits_tilegrid.tdb", 30, 101),
-        ("pll/build/segbits_tilegrid.tdb", 30, 26),
-        ("monitor/build/segbits_tilegrid.tdb", 30, 101),
-        ("bram/build/segbits_tilegrid.tdb", 28, 10),
-        ("bram_block/build/segbits_tilegrid.tdb", 128, 10),
-        ("clb/build/segbits_tilegrid.tdb", 36, 2),
-        ("cfg/build/segbits_tilegrid.tdb", 30, 101),
-        ("dsp/build/segbits_tilegrid.tdb", 28, 10),
-        ("clk_hrow/build/segbits_tilegrid.tdb", 30, 18),
-        ("clk_bufg/build/segbits_tilegrid.tdb", 30, 8),
-        ("hclk_cmt/build/segbits_tilegrid.tdb", 30, 10),
-        ("hclk_ioi/build/segbits_tilegrid.tdb", 42, 1),
-        ("clb_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        ("iob_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        ("bram_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        ("dsp_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        ("fifo_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        ("ps7_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        ("cfg_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        ("monitor_int/build/segbits_tilegrid.tdb", int_frames, int_words),
-        (
-            "orphan_int_column/build/segbits_tilegrid.tdb", int_frames,
-            int_words),
+        ("iob", 42, 4),
+        ("ioi", 42, 4),
+        ("mmcm", 30, 101),
+        ("pll", 30, 26),
+        ("monitor", 30, 101),
+        ("bram", 28, 10),
+        ("bram_block", 128, 10),
+        ("clb", 36, 2),
+        ("cfg", 30, 101),
+        ("dsp", 28, 10),
+        ("clk_hrow", 30, 18),
+        ("clk_bufg", 30, 8),
+        ("hclk_cmt", 30, 10),
+        ("hclk_ioi", 42, 1),
+        ("clb_int", int_frames, int_words),
+        ("iob_int", int_frames, int_words),
+        ("bram_int", int_frames, int_words),
+        ("dsp_int", int_frames, int_words),
+        ("fifo_int", int_frames, int_words),
+        ("ps7_int", int_frames, int_words),
+        ("cfg_int", int_frames, int_words),
+        ("monitor_int", int_frames, int_words),
+        ("orphan_int_column", int_frames, int_words),
     ]
 
-    for (tdb_fn, frames, words) in tdb_fns:
+    for (subdir, frames, words) in tdb_fns:
+        tdb_fn = os.path.join(
+            subdir, 'build_{}'.format(os.environ['XRAY_PART']),
+            'segbits_tilegrid.tdb')
         if not os.path.exists(tdb_fn):
             verbose and print('Skipping {}, file not found!'.format(tdb_fn))
             continue
@@ -114,12 +117,7 @@ def run(fn_in, fn_out, verbose=False):
             localutil.add_tile_bits(tile, tilej, frame, wordidx, frames, words)
 
     # Save
-    json.dump(
-        database,
-        open(fn_out, "w"),
-        sort_keys=True,
-        indent=4,
-        separators=(",", ": "))
+    xjson.pprint(open(fn_out, "w"), database)
 
 
 def main():

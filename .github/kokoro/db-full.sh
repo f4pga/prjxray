@@ -38,24 +38,15 @@ echo "========================================"
 echo "Running Database build"
 echo "----------------------------------------"
 (
-	cd fuzzers
-
 	# Output which fuzzers we are going to run
 	echo "make --dry-run"
-	make --dry-run
+	make --dry-run db-${XRAY_SETTINGS}-all
 	echo "----------------------------------------"
 
 	# Run the fuzzers
-	#
-	# Cap MAX_VIVADO_PROCESS at 20 to limit memory usage of 074 fuzzer.
-	# At MAX_VIVADO_PROCESS=20:
-	# - 072 completes in ~35 minutes
-	# - 074 completes in ~60 minutes
-	# which is well before the 05x INT fuzzers complete.
-	export MAX_VIVADO_PROCESS=$((CORES/2 < 20 ? CORES/2 : 20))
 	set -x +e
 	tmp=`mktemp`
-	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS" $tmp
+	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS db-${XRAY_SETTINGS}-all" $tmp
 	DATABASE_RET=$?
 	set +x -e
 
@@ -69,35 +60,8 @@ echo "----------------------------------------"
 		rm $tmp
 		exit $DATABASE_RET
 	fi
-
-	# Check there is nothing to do after running...
-	echo
-	if [ $(make --dry-run | grep -v 'Nothing to be done' | wc -l) -gt 0 ]; then
-		echo "The following targets need to still run!"
-		make --dry-run
-		echo "----------------------------------------"
-		echo "Debug output on why they still need to run"
-		make --dry-run --debug
-		echo "----------------------------------------"
-		exit 1
-	else
-		echo "All good, nothing more to do!"
-	fi
 )
 echo "----------------------------------------"
-
-# Generate extra harness files (additional part yaml's, harness).
-set +e
-# Attempt to generate extra harnesses here, but don't check until after diff reporting.
-make db-extras-${XRAY_SETTINGS}-harness
-EXTRAS_HARNESS_RET=$?
-set -e
-
-# Generate extra parts file (tilegrid, tileconn, part yaml, part json and package_pin)
-set +e
-make db-extras-${XRAY_SETTINGS}-parts -j $CORES
-EXTRAS_PARTS_RET=$?
-set -e
 
 # Format the database
 make db-format-${XRAY_SETTINGS}

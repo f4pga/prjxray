@@ -19,9 +19,16 @@ def get_tile_grid_info(fname):
     with open(fname, 'r') as f:
         tile = json5.load(f)
 
+    tile_type = tile['type']
+    ignored = int(tile['ignored']) != 0
+
+    if ignored:
+        tile_type = 'NULL'
+
     return {
         tile['tile']: {
-            'type': tile['type'],
+            'type': tile_type,
+            'ignored': ignored,
             'grid_x': tile['x'],
             'grid_y': tile['y'],
             'sites': dict(
@@ -559,12 +566,13 @@ def main():
     parser.add_argument('--output_dir', required=True)
     parser.add_argument('--verify_only', action='store_true')
     parser.add_argument('--ignored_wires')
+    parser.add_argument('--max_cpu', type=int, default=10)
 
     args = parser.parse_args()
 
     tiles, nodes = lib.read_root_csv(args.root_dir)
 
-    processes = min(multiprocessing.cpu_count(), 10)
+    processes = min(multiprocessing.cpu_count(), args.max_cpu)
     print('{} Running {} processes'.format(datetime.datetime.now(), processes))
     pool = multiprocessing.Pool(processes=processes)
 
@@ -591,6 +599,12 @@ def main():
 
         for tile in db_grid_keys:
             for k in grid2[tile]:
+                if k == 'ignored':
+                    continue
+
+                if k == 'sites' and grid2[tile]['ignored']:
+                    continue
+
                 assert k in grid[tile], k
                 assert grid[tile][k] == grid2[tile][k], (
                     tile, k, grid[tile][k], grid2[tile][k])

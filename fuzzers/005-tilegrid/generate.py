@@ -5,7 +5,7 @@ from utils import xjson
 
 def load_tiles(tiles_fn):
     '''
-    "$type $tile $grid_x $grid_y $typed_sites"
+    "$type $tile $grid_x $grid_y $skip_tile $clock_region $typed_sites"
     typed_sites: foreach t $site_types s $sites
     '''
     tiles = list()
@@ -14,26 +14,42 @@ def load_tiles(tiles_fn):
         for line in f:
             # CLBLM_L CLBLM_L_X10Y98 30 106 SLICEL SLICE_X13Y98 SLICEM SLICE_X12Y98
             record = line.split()
-            tile_type, tile_name, grid_x, grid_y = record[0:4]
+            tile_type, tile_name, grid_x, grid_y, skip_tile = record[0:5]
             grid_x, grid_y = int(grid_x), int(grid_y)
+            skip_tile = int(skip_tile) != 0
             sites = {}
             clock_region = None
-            if len(record) >= 5:
-                clock_region = record[4]
+            if len(record) >= 6:
+                clock_region = record[5]
                 if clock_region == "NA":
                     clock_region = None
-                for i in range(5, len(record), 2):
+                for i in range(6, len(record), 2):
                     site_type, site_name = record[i:i + 2]
                     sites[site_name] = site_type
 
-            tile = {
-                'type': tile_type,
-                'name': tile_name,
-                'grid_x': grid_x,
-                'grid_y': grid_y,
-                'sites': sites,
-                'clock_region': clock_region,
-            }
+            if not skip_tile:
+                tile = {
+                    'type': tile_type,
+                    'name': tile_name,
+                    'grid_x': grid_x,
+                    'grid_y': grid_y,
+                    'sites': sites,
+                    'clock_region': clock_region,
+                }
+            else:
+                # Replace tiles within the exclude_roi with NULL tiles to
+                # ensure no gaps in the tilegrid.
+                #
+                # The name will reflect the original tile.
+                tile = {
+                    'type': 'NULL',
+                    'name': tile_name,
+                    'grid_x': grid_x,
+                    'grid_y': grid_y,
+                    'sites': {},
+                    'clock_region': clock_region,
+                }
+
             tiles.append(tile)
 
     return tiles

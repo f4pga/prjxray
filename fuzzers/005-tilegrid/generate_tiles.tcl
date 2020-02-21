@@ -26,10 +26,6 @@ proc write_tiles_txt {} {
             }
         }
 
-        if { $skip_tile == 1 } {
-            continue
-        }
-
         set typed_sites {}
 
         set clock_region "NA"
@@ -51,7 +47,7 @@ proc write_tiles_txt {} {
         }
 
 
-        puts $fp "$type $tile $grid_x $grid_y $clock_region $typed_sites"
+        puts $fp "$type $tile $grid_x $grid_y $skip_tile $clock_region $typed_sites"
     }
     close $fp_pin
     close $fp

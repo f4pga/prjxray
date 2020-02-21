@@ -126,8 +126,11 @@ class Logger:
         running_for = time_log - self.time_start
         msg = msg.format(*args, **kw)
 
-        log_prefix = "{:s} - {:s} - {:>5s}: ".format(
+        time_log = time_log.replace(microsecond=0)
+
+        log_prefix = "{:s} - {}/{:s} - {:>5s}: ".format(
             time_log.isoformat(),
+            os.environ['XRAY_PART'],
             self.fuzzer,
             pretty_timedelta_str(running_for),
         )
@@ -429,7 +432,8 @@ def main(argv):
     fuzzer_dir = os.path.join(fuzzers_dir, args.fuzzer)
     assert os.path.exists(fuzzer_dir), fuzzer_dir
 
-    fuzzer_logdir = os.path.join(fuzzer_dir, "logs")
+    fuzzer_logdir = os.path.join(
+        fuzzer_dir, "logs_{}".format(os.environ['XRAY_PART']))
     if not os.path.exists(fuzzer_logdir):
         os.makedirs(fuzzer_logdir)
     assert os.path.exists(fuzzer_logdir)
@@ -460,6 +464,17 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
     make_flags = os.environ.get('MAKEFLAGS', '')
     # Should run things?
     if not should_run_submake(make_flags):
+        return 0
+
+    fuzzer_runok = os.path.join(
+        fuzzer_dir, "run.{}.ok".format(os.environ['XRAY_PART']))
+    if os.path.exists(fuzzer_runok):
+        last_modified = datetime.fromtimestamp(os.stat(fuzzer_runok).st_mtime)
+
+        log(
+            "Skipping as run.{}.ok exists (updated @ {})",
+            os.environ['XRAY_PART'], last_modified.isoformat())
+
         return 0
 
     fuzzer_runok = os.path.join(fuzzer_dir, "run.ok")
@@ -618,14 +633,23 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
         # Log the last 10,000 lines of stderr on a failure
         log(
             """\
-Failed @ {time_end} with exit code: {retcode}
 --------------------------------------------------------------------------
-{error_log}
+!Failed! @ {time_end} with exit code: {retcode}
 --------------------------------------------------------------------------
-Failed @ {time_end} with exit code: {retcode}
+- STDOUT:                                                                -
+--------------------------------------------------------------------------
+{stdout_log}
+--------------------------------------------------------------------------
+- STDERR:                                                                -
+--------------------------------------------------------------------------
+{stderr_log}
+--------------------------------------------------------------------------
+!Failed! @ {time_end} with exit code: {retcode}
+--------------------------------------------------------------------------
 """,
             retcode=retcode,
-            error_log=error_log,
+            stdout_log=open(fuzzer_stdout).read(),
+            stderr_log=open(fuzzer_stderr).read(),
             time_end=time_end.isoformat())
     else:
         # Log the last 100 lines of a successful run

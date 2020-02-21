@@ -11,6 +11,7 @@ import argparse
 import prjxray.lib
 import prjxray.node_lookup
 import datetime
+import subprocess
 import os.path
 import pyjson5 as json5
 import progressbar
@@ -41,14 +42,8 @@ def flatten_site_pins(tile, site, site_pins, site_pin_node_to_wires):
 
             pin_info = {
                 'wire': wires[0],
-                'delay': site_pin['delay'],
+                'speed_model_index': site_pin['speed_model_index'],
             }
-
-            if 'cap' in site_pin:
-                pin_info['cap'] = site_pin['cap']
-
-            if 'res' in site_pin:
-                pin_info['res'] = site_pin['res']
 
             yield (
                 check_and_strip_prefix(site_pin['site_pin'], site + '/'),
@@ -114,18 +109,8 @@ def get_pips(tile, pips):
             pip['is_directional'],
             'can_invert':
             pip['can_invert'],
-            'is_pass_transistor':
-            pip['is_pass_transistor'],
-            'src_to_dst': {
-                'delay': pip.get('forward_delay', None),
-                'in_cap': pip.get('forward_in_cap', None),
-                'res': pip.get('forward_res', None),
-            },
-            'dst_to_src': {
-                'delay': pip.get('reverse_delay', None),
-                'in_cap': pip.get('reverse_in_cap', None),
-                'res': pip.get('reverse_res', None),
-            },
+            'speed_model_index':
+            pip['speed_model_index'],
         }
 
     return proto_pips
@@ -231,15 +216,9 @@ def read_json5(fname, database_file):
         for wire in tile['wires']:
             assert wire['wire'].startswith(tile['tile'] + '/')
 
-            if wire['res'] != '0.000' or wire['cap'] != '0.000':
-                wire_delay_model = {
-                    'res': wire['res'],
-                    'cap': wire['cap'],
-                }
-            else:
-                wire_delay_model = None
+            wire_speed_model_index = wire['speed_model_index']
 
-            yield wire['wire'][len(tile['tile']) + 1:], wire_delay_model
+            yield wire['wire'][len(tile['tile']) + 1:], wire_speed_model_index
 
     wires = {k: v for (k, v) in inner()}
     wires_from_nodes = set(node_lookup.wires_for_tile(tile['tile']))
@@ -255,6 +234,134 @@ def compare_and_update_wires(wires, new_wires):
             wires[wire] = new_wires
         else:
             assert wires[wire] == new_wires[wire]
+
+
+def get_speed_model_indices(reduced_tile):
+    """ Extracts the speed model indices for the data structure """
+
+    speed_model_indices = set()
+
+    for site in reduced_tile['sites']:
+        for site_pin in site['site_pins'].keys():
+            if site['site_pins'][site_pin] is None:
+                continue
+
+            speed_model_indices.add(
+                'site_pin,{}'.format(
+                    site['site_pins'][site_pin]['speed_model_index']))
+
+    for pip in reduced_tile['pips'].keys():
+        speed_model_indices.add(
+            'pip,{}'.format(reduced_tile['pips'][pip]['speed_model_index']))
+
+    for wire in reduced_tile['wires'].keys():
+        speed_model_indices.add('wire,{}'.format(reduced_tile['wires'][wire]))
+
+    return speed_model_indices
+
+
+def annotate_pips_speed_model(pips, speed_data):
+    """ Updates the pips with correct timing data """
+
+    for pip_name, pip_data in pips.items():
+        speed_model_index = pip_data['speed_model_index']
+
+        pip_speed_data = speed_data[speed_model_index]
+        assert pip_speed_data['resource_name'] == 'pip', (
+            pip_speed_data['resource_name'], speed_model_index)
+
+        pips[pip_name]['is_pass_transistor'] = pip_speed_data[
+            'is_pass_transistor']
+        pips[pip_name]['src_to_dst'] = {
+            'delay': pip_speed_data.get('forward_delay', None),
+            'in_cap': pip_speed_data.get('forward_in_cap', None),
+            'res': pip_speed_data.get('forward_res', None),
+        }
+        pips[pip_name]['dst_to_src'] = {
+            'delay': pip_speed_data.get('reverse_delay', None),
+            'in_cap': pip_speed_data.get('reverse_in_cap', None),
+            'res': pip_speed_data.get('reverse_res', None),
+        }
+
+        del pips[pip_name]['speed_model_index']
+
+
+def annotate_site_pins_speed_model(site_pins, speed_data):
+    """ Updates the site_pins with correct timing data """
+
+    for site_pin_name, pin_data in site_pins.items():
+        if pin_data is None:
+            continue
+
+        speed_model_index = pin_data['speed_model_index']
+
+        pin_speed_data = speed_data[speed_model_index]
+        assert pin_speed_data['resource_name'] == 'site_pin', (
+            pin_speed_data['resource_name'], speed_model_index)
+
+        site_pins[site_pin_name]['delay'] = pin_speed_data['delay']
+
+        cap = pin_speed_data['cap']
+        res = pin_speed_data['res']
+        if cap != 'null':
+            site_pins[site_pin_name]['cap'] = cap
+        if res != 'null':
+            site_pins[site_pin_name]['res'] = res
+
+        del site_pins[site_pin_name]['speed_model_index']
+
+
+def annotate_wires_speed_model(wires, speed_data):
+    """ Updates the wires with correct timing data """
+
+    for wire_name, wire_data in wires.items():
+        speed_model_index = wire_data
+
+        wire_speed_data = speed_data[speed_model_index]
+        assert wire_speed_data['resource_name'] == 'wire', (
+            wire_speed_data['resource_name'], speed_model_index)
+
+        cap = wire_speed_data['cap']
+        res = wire_speed_data['res']
+        if cap != '0.000' or res != '0.000':
+            wires[wire_name] = {
+                'cap': cap,
+                'res': res,
+            }
+        else:
+            wires[wire_name] = None
+
+
+def annotate_speed_model(tile_type, reduced_tile, root_dir):
+    """ Updates the reduced tile with the correct speed information """
+
+    speed_model_indices = get_speed_model_indices(reduced_tile)
+
+    tmp_indices_file = os.path.join(
+        root_dir, '{}_speed_index.tmp'.format(tile_type))
+
+    with open(tmp_indices_file, "w") as f:
+        for index in speed_model_indices:
+            print(index, file=f)
+
+    # Get vivado path
+    vivado = os.getenv('XRAY_VIVADO')
+    assert vivado is not None
+
+    subprocess.check_call(
+        "{} -mode batch -source get_speed_model.tcl -tclargs {}".format(
+            vivado, tmp_indices_file),
+        shell=True,
+        stdout=subprocess.DEVNULL)
+
+    with open(tmp_indices_file, "r") as f:
+        speed_model_data = json5.load(f)
+
+    for site in reduced_tile['sites']:
+        annotate_site_pins_speed_model(site['site_pins'], speed_model_data)
+
+    annotate_pips_speed_model(reduced_tile['pips'], speed_model_data)
+    annotate_wires_speed_model(reduced_tile['wires'], speed_model_data)
 
 
 def reduce_tile(pool, site_types, tile_type, tile_instances, database_file):
@@ -360,6 +467,9 @@ def main():
                 datetime.datetime.now(), tile_type))
         reduced_tile = reduce_tile(
             pool, site_types, tile_type, tiles[tile_type], database_file)
+
+        annotate_speed_model(tile_type, reduced_tile, args.root_dir)
+
         for site_type in site_types:
             with open(os.path.join(
                     args.output_dir, 'tile_type_{}_site_type_{}.json'.format(
