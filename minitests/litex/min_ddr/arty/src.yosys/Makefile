@@ -27,7 +27,7 @@ top.edif: $(YOSYS) synth.ys $(SOURCES)
 top.bit: $(VIVADO) top.edif top.xdc top.tcl
 	mkdir -p build
 	cd build && $(XRAY_VIVADO) -mode batch -source ../top.tcl -nojournal -tempDir build -log vivado.log -verbose
-	python3 $(XRAY_DIR)/minitests/timing/clean_json5.py < build/iobuf_report.json5 > build/iobuf_report.json
+	python3 $(XRAY_UTILS_DIR)/clean_json5.py < build/iobuf_report.json5 > build/iobuf_report.json
 	cp build/*.bit ./
 
 top.fasm: top.bit
