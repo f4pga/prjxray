@@ -419,9 +419,9 @@ def tile_segnames(tiles):
     return ret
 
 
-def load_tiles(db_root):
+def load_tiles(db_root, part):
     # TODO: Migrate to new tilegrid format via library.
-    with open("%s/tilegrid.json" % (db_root), "r") as f:
+    with open("%s/%s/tilegrid.json" % (db_root, part), "r") as f:
         tiles = json.load(f)
     return tiles
 
@@ -438,7 +438,7 @@ def run(
         bit_only=False,
         verbose=False):
     db = prjxraydb.Database(db_root, part)
-    tiles = load_tiles(db_root)
+    tiles = load_tiles(db_root, part)
     segments = mk_segments(tiles)
     bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
 
