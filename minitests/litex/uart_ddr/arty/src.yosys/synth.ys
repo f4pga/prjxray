@@ -1,0 +1,2 @@
+read_verilog ../generated/top.v
+synth_xilinx -edif top.edif
