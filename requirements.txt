@@ -3,6 +3,7 @@
 intervaltree
 junit-xml
 numpy
+openpyxl
 ordered-set
 parse
 progressbar2
@@ -14,4 +15,3 @@ simplejson
 sympy
 textx
 yapf==0.24.0
-openpyxl

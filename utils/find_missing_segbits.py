@@ -113,7 +113,7 @@ def main(argv):
     # List tile types
     tile_types = []
     for file in files:
-        match = re.match("^tile_type_(\w+).json$", file)
+        match = re.match("^tile_type_(\\w+).json$", file)
         if match:
             tile_types.append(match.group(1))
 

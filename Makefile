@@ -7,7 +7,7 @@ ifeq ($(shell id -u),0)
 endif
 
 # Tools + Environment
-IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi;
+IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi; source utils/environment.python.sh;
 env:
 	virtualenv --python=python3 env
 	# Install prjxray

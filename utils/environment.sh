@@ -18,7 +18,7 @@ fi
 
 # misc
 export XRAY_PART_YAML="${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/${XRAY_PART}/part.yaml"
-export PYTHONPATH="${XRAY_DIR}:${XRAY_DIR}/third_party/fasm:$PYTHONPATH"
+source $XRAY_UTILS_DIR/environment.python.sh
 
 # tools
 export XRAY_GENHEADER="${XRAY_UTILS_DIR}/genheader.sh"
