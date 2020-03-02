@@ -1,0 +1,62 @@
+===========
+ppips files
+===========
+
+The *ppips files* are generated for every FPGA :term:`tile <tile>` type.
+They store the information about the pseudo-PIPs, inside the tile.
+
+Programable Interconnect point (:term:`PIP <pip>`) is a connection inside the
+:term:`tile <tile>` that can be enabled or disabled. Pseudo PIPs appears as standard
+:term:`PIPs <pip>` in the Vivado tool, but they do not have actual configuration
+bit pattern (they are not configurable).
+
+Naming convention
+-----------------
+
+The naming scheme for the PPIPs files is the following::
+
+   ppips_<tile>.db
+
+In example:
+
+   - ``ppips_dsp_l.db``
+   - ``ppips_clbll_l.db``
+   - ``ppips_bram_int_interface_l.db``
+
+File format
+-----------
+
+The file contains one entry per pseudo-PIP, each with one of the following
+three tags: ``always``, ``default`` or ``hint``. The entries are of the form:::
+
+   <ppip_location> <tag>
+
+The tag ``always`` is used for pseudo-PIPs that are actually always-on, i.e.,
+that are permanent connections between two wires.
+
+The tag ``default`` is used for pseudo-PIPs that represent the default behavior
+if no other driver has been configured for the destination net
+(all default pseudo-PIPs connect to the VCC_WIRE net).
+
+The tag ``hint`` is used for PIPs that are used by Vivado to tell the router
+that two logic slice outputs drive the same value, i.e., behave like they
+are connected as far as the routing process is concerned.
+
+Example
+-------
+
+Below there is a part of artix7 ``ppips_clbll_l.db`` file::
+
+   <...>
+   CLBLL_L.CLBLL_L_A.CLBLL_L_A6 hint
+   CLBLL_L.CLBLL_L_AMUX.CLBLL_L_A hint
+   CLBLL_L.CLBLL_L_AX.CLBLL_BYP0 always
+   CLBLL_L.CLBLL_L_B.CLBLL_L_B1 hint
+   CLBLL_L.CLBLL_L_B.CLBLL_L_B2 hint
+   CLBLL_L.CLBLL_L_B.CLBLL_L_B3 hint
+   CLBLL_L.CLBLL_L_B.CLBLL_L_B4 hint
+   <...>
+
+The ``<ppip_location>`` name is arbitrary. However, we named them in the convention
+similar to the Vivado tool, which allows us to identify them quickly and provides
+suggestions about their role in the FPGA chip.

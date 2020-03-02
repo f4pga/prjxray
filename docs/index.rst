@@ -37,4 +37,4 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    :maxdepth: 2
    :caption: Output Formats
 
-   format/index
+   dev_database/index

@@ -28,7 +28,7 @@ important data about the Xilinx chips. The needed information includes:
 
 Final results are stored in the database which is further used by the
 `Architecture Definitions`_ project. The whole database is described in
-the dedicated :doc:`chapter <format/index>`.
+the dedicated :doc:`chapter <dev_database/index>`.
 
 Methodology
 -----------
