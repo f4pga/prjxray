@@ -1,10 +1,11 @@
 Fuzzers
 =======
-Fuzzers are things that generate a design, feed it to Vivado, and look at the resulting bitstream to make some conclusion.
+
+Fuzzers are a set of tests which generate a design, feed it to Vivado, and look at the resulting bitstream to make some conclusion.
 This is how the contents of the database are generated.
 
 The general idea behind fuzzers is to pick some element in the device (say a block RAM or IOB) to target.
-If you picked the IOB (no one is working on that yet), you'd write a design that is implemented in a specific IOB.
+If you picked the IOB, you'd write a design that is implemented in a specific IOB.
 Then you'd create a program that creates variations of the design (called specimens) that vary the design parameters, for example, changing the configuration of a single pin.
 
 A lot of this program is TCL that runs inside Vivado to change the design parameters, because it is a bit faster to load in one Verilog model and use TCL to replicate it with varying inputs instead of having different models and loading them individually.

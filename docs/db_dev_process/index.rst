@@ -7,6 +7,7 @@ Database Development Process
 
    readme
    contributing
+   new_fuzzer
    fuzzers/index
    minitests/index
    parts
