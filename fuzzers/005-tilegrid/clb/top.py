@@ -55,13 +55,6 @@ module top(input clk, stb, di, output do);
                                              util.gen_fuzz_states(len(sites))):
         params[tile_name] = (site_name, isone)
 
-        print(
-            '''
-            (* KEEP, DONT_TOUCH, LOC = "%s" *)
-            CARRY4 carry4_%s (
-                    .CYINIT(%u));
-''' % (site_name, site_name, isone))
-
     print("endmodule")
     write_params(params)
 

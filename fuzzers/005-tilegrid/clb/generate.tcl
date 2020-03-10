@@ -19,6 +19,46 @@ proc run {} {
     place_design
     route_design
 
+    create_cell -reference VCC vcc_cell
+    set vcc_pin [get_pins vcc_cell/P]
+
+    create_net vcc_net
+    set vcc_net [get_nets vcc_net]
+    connect_net -net $vcc_net -objects $vcc_pin
+
+    create_cell -reference GND gnd_cell
+    set gnd_pin [get_pins gnd_cell/G]
+
+    create_net gnd_net
+    set gnd_net [get_nets gnd_net]
+    connect_net -net $gnd_net -objects $gnd_pin
+
+    set fp [open params.csv r]
+
+    # Skip header line
+    gets $fp line
+
+    # This is done post-placement to remove PROHIBIT on some sites.
+    puts "Creating CARRY4's"
+    while {[gets $fp line] >= 0} {
+        set parts [split [string trim $line] ","]
+        set val [lindex $parts 1]
+        set site [lindex $parts 2]
+
+        set cell [create_cell -reference CARRY4 carry4_$site]
+        set_property PROHIBIT 0 [get_sites $site]
+        set_property KEEP true $cell
+        set_property DONT_TOUCH 1 $cell
+        set_property LOC $site $cell
+
+        if { $val == 1 } {
+            connect_net -net $vcc_net -objects [get_pins carry4_$site/CI]
+        } else {
+            connect_net -net $gnd_net -objects [get_pins carry4_$site/CI]
+        }
+    }
+    puts "Done creating CARRY4's"
+
     write_checkpoint -force design.dcp
     write_bitstream -force design.bit
 }

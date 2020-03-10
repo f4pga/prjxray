@@ -35,7 +35,8 @@ def write_params(params):
 
 def run():
     print('''
-module top();
+module top(input di, output do);
+    assign do = di;
     ''')
 
     params = {}
@@ -44,34 +45,6 @@ module top();
     for (tile_name, site_name), isone in zip(sites,
                                              util.gen_fuzz_states(len(sites))):
         params[tile_name] = (site_name, isone)
-
-        # Force HARD0 -> GFAN1 with I2 = 0
-        # Toggle 1 pip with I1 = ?
-        print(
-            '''
-            wire lut_to_f7_{0}, f7_to_f8_{0};
-            (* KEEP, DONT_TOUCH, LOC = "{0}" *)
-            LUT6_L #(
-            .INIT(0)
-            ) lut_rom_{0} (
-                    .I0(1),
-                    .I1({1}),
-                    .I2(0),
-                    .I3(1),
-                    .I4(1),
-                    .I5(1),
-                    .LO(lut_to_f7_{0})
-                    );
-            (* KEEP, DONT_TOUCH, LOC = "{0}" *)
-            MUXF7_L f7_{0} (
-                .I0(lut_to_f7_{0}),
-                .LO(f7_to_f8_{0})
-                );
-            (* KEEP, DONT_TOUCH, LOC = "{0}" *)
-            MUXF8 f8_{0} (
-                .I0(f7_to_f8_{0})
-                );
-'''.format(site_name, isone))
 
     print("endmodule")
     write_params(params)
