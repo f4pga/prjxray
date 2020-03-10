@@ -2,8 +2,8 @@
 mask files
 ==========
 
-The *mask files* are generated for every FPGA :term:`tile <tile>` type. They store
-the information, which bits in the bitstream can configure the given
+The *mask files* are generated for every FPGA :term:`tile <tile>` type.
+They store the information which bits in the bitstream can configure the given
 :term:`tile <tile>` type.
 
 Naming convention
@@ -19,11 +19,11 @@ which produced the :term:`database <database>` file. This file is optional.
 
 Every :term:`tile <tile>` is configured at least by one of three configurational
 buses mentioned in the :doc:`Configuration Section <../../architecture/configuration>`.
-The default bus is called ``CLB_IO_CLK``. If the :term:`tile <tile>` can also be
-configured by another bus it has additional ``mask_<tile>.<bus_name>.db``
+The default bus is called ``CLB_IO_CLK``.
+If the :term:`tile <tile>` can also be configured by another bus, it has an additional ``mask_<tile>.<bus_name>.db``
 related to that bus.
 
-In example:
+For example:
 
    - ``mask_dsp_r.db``
    - ``mask_bram_l.db`` (configured with default ``CLB_IO_CLK`` bus)
@@ -32,12 +32,12 @@ In example:
 File format
 -----------
 
-The file consist of the records that describes configuration bits for
+The file consists of records that describe the configuration bits for
 the particular :term:`tile <tile>` type. Each entry inside the file is of the form::
 
    bit <frame_address_offset>_<bit_position>
 
-This means that the :term:`tile <tile>` can be configured by bit located in the
+This means that the :term:`tile <tile>` can be configured by a bit located in the
 :term:`frame <frame>` at the address ``<base_frame_addr> + <frame_address_offset>``,
 at position ``<tile_offset> + <bit_position>``. Information about ``<base_frame_address>``
 and ``<tile_offset>`` can be taken from part specific ``tilegrid.json`` file.
@@ -45,13 +45,13 @@ and ``<tile_offset>`` can be taken from part specific ``tilegrid.json`` file.
 Example
 -------
 
-Below there is a part of artix7 ``mask_clbll_l.db`` file describing FPGA *CLBLL*
+Below there is a part of artix7 ``mask_clbll_l.db`` file describing a FPGA *CLBLL*
 :term:`tile <tile>`::
 
    <...>
    bit 00_61
    bit 00_62
-   bit_00_63
+   bit 00_63
    bit 01_00
    bit 01_01
    bit 01_02
@@ -62,7 +62,7 @@ configured by the bit located in the :term:`frame <frame>` at the address
 ``<base_frame_address> + 0x01``, at position ``<tile_offset> + 0x2``.
 
 The ``tilegrid.json`` is a file specific to a given chip package.
-For *xc7a35tcpg236-1* we can find exemplary *CLBLL_L* entry::
+For *xc7a35tcpg236-1* we can find an exemplary *CLBLL_L* entry::
 
     "CLBLL_L_X2Y0": {
         "bits": {

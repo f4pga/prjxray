@@ -4,7 +4,7 @@ tile_type files
 
 The *tile_type files* are generated for every FPGA :term:`tile <tile>`
 type. They store the information about the :term:`tile <tile>` configuration,
-it's :term:`PIPs <pip>`, :term:`sites <site>`, wires and their properties.
+its :term:`PIPs <pip>`, :term:`sites <site>`, wires and their properties.
 
 Naming convention
 -----------------
@@ -13,7 +13,7 @@ The naming scheme for the segbits files is the following::
 
    tile_type_<tile>.json
 
-Exemplary files:
+Example files:
 
    - ``tile_type_INT_L.json``
    - ``tile_type_BRAM_L.json``
@@ -86,18 +86,18 @@ The :term:`tile <tile>` type files are JSON files with the following shape::
 ^^^^^^^^^^^^^^
 
 The "pips" section describes all :term:`PIPs <pip>` in the :term:`tile <tile>`.
-Every :term:`PIP <pip>` has it's name - ``"<PIN_NAME>"`` and may be
+Every :term:`PIP <pip>` has its name - ``"<PIN_NAME>"`` and may be
 characterized by the following attributes:
 
-- ``"can_invert"`` - takes a value which can be either **1** or **0**.
+- ``can_invert`` - takes a value which can be either **1** or **0**.
   It defines whether the :term:`PIP <pip>` has an inverter on it's output or not.
 
-- ``dst_to_src"`` - information about the connection in the direction
+- ``dst_to_src`` - information about the connection in the direction
   from destination to source. It describes the following properties of the connection:
 
-   - ``"delay"`` - four-element list, which contain information about the delays.
-   - ``"in_cap"`` - the input capacitance of the :term:`PIP <pip>`
-   - ``"res"`` - the resistance of the :term:`PIP <pip>`.
+   - ``delay`` - four-element list, which contain information about the delays.
+   - ``in_cap`` - the input capacitance of the :term:`PIP <pip>`
+   - ``res`` - the resistance of the :term:`PIP <pip>`.
 
 - ``dst_wire`` - the destination wire name
 
@@ -118,37 +118,37 @@ characterized by the following attributes:
 The "sites" section describes all :term:`sites <site>` in the :term:`tile <tile>`.
 Every :term:`site <site>` may be characterized by the following attributes:
 
-- ``"name"`` - location in the :term:`tile <tile>` grid
+- ``name`` - location in the :term:`tile <tile>` grid
 
-- ``"prefix"`` - the type of the :term:`site <site>`
+- ``prefix`` - the type of the :term:`site <site>`
 
-- ``"site_pins"`` - describes the pins that belong to the :term:`site <site>`.
-  Every pin has it's  name - ``"<PIN_NAME>"`` and may be described
+- ``site_pins`` - describes the pins that belong to the :term:`site <site>`.
+  Every pin has it's  name - ``<PIN_NAME>`` and may be described
   by the following attributes:
 
-   - ``"cap"`` - pin capacitance
-   - ``"delay"`` - pin delay
-   - ``"wire"`` - wire associated with the pin
+   - ``cap`` - pin capacitance
+   - ``delay`` - pin delay
+   - ``wire`` - wire associated with the pin
 
-- ``"type"`` - indicates the type of the site
+- ``type`` - indicates the type of the site
 
-- ``"x_coord"`` - describes *x* coordinate of the site position inside the tile
+- ``x_coord`` - describes *x* coordinate of the site position inside the tile
 
-- ``y_coord"`` - describes the *y* coordinate of the site position inside the tile
+- ``y_coord`` - describes the *y* coordinate of the site position inside the tile
 
 "wires" section
 ^^^^^^^^^^^^^^^
 
 The "wires" section describes the wires located in the :term:`tile <tile>`.
-Every wire has it's name - ``"<WIRE_NAME>"`` and may be characterized
+Every wire has it's name - ``<WIRE_NAME>`` and may be characterized
 by the following attributes:
 
-- ``"cap"`` - wire capacitance
-- ``"res"`` - wire resistance
+- ``cap`` - wire capacitance
+- ``res`` - wire resistance
 
 Other
 ^^^^^
-- ``"tile_type"`` - indicates the type of the tile
+- ``tile_type`` - indicates the type of the tile
 
 
 Example

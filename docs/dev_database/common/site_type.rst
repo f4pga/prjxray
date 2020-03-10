@@ -13,7 +13,7 @@ The naming scheme for the :term:`site <site>` type files is the following::
 
    site_type_<site>.json
 
-Exemplary files:
+Example files:
 
    - ``site_type_IDELAYE2.json``
    - ``site_type_PLLE2_ADV.json``

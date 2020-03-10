@@ -35,7 +35,7 @@ Exemplary files:
 File format
 -----------
 
-The file consists of the lines, containing the information about the feature
+The file consists of lines containing the information about the feature
 and the list of bits that should be enabled/disabled to provide the feature's
 functionality::
 
@@ -49,10 +49,8 @@ where:
      mark in front of it, that means it should be set to **0** for feature configuration,
      otherwise it should be set to **1**.
 
-The names of the features are arbitrary. However, we named them in the convention,
-which allows us to identify them quickly and provides suggestions
-about the functionality that they provide. The feature names are used in the
-fasm files generation.
+The names of the features are arbitrary. However, the naming convention allows for quick identifaction of the functionality that is being configured.
+The feature names are used during the generation of the :doc:`FASM <../../../../fasm/docs/specification>` file.
 
 
 Feature naming conventions
@@ -79,14 +77,14 @@ For example::
 
    CLBLL_L.SLICEL_X0.ALUT.INIT[00]
 
-This entry documents the initialization bits the *LSB LUT* for the *ALUT* in
+This entry documents the initialization bits of the *LSB LUT* for the *ALUT* in
 the *SLICEL_X0* within a *CLBLL_L tile.*
 
 Example
 -------
 
-Below there is a part of ``segbits_liob33_l.db`` file for the *artix7*
-architecture. The file describes *CLBLL* :term:`tile <tile>`::
+Below there is a part of the ``segbits_liob33_l.db`` file for the *artix7*
+architecture. The file describes the *CLBLL* :term:`tile <tile>`::
 
    <...>
    LIOB33.IOB_Y0.IBUFDISABLE.I 38_82
@@ -102,15 +100,15 @@ architecture. The file describes *CLBLL* :term:`tile <tile>`::
    LIOB33.IOB_Y0.PULLTYPE.PULLUP !38_92 38_94 39_93
    <...>
 
-In example, the line::
+For example, the line::
 
    LIOB33.IOB_Y0.PULLTYPE.PULLUP !38_92 38_94 39_93
 
 means that the feature ``LIOB33.IOB_Y0.PULLTYPE.PULLUP`` will be set by clearing
 bit ``!38_92`` and setting bits ``38_94`` and ``39_93``.
 
-Generally, ``<feature>`` name is connected with its functionality.
-In example, ``LIOB33.IOB_Y0.PULLTYPE.PULLUP`` means that in the LIOB33
+Generally, the ``<feature>`` name is linked with its functionality.
+For example, ``LIOB33.IOB_Y0.PULLTYPE.PULLUP`` means that in the LIOB33
 :term:`tile <tile>`,
 in IOB_Y0 site the *pull type* will be set to *PULLUP*.
 This simply means that all pins belonging to this particular IOB

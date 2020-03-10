@@ -1,6 +1,6 @@
-===================
-Part Specific Files
-===================
+============================
+Part specific database files
+============================
 
 This section contains a description of :term:`database <database>` files that
 are part (chip) specific:

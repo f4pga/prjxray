@@ -2,8 +2,8 @@
 Database
 ========
 
-This section documents how prjxray represents the bitstream database.
-The databases are plain text files, using either simple line-based syntax or JSON.
+This section documents how the bitstream database is represented in project X-Ray.
+The database is a collection of plain text files, using either simple line-based syntax or JSON format.
 
 .. toctree::
    :maxdepth: 2

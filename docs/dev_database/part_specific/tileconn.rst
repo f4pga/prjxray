@@ -44,7 +44,7 @@ Sample entry:
 
 Interpreted as:
 
-- Use when a CLBLL_L is above a HCLK_CLB (ie pointing south from CLBLL_L)
-- Connect CLBLL_L.CLBLL_LL_CIN to HCLK_CLB.HCLK_CLB_COUT0_L
-- Connect CLBLL_L.CLBLL_L_CIN to HCLK_CLB.HCLK_CLB_COUT1_L
+- Use when a ``CLBLL_L`` is above a ``HCLK_CLB`` (i.e. pointing south from ``CLBLL_L``)
+- Connect ``CLBLL_L.CLBLL_LL_CIN`` to ``HCLK_CLB.HCLK_CLB_COUT0_L``
+- Connect ``CLBLL_L.CLBLL_L_CIN`` to ``HCLK_CLB.HCLK_CLB_COUT1_L``
 - A global clock tile is feeding into slice carry chain inputs

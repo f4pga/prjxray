@@ -1,15 +1,15 @@
-=============================
-Files Common for Architecture
-=============================
+=====================
+Common database files
+=====================
 
 This section contains a description of :term:`database <database>` files
-that are common for a whole chip architecture.
+that are common for all Xilinx series 7 chip architectures.
 
 .. toctree::
    :maxdepth: 2
 
-   mask
-   ppips
    segbits
    site_type
    tile_type
+   ppips
+   mask
