@@ -21,9 +21,9 @@ base addresses. However, as part of this conversion, address propagation
 is also generally discouraged. So it is also recommended to toggle bits
 in all IP blocks in a column, not just one. In the CLB case, this means
 that every single CLB tile gets one bit set to a random value. If there
-are 4 CLB CMT columns in the ROI, this means we\'d randomly set 4 \* 50
+are 4 CLB CMT columns in the ROI, this means we'd randomly set 4 * 50
 bits in every bitstream. With 200 bits, it takes minimum floor(log(200,
-2)) =\> 8 bitstreams (specimens) to solve all of them.
+2)) => 8 bitstreams (specimens) to solve all of them.
 
 Calculating the base address
 ++++++++++++++++++++++++++++
@@ -86,9 +86,9 @@ Calculating the base address
 
 #. Return to the main tilegrid directory
 
-#. Edit ``tilegrid/add_tdb.py`` dsd a
+#. Edit ``tilegrid/add_tdb.py``
 
-   #.  Find ``tdb\_fns`` and add an entry for your tile type e.g. ``(dsp/build/segbits_tilegrid.tdb", 28, 10)``
+   #.  Find ``tdb_fns`` and add an entry for your tile type e.g. ``(dsp/build/segbits_tilegrid.tdb", 28, 10)``
 
    #.  This is declared to be 28 frames wide and occupy 10 words per tile in the DSP column
 
@@ -102,10 +102,8 @@ Feature Fuzzing
 ---------------
 
 The general idea behind fuzzers is to pick some element in the device (say a block RAM or IOB) to target and write a design that is implemented in a specific element.
-Next, we need to create variations of the design (called specimens) that vary the design parameters, for example, changing the configuration of a single pin.
-A lot of this program is TCL that runs inside Vivado to change the design parameters, because it is a bit faster to load in one Verilog model and use TCL to replicate it with varying inputs instead of having different models and loading them individually.
-
-By looking at all the resulting specimens, the information which bits in which frame correspond to a particular choice in the design can be correlated.
+Next, we need to create variations of the design (called specimens) that vary the design parameters, for example, changing the configuration of a single pin and process them in Vivado in order to obtain the respective bitstreams.
+Finally, by looking at all the resulting specimens, the information which bits in which frame correspond to a particular choice in the design can be correlated.
 Looking at the implemented design in Vivado with "Show Routing Resources" turned on is quite helpful in understanding what all choices exist.
 
 Fuzzer structure
@@ -148,7 +146,7 @@ Creating the fuzzer
 
 1.  Open the *top.py* script and modify the content of the top module by
     instantiating a DSP primitive and specifying some parameters. Use
-    LOC and DONT\_TOUCH attributes to avoid some design optimization
+    LOC and DONT_TOUCH attributes to avoid some design optimization
     since the netlists are in many cases very artificial.
 
 2.  Make sure the *top.py* script generates apart from the top.v
