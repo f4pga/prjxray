@@ -34,6 +34,7 @@ proc write_tiles_txt {} {
             set site_types [get_property SITE_TYPE $sites]
             foreach t $site_types s $sites {
                 lappend typed_sites $t $s
+                lappend typed_sites [get_property PROHIBIT $s]
 
                 set package_pin [get_package_pins -of $s -quiet]
                 if [llength $package_pin] {

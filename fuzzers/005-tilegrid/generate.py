@@ -18,14 +18,27 @@ def load_tiles(tiles_fn):
             grid_x, grid_y = int(grid_x), int(grid_y)
             skip_tile = int(skip_tile) != 0
             sites = {}
+
+            # prohibits is the list of sites that the Vivado placer will not
+            # place at.
+            #
+            # Speculation: These sites are prohibited not because the hardware
+            # doesn't work, but because the interconnect around these sites is
+            # extremely narrow due to the hardblocks to the left and right of
+            # tiles.  As a result, these sites should be avoided because
+            # congestion and delays when using these sites might be very very
+            # high.
+            prohibits = []
             clock_region = None
             if len(record) >= 6:
                 clock_region = record[5]
                 if clock_region == "NA":
                     clock_region = None
-                for i in range(6, len(record), 2):
-                    site_type, site_name = record[i:i + 2]
+                for i in range(6, len(record), 3):
+                    site_type, site_name, prohibited = record[i:i + 3]
                     sites[site_name] = site_type
+                    if int(prohibited):
+                        prohibits.append(site_name)
 
             if not skip_tile:
                 tile = {
@@ -34,6 +47,7 @@ def load_tiles(tiles_fn):
                     'grid_x': grid_x,
                     'grid_y': grid_y,
                     'sites': sites,
+                    'prohibited_sites': sorted(prohibits),
                     'clock_region': clock_region,
                 }
             else:
@@ -47,6 +61,7 @@ def load_tiles(tiles_fn):
                     'grid_x': grid_x,
                     'grid_y': grid_y,
                     'sites': {},
+                    'prohibited_sites': [],
                     'clock_region': clock_region,
                 }
 
@@ -80,6 +95,7 @@ def make_database(tiles, pin_func):
             "grid_y": tile["grid_y"],
             "bits": {},
             "pin_functions": {},
+            "prohibited_sites": tile['prohibited_sites'],
         }
 
         if tile["clock_region"]:
