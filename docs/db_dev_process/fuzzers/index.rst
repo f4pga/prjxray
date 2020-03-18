@@ -57,7 +57,6 @@ Programmable Interconnect Points (PIPs)
    :maxdepth: 1
    :glob:
 
-   *int*
    *pip*
 
 Hard Block Fuzzers
@@ -67,7 +66,7 @@ Hard Block Fuzzers
    :maxdepth: 1
    :glob:
 
-   *xadc
+   *xadc*
 
 Grid and Wire
 -------------
@@ -77,19 +76,6 @@ Grid and Wire
    :glob:
 
    tilegrid
-   tileconn
-   ordered_wires
-   get_counts
-   dump_all
-
-Timing
-------
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   timing
 
 All Fuzzers
 -----------

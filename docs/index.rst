@@ -26,7 +26,6 @@ to develop a free and open Verilog to bitstream toolchain for these devices.
    architecture/reference
    architecture/code_of_conduct
    architecture/updating_the_docs
-   architecture/copying
 
 .. toctree::
    :maxdepth: 2

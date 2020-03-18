@@ -35,6 +35,8 @@ from markdown_code_symlinks import LinkParser, MarkdownSymlinksDomain
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
+# yapf: disable
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -42,8 +44,9 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
-    'sphinx_markdown_tables',
+    'sphinx_markdown_tables'
 ]
+# yapf: enable
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -100,7 +103,15 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+# yapf: disable
+exclude_patterns = [
+    '_build',
+    'architecture/copying.md',
+    'db_dev_process/minitests/index/**',
+    'db_dev_process/fuzzers/index/**'
+]
+# yapf: enable
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'default'
