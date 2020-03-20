@@ -2,13 +2,18 @@
 ppips files
 ===========
 
-The *ppips files* are generated for every FPGA :term:`tile <tile>` type.
+The *ppips files* are generated for every FPGA :term:`tile <Tile>` type.
 They store the information about the pseudo-PIPs, inside the tile.
 
-Programable Interconnect Point (:term:`PIP <pip>`) is a connection inside the
-:term:`tile <tile>` that can be enabled or disabled. Pseudo PIPs appear as standard
-:term:`PIPs <pip>` in the Vivado tool, but they do not have actual configuration
-bit pattern (they are not configurable).
+Programable Interconnect Point (:term:`PIP <PIP>`) is a connection inside the
+:term:`tile <Tile>` that can be enabled or disabled. Pseudo PIPs appear as standard
+:term:`PIPs <PIP>` in the Vivado tool, but they do not have actual configuration
+bit pattern in segbits files (they are not configurable).
+
+The *ppips files* contains the information which `PIPs <PIP>` do not have
+configuration bits, which allows the tools to not generat error in that situation.
+On the other hand this information is used to indicate that the connection
+between wires is always on.
 
 Naming convention
 -----------------

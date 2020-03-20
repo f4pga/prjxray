@@ -2,9 +2,9 @@
 tile_type files
 ===============
 
-The *tile_type files* are generated for every FPGA :term:`tile <tile>`
-type. They store the information about the :term:`tile <tile>` configuration,
-its :term:`PIPs <pip>`, :term:`sites <site>`, wires and their properties.
+The *tile_type files* are generated for every FPGA :term:`tile <Tile>`
+type. They store the information about the :term:`tile <Tile>` configuration,
+its :term:`PIPs <PIP>`, :term:`sites <Site>`, wires and their properties.
 
 Naming convention
 -----------------
@@ -22,7 +22,7 @@ Example files:
 File format
 -----------
 
-The :term:`tile <tile>` type files are JSON files with the following shape::
+The :term:`tile <Tile>` type files are JSON files with the following shape::
 
    {
       "pips": {
@@ -30,10 +30,10 @@ The :term:`tile <tile>` type files are JSON files with the following shape::
             "can_invert":' "<BOOL>",
             "dst_to_src": {
                 "delay": [
-                    "<DEALY_VALUE>",
-                    "<DELAY_VALUE>",
-                    "<DELAY_VALUE>",
-                    "<DELAY_VALUE>"
+                    "<FAST_MIN>",
+                    "<FAST_MAX>",
+                    "<SLOW_MIN>",
+                    "<SLOW_MAX>"
                 ],
                 "in_cap": "<IN_CAPACITANCE>",
                 "res": "<RESISTANCE>"
@@ -44,10 +44,10 @@ The :term:`tile <tile>` type files are JSON files with the following shape::
             "is_pseudo": "0",
             "src_to_dst": {
                 "delay": [
-                    "<DELAY_VALUE>",
-                    "<DELAY_VALUE>",
-                    "<DELAY_VALUE>",
-                    "<DELAY_VALUE>"
+                    "<FAST_MIN>",
+                    "<FAST_MAX>",
+                    "<SLOW_MIN>",
+                    "<SLOW_MAX>"
                 ],
                 "in_cap": "<IN_CAPACITANCE>",
                 "res": "<RESISTANCE>"
@@ -63,10 +63,10 @@ The :term:`tile <tile>` type files are JSON files with the following shape::
                 "<SITE_PIN_NAME>": {
                     "cap": "<CAPACITY>",
                     "delay": [
-                        "<DELAY_VALUE>",
-                        "<DELAY_VALUE>",
-                        "<DELAY_VALUE>",
-                        "<DELAY_VALUE>"
+                        "<FAST_MIN>",
+                        "<FAST_MAX>",
+                        "<SLOW_MIN>",
+                        "<SLOW_MAX>"
                     ],
                     "wire": "<WIRE_NAME>"
                 },
@@ -85,28 +85,34 @@ The :term:`tile <tile>` type files are JSON files with the following shape::
 "pips" section
 ^^^^^^^^^^^^^^
 
-The "pips" section describes all :term:`PIPs <pip>` in the :term:`tile <tile>`.
-Every :term:`PIP <pip>` has its name - ``"<PIN_NAME>"`` and may be
+The "pips" section describes all :term:`PIPs <PIP>` in the :term:`tile <Tile>`.
+Every :term:`PIP <PIP>` has its name - ``"<PIN_NAME>"`` and may be
 characterized by the following attributes:
 
 - ``can_invert`` - takes a value which can be either **1** or **0**.
-  It defines whether the :term:`PIP <pip>` has an inverter on it's output or not.
+  It defines whether the :term:`PIP <PIP>` has an inverter on it's output or not.
 
 - ``dst_to_src`` - information about the connection in the direction
   from destination to source. It describes the following properties of the connection:
 
-   - ``delay`` - four-element list, which contain information about the delays.
-   - ``in_cap`` - the input capacitance of the :term:`PIP <pip>`
-   - ``res`` - the resistance of the :term:`PIP <pip>`.
+   - ``delay`` - a four-element list, which contain information about the delay of pins.
+     First two elements are related to the *fast corner* of the technological process,
+     the second two elements to the *slow corner*. The first element of the pair
+     is the minimum value of the corner, the second describes the maximum value.
+     They are given in us (nanoseconds).
+
+   - ``in_cap`` - the input capacitance of the :term:`PIP <PIP>` in uF (microfarads).
+
+   - ``res`` - the resistance of the :term:`PIP <PIP>` in mΩ (miliohms).
 
 - ``dst_wire`` - the destination wire name
 
-- ``is_directional`` - contains the information whether :term:`PIP <pip>` is directional.
+- ``is_directional`` - contains the information whether :term:`PIP <PIP>` is directional.
 
-- ``is_pass_transisstor`` - contains the information whether :term:`PIP <pip>` acts
+- ``is_pass_transisstor`` - contains the information whether :term:`PIP <PIP>` acts
   as a pass transistor
 
-- ``is_pseudo`` - contains the information whether :term:`PIP <pip>` is a pseudo-PIP
+- ``is_pseudo`` - contains the information whether :term:`PIP <PIP>` is a pseudo-PIP
 
 - ``src_to_dst`` - contains the information about the connection in the direction
   from source to destination. It is described by the same set of properties as
@@ -115,19 +121,25 @@ characterized by the following attributes:
 "sites" section:
 ^^^^^^^^^^^^^^^^
 
-The "sites" section describes all :term:`sites <site>` in the :term:`tile <tile>`.
-Every :term:`site <site>` may be characterized by the following attributes:
+The "sites" section describes all :term:`sites <Site>` in the :term:`tile <Tile>`.
+Every :term:`site <Site>` may be characterized by the following attributes:
 
-- ``name`` - location in the :term:`tile <tile>` grid
+- ``name`` - location in the :term:`tile <Tile>` grid
 
-- ``prefix`` - the type of the :term:`site <site>`
+- ``prefix`` - the type of the :term:`site <Site>`
 
-- ``site_pins`` - describes the pins that belong to the :term:`site <site>`.
+- ``site_pins`` - describes the pins that belong to the :term:`site <Site>`.
   Every pin has it's  name - ``<PIN_NAME>`` and may be described
   by the following attributes:
 
-   - ``cap`` - pin capacitance
-   - ``delay`` - pin delay
+   - ``cap`` - pin capacitance in uF (microfarads).
+
+   - ``delay`` - a four-element list, which contain information about the delay of pins.
+     First two elements are related to the *fast corner* of the technological process,
+     the second two elements to the *slow corner*. The first element of the pair
+     is the minimum value of the corner, the second describes the maximum value.
+     They are given in us (nanoseconds).
+
    - ``wire`` - wire associated with the pin
 
 - ``type`` - indicates the type of the site
@@ -139,17 +151,16 @@ Every :term:`site <site>` may be characterized by the following attributes:
 "wires" section
 ^^^^^^^^^^^^^^^
 
-The "wires" section describes the wires located in the :term:`tile <tile>`.
+The "wires" section describes the wires located in the :term:`tile <Tile>`.
 Every wire has it's name - ``<WIRE_NAME>`` and may be characterized
 by the following attributes:
 
-- ``cap`` - wire capacitance
-- ``res`` - wire resistance
+- ``cap`` - wire capacitance in uF (microfarads)
+- ``res`` - wire resistance in mΩ (miliohms).
 
 Other
 ^^^^^
 - ``tile_type`` - indicates the type of the tile
-
 
 Example
 -------

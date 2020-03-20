@@ -3,13 +3,13 @@ site_type files
 ===============
 
 The *site_type files* are generated for every FPGA
-:term:`site <site>` type. They store the information about the pins and
-:term:`PIPs <pip>` of the :term:`site <site>`.
+:term:`site <Site>` type. They store the information about the pins and
+:term:`PIPs <PIP>` of the :term:`site <Site>`.
 
 Naming convention
 -----------------
 
-The naming scheme for the :term:`site <site>` type files is the following::
+The naming scheme for the :term:`site <Site>` type files is the following::
 
    site_type_<site>.json
 
@@ -22,7 +22,7 @@ Example files:
 File format
 -----------
 
-The :term:`site <site>` type files are JSON files with the following scheme::
+The :term:`site <Site>` type files are JSON files with the following scheme::
 
     {
         "site_pins": {
@@ -42,15 +42,15 @@ The :term:`site <site>` type files are JSON files with the following scheme::
 
 where:
 
-   - *<PIN_NAME>* - specifies the :term:`site <site>` pin name
-   - *<PIP_NAME>* - specifies the :term:`site <site>` :term:`pip <pip>` name
+   - *<PIN_NAME>* - specifies the :term:`site <Site>` pin name
+   - *<PIP_NAME>* - specifies the :term:`site <Site>` :term:`pip <PIP>` name
    - *<DIR>* - is a direction of a pin (either **IN** or **OUT**)
-   - *<TYPE>* - specifies the :term:`site <site>` type
+   - *<TYPE>* - specifies the :term:`site <Site>` type
 
 
-The ``"site_pins"`` section describes the input pins of a :term:`site <site>`
-and its directions. The ``"site_pips"`` describes the :term:`PIPs <pip>`
-inside the :term:`site <site>` and which wires they can connect.
+The ``"site_pins"`` section describes the input pins of a :term:`site <Site>`
+and its directions. The ``"site_pips"`` describes the :term:`PIPs <PIP>`
+inside the :term:`site <Site>` and which wires they can connect.
 
 Example
 -------
@@ -117,6 +117,6 @@ architecture::
       "type": "SLICEL"
    }
 
-Compare the description with the `Xilinx documentation`_ of that :term:`site <site>`.
+Compare the description with the `Xilinx documentation`_ of that :term:`site <Site>`.
 
 .. _Xilinx documentation: https://www.xilinx.com/support/documentation/user_guides/ug474_7Series_CLB.pdf#page=20
