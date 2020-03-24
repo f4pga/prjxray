@@ -17,6 +17,7 @@
             "SLICE_X12Y102": "SLICEM",
             "SLICE_X13Y102": "SLICEL"
         },
+        "prohibited_sites": [],
         "type": "CLBLM_L"
     },
     "HCLK_L_X31Y130": {
@@ -34,6 +35,7 @@
         "segment": "SEG_HCLK_L_X31Y130",
         "segment_type": "hclk_l",
         "sites": {},
+        "prohibited_sites": [],
         "type": "HCLK_L"
     },
     "INT_L_X10Y102": {
@@ -53,6 +55,7 @@
         "sites": {
             "TIEOFF_X11Y102": "TIEOFF"
         },
+        "prohibited_sites": [],
         "type": "INT_L"
     },
     "LIOB33_SING_X0Y0": {
@@ -79,6 +82,7 @@
         "sites": {
             "IOB_X0Y0": "IOB33"
         },
+        "prohibited_sites": [],
         "type": "LIOB33_SING"
     },
     "LIOB33_X0Y1": {
@@ -100,6 +104,7 @@
             "IOB_X0Y1": "IOB33S",
             "IOB_X0Y2": "IOB33M"
         },
+        "prohibited_sites": [],
         "type": "LIOB33"
     },
     "LIOB33_X0Y3": {
@@ -121,6 +126,7 @@
             "IOB_X0Y3": "IOB33S",
             "IOB_X0Y4": "IOB33M"
         },
+        "prohibited_sites": [],
         "type": "LIOB33"
     },
     "RIOB33_SING_X43Y0": {
@@ -147,6 +153,7 @@
         "sites": {
             "IOB_X1Y0": "IOB33"
         },
+        "prohibited_sites": [],
         "type": "RIOB33_SING"
     },
     "RIOB33_X43Y1": {
@@ -168,6 +175,7 @@
             "IOB_X1Y1": "IOB33S",
             "IOB_X1Y2": "IOB33M"
         },
+        "prohibited_sites": [],
         "type": "RIOB33"
     },
     "RIOB33_X43Y3": {
@@ -189,6 +197,7 @@
             "IOB_X1Y3": "IOB33S",
             "IOB_X1Y4": "IOB33M"
         },
+        "prohibited_sites": [],
         "type": "RIOB33"
     },
     "HCLK_IOI3_X113Y26": {
@@ -214,6 +223,7 @@
             "BUFR_X1Y3": "BUFR",
             "IDELAYCTRL_X1Y0": "IDELAYCTRL"
         },
+        "prohibited_sites": [],
         "type": "HCLK_IOI3"
     },
     "HCLK_IOI3_X1Y26": {
@@ -239,6 +249,7 @@
             "BUFR_X0Y3": "BUFR",
             "IDELAYCTRL_X0Y0": "IDELAYCTRL"
         },
+        "prohibited_sites": [],
         "type": "HCLK_IOI3"
     }
 }
