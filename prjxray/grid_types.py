@@ -13,7 +13,8 @@ class BlockType(enum.Enum):
 GridLoc = namedtuple('GridLoc', 'grid_x grid_y')
 ClockRegion = namedtuple('ClockRegion', 'name x y')
 GridInfo = namedtuple(
-    'GridInfo', 'bits sites tile_type pin_functions clock_region')
+    'GridInfo',
+    'bits sites prohibited_sites tile_type pin_functions clock_region')
 BitAlias = namedtuple('BitAlias', 'tile_type start_offset sites')
 Bits = namedtuple('Bits', 'base_address frames offset words alias')
 BitsInfo = namedtuple('BitsInfo', 'block_type tile bits')

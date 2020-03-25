@@ -50,6 +50,7 @@ class TestUtil(TestCase):
                     "segment": "ASEGMENT",
                     "segment_type": "bram0_l",
                     "sites": sites,
+                    "prohibited_sites": [],
                     "type": "BRAM_INT_INTERFACE_L"
                 }
             }

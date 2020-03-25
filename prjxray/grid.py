@@ -68,6 +68,7 @@ class Grid(object):
             self.tileinfo[tile] = GridInfo(
                 bits=bits,
                 sites=tileinfo['sites'],
+                prohibited_sites=tileinfo['prohibited_sites'],
                 tile_type=tileinfo['type'],
                 pin_functions=tileinfo.get('pin_functions', {}),
                 clock_region=clock_region,
