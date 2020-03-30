@@ -132,6 +132,8 @@ def main():
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN_DIFF'.format(iostandard), 1)
+                segmk.add_site_tag(
+                    d['pair_site'], '{}.IN_DIFF'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
                 segmk.add_tile_tag(d['tile'], 'IN_DIFF', 1)
