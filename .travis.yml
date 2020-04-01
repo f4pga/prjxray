@@ -32,3 +32,6 @@ jobs:
       script:
         - make format
         - test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; }
+
+    - name: "HTML generation"
+      script: make test-htmlgen

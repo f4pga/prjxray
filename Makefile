@@ -56,6 +56,14 @@ test-cpp:
 
 .PHONY: test test-py test-cpp
 
+# Run HTML test
+# ------------------------
+
+test-htmlgen:
+	cd htmlgen && source htmlgen.sh
+
+.PHONY: test-htmlgen
+
 # Auto formatting of code.
 # ------------------------
 FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*') -and -not -name *.bit
