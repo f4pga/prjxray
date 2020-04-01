@@ -383,8 +383,9 @@ def mk_tilegrid_page(dbstate, output, grid):
             file=f)
 
         print(
-            "<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" % (
-                get_setting("XRAY_PART"), get_setting("XRAY_ROI"),
+            "<p><b>Part: %s<br/>ROI TILEGRID: %s<br/>ROI Frames: %s</b></p>" %
+            (
+                get_setting("XRAY_PART"), get_setting("XRAY_ROI_TILEGRID"),
                 get_setting("XRAY_ROI_FRAMES")),
             file=f)
 
