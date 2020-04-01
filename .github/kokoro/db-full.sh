@@ -167,6 +167,15 @@ if [[ $EXTRAS_PARTS_RET != 0 ]] ; then
     exit $EXTRAS_PARTS_RET
 fi
 
+echo
+echo "========================================"
+echo " Testing HTML generation"
+echo "----------------------------------------"
+(
+	cd htmlgen
+	source htmlgen.sh $XRAY_SETTINGS
+)
+
 # If we get here, then all the fuzzers completed fine. Hence we are
 # going to assume we don't want to keep all the build / logs / etc (as
 # they are quite large). Thus do a clean to get rid of them.
