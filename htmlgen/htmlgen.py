@@ -989,7 +989,8 @@ def main():
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument(
         '--output',
-        default=os.path.join(os.path.curdir, 'html', get_setting('XRAY_DATABASE')),
+        default=os.path.join(
+            os.path.curdir, 'html', get_setting('XRAY_DATABASE')),
         help='Put the generated files in this directory (default current dir).'
     )
     parser.add_argument(
