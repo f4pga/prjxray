@@ -41,9 +41,8 @@ def db_open(fn, db_dir):
 
 
 def out_open(fn, output):
-    out_dir = os.path.join(output, get_setting("XRAY_DATABASE"))
-    os.makedirs(out_dir, exist_ok=True)
-    fp = os.path.join(out_dir, fn)
+    os.makedirs(output, exist_ok=True)
+    fp = os.path.join(output, fn)
     print("Writing %s" % fp)
     return open(fp, "w")
 
@@ -383,8 +382,9 @@ def mk_tilegrid_page(dbstate, output, grid):
             file=f)
 
         print(
-            "<p><b>Part: %s<br/>ROI: %s<br/>ROI Frames: %s</b></p>" % (
-                get_setting("XRAY_PART"), get_setting("XRAY_ROI"),
+            "<p><b>Part: %s<br/>ROI TILEGRID: %s<br/>ROI Frames: %s</b></p>" %
+            (
+                get_setting("XRAY_PART"), get_setting("XRAY_ROI_TILEGRID"),
                 get_setting("XRAY_ROI_FRAMES")),
             file=f)
 
@@ -989,7 +989,8 @@ def main():
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument(
         '--output',
-        default=os.path.join(os.path.curdir, 'html'),
+        default=os.path.join(
+            os.path.curdir, 'html', get_setting('XRAY_DATABASE')),
         help='Put the generated files in this directory (default current dir).'
     )
     parser.add_argument(

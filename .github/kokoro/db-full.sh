@@ -157,15 +157,14 @@ echo "----------------------------------------"
 # Check the database and fail if it is broken.
 make db-check-${XRAY_SETTINGS}
 
-if [[ $EXTRAS_HARNESS_RET != 0 ]] ; then
-    echo "A failure occurred during extra harnesses generation."
-    exit $EXTRAS_HARNESS_RET
-fi
-
-if [[ $EXTRAS_PARTS_RET != 0 ]] ; then
-    echo "A failure occurred during extra parts generation."
-    exit $EXTRAS_PARTS_RET
-fi
+echo
+echo "========================================"
+echo " Testing HTML generation"
+echo "----------------------------------------"
+(
+	cd htmlgen
+	source htmlgen.sh $XRAY_SETTINGS
+)
 
 # If we get here, then all the fuzzers completed fine. Hence we are
 # going to assume we don't want to keep all the build / logs / etc (as

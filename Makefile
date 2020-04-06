@@ -56,6 +56,14 @@ test-cpp:
 
 .PHONY: test test-py test-cpp
 
+# Run HTML test
+# ------------------------
+
+test-htmlgen:
+	cd htmlgen && source htmlgen.sh
+
+.PHONY: test-htmlgen
+
 # Auto formatting of code.
 # ------------------------
 FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*') -and -not -name *.bit
@@ -148,7 +156,7 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 # Targets related to Project X-Ray parts
 # --------------------------------------
 
-ARTIX_PARTS=artix200t
+ARTIX_PARTS=artix7_200t
 ZYNQ_PARTS=zynq7010
 KINTEX_PARTS=kintex70t
 
@@ -171,7 +179,7 @@ db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
 db-extras-artix7-harness:
 	+XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
 		XRAY_PART=xc7a35tftg256-1 XRAY_EQUIV_PART=xc7a50tfgg484-1 $(MAKE) -C fuzzers roi_only
-	+source settings/artix200t.sh && \
+	+source settings/artix7_200t.sh && \
 		XRAY_PIN_00=V10 XRAY_PIN_01=W10 XRAY_PIN_02=Y11 XRAY_PIN_03=Y12 \
 		XRAY_PART=xc7a200tsbg484-1 XRAY_EQUIV_PART=xc7a200tffg1156-1 \
 		$(MAKE) -C fuzzers roi_only
