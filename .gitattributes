@@ -1,0 +1,12 @@
+# Settings to improve linguist data reporting (used by GitHub)
+*.v                     linguist-language=Verilog
+*.vh                    linguist-language=Verilog
+
+database/**             linguist-generated
+third_party/**          linguist-vendored
+
+# FIXME: All vendor files should be under third_party
+minitests/litex/**              linguist-vendored
+minitests/litex_litedram/**     linguist-vendored
+minitests/picorv32-v/**         linguist-vendored
+minitests/picorv32-y/**         linguist-vendored
