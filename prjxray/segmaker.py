@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 '''
 NOTE: "segments" as used in this file is mostly unrelated to tilegrid.json usage
 ie tilegrid.json has names like SEG_CLBLL_L_X2Y50 where as here they are tile based and named like seg_00400100_02
