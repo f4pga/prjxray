@@ -1,4 +1,12 @@
+#!/usr/bin/env python3
 '''
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 Generate a primitive to place at every I/O
 Unlike CLB tests, the LFSR for this is inside the ROI, not driving it
 '''

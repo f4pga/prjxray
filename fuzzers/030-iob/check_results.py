@@ -1,5 +1,15 @@
-""" Sanity checks FASM output from IOB fuzzer.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 
+""" Sanity checks FASM output from IOB fuzzer.
 The IOB fuzzer is fairly complicated, and it's output is hard to verify by
 inspected.  For this reason, check_results.py was written to compare the
 specimen's generated and their FASM output.  The FASM output does pose a

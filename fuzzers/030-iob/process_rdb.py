@@ -1,5 +1,15 @@
-""" IOB bits are more complicated than can be easily expressed to segmaker.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 
+""" IOB bits are more complicated than can be easily expressed to segmaker.
 There are couple cases that need to be handled here:
 
 - There are some bits that are always set for IN-only ports, but are cleared
