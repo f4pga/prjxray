@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 #
 # Project X-Ray documentation build configuration file, created by
 # sphinx-quickstart on Mon Feb  5 11:04:37 2018.
