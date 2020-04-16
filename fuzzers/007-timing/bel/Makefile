@@ -1,3 +1,10 @@
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 SLICEL_SDFS = build/CLBLL_L.sdf build/CLBLL_R.sdf build/CLBLM_L.sdf build/CLBLM_R.sdf
 SLICEM_SDFS = build/CLBLL_L.sdf build/CLBLL_R.sdf build/CLBLM_L.sdf build/CLBLM_R.sdf
 

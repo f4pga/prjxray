@@ -1,3 +1,10 @@
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=ioi3
 PIPLIST_TCL=$(FUZDIR)/ioi3_pip_list.tcl
