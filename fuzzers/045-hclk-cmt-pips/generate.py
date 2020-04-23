@@ -120,6 +120,11 @@ def main():
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
         for port in tile_ports[tile_type]:
+
+            # These ones do not have any outgoing connections from the tile.
+            if "FREQ_REF" in port:
+                continue
+
             if port in tiledata[tile]["dsts"] or port in tiledata[tile]["srcs"]:
                 segmk.add_tile_tag(tile, "{}_USED".format(port), 1)
             else:
