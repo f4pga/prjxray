@@ -10,7 +10,7 @@ EXCLUDE_RE="(^.*LEAF)|(^.*BUFMR)|(^.*PHSR)|(^.*CLK_PLL7)|(^.*CLK_MMCM13)"
 MAKETODO_FLAGS=--sides ",l" --pip-type ${PIP_TYPE} --seg-type ${PIP_TYPE} --re $(TODO_RE) --exclude-re $(EXCLUDE_RE)
 N = 100
 
-# All PIPs seem to have 2 bits. An exception is FREQ_REF which cannot be 
+# All PIPs seem to have 2 bits. An exception is FREQ_REF which cannot be
 # decoupled from the others, hence it will always have 4 bits.
 FOUR_BIT_PIPS="FREQ_REF"
 

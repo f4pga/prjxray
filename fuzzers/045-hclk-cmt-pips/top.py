@@ -19,10 +19,12 @@ def read_site_to_cmt():
             site, cmt, tile = l.strip().split(',')
             yield (tile, site, cmt)
 
+
 def make_ccio_route_options():
 
     # Read the PIP lists
-    piplist_path = os.path.join(os.getenv("FUZDIR"), "..", "piplist", "build", "hclk_cmt")
+    piplist_path = os.path.join(
+        os.getenv("FUZDIR"), "..", "piplist", "build", "hclk_cmt")
 
     pips = []
     for fname in os.listdir(piplist_path):
@@ -160,12 +162,7 @@ def get_paired_iobs(db, grid, tile_name):
         idx += 1
 
     # A map of y deltas to CCIO wire indices
-    CCIO_INDEX = {
-        -1: 0,
-        -3: 1,
-        +2: 3,
-        +4: 2
-    }
+    CCIO_INDEX = {-1: 0, -3: 1, +2: 3, +4: 2}
 
     # Move from HCLK_IOI column to IOB column
     idx += 1
@@ -224,8 +221,12 @@ def main():
     adv_clock_sources = ClockSources()
 
     tile_site_cmt = list(read_site_to_cmt())
-    site_to_cmt = {tsc[1] : tsc[2] for tsc in tile_site_cmt}
-    cmt_to_hclk = {tsc[2] : tsc[0] for tsc in tile_site_cmt if tsc[0].startswith("HCLK_CMT_")}
+    site_to_cmt = {tsc[1]: tsc[2] for tsc in tile_site_cmt}
+    cmt_to_hclk = {
+        tsc[2]: tsc[0]
+        for tsc in tile_site_cmt
+        if tsc[0].startswith("HCLK_CMT_")
+    }
 
     ccio_route_options = make_ccio_route_options()
 
@@ -489,11 +490,11 @@ module top({inputs});
         route = "{}/{}".format(hclk_tile_name, route)
         route_file.write("{} {}\n".format(net, route))
 
-
     for _, site in gen_sites('PLLE2_ADV'):
         for cin in ('cin1', 'cin2', 'clkfbin'):
             if random.random() > .2:
-                src = adv_clock_sources.get_random_source(site_to_cmt[site], no_repeats=have_iob_clocks)
+                src = adv_clock_sources.get_random_source(
+                    site_to_cmt[site], no_repeats=have_iob_clocks)
 
                 src_cmt = adv_clock_sources.source_to_cmt[src]
 
@@ -516,7 +517,8 @@ module top({inputs});
     for _, site in gen_sites('MMCME2_ADV'):
         for cin in ('cin1', 'cin2', 'clkfbin'):
             if random.random() > .2:
-                src = adv_clock_sources.get_random_source(site_to_cmt[site], no_repeats=have_iob_clocks)
+                src = adv_clock_sources.get_random_source(
+                    site_to_cmt[site], no_repeats=have_iob_clocks)
 
                 src_cmt = adv_clock_sources.source_to_cmt[src]
                 if 'IBUF' not in src and 'BUFR' not in src:
