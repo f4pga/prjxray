@@ -40,7 +40,7 @@ build/%.db: build/%.rdb
 
 database: build/segbits_hclk_cmt.db build/segbits_hclk_cmt_l.db
 	# Clobber existing .db to eliminate potential conflicts
-	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_hclk_cmt*.db build/database/${XRAY_DATABASE}
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_hclk_cmt*.db build/database/${XRAY_DATABASE} || true
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} hclk_cmt build/segbits_hclk_cmt.db
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} hclk_cmt_l build/segbits_hclk_cmt_l.db
 
