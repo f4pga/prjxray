@@ -11,6 +11,7 @@
 
 from prjxray import util
 
+
 class StateGen(object):
     """ Manages fuzzer state generation across multiple sites.
 

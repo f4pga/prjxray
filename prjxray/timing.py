@@ -8,7 +8,6 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-
 """ Route timing delay definitions.
 Routing delay is formed from two parts in this model:
 

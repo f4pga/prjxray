@@ -8,7 +8,6 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-
 """ IOB bits are more complicated than can be easily expressed to segmaker.
 There are couple cases that need to be handled here:
 

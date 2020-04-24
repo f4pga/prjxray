@@ -10,6 +10,7 @@
 # SPDX-License-Identifier: ISC
 import argparse
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Converts generic BRAM pips to BRAM_L and BRAM_R pips.")

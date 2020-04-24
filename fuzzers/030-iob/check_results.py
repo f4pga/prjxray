@@ -8,7 +8,6 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-
 """ Sanity checks FASM output from IOB fuzzer.
 The IOB fuzzer is fairly complicated, and it's output is hard to verify by
 inspected.  For this reason, check_results.py was written to compare the

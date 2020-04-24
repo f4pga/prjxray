@@ -8,7 +8,6 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-
 """ Reduce tile types to prototypes that are always correct.
 The dump-all generate.tcl dumps all instances of each tile type.  Some tiles
 are missing wires.  reduce_tile_types.py generates the superset tile that

@@ -8,7 +8,6 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-
 """ TileSegbitsAlias provides an alias from one tile type to another.
 TileSegbitsAlias performs severals functions to achieve the alias:
  - Remaps tile type from the original tile type to the alias tile type
