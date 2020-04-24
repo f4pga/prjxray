@@ -157,6 +157,7 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 # --------------------------------------
 
 ARTIX_PARTS=artix7_200t
+# ARTIX_PARTS=artix7_100t
 ZYNQ_PARTS=zynq7010
 KINTEX_PARTS=kintex70t
 
@@ -183,6 +184,9 @@ db-extras-artix7-harness:
 		XRAY_PIN_00=V10 XRAY_PIN_01=W10 XRAY_PIN_02=Y11 XRAY_PIN_03=Y12 \
 		XRAY_PART=xc7a200tsbg484-1 XRAY_EQUIV_PART=xc7a200tffg1156-1 \
 		$(MAKE) -C fuzzers roi_only
+#	+source settings/artix7_100t.sh && \
+#		XRAY_PART=xc7a100tcsg324-1 XRAY_EQUIV_PART=xc7a100tfgg676-1 \
+#		$(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && \
