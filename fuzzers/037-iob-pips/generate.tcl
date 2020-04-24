@@ -44,9 +44,9 @@ proc run {} {
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets]
 
-    place_design
+    place_design -directive Quick
     write_checkpoint -force design_before_route.dcp
-    route_design
+    route_design -directive Quick
     write_checkpoint -force design.dcp
 
     write_bitstream -force design.bit
