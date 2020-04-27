@@ -84,6 +84,21 @@ class ClockSources(object):
         self.sources[cmt].append(source)
         self.source_to_cmt[source] = cmt
 
+    def remove_clock_source(self, source, cmt="ANY"):
+        """
+        Removes a clock source from the available clock sources list
+        """
+        if source in self.source_to_cmt:
+            del self.source_to_cmt[source]
+
+        if cmt == "ANY":
+            for sources in self.sources.values():
+                if source in sources:
+                    sources.remove(source)
+        else:
+            if source in self.sources[cmt]:
+                self.sources[cmt].remove(source)
+
     def get_random_source(
             self, cmt, uses_left_right_routing=False, no_repeats=False):
         """ Get a random source that is routable to the specific CMT.
@@ -423,12 +438,16 @@ module top({inputs});
             hclks_used_by_cmt[src_cmt].add(src)
             return src
 
+    # Track used IOB sources
+    used_iob_clks = set()
+
     if random.random() > .10:
         for tile_name, site in gen_sites('BUFHCE'):
+
             wire_name = clock_sources.get_random_source(
                 site_to_cmt[site],
                 uses_left_right_routing=True,
-                no_repeats=mmcm_pll_only or have_iob_clocks)
+                no_repeats=mmcm_pll_only)
 
             if wire_name is not None and 'BUFHCE' in wire_name:
                 # Looping a BUFHCE to a BUFHCE requires using a hclk in the
@@ -439,6 +458,11 @@ module top({inputs});
 
             if wire_name is None:
                 continue
+
+            if "IBUF" in wire_name:
+                used_iob_clks.add(wire_name)
+                clock_sources.remove_clock_source(wire_name)
+                adv_clock_sources.remove_clock_source(wire_name)
 
             print(
                 """
@@ -458,8 +482,25 @@ module top({inputs});
     print(bufhs.getvalue())
 
     for _, site in gen_sites('BUFR'):
+
+        # Do not use BUFR always
+        if random.random() < 0.50:
+            continue
+
+        available_srcs = set(iob_clks[site_to_cmt[site]]) - used_iob_clks
+        if len(available_srcs) == 0:
+            continue
+
+        src = random.choice(list(available_srcs))
+
+        if src != "":
+            used_iob_clks.add(src)
+            clock_sources.remove_clock_source(src)
+            adv_clock_sources.remove_clock_source(src)
+
         adv_clock_sources.add_clock_source(
             'O_{site}'.format(site=site), site_to_cmt[site])
+
         print(
             """
     wire O_{site};
@@ -467,7 +508,7 @@ module top({inputs});
     BUFR bufr_{site} (
         .I({I}),
         .O(O_{site})
-        );""".format(I=random.choice(iob_clks[site_to_cmt[site]]), site=site))
+        );""".format(I=src, site=site))
 
     route_file = open("routes.txt", "w")
 
@@ -493,8 +534,8 @@ module top({inputs});
     for _, site in gen_sites('PLLE2_ADV'):
         for cin in ('cin1', 'cin2', 'clkfbin'):
             if random.random() > .2:
-                src = adv_clock_sources.get_random_source(
-                    site_to_cmt[site], no_repeats=have_iob_clocks)
+
+                src = adv_clock_sources.get_random_source(site_to_cmt[site])
 
                 src_cmt = adv_clock_sources.source_to_cmt[src]
 
@@ -507,6 +548,8 @@ module top({inputs});
                     continue
 
                 if "IBUF" in src:
+                    clock_sources.remove_clock_source(src)
+                    adv_clock_sources.remove_clock_source(src)
                     fix_ccio_route(src)
 
                 print(
@@ -517,8 +560,8 @@ module top({inputs});
     for _, site in gen_sites('MMCME2_ADV'):
         for cin in ('cin1', 'cin2', 'clkfbin'):
             if random.random() > .2:
-                src = adv_clock_sources.get_random_source(
-                    site_to_cmt[site], no_repeats=have_iob_clocks)
+
+                src = adv_clock_sources.get_random_source(site_to_cmt[site])
 
                 src_cmt = adv_clock_sources.source_to_cmt[src]
                 if 'IBUF' not in src and 'BUFR' not in src:
@@ -530,6 +573,8 @@ module top({inputs});
                     continue
 
                 if "IBUF" in src:
+                    clock_sources.remove_clock_source(src)
+                    adv_clock_sources.remove_clock_source(src)
                     fix_ccio_route(src)
 
                 print(

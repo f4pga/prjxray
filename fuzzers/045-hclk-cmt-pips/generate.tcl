@@ -219,16 +219,20 @@ proc make_manual_routes {filename} {
             continue
         }
 
-        # Ripup it
-        route_design -unroute -nets [get_nets $net_name]
+        set net [get_nets $net_name]
+
+        # Rip it up
+        set_property -quiet FIXED_ROUTE "" $net
+        set_property IS_ROUTE_FIXED 0 $net
+        route_design -unroute -nets $net
 
         # Make the route
-        set status [route_via $net_name [list $wire_name] 0]
+        set nodes [get_nodes -of_objects [get_wires $wire_name]]
+        set status [route_via $net_name [list $nodes] 0]
 
         # Failure, skip manual routing of this net
         if { $status != 1 } {
             puts "MANROUTE: Manual routing failed!"
-            set net [get_nets $net_name]
             set_property -quiet FIXED_ROUTE "" $net
             set_property IS_ROUTE_FIXED 0 $net
             continue

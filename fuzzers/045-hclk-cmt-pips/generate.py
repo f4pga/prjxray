@@ -125,6 +125,14 @@ def main():
             if "FREQ_REF" in port:
                 continue
 
+            # It seems that CCIOn_USED is not enabled when a net goes through
+            # FREQ_REFn. Do not emit this tag if this happens.
+            if "CCIO" in port:
+                n = int(port[-1])
+                dst = "HCLK_CMT_MUX_OUT_FREQ_REF{}".format(n)
+                if dst in tiledata[tile]["dsts"]:
+                    continue
+
             if port in tiledata[tile]["dsts"] or port in tiledata[tile]["srcs"]:
                 segmk.add_tile_tag(tile, "{}_USED".format(port), 1)
             else:
