@@ -23,6 +23,51 @@ proc write_pip_txtdata {filename} {
     close $fp
 }
 
+proc make_manual_routes {filename} {
+    puts "MANROUTE: Loading routes from $filename"
+
+    set fp [open $filename r]
+    foreach line [split [read $fp] "\n"] {
+        if {$line eq ""} {
+            continue
+        }
+
+        puts "MANROUTE: Line: $line"
+
+        # Parse the line
+        set fields [split $line " "]
+        set net_name [lindex $fields 0]
+        set wire_name [lindex $fields 1]
+
+        # Check if that net exist
+        if {[get_nets $net_name] eq ""} {
+            puts "MANROUTE: net $net_name does not exist"
+            continue
+        }
+
+        set net [get_nets $net_name]
+
+        # Rip it up
+        set_property -quiet FIXED_ROUTE "" $net
+        set_property IS_ROUTE_FIXED 0 $net
+        route_design -unroute -nets $net
+
+        # Make the route
+        set nodes [get_nodes -of_objects [get_wires $wire_name]]
+        set status [route_via $net_name [list $nodes] 0]
+
+        # Failure, skip manual routing of this net
+        if { $status != 1 } {
+            puts "MANROUTE: Manual routing failed!"
+            set_property -quiet FIXED_ROUTE "" $net
+            set_property IS_ROUTE_FIXED 0 $net
+            continue
+        }
+
+        puts "MANROUTE: Success!"
+    }
+}
+
 proc run {} {
     create_project -force -part $::env(XRAY_PART) design design
     read_verilog top.v
@@ -44,9 +89,10 @@ proc run {} {
 
     set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets]
 
-    place_design
+    place_design -directive Quick
     write_checkpoint -force design_before_route.dcp
-    route_design
+    make_manual_routes routes.txt
+    route_design -directive Quick -preserve
     write_checkpoint -force design.dcp
 
     write_bitstream -force design.bit
