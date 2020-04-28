@@ -11,4 +11,5 @@ Database Development Process
    fuzzers/index
    minitests/index
    parts
+   newpart
 

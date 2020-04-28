@@ -200,6 +200,10 @@ We have also started experimenting with the Kintex-7 parts.
 The aim is to eventually document all parts in the Xilinx 7-series FPGAs but we
 can not do this alone, **we need your help**!
 
+## Adding a new part to an existing family
+
+We have written a [detailed guide](./NEWPART.md) that walks through the process
+of adding a new part to an existing family.
 
 ## TODO List
 
