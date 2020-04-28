@@ -186,6 +186,7 @@ def run():
       """
 
     output = []
+    route_file = open("routes.txt", "w")
 
     for tile in gen_sites():
         if tile['tile_type'] in NOT_INCLUDED_TILES:
@@ -222,29 +223,48 @@ def run():
                         oclkb = random.randint(0, 1)
 
             DATA_RATE = random.choice(['DDR', 'SDR'])
-            clk, is_lut = clocks.get_clock(
+            clk, clk_is_lut = clocks.get_clock(
                 ilogic_site,
                 allow_ioclks=True,
                 allow_rclks=True,
                 allow_empty=DATA_RATE == 'SDR')
-            if False:
-                clkb = clk
-            else:
-                clkb = clk
-                if random.randint(0, 1):
-                    while clkb == clk:
-                        clkb, _ = clocks.get_clock(
-                            ilogic_site,
-                            allow_ioclks=True,
-                            allow_rclks=True,
-                            allow_empty=False)
-                else:
-                    # Explicitly provide IMUX stimulus to resolve IMUX pips
-                    clk = random.randint(0, 1)
-                    clkb = random.randint(0, 1)
+
+            clkb = clk
+            while clkb == clk:
+                clkb, clkb_is_lut = clocks.get_clock(
+                    ilogic_site,
+                    allow_ioclks=True,
+                    allow_rclks=True,
+                    allow_empty=False)
+
+            imux_available = {
+                0: set(("IOI_IMUX20_0", "IOI_IMUX22_0")),
+                1: set(("IOI_IMUX20_1", "IOI_IMUX22_1")),
+            }
+
+            # Force CLK route through IMUX when connected to a LUT
+            if clk_is_lut:
+                y = (xy[1] + 1) % 2
+
+                route = random.choice(list(imux_available[y]))
+                imux_available[y].remove(route)
+
+                route = "{}/{}".format(tile["tile"], route)
+                route_file.write("{} {}\n".format(clk, route))
+
+            # Force CLKB route through IMUX when connected to a LUT
+            if clkb_is_lut:
+                y = (xy[1] + 1) % 2
+
+                route = random.choice(list(imux_available[y]))
+                imux_available[y].remove(route)
+
+                route = "{}/{}".format(tile["tile"], route)
+                route_file.write("{} {}\n".format(clkb, route))
 
             if ilogic_site_type is None:
                 pass
+
             elif ilogic_site_type == 'ISERDESE2':
                 INTERFACE_TYPE = random.choice(
                     [
