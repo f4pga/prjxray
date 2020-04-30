@@ -11,3 +11,4 @@ run.*.ok
 __pycache__
 *.pyc
 *.swp
+*.egg-info
