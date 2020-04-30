@@ -53,7 +53,7 @@ echo "----------------------------------------"
 	if [[ $DATABASE_RET != 0 ]] ; then
 		# Collect the Vivado logs into one tgz archive
 		echo "Packing failing test cases"
-		grep "recipe for target" $tmp | awk 'match($0,/recipe for target.*'\''(.*)\/run.ok'\''/,res) {print res[1]}' | xargs tar -zcf fails.tgz
+		grep "recipe for target" $tmp | awk 'match($0,/recipe for target.*'\''(.*)\/run\..*ok'\''/,res) {print "fuzzers/" res[1]}' | xargs tar -zcf fuzzers/fails.tgz
 		echo "----------------------------------------"
 		echo "A failure occurred during Database build."
 		echo "----------------------------------------"
