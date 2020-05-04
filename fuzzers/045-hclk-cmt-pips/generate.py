@@ -120,6 +120,24 @@ def main():
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
         for port in tile_ports[tile_type]:
+
+            # These ones do not have any outgoing connections from the tile.
+            if "FREQ_REF" in port:
+                continue
+
+            # There seems to be no special bits related to use of
+            # HCLK_CMT_MUX_CLKINT_n wires.
+            if "HCLK_CMT_MUX_CLKINT" in port:
+                continue
+
+            # It seems that CCIOn_USED is not enabled when a net goes through
+            # FREQ_REFn. Do not emit this tag if this happens.
+            if "CCIO" in port:
+                n = int(port[-1])
+                dst = "HCLK_CMT_MUX_OUT_FREQ_REF{}".format(n)
+                if dst in tiledata[tile]["dsts"]:
+                    continue
+
             if port in tiledata[tile]["dsts"] or port in tiledata[tile]["srcs"]:
                 segmk.add_tile_tag(tile, "{}_USED".format(port), 1)
             else:

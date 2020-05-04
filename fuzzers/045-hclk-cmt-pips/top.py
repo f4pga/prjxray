@@ -2,6 +2,7 @@
 import os
 import random
 random.seed(int(os.getenv("SEED"), 16))
+import re
 from prjxray import util
 from prjxray.lut_maker import LutMaker
 from prjxray.db import Database
@@ -15,8 +16,47 @@ def read_site_to_cmt():
     with open(os.path.join(os.getenv('FUZDIR'), 'build',
                            'cmt_regions.csv')) as f:
         for l in f:
-            site, cmt, _ = l.strip().split(',')
-            yield (site, cmt)
+            site, cmt, tile = l.strip().split(',')
+            yield (tile, site, cmt)
+
+
+def make_ccio_route_options():
+
+    # Read the PIP lists
+    piplist_path = os.path.join(
+        os.getenv("FUZDIR"), "..", "piplist", "build", "hclk_cmt")
+
+    pips = []
+    for fname in os.listdir(piplist_path):
+        if not fname.endswith(".txt"):
+            continue
+
+        fullname = os.path.join(piplist_path, fname)
+        with open(fullname, "r") as fp:
+            pips += [l.strip() for l in fp.readlines()]
+
+    # Get PIPs that mention FREQ_REFn wires. These are the ones that we want
+    # force routing through.
+    pips = [p for p in pips if "FREQ_REF" in p]
+
+    # Sort by tile type
+    options = {}
+    for pip in pips:
+        tile, dst, src = pip.split(".")
+
+        for a, b in ((src, dst), (dst, src)):
+            match = re.match(r".*FREQ_REF([0-3]).*", a)
+            if match is not None:
+                n = int(match.group(1))
+
+                if tile not in options:
+                    options[tile] = {}
+                if n not in options[tile]:
+                    options[tile][n] = set()
+
+                options[tile][n].add(b)
+
+    return options
 
 
 class ClockSources(object):
@@ -43,6 +83,21 @@ class ClockSources(object):
 
         self.sources[cmt].append(source)
         self.source_to_cmt[source] = cmt
+
+    def remove_clock_source(self, source, cmt="ANY"):
+        """
+        Removes a clock source from the available clock sources list
+        """
+        if source in self.source_to_cmt:
+            del self.source_to_cmt[source]
+
+        if cmt == "ANY":
+            for sources in self.sources.values():
+                if source in sources:
+                    sources.remove(source)
+        else:
+            if source in self.sources[cmt]:
+                self.sources[cmt].remove(source)
 
     def get_random_source(
             self, cmt, uses_left_right_routing=False, no_repeats=False):
@@ -121,6 +176,9 @@ def get_paired_iobs(db, grid, tile_name):
 
         idx += 1
 
+    # A map of y deltas to CCIO wire indices
+    CCIO_INDEX = {-1: 0, -3: 1, +2: 3, +4: 2}
+
     # Move from HCLK_IOI column to IOB column
     idx += 1
 
@@ -134,7 +192,7 @@ def get_paired_iobs(db, grid, tile_name):
 
         for site, site_type in gridinfo.sites.items():
             if site_type in ['IOB33M', 'IOB18M']:
-                yield tile_name, site, site_type[-3:-1]
+                yield tile_name, site, site_type[-3:-1], CCIO_INDEX[dy]
 
 
 def check_allowed(mmcm_pll_dir, cmt):
@@ -176,7 +234,16 @@ def main():
 
     clock_sources = ClockSources()
     adv_clock_sources = ClockSources()
-    site_to_cmt = dict(read_site_to_cmt())
+
+    tile_site_cmt = list(read_site_to_cmt())
+    site_to_cmt = {tsc[1]: tsc[2] for tsc in tile_site_cmt}
+    cmt_to_hclk = {
+        tsc[2]: tsc[0]
+        for tsc in tile_site_cmt
+        if tsc[0].startswith("HCLK_CMT_")
+    }
+
+    ccio_route_options = make_ccio_route_options()
 
     db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
@@ -208,11 +275,13 @@ def main():
 
     have_iob_clocks = random.random() > .1
 
+    iob_to_hclk = {}
     iob_clks = {}
     for tile_name in sorted(hclk_cmt_tiles):
-        for _, site, volt in get_paired_iobs(db, grid, tile_name):
+        for _, site, volt, ccio in get_paired_iobs(db, grid, tile_name):
             iob_clock = 'clock_IBUF_{site}'.format(site=site)
 
+            iob_to_hclk[site] = (tile_name, ccio)
             cmt = site_to_cmt[site]
 
             if cmt not in iob_clks:
@@ -369,8 +438,12 @@ module top({inputs});
             hclks_used_by_cmt[src_cmt].add(src)
             return src
 
+    # Track used IOB sources
+    used_iob_clks = set()
+
     if random.random() > .10:
         for tile_name, site in gen_sites('BUFHCE'):
+
             wire_name = clock_sources.get_random_source(
                 site_to_cmt[site],
                 uses_left_right_routing=True,
@@ -385,6 +458,11 @@ module top({inputs});
 
             if wire_name is None:
                 continue
+
+            if "IBUF" in wire_name:
+                used_iob_clks.add(wire_name)
+                clock_sources.remove_clock_source(wire_name)
+                adv_clock_sources.remove_clock_source(wire_name)
 
             print(
                 """
@@ -404,8 +482,25 @@ module top({inputs});
     print(bufhs.getvalue())
 
     for _, site in gen_sites('BUFR'):
+
+        # Do not use BUFR always
+        if random.random() < 0.50:
+            continue
+
+        available_srcs = set(iob_clks[site_to_cmt[site]]) - used_iob_clks
+        if len(available_srcs) == 0:
+            continue
+
+        src = random.choice(list(available_srcs))
+
+        if src != "":
+            used_iob_clks.add(src)
+            clock_sources.remove_clock_source(src)
+            adv_clock_sources.remove_clock_source(src)
+
         adv_clock_sources.add_clock_source(
             'O_{site}'.format(site=site), site_to_cmt[site])
+
         print(
             """
     wire O_{site};
@@ -413,11 +508,33 @@ module top({inputs});
     BUFR bufr_{site} (
         .I({I}),
         .O(O_{site})
-        );""".format(I=random.choice(iob_clks[site_to_cmt[site]]), site=site))
+        );""".format(I=src, site=site))
+
+    route_file = open("routes.txt", "w")
+
+    def fix_ccio_route(net):
+
+        # Get the IOB site name
+        match = re.match(r".*_IBUF_(.*)", net)
+        assert match is not None, net
+        iob_site = match.group(1)
+
+        # Get associated HCLK_CMT tile and CCIO wire index
+        hclk_tile_name, ccio = iob_to_hclk[iob_site]
+
+        # Get HCLK_CMT tile type
+        hclk_tile = hclk_tile_name.rsplit("_", maxsplit=1)[0]
+
+        # Pick a random route option
+        opts = list(ccio_route_options[hclk_tile][ccio])
+        route = random.choice(opts)
+        route = "{}/{}".format(hclk_tile_name, route)
+        route_file.write("{} {}\n".format(net, route))
 
     for _, site in gen_sites('PLLE2_ADV'):
         for cin in ('cin1', 'cin2', 'clkfbin'):
             if random.random() > .2:
+
                 src = adv_clock_sources.get_random_source(site_to_cmt[site])
 
                 src_cmt = adv_clock_sources.source_to_cmt[src]
@@ -429,6 +546,11 @@ module top({inputs});
 
                 if src is None:
                     continue
+
+                if "IBUF" in src:
+                    clock_sources.remove_clock_source(src)
+                    adv_clock_sources.remove_clock_source(src)
+                    fix_ccio_route(src)
 
                 print(
                     """
@@ -438,6 +560,7 @@ module top({inputs});
     for _, site in gen_sites('MMCME2_ADV'):
         for cin in ('cin1', 'cin2', 'clkfbin'):
             if random.random() > .2:
+
                 src = adv_clock_sources.get_random_source(site_to_cmt[site])
 
                 src_cmt = adv_clock_sources.source_to_cmt[src]
@@ -448,6 +571,11 @@ module top({inputs});
 
                 if src is None:
                     continue
+
+                if "IBUF" in src:
+                    clock_sources.remove_clock_source(src)
+                    adv_clock_sources.remove_clock_source(src)
+                    fix_ccio_route(src)
 
                 print(
                     """

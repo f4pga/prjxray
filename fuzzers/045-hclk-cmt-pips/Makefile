@@ -3,57 +3,44 @@ PIP_TYPE?=hclk_cmt
 PIPLIST_TCL=$(FUZDIR)/hclk_cmt_pip_list.tcl
 TODO_RE=".*"
 # Skipped pips:
-# - FREQ_REF is only used by interconnect clocks, so low likelyhood of usage.
-#   A BUFR can be used to clock divide if needed
 # - PHSR PIPs are connected to PHASER sites, which are undocumented, so avoid
 #   for now.
-EXCLUDE_RE="(^.*LEAF)|(^.*BUFMR)|(^.*FREQ_REF)|(^.*PHSR)|(^.*CLK_PLL7)|(^.*CLK_MMCM13)"
+EXCLUDE_RE="(^.*LEAF)|(^.*BUFMR)|(^.*PHSR)|(^.*CLK_PLL7)|(^.*CLK_MMCM13)"
 
 MAKETODO_FLAGS=--sides ",l" --pip-type ${PIP_TYPE} --seg-type ${PIP_TYPE} --re $(TODO_RE) --exclude-re $(EXCLUDE_RE)
 N = 100
 
-# These PIPs all appear to be either a 1 bit solutions.
-SEGMATCH_FLAGS=-c 2
+# All PIPs seem to have 2 bits. An exception is FREQ_REF which cannot be
+# decoupled from the others, hence it will always have 4 bits.
+FOUR_BIT_PIPS="FREQ_REF"
+
 SPECIMENS_DEPS=build/cmt_regions.csv
 A_PIPLIST=hclk_cmt.txt
 
 include ../pip_loop.mk
 
-build/segbits_hclk_cmt.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o build/segbits_hclk_cmt.rdb \
-		$(shell find build -name segdata_hclk_cmt.txt)
+.PRECIOUS: build/%.rdb
 
-build/segbits_hclk_cmt.db: build/segbits_hclk_cmt.rdb
+build/%.rdb: $(SPECIMENS_OK)
+	$(XRAY_SEGMATCH) -c 4 -o $@.4 $(shell find build -name $(subst segbits,segdata,$(patsubst %.rdb,%.txt,$(notdir $@))))
+	$(XRAY_SEGMATCH) -c 2 -o $@.2 $(shell find build -name $(subst segbits,segdata,$(patsubst %.rdb,%.txt,$(notdir $@))))
+	grep    ${FOUR_BIT_PIPS} $@.4 >  $@
+	grep -v ${FOUR_BIT_PIPS} $@.2 >> $@
+
+build/%.db: build/%.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
-		--seg-fn-in build/segbits_hclk_cmt.rdb \
-		--seg-fn-out build/segbits_hclk_cmt.db
+		--seg-fn-in  $< \
+		--seg-fn-out $@
 
 	# Keep a copy to track iter progress
-	cp build/segbits_hclk_cmt.rdb build/$(ITER)/segbits_hclk_cmt.rdb
+	cp $< build/$(ITER)/$(notdir $<)
 
-	${XRAY_MASKMERGE} build/mask_hclk_cmt.db \
-		$(shell find build -name segdata_hclk_cmt.txt)
-
-build/segbits_hclk_cmt_l.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o build/segbits_hclk_cmt_l.rdb \
-		$(shell find build -name segdata_hclk_cmt_l.txt)
-
-build/segbits_hclk_cmt_l.db: build/segbits_hclk_cmt_l.rdb
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
-		--seg-fn-in build/segbits_hclk_cmt_l.rdb \
-		--seg-fn-out build/segbits_hclk_cmt_l.db
-
-	# Keep a copy to track iter progress
-	cp build/segbits_hclk_cmt_l.rdb build/$(ITER)/segbits_hclk_cmt_l.rdb
-
-
-	${XRAY_MASKMERGE} build/mask_hclk_cmt_l.db \
-		$(shell find build -name segdata_hclk_cmt_l.txt)
-
+	${XRAY_MASKMERGE} $(subst segbits,mask,$@) \
+		$(shell find build -name $(subst segbits,segdata,$(patsubst %.db,%.txt,$(notdir $@))))
 
 database: build/segbits_hclk_cmt.db build/segbits_hclk_cmt_l.db
 	# Clobber existing .db to eliminate potential conflicts
-	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits_hclk_cmt*.db build/database/${XRAY_DATABASE} || true
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} hclk_cmt build/segbits_hclk_cmt.db
 	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} hclk_cmt_l build/segbits_hclk_cmt_l.db
 
@@ -62,9 +49,9 @@ build/cmt_regions.csv: output_cmt.tcl
 	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
 
 pushdb: database
-	${XRAY_MERGEDB} hclk_cmt build/segbits_hclk_cmt.db
+	${XRAY_MERGEDB} hclk_cmt build/database/${XRAY_DATABASE}/segbits_hclk_cmt.db
 	${XRAY_MERGEDB} mask_hclk_cmt build/mask_hclk_cmt.db
-	${XRAY_MERGEDB} hclk_cmt_l build/segbits_hclk_cmt_l.db
+	${XRAY_MERGEDB} hclk_cmt_l build/database/${XRAY_DATABASE}/segbits_hclk_cmt_l.db
 	${XRAY_MERGEDB} mask_hclk_cmt_l build/mask_hclk_cmt_l.db
 
 .PHONY: database pushdb
