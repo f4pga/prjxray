@@ -125,6 +125,11 @@ def main():
             if "FREQ_REF" in port:
                 continue
 
+            # There seems to be no special bits related to use of
+            # HCLK_CMT_MUX_CLKINT_n wires.
+            if "HCLK_CMT_MUX_CLKINT" in port:
+                continue
+
             # It seems that CCIOn_USED is not enabled when a net goes through
             # FREQ_REFn. Do not emit this tag if this happens.
             if "CCIO" in port:
