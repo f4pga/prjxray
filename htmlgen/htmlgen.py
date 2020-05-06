@@ -7,10 +7,10 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/ISC
 #
+# SPDX-License-Identifier: ISC
+
 # https://symbiflow.github.io/prjxray-db/
 # https://symbiflow.github.io/prjxray-db/artix7/
-#
-# SPDX-License-Identifier: ISC
 
 import os, sys, json, re
 from io import StringIO

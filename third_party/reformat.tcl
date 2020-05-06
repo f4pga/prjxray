@@ -1,4 +1,12 @@
 #!/usr/bin/env tclsh
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 # From: https://gist.github.com/yyamasak/af250f7ca74e18526734#file-reformat-tcl-L10
 # Which is based on https://wiki.tcl-lang.org/page/Reformatting+Tcl+code+indentation
 # See for licensing

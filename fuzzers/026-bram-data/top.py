@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright (C) 2017-2020  The Project X-Ray Authors.
 #
 # Use of this source code is governed by a ISC-style
