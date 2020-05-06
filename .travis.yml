@@ -32,3 +32,8 @@ jobs:
       script:
         - make format
         - test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; }
+
+    - name: "License Checks"
+      script:
+        - source .github/check_license.sh
+        - source .github/check_python_scripts.sh
