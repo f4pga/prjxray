@@ -1,3 +1,10 @@
+# Copyright (C) 2017-2020  The Project X-Ray Authors
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 
 set sites [get_sites -filter {(SITE_TYPE == "SLICEL" || SITE_TYPE == "SLICEM") && (NAME =~ "*Y0" || NAME =~ "*Y50" || NAME =~ "*Y?00" || NAME =~ "*Y?50")}]
 
