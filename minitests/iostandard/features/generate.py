@@ -39,8 +39,13 @@ IOBUF_NOT_ALLOWED = [
 
 DIFF_MAP = {
     'SSTL135': 'DIFF_SSTL135',
-    'SSTL15':  'DIFF_SSTL15',
+    'SSTL15': 'DIFF_SSTL15',
 }
+
+VREF_ALLOWED = [
+    'SSTL135',
+    'SSTL15',
+]
 
 
 def gen_iosettings():
@@ -145,6 +150,9 @@ def run():
         region_data = []
         for region in sorted(list(iob_sites.keys())):
 
+            # Get IO bank. All sites from a clock region have the same one.
+            bank = iob_sites[region][0]["bank"]
+
             # Get IO settings
             try:
                 iosettings = next(iosettings_gen)
@@ -190,6 +198,7 @@ def run():
             region_data.append(
                 {
                     "region": region,
+                    "bank": bank,
                     "iosettings": iosettings,
                     "unused_sites": unused_sites,
                     "input": used_sites[0:2],
@@ -236,6 +245,9 @@ module top (
             if slew is not None:
                 obuf_param_str += ", .SLEW(\"{}\")".format(slew)
 
+            bank = data["bank"]
+            vref = "0.75"  # FIXME: Maybe loop over VREFs too ?
+
             keys = {
                 "region": data["region"],
                 "ibuf_0_loc": data["input"][0],
@@ -265,6 +277,11 @@ module top (
                 inp_idx += 2
                 out_idx += 2
                 ino_idx += 1
+
+            # Set VREF if necessary
+            if iostandard in VREF_ALLOWED:
+                tcl += "set_property INTERNAL_VREF {} [get_iobanks {}]\n".format(
+                    vref, bank)
 
             # Single ended
             if not is_diff:
