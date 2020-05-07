@@ -1,5 +1,4 @@
-PART?=xc7a50tfgg484-1
-VIVADO_PART?=$(PART)
+PART?=${XRAY_PART}
 
 BIT2FASM_ARGS= --part "$(XRAY_DIR)/database/$(XRAY_DATABASE)/$(PART)" --verbose
 
@@ -33,20 +32,20 @@ clean:
 	@rm -rf features.csv
 	@rm -rf results.json
 	@rm -rf unknown_bits.jl
-	@rm -rf iobs-$(VIVADO_PART).csv
+	@rm -rf iobs-$(PART).csv
 
-iobs-$(VIVADO_PART).csv: ../dump_iobs.tcl
-	env VIVADO_PART=$(VIVADO_PART) $(XRAY_VIVADO) -mode batch -source ../dump_iobs.tcl -nojournal -log dump_iobs.log
+iobs-$(PART).csv: ../dump_iobs.tcl
+	env PART=$(PART) $(XRAY_VIVADO) -mode batch -source ../dump_iobs.tcl -nojournal -log dump_iobs.log
 
-designs.ok: iobs-$(VIVADO_PART).csv generate.py
-	env VIVADO_PART=$(VIVADO_PART) python3 ./generate.py
+designs.ok: iobs-$(PART).csv generate.py
+	env PART=$(PART) python3 ./generate.py
 	touch designs.ok
 
 designs: designs.ok
 
 %.bit: %.v designs.ok ../syn+par.tcl
 	mkdir -p build-$(basename $@)
-	cd build-$(basename $@) && env PROJECT_NAME=$(basename $@) VIVADO_PART=${VIVADO_PART} $(XRAY_VIVADO) -mode batch -source ../../syn+par.tcl -nojournal -log ../$@.log
+	cd build-$(basename $@) && env PROJECT_NAME=$(basename $@) PART=${PART} $(XRAY_VIVADO) -mode batch -source ../../syn+par.tcl -nojournal -log ../$@.log
 	rm -rf *.backup.log
 
 %.fasm: %.bit

@@ -26,7 +26,6 @@ def load_iob_sites(file_name):
     for site_data in data:
         iob_sites[site_data["clock_region"]].append(site_data)
 
-    print(data)
     return iob_sites
 
 
@@ -40,6 +39,7 @@ IOBUF_NOT_ALLOWED = [
 
 DIFF_MAP = {
     'SSTL135': 'DIFF_SSTL135',
+    'SSTL15':  'DIFF_SSTL15',
 }
 
 
@@ -56,10 +56,10 @@ def gen_iosettings():
         'LVCMOS33',
         'LVTTL',
         'SSTL135',
+        'SSTL15',
 
         # Those are available but not currently fuzzed.
         #        'SSTL135_R',
-        #        'SSTL15',
         #        'SSTL15_R',
         #        'SSTL18_I',
         #        'SSTL18_II',
@@ -111,7 +111,7 @@ def run():
     """
 
     # Load IOB data
-    iob_sites = load_iob_sites("iobs-{}.csv".format(os.getenv("VIVADO_PART")))
+    iob_sites = load_iob_sites("iobs-{}.csv".format(os.getenv("PART")))
 
     # Generate IOB site to package pin map and *M site to *S site map.
     site_to_pkg_pin = {}
@@ -134,6 +134,8 @@ def run():
     iosettings_gen = gen_iosettings()
     design_index = 0
     while True:
+
+        print("Design #{}".format(design_index))
 
         num_inp = 0
         num_out = 0
@@ -194,7 +196,7 @@ def run():
                     "output": used_sites[2:4],
                     "inout": used_sites[4:5],
                 })
-            print(region, iosettings)
+            print("", region, iosettings)
 
         # No more
         if len(region_data) == 0:
