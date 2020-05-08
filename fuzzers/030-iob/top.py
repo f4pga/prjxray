@@ -56,10 +56,12 @@ def run():
         'LVCMOS33',
         'LVTTL',
         'SSTL135',
+        'SSTL15',
     ]
 
     diff_map = {
         "SSTL135": ["DIFF_SSTL135"],
+        "SSTL15": ["DIFF_SSTL15"],
     }
 
     IN_TERM_ALLOWED = [
@@ -81,7 +83,7 @@ def run():
         drives = [4, 8, 12, 16, 24]
     elif iostandard in ['LVCMOS12']:
         drives = [4, 8, 12]
-    elif iostandard == 'SSTL135':
+    elif iostandard in ['SSTL135', 'SSTL15']:
         drives = None
     else:
         drives = [4, 8, 12, 16]
@@ -104,7 +106,7 @@ def run():
 
     params['iobanks'] = iobanks
 
-    if iostandard in ['SSTL135']:
+    if iostandard in ['SSTL135', 'SSTL15']:
         for iobank in iobanks:
             params['INTERNAL_VREF'][iobank] = random.choice(
                 (

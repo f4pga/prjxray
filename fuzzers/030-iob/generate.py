@@ -26,7 +26,7 @@ def drives_for_iostandard(iostandard):
         drives = [4, 8, 12, 16, 24]
     elif iostandard == 'LVCMOS12':
         drives = [4, 8, 12]
-    elif iostandard == 'SSTL135':
+    elif iostandard in ['SSTL135', 'SSTL15']:
         return ['_FIXED']
     else:
         drives = [4, 8, 12, 16]
@@ -34,8 +34,10 @@ def drives_for_iostandard(iostandard):
     return drives
 
 
-STEPDOWN_IOSTANDARDS = ['LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135']
-IBUF_LOW_PWR_SUPPORTED = ['SSTL135']
+STEPDOWN_IOSTANDARDS = [
+    'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135', 'SSTL15'
+]
+IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15']
 
 
 def main():
@@ -185,6 +187,7 @@ def main():
                     drive_opts.add(mk_drive_opt(opt, drive_opt))
 
             drive_opts.add(mk_drive_opt("SSTL135", None))
+            drive_opts.add(mk_drive_opt("SSTL15", None))
 
             segmaker.add_site_group_zero(
                 segmk, site, '', drive_opts, mk_drive_opt('LVCMOS25', '12'),

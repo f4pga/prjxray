@@ -26,7 +26,6 @@ def load_iob_sites(file_name):
     for site_data in data:
         iob_sites[site_data["clock_region"]].append(site_data)
 
-    print(data)
     return iob_sites
 
 
@@ -40,7 +39,13 @@ IOBUF_NOT_ALLOWED = [
 
 DIFF_MAP = {
     'SSTL135': 'DIFF_SSTL135',
+    'SSTL15': 'DIFF_SSTL15',
 }
+
+VREF_ALLOWED = [
+    'SSTL135',
+    'SSTL15',
+]
 
 
 def gen_iosettings():
@@ -56,10 +61,10 @@ def gen_iosettings():
         'LVCMOS33',
         'LVTTL',
         'SSTL135',
+        'SSTL15',
 
         # Those are available but not currently fuzzed.
         #        'SSTL135_R',
-        #        'SSTL15',
         #        'SSTL15_R',
         #        'SSTL18_I',
         #        'SSTL18_II',
@@ -111,7 +116,7 @@ def run():
     """
 
     # Load IOB data
-    iob_sites = load_iob_sites("iobs-{}.csv".format(os.getenv("VIVADO_PART")))
+    iob_sites = load_iob_sites("iobs-{}.csv".format(os.getenv("PART")))
 
     # Generate IOB site to package pin map and *M site to *S site map.
     site_to_pkg_pin = {}
@@ -135,6 +140,8 @@ def run():
     design_index = 0
     while True:
 
+        print("Design #{}".format(design_index))
+
         num_inp = 0
         num_out = 0
         num_ino = 0
@@ -142,6 +149,9 @@ def run():
         # Generate clock regions
         region_data = []
         for region in sorted(list(iob_sites.keys())):
+
+            # Get IO bank. All sites from a clock region have the same one.
+            bank = iob_sites[region][0]["bank"]
 
             # Get IO settings
             try:
@@ -188,13 +198,14 @@ def run():
             region_data.append(
                 {
                     "region": region,
+                    "bank": bank,
                     "iosettings": iosettings,
                     "unused_sites": unused_sites,
                     "input": used_sites[0:2],
                     "output": used_sites[2:4],
                     "inout": used_sites[4:5],
                 })
-            print(region, iosettings)
+            print("", region, iosettings)
 
         # No more
         if len(region_data) == 0:
@@ -234,6 +245,9 @@ module top (
             if slew is not None:
                 obuf_param_str += ", .SLEW(\"{}\")".format(slew)
 
+            bank = data["bank"]
+            vref = "0.75"  # FIXME: Maybe loop over VREFs too ?
+
             keys = {
                 "region": data["region"],
                 "ibuf_0_loc": data["input"][0],
@@ -263,6 +277,11 @@ module top (
                 inp_idx += 2
                 out_idx += 2
                 ino_idx += 1
+
+            # Set VREF if necessary
+            if iostandard in VREF_ALLOWED:
+                tcl += "set_property INTERNAL_VREF {} [get_iobanks {}]\n".format(
+                    vref, bank)
 
             # Single ended
             if not is_diff:

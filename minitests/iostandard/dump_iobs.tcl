@@ -24,8 +24,8 @@ proc dump_iobs {file_name} {
     close $fp
 }
 
-create_project -force -in_memory -name dump_iobs -part $::env(VIVADO_PART)
+create_project -force -in_memory -name dump_iobs -part $::env(PART)
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
-dump_iobs "iobs-$::env(VIVADO_PART).csv"
+dump_iobs "iobs-$::env(PART).csv"
