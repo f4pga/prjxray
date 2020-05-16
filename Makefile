@@ -177,8 +177,10 @@ $(foreach PART,$(XRAY_PARTS),$(eval $(call multiple-parts,$(PART))))
 db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
 
 db-extras-artix7-harness:
-	+XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
-		XRAY_PART=xc7a35tftg256-1 XRAY_EQUIV_PART=xc7a50tfgg484-1 $(MAKE) -C fuzzers roi_only
+	+source settings/artix7.sh && \
+		XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
+		XRAY_PART=xc7a35tftg256-1 XRAY_EQUIV_PART=xc7a50tfgg484-1 \
+		$(MAKE) -C fuzzers roi_only
 	+source settings/artix7_100t.sh && \
 		XRAY_PIN_00=N15 XRAY_PART=xc7a100tcsg324-1 XRAY_EQUIV_PART=xc7a100tfgg676-1 \
 		$(MAKE) -C fuzzers roi_only
