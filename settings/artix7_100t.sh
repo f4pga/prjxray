@@ -8,6 +8,10 @@ export XRAY_ROI_TILEGRID="RAMB36_X0Y0:RAMB36_X3Y39 RAMB18_X0Y0:RAMB18_X3Y79 DSP4
 
 export XRAY_EXCLUDE_ROI_TILEGRID=""
 
+# This is used by fuzzers/005-tilegrid/generate_full.py
+# (special handling for frame addresses of certain IOIs -- see the script for details).
+# This needs to be changed for any new device!
+# If you have a FASM mismatch or unknown bits in IOIs, CHECK THIS FIRST.
 export XRAY_IOI3_TILES="RIOI3_X57Y109 LIOI3_X0Y109"
 
 # clock pin

@@ -176,6 +176,11 @@ $(foreach PART,$(XRAY_PARTS),$(eval $(call multiple-parts,$(PART))))
 
 db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
 
+# This explicitly sources each settings script as needed so that
+#   you don't need to worry about manually sourcing the right script before making.
+# Some of these commands handle additional parts/packages that are *not* fully bonded.
+# For any pin defined in settings/*.sh that is *not* bonded in this part/package,
+#    override the XRAY_PIN_0X setting below to pick a pin that *is* bonded.
 db-extras-artix7-harness:
 	+source settings/artix7.sh && \
 		XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
