@@ -234,6 +234,7 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 	typename ArchType::FrameAddress current_frame_address = 0;
 
 	Configuration<ArchType>::FrameMap frames;
+	bool configuration_data_end = false;
 	for (auto packet : packets) {
 		if (packet.opcode() !=
 		    ConfigurationPacket<
@@ -305,6 +306,8 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 					    frame_address_register;
 					start_new_write = false;
 				}
+				if (configuration_data_end)
+					break;
 
 				// Number of words in configuration frames
 				// depend on tje architecture.  Writes to this
@@ -319,8 +322,10 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 					auto next_address =
 					    part.GetNextFrameAddress(
 					        current_frame_address);
-					if (!next_address)
+					if (!next_address) {
+						configuration_data_end = true;
 						break;
+					}
 
 					// Bitstreams appear to have 2 frames of
 					// padding between rows.
