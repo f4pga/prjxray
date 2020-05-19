@@ -2,22 +2,52 @@
 tileconn file
 =============
 
-The file ``tileconn.json`` contains the information how the wires of neighboring
-tiles are connected to each other. It contains one entry for each pair of tile
-types, each containing a list of pairs of wires that belong to the same node.
+The ``tileconn.json`` file contains the information on how the wires of
+neighboring tiles are connected. It contains one entry for each pair of
+tile types, each containing a list of pairs of wires that belong to the same node.
 
 .. warning:: FIXME: This is a good place to add the tile wire, pip, site pin diagram.
 
 This file documents how adjacent tile pairs are connected.
 No directionality is given.
 
-The file contains one large list. Each entry has the following fields:
+File format
+-----------
 
-- ``grid_deltas`` - (x, y) delta going from source to destination tile
-- ``tile_types`` - (source, destination) tile types
-- ``wire_pairs`` - list of (source tile, destination tile) wire names
+The file contains one large list::
 
-Sample entry:
+    [
+        {
+            "grid_deltas": [
+                <DELTA_X>,
+                <DELTA_Y>
+            ],
+            "tile_types": [
+                "<SOURCE_TILE>",
+                "<DESTINATION_TILE>"
+            ],
+            "wire_pairs": [
+                [
+                    "<SOURCE_TILE_WIRE>",
+                    "<DESTINATION_FILE_WIRE>"
+                ],
+                <...>
+            ],
+        },
+        <...>
+    ]
+
+Each entry has the following fields:
+
+- ``grid_deltas`` - indicates the position (``<DELTA_X>``, ``<DELTA_Y>``) of
+  the source tile relative to the destination_file
+- ``tile_types`` - contains the information about both
+  ``<SOURCE_TILE_TYPE>`` and ``<DESTINATION_TILE_TYPE>``
+- ``wire_pairs`` - contains the names of both
+  ``<SOURCE_TILE_WIRE>`` and ``<DESTINATION_TILE_WIRE>``
+
+Example
+-------
 
 .. code-block:: javascript
 
