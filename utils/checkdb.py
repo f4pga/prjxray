@@ -12,7 +12,7 @@ Relies on 074, which is too far into the process
 from prjxray import util
 from prjxray import db as prjxraydb
 import os
-import parsedb
+import utils.parsedb as parsedb
 #from prjxray import db as prjxraydb
 import glob
 
