@@ -1,6 +1,8 @@
 SHELL = bash
 ALL_EXCLUDE = third_party .git env build docs/env
 
+INSTALL_DIR ?=
+
 # Check if root
 ifeq ($(shell id -u),0)
         $(error ERROR: Running as ID 0)
@@ -34,6 +36,9 @@ build:
 	git submodule update --init --recursive
 	mkdir -p build
 	cd build; cmake ..; $(MAKE)
+
+install:
+	cd build; $(MAKE) DESTDIR=${INSTALL_DIR} install
 
 .PHONY: env build
 

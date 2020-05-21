@@ -33,3 +33,5 @@ target_link_libraries(xc7frames2bit
 	gflags
 	libprjxray
 )
+
+install(TARGETS xc7frames2bit xc7patch gen_part_base_yaml frame_address_decoder bittool segmatch bitread DESTINATION bin)
