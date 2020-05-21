@@ -12,7 +12,7 @@ export XRAY_EXCLUDE_ROI_TILEGRID=""
 # (special handling for frame addresses of certain IOIs -- see the script for details).
 # This needs to be changed for any new device!
 # If you have a FASM mismatch or unknown bits in IOIs, CHECK THIS FIRST.
-export XRAY_IOI3_TILES="RIOI3_X57Y109 LIOI3_X0Y109"
+export XRAY_IOI3_TILES="LIOI3_X0Y9 LIOI3_X0Y109 RIOI3_X57Y109"
 
 # clock pin
 export XRAY_PIN_00="Y22"
