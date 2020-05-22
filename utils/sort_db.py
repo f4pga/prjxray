@@ -54,8 +54,8 @@ import re
 import sys
 
 import json
-import xjson
-import cmp
+import utils.xjson as xjson
+import utils.cmp as cmp
 
 
 def split_all(s, chars):
