@@ -12,10 +12,12 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/SymbiFlow/prjxray",
-    packages=['prjxray', 'utils'],
+    packages=['prjxray'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: ISC License",
         "Operating System :: OS Independent",
     ],
-)
+    entry_points={
+        'console_scripts': ['fasm2frames=utils.fasm2frames:main'],
+    })
