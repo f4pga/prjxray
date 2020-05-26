@@ -1,8 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 
 echo
 echo "==================================="
-echo "Check python utf coding and shebang"
+echo "Check Python UTF coding and shebang"
 echo "==================================="
 echo
 
@@ -29,7 +36,8 @@ fi
 
 if [ ! -z "$ERROR_FILES_UTF_CODING" ]; then
     for file in $ERROR_FILES_UTF_CODING; do
-        echo "ERROR: $file does not have the utf encoding set."
+        echo "ERROR: $file does not have the UTF encoding set."
+	echo "Add # coding: utf-8"
     done
     return 1
 fi
