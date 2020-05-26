@@ -226,8 +226,10 @@ db-extras-kintex7-harness:
 db-extras-zynq7-parts: $(addprefix db-part-only-,$(ZYNQ_PARTS))
 
 db-extras-zynq7-harness:
-	@true
-
+	+source settings/zynq7.sh && \
+                XRAY_PIN_00=T9 XRAY_PIN_01=P14 XRAY_PIN_02=T14 XRAY_PIN_03=R18 \
+                XRAY_PART=xc7z020clg400-1 XRAY_EQUIV_PART=xc7z020clg484-1 \
+                $(MAKE) -C fuzzers roi_only
 db-check:
 	@true
 
