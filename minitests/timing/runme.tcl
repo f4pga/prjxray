@@ -1,3 +1,10 @@
+# Copyright (C) 2017-2020  The Project X-Ray Authors
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 source $::env(XRAY_UTILS_DIR)/write_timing_info.tcl
 
 proc create_design {design_name sig_mask verilogs} {

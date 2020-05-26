@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 """
 Python 3 removed the 'cmp' function and raises a Type error when you try to
 compare different types. This module recreates Python 2 style 'cmp' function

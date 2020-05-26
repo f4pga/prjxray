@@ -1,3 +1,10 @@
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 PART = xc7a35tcsg324-1
 BIT2FASM_ARGS = --part "$(XRAY_DIR)/database/artix7/$(PART)" --verbose
 SOURCES = mem.init mem_1.init top.v VexRiscv_Linux.v

@@ -1,5 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 """ Tool for building zero db file for BUFG pips.
-
 This requires that the rdb files be good enough to identify all the 0 candidate
 features, which may take multiple manual iterations.  Manual iterations can
 be running like:

@@ -1,3 +1,10 @@
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 SHELL = bash
 ALL_EXCLUDE = third_party .git env build docs/env
 
@@ -117,6 +124,12 @@ format: format-cpp format-docs format-py format-tcl format-trailing-ws
 	@true
 
 .PHONY: format format-cpp format-py format-tcl format-trailing-ws
+
+check-license:
+	@./.github/check_license.sh
+	@./.github/check_python_scripts.sh
+
+.PHONY: check-license
 
 # Targets related to Project X-Ray databases
 # ------------------------

@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 #
 # Produces a complete database of wires in the ROI and their connections and tests if each
 # routing node is a tree (i.e. fails with an error when a loop is found).

@@ -1,3 +1,10 @@
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 SLICEL_SDFS = bel/build/slicel.sdf bel/build/carry4_slicel.sdf routing-bels/build/slicel.sdf
 SLICEM_SDFS = bel/build/slicem.sdf bel/build/carry4_slicem.sdf routing-bels/build/slicem.sdf
 

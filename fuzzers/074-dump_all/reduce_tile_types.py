@@ -1,5 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2020  The Project X-Ray Authors.
+#
+# Use of this source code is governed by a ISC-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/ISC
+#
+# SPDX-License-Identifier: ISC
 """ Reduce tile types to prototypes that are always correct.
-
 The dump-all generate.tcl dumps all instances of each tile type.  Some tiles
 are missing wires.  reduce_tile_types.py generates the superset tile that
 encompases all tiles of that type.  If it is not possible to generate a super
