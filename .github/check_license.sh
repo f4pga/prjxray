@@ -16,7 +16,7 @@ echo
 ERROR_FILES=""
 FILES_TO_CHECK=`find . \
     -size +0 -type f \( -name '*.sh' -o -name '*.py' -o -name 'Makefile' -o -name '*.tcl' \) \
-    \( -not -path "*/.*/*" -not -path "*/third_party/*" -not -path "*/database/*" -not -path "*/env/*" \)`
+    \( -not -path "*/.*/*" -not -path "*/third_party/*" -not -path "*/database/*" -not -path "*/env/*" -not -path "*/build/*" \)`
 
 for file in $FILES_TO_CHECK; do
     echo "Checking $file"
