@@ -31,7 +31,7 @@ if [ ! -z "$ERROR_FILES_SHEBANG" ]; then
     for file in $ERROR_FILES_SHEBANG; do
         echo "ERROR: $file does not have the python3 shebang."
     done
-    return 1
+    exit 1
 fi
 
 if [ ! -z "$ERROR_FILES_UTF_CODING" ]; then
@@ -39,7 +39,7 @@ if [ ! -z "$ERROR_FILES_UTF_CODING" ]; then
         echo "ERROR: $file does not have the UTF encoding set."
 	echo "Add # coding: utf-8"
     done
-    return 1
+    exit 1
 fi
 
 echo

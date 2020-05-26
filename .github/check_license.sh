@@ -27,7 +27,7 @@ if [ ! -z "$ERROR_FILES" ]; then
     for file in $ERROR_FILES; do
         echo "ERROR: $file does not have license information."
     done
-    return 1
+    exit 1
 fi
 
 echo
@@ -62,5 +62,5 @@ if [ ! -z "$ERROR_NO_LICENSE" ]; then
     for dir in $ERROR_NO_LICENSE; do
         echo "ERROR: $dir does not have the LICENSE file."
     done
-    return 1
+    exit 1
 fi

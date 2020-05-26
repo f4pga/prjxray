@@ -35,5 +35,5 @@ jobs:
 
     - name: "License Checks"
       script:
-        - source .github/check_license.sh
-        - source .github/check_python_scripts.sh
+        - ./.github/check_license.sh
+        - ./.github/check_python_scripts.sh
