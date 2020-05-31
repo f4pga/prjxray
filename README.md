@@ -9,9 +9,9 @@ Documenting the Xilinx 7-series bit-stream format.
 This repository contains both tools and scripts which allow you to document the
 bit-stream format of Xilinx 7-series FPGAs.
 
-More documentation can be found published on [prjxray ReadTheDocs site](http://prjxray.readthedocs.io/en/latest/) - this includes;
- * [Highlevel Bitstream Architecture](http://prjxray.readthedocs.io/en/latest/architecture/overview.html)
- * [Overview of DB Development Process](http://prjxray.readthedocs.io/en/latest/db_dev_process/overview.html)
+More documentation can be found published on [prjxray ReadTheDocs site](https://prjxray.readthedocs.io/en/latest/) - this includes;
+ * [Highlevel Bitstream Architecture](https://prjxray.readthedocs.io/en/latest/architecture/overview.html)
+ * [Overview of DB Development Process](https://prjxray.readthedocs.io/en/latest/db_dev_process/index.html)
 
 # Quickstart Guide
 Instructions were originally written for Ubuntu 16.04. Please let us know if you have information on other distributions.
@@ -152,7 +152,7 @@ Fuzzers are the scripts which generate the large number of bitstream.
 They are called "fuzzers" because they follow an approach similar to the
 [idea of software testing through fuzzing](https://en.wikipedia.org/wiki/Fuzzing).
 
-### [Tools](tools) & [Libs](libs)
+### [Tools](tools) & [Libs](lib)
 
 Tools & libs are useful tools (and libraries) for converting the resulting
 bitstreams into various formats.
@@ -214,7 +214,7 @@ All contributions should be sent as
 
 All software (code, associated documentation, support files, etc) in the
 Project X-Ray repository are licensed under the very permissive
-[ISC Licence](COPYING). A copy can be found in the [`COPYING`](COPYING) file.
+[ISC Licence](https://opensource.org/licenses/ISC). A copy can be found in the [`LICENSE`](LICENSE) file.
 
 All new contributions must also be released under this license.
 
