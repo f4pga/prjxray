@@ -68,7 +68,7 @@ test -z "$(fgrep CRITICAL vivado.log)"
 
 ${XRAY_BITREAD} -F $XRAY_ROI_FRAMES -o design.bits -z -y design.bit
 python3 ${XRAY_DIR}/utils/bit2fasm.py --verbose design.bit > design.fasm
-python3 ${XRAY_DIR}/utils/fasm2frames.py design.fasm design.frm
+python3 ${XRAY_DIR}/prjxray/fasm2frames.py design.fasm design.frm
 PYTHONPATH=$PYTHONPATH:$XRAY_DIR/utils python3 ../create_design_json.py \
     --design_info_txt design_info.txt \
     --design_txt design.txt \
