@@ -38,8 +38,8 @@ std::unique_ptr<MemoryMappedFile> MemoryMappedFile::InitWithFile(
 		    new MemoryMappedFile(nullptr, 0));
 	}
 
-	void* file_map = mmap(NULL, statbuf.st_size, PROT_READ,
-	                      MAP_PRIVATE | MAP_POPULATE, fd, 0);
+	void* file_map =
+	    mmap(NULL, statbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
 	// If mmap() succeeded, the fd is no longer needed as the mapping will
 	// keep the file open.  If mmap() failed, the fd needs to be closed
