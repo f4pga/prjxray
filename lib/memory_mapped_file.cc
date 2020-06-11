@@ -15,6 +15,21 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+// https://stackoverflow.com/questions/35568112/use-of-undeclared-identifier-map-populate#answer-43505799
+// man 2 mmap
+#if __linux__
+#include <linux/version.h>
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 22)
+#define _MAP_POPULATE_AVAILABLE
+#endif
+#endif
+
+#ifdef _MAP_POPULATE_AVAILABLE
+#define MMAP_FLAGS (MAP_PRIVATE | MAP_POPULATE)
+#else
+#define MMAP_FLAGS MAP_PRIVATE
+#endif
+
 namespace prjxray {
 
 std::unique_ptr<MemoryMappedFile> MemoryMappedFile::InitWithFile(
@@ -38,8 +53,8 @@ std::unique_ptr<MemoryMappedFile> MemoryMappedFile::InitWithFile(
 		    new MemoryMappedFile(nullptr, 0));
 	}
 
-	void* file_map = mmap(NULL, statbuf.st_size, PROT_READ,
-	                      MAP_PRIVATE | MAP_POPULATE, fd, 0);
+	void* file_map =
+	    mmap(NULL, statbuf.st_size, PROT_READ, MMAP_FLAGS, fd, 0);
 
 	// If mmap() succeeded, the fd is no longer needed as the mapping will
 	// keep the file open.  If mmap() failed, the fd needs to be closed
