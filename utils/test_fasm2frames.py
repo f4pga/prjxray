@@ -17,7 +17,8 @@ import re
 import unittest
 import tempfile
 
-import prjxray.fasm2frames as fasm2frames
+import prjxray
+import utils.fasm2frames as fasm2frames
 
 from textx.exceptions import TextXSyntaxError
 

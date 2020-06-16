@@ -20,9 +20,9 @@ import csv
 
 from collections import defaultdict
 
-from . import fasm_assembler, util
-from .db import Database
-from .roi import Roi
+from prjxray import fasm_assembler, util
+from prjxray.db import Database
+from prjxray.roi import Roi
 
 import sys
 
