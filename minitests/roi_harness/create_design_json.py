@@ -46,6 +46,15 @@ def main():
     design_json['info'] = {}
     with open(args.design_txt) as f:
         for d in csv.DictReader(f, delimiter=' '):
+            if d['name'].startswith('dout['):
+                d['type'] = 'out'
+            elif d['name'].startswith('din['):
+                d['type'] = 'in'
+            elif d['name'].startswith('clk'):
+                d['type'] = 'clk'
+            else:
+                assert False, d
+
             design_json['ports'].append(d)
 
     with open(args.design_info_txt) as f:
