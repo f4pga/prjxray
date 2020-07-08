@@ -98,12 +98,12 @@ def bus_tags(segmk, ps, site):
     segmk.add_site_tag(
             site, 'COMPENSATION.ZHOLD_NO_CLKIN_BUF_NO_TOP', match and \
                     not bufg_on_clkin and \
-                    site != "PLLE2_ADV_X0Y2"
+                    site != "PLLE2_ADV_X0Y3" and site != "PLLE2_ADV_X0Y0"
                     )
     segmk.add_site_tag(
             site, 'COMP.ZHOLD_NO_CLKIN_BUF_TOP', match and \
                     not bufg_on_clkin and \
-                    site == "PLLE2_ADV_X0Y2"
+                    (site == "PLLE2_ADV_X0Y3" or site == "PLLE2_ADV_X0Y0")
                     )
 
     # No INTERNAL as it has conflicting bits
