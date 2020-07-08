@@ -46,7 +46,7 @@ def read_raw_timings(fin, site):
             speed_model_split = speed_model.split('_')
             interconn_input = "_".join(speed_model_split[1:-1])
             interconn_output = speed_model_split[-1]
-            celltype = "routing_bel"
+            celltype = "ROUTING_BEL"
 
             if celltype not in timings['cells']:
                 timings['cells'][celltype] = dict()
