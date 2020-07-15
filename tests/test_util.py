@@ -21,7 +21,9 @@ from unittest import TestCase, main
 environ['XRAY_DATABASE_ROOT'] = '.'
 environ['XRAY_PART'] = './'
 
-from prjxray.util import get_roi
+from prjxray.util import get_roi, get_db_root
+from prjxray.overlay import Overlay
+from prjxray.grid_types import GridLoc
 
 
 @contextmanager
@@ -68,6 +70,17 @@ class TestUtil(TestCase):
         with setup_database(makedb({'FOO': 'BAR'})):
             self.assertListEqual(
                 list(get_roi().gen_sites()), [('ATILE', 'FOO', 'BAR')])
+
+    def test_in_roi_overlay(self):
+        region_dict = {}
+        region_dict['pr1'] = (10, 58, 0, 51)
+        region_dict['pr2'] = (10, 58, 52, 103)
+        overlay = Overlay(region_dict)
+        self.assertFalse(overlay.tile_in_roi(GridLoc(18, 50)))
+        self.assertFalse(overlay.tile_in_roi(GridLoc(18, 84)))
+        self.assertTrue(overlay.tile_in_roi(GridLoc(8, 50)))
+        self.assertTrue(overlay.tile_in_roi(GridLoc(18, 112)))
+        self.assertTrue(overlay.tile_in_roi(GridLoc(80, 40)))
 
 
 if __name__ == '__main__':
