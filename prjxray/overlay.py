@@ -15,8 +15,7 @@ class Overlay(object):
 
     """
 
-    def __init__(self, grid, region_dict):
-        self.grid = grid
+    def __init__(self, region_dict):
         self.region_dict = region_dict
 
     def tile_in_roi(self, grid_loc):
