@@ -1,8 +1,14 @@
 # Project X-Ray
 
-![Build Status](https://travis-ci.org/SymbiFlow/prjxray.svg?branch=master)
-![Documentation Status](https://readthedocs.org/projects/pyxray/badge/?version=latest)
-![License](https://img.shields.io/github/license/SymbiFlow/prjxray.svg)
+[![Documentation Status](https://readthedocs.org/projects/pyxray/badge/?version=latest)](http://prjxray.readthedocs.org/)
+[![License](https://img.shields.io/github/license/SymbiFlow/prjxray.svg)](https://github.com/SymbiFlow/prjxray/blob/master/LICENSE)
+[![Build Status](https://travis-ci.org/SymbiFlow/prjxray.svg?branch=master)](https://travis-ci.com/github/SymbiFlow/prjxray)
+[![Tests](http://storage.googleapis.com/symbiflow-badges/prjxray/tests.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/tests.html)
+
+[![Database Generation](http://storage.googleapis.com/symbiflow-badges/prjxray/database.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/database.html)
+[![Artix 7 Database](http://storage.googleapis.com/symbiflow-badges/prjxray/artix7.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/artix7.html)
+[![Kintex 7 Database](http://storage.googleapis.com/symbiflow-badges/prjxray/kintex7.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/kintex7.html)
+[![Zynq 7 Database](http://storage.googleapis.com/symbiflow-badges/prjxray/zynq7.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/zynq7.html)
 
 Documenting the Xilinx 7-series bit-stream format.
 
