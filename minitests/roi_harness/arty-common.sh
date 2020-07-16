@@ -6,6 +6,9 @@
 #
 # SPDX-License-Identifier: ISC
 # XC7A35TICSG324-1L
+
+source $(dirname ${BASH_SOURCE[0]})/../../settings/artix7_50t.sh
+
 export XRAY_PART=xc7a35tcsg324-1
 export XRAY_EQUIV_PART=xc7a50tfgg484-1
 

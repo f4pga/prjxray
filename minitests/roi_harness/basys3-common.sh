@@ -6,6 +6,9 @@
 #
 # SPDX-License-Identifier: ISC
 # XC7A35T-1CPG236C
+
+source $(dirname ${BASH_SOURCE[0]})/../../settings/artix7_50t.sh
+
 export XRAY_PART=xc7a35tcpg236-1
 export XRAY_EQUIV_PART=xc7a50tfgg484-1
 if [ -z "$XRAY_PINCFG" ]; then
