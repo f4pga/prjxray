@@ -19,7 +19,7 @@ build/segbits_xioi3.rdb: build/segbits_xioi3.rdb2
 	grep -v ".ISERDES." $^ | grep -v "DYN_" >$@
 
 build/segbits_xioi3.db: build/segbits_xioi3.rdb
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
+	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --groups tag_groups.txt --seg-fn-in $^ --seg-fn-out $@
 	${XRAY_MASKMERGE} build/mask_xioi3.db $$(find -name segdata_*)
 
 pushdb:
