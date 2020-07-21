@@ -5,22 +5,21 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-N := 30
+N := 50
 include ../fuzzer.mk
 
 database: build/segbits_xioi3.db
 
 build/segbits_xioi3.rdb2: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 6 -o build/segbits_xioi3.rdb2 $$(find -name segdata_*)
+	${XRAY_SEGMATCH} -c 20 -m 1 -M 1 -o build/segbits_xioi3.rdb2 $$(find -name segdata_*.txt)
 
 build/segbits_xioi3.rdb: build/segbits_xioi3.rdb2
-	# Filter out ISERDES features. Also filter DYN_CLK_INV_EN as they should
-	# belong to ISEDRES and are solved by fuzzer 035b.
-	grep -v ".ISERDES." $^ | grep -v "DYN_" >$@
+	# Keep only solution for ISERDES related features.
+	grep -e ".ISERDES." $^ >$@
 
 build/segbits_xioi3.db: build/segbits_xioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --groups tag_groups.txt --seg-fn-in $^ --seg-fn-out $@
-	${XRAY_MASKMERGE} build/mask_xioi3.db $$(find -name segdata_*)
+	${XRAY_MASKMERGE} build/mask_xioi3.db $$(find -name segdata_*.txt)
 
 pushdb:
 	${XRAY_MERGEDB} lioi3 build/segbits_xioi3.db
