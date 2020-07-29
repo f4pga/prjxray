@@ -9,8 +9,38 @@
 #
 # SPDX-License-Identifier: ISC
 
-import os, sys
+import os, sys, re
 from prjxray import util
+
+TAG_PART_RE = re.compile(r"^[a-zA-Z][0-9a-zA-Z_]*(\[[0-9]+\])?$")
+
+
+def check_tag_name(tag):
+    '''
+    Checks if the tag name given by the used conforms to the valid fasm
+    name rules.
+
+    >>> check_tag_name("CELL.feature19.ENABLED")
+    True
+    >>> check_tag_name("FEATURE")
+    True
+    >>> check_tag_name("TAG.")
+    False
+    >>> check_tag_name(".TAG")
+    False
+    >>> check_tag_name("CELL..FEATURE")
+    False
+    >>> check_tag_name("CELL.3ENABLE")
+    False
+    >>> check_tag_name("FEATURE.12.ON")
+    False
+    '''
+
+    for part in tag.split("."):
+        if not len(part) or TAG_PART_RE.match(part) is None:
+            return False
+
+    return True
 
 
 def run(fn_ins, fn_out, strict=False, track_origin=False, verbose=False):
@@ -26,6 +56,9 @@ def run(fn_ins, fn_out, strict=False, track_origin=False, verbose=False):
             line = line.strip()
             assert mode is not None or mode != "always", "strict: got ill defined line: %s" % (
                 line, )
+
+            if not check_tag_name(tag):
+                assert not strict, "strict: Invalid tag name '{}'".format(tag)
 
             if tag in tags:
                 orig_bits, orig_line, orig_origin = tags[tag]
