@@ -64,10 +64,10 @@ def run():
                     if i == "NETWORKING":
                         for j in data_rates:
                             for k in data_widths[j]:
-                                tag = "ISERDES.%s.%s.%s" % (i, j, k)
+                                tag = "ISERDES.%s.%s.W%s" % (i, j, k)
                                 segmk.add_site_tag(loc, tag, 0)
                     else:
-                        segmk.add_site_tag(loc, "ISERDES.%s.DDR.4" % i, 0)
+                        segmk.add_site_tag(loc, "ISERDES.%s.DDR.W4" % i, 0)
 
                 segmk.add_site_tag(loc, "ISERDES.NUM_CE.N1", 0)
                 segmk.add_site_tag(loc, "ISERDES.NUM_CE.N2", 0)
@@ -120,7 +120,7 @@ def run():
                     if i == "NETWORKING":
                         for j in data_rates:
                             for k in data_widths[j]:
-                                tag = "ISERDES.%s.%s.%s" % (i, j, k)
+                                tag = "ISERDES.%s.%s.W%s" % (i, j, k)
                                 val = 0
 
                                 if i == iface_type:
@@ -129,7 +129,7 @@ def run():
                                             segmk.add_site_tag(loc, tag, 1)
                     else:
                         if i == iface_type:
-                            segmk.add_site_tag(loc, "ISERDES.%s.DDR.4" % i, 1)
+                            segmk.add_site_tag(loc, "ISERDES.%s.DDR.W4" % i, 1)
 
                 if "NUM_CE" in params:
                     value = params["NUM_CE"]
