@@ -22,6 +22,7 @@ echo "Host adding PPAs"
 echo "----------------------------------------"
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
 sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main'
+sudo add-apt-repository ppa:deadsnakes/ppa
 echo "----------------------------------------"
 
 echo
@@ -62,13 +63,19 @@ sudo apt-get install -y \
         jq \
         nodejs \
         psmisc \
-        python \
-        python3 \
-        python3-dev \
-        python3-virtualenv \
-        python3-venv \
-        python3-yaml \
-        virtualenv \
+        python3.8 \
+        python3.8-dev \
+        python3.8-venv
+
+echo "========================================"
+echo "Enter virtual env for python 3.8"
+echo "----------------------------------------"
+python3.8 -mvenv startup_python
+source startup_python/bin/activate
+which python
+python --version
+which python3
+python3 --version
 
 echo "----------------------------------------"
 
