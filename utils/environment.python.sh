@@ -1,4 +1,3 @@
-# FIXME: fasm should be installed into the running Python environment.
 # Copyright (C) 2017-2020  The Project X-Ray Authors.
 #
 # Use of this source code is governed by a ISC-style
@@ -6,7 +5,6 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-export PYTHONPATH="${XRAY_DIR}:${XRAY_DIR}/third_party/fasm:$PYTHONPATH"
 
 # Suppress the following warnings;
 # - env/lib/python3.7/distutils/__init__.py:4: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module's documentation for alternative uses
