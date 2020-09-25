@@ -126,9 +126,15 @@ for clbi, loc in zip(range(CLBN), slices):
 
     print('    %s' % module)
     print('            #(.LOC("%s")%s)' % (loc, params))
-    print(
-        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
-        % (clbi, 8 * clbi, 8 * clbi))
+    sel = random.random()
+    if sel > .15:
+        print(
+            '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
+            % (clbi, 8 * clbi, 8 * clbi))
+    else:
+        print(
+            "            clb_%d (.clk(clk), .din({8{1'b1}}), .dout());" %
+            (clbi, ))
 
     f.write('%s,%s%s\n' % (module, loc, cparams))
 f.close()
