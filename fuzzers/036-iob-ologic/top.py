@@ -210,8 +210,12 @@ def use_direct_and_oddr(p, luts, connects):
         p['tddr_mux_config'] = 'none'
 
     # toddr and oddr share the same clk
-    clknet = luts.get_next_output_net()
-    p['IS_CLK_INVERTED'] = 0
+    if random.randint(0, 1):
+        clknet = luts.get_next_output_net()
+        p['IS_CLK_INVERTED'] = 0
+    else:
+        clknet = 'bufg_o'
+        p['IS_CLK_INVERTED'] = random.randint(0, 1)
 
     if p['tddr_mux_config'] == 'direct':
         p['TINIT'] = random.randint(0, 1)
@@ -221,6 +225,17 @@ def use_direct_and_oddr(p, luts, connects):
         # Note: it seems that CLK_EDGE setting is ignored for TDDR
         p['TDDR_CLK_EDGE'] = verilog.quote(
             random.choice(('OPPOSITE_EDGE', 'SAME_EDGE')))
+
+        p['t_sr_used'] = random.choice(('None', 'S', 'R'))
+        if p['t_sr_used'] == 'None':
+            p['t_srnet'] = ''
+        elif p['t_sr_used'] == 'S':
+            p['srnet'] = luts.get_next_output_net()
+            p['t_srnet'] = '.S({}),\n'.format(p['srnet'])
+        elif p['t_sr_used'] == 'R':
+            p['srnet'] = luts.get_next_output_net()
+            p['t_srnet'] = '.R({}),\n'.format(p['srnet'])
+
         print(
             '''
     (* KEEP, DONT_TOUCH, LOC = "{ologic_loc}" *)
@@ -234,6 +249,7 @@ def use_direct_and_oddr(p, luts, connects):
         .D1({d1net}),
         .D2({d2net}),
         .CE({cenet}),
+        {t_srnet}
         .Q(tddr_d_{site})
         );
         '''.format(
@@ -269,6 +285,18 @@ def use_direct_and_oddr(p, luts, connects):
                 'SAME_EDGE',
             )))
 
+        p['o_sr_used'] = random.choice(('None', 'S', 'R'))
+        if p['o_sr_used'] == 'None':
+            p['o_srnet'] = ''
+        elif p['o_sr_used'] == 'S':
+            if 'srnet' not in p:
+                p['srnet'] = luts.get_next_output_net()
+            p['o_srnet'] = '.S({}),\n'.format(p['srnet'])
+        elif p['o_sr_used'] == 'R':
+            if 'srnet' not in p:
+                p['srnet'] = luts.get_next_output_net()
+            p['o_srnet'] = '.R({}),\n'.format(p['srnet'])
+
         print(
             '''
     (* KEEP, DONT_TOUCH, LOC = "{ologic_loc}" *)
@@ -282,6 +310,7 @@ def use_direct_and_oddr(p, luts, connects):
         .D1({d1net}),
         .D2({d2net}),
         .CE({cenet}),
+        {o_srnet}
         .Q(oddr_d_{site})
         );
         '''.format(
@@ -386,6 +415,10 @@ module top(input clk, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
         '''
         (* KEEP, DONT_TOUCH *)
         LUT6 dummy_lut();
+
+        wire bufg_o;
+        (* KEEP, DONT_TOUCH *)
+        BUFG (.O(bufg_o));
         ''')
 
     for p in params:
