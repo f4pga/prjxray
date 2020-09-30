@@ -9,8 +9,10 @@
 #
 # SPDX-License-Identifier: ISC
 
-import sys, os, re
 import itertools
+import os
+import re
+
 from prjxray import util
 
 clb_int_zero_db = [
@@ -283,6 +285,16 @@ def add_zero_bits(
             """
             if clb_int:
                 zero_range(tag, bits, 22, 25)
+
+                set_bits = [bit for bit in bits if bit[0] != '!']
+                if len(set_bits) not in [2, 4]:
+                    # All INT bits appear to be only have 2 or 4 bits.
+                    verbose and print(
+                        "WARNING: dropping line with %d bits, not [2, 4]: %s, %s"
+                        % (len(set_bits), bits, line))
+                    drops += 1
+                    continue
+
             zero_groups.add_bits_from_zero_groups(
                 tag, bits, strict=strict, verbose=verbose)
 
@@ -303,7 +315,6 @@ def add_zero_bits(
         if new_line != line:
             changes += 1
         new_lines.add(new_line)
-        llast = line
 
     if drops:
         print("WARNING: %s dropped %s unresolved lines" % (fn_in, drops))
