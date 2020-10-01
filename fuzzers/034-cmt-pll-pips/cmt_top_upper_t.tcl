@@ -28,9 +28,19 @@ proc print_tile_pips {tile_type filename} {
     close $fp
 }
 
+proc print_tile_wires {tile_type filename} {
+    set tile [lindex [get_tiles -filter "TYPE == $tile_type"] 0]
+    set fp [open $filename w]
+    foreach wire [lsort [get_wires -of_objects [get_tiles $tile]]] {
+        puts $fp "$tile_type [regsub {.*/} $wire ""]"
+    }
+}
+
 create_project -force -part $::env(XRAY_PART) design design
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
 print_tile_pips CMT_TOP_L_UPPER_T cmt_top_l_upper_t.txt
 print_tile_pips CMT_TOP_R_UPPER_T cmt_top_r_upper_t.txt
+print_tile_wires CMT_TOP_L_UPPER_T cmt_top_l_upper_t_wires.txt
+print_tile_wires CMT_TOP_R_UPPER_T cmt_top_r_upper_t_wires.txt

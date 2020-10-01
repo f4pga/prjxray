@@ -30,6 +30,23 @@ proc write_pip_txtdata {filename} {
     close $fp
 }
 
+proc write_used_wires {filename} {
+    puts "FUZ([pwd]): Writing $filename."
+
+    set fp [open $filename w]
+    set nets [get_nets -hierarchical]
+    set nnets [llength $nets]
+    set neti 0
+    foreach net $nets {
+        foreach node [get_nodes -of $net] {
+            foreach wire [get_wires -of $node] {
+                puts $fp "$wire"
+            }
+        }
+    }
+    close $fp
+}
+
 proc load_routes {filename} {
     puts "MANROUTE: Loading routes from $filename"
 
@@ -162,6 +179,7 @@ proc run {} {
     write_checkpoint -force design.dcp
     write_bitstream -force design.bit
     write_pip_txtdata design_pips.txt
+    write_used_wires design_wires.txt
 }
 
 run

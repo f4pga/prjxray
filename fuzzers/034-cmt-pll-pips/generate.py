@@ -12,7 +12,6 @@
 from prjxray.segmaker import Segmaker
 import os
 import os.path
-import itertools
 
 
 def bitfilter(frame, word):
@@ -30,8 +29,10 @@ def main():
     pipdata = {}
     ppipdata = {}
     ignpip = set()
+    all_clks = {}
 
     piplists = ['cmt_top_l_upper_t.txt', 'cmt_top_r_upper_t.txt']
+    wirelists = ['cmt_top_l_upper_t_wires.txt', 'cmt_top_r_upper_t_wires.txt']
     ppiplists = ['ppips_cmt_top_l_upper_t.db', 'ppips_cmt_top_r_upper_t.db']
 
     # Load PIP lists
@@ -43,8 +44,23 @@ def main():
                 tile_type, dst, src = l.strip().split('.')
                 if tile_type not in pipdata:
                     pipdata[tile_type] = []
+                    all_clks[tile_type] = set()
 
                 pipdata[tile_type].append((src, dst))
+                if dst.split('_')[-1].startswith('CLK'):
+                    all_clks[tile_type].add(src)
+
+    wiredata = {}
+    for wirelist in wirelists:
+        with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
+                               'cmt_top', wirelist)) as f:
+            for l in f:
+                tile_type, wire = l.strip().split()
+
+                if tile_type not in wiredata:
+                    wiredata[tile_type] = set()
+
+                wiredata[tile_type].add(wire)
 
     # Load PPIP lists (to exclude them)
     print("Loading PPIP lists...")
@@ -111,6 +127,16 @@ def main():
                dst.startswith('CMT_TOP_L_UPPER_T_CLK'):
                 ignpip.add((src, dst))
 
+    active_wires = {}
+    with open("design_wires.txt", "r") as f:
+        for l in f:
+            tile, wire = l.strip().split('/')
+
+            if tile not in active_wires:
+                active_wires[tile] = set()
+
+            active_wires[tile].add(wire)
+
     tags = {}
 
     # Populate IN_USE tags
@@ -121,11 +147,11 @@ def main():
         tags[tile]["IN_USE"] = int(in_use)
 
     # Populate PIPs
+    active_clks = {}
     for tile in tags.keys():
         tile_type = tile.rsplit("_", maxsplit=1)[0]
 
         in_use = tags[tile]["IN_USE"]
-        internal_feedback = False
 
         if not in_use:
             active_pips = []
@@ -143,7 +169,29 @@ def main():
             val = in_use if (src, dst) in active_pips else False
 
             if not (in_use and not val):
+                if tile not in active_clks:
+                    active_clks[tile] = set()
+
+                active_clks[tile].add(src)
                 tags[tile][tag] = int(val)
+
+        for wire in wiredata[tile_type]:
+            if 'CLK' not in wire:
+                continue
+
+            if 'CLKFBOUT2IN' in wire:
+                continue
+
+            if 'CLKPLL' in wire:
+                continue
+
+            if 'CLKOUT' in wire:
+                continue
+
+            if tile not in active_wires:
+                active_wires[tile] = set()
+            segmk.add_tile_tag(
+                tile, '{}_ACTIVE'.format(wire), wire in active_wires[tile])
 
     # Output tags
     for tile, tile_tags in tags.items():
