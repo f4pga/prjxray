@@ -33,10 +33,9 @@ GENERATE_FULL_ARGS=
 ifeq (${XRAY_DATABASE}, zynq7)
 # Zynq7 only
 TILEGRID_TDB_DEPENDENCIES += ps7_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
-else
-# Artix7/Kintex7 only
-TILEGRID_TDB_DEPENDENCIES += mmcm/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
+
+TILEGRID_TDB_DEPENDENCIES += mmcm/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 
 ifeq (${XRAY_DATABASE}, kintex7)
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb

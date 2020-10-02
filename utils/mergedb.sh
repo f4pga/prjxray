@@ -145,6 +145,12 @@ case "$1" in
 	cmt_top_l_upper_t)
 		sed < "$2" > "$tmp1" -e 's/^CMT_UPPER_T\./CMT_TOP_L_UPPER_T./' ;;
 
+	cmt_top_r_lower_b)
+		sed < "$2" > "$tmp1" -e 's/^CMT_LOWER_B\./CMT_TOP_R_LOWER_B./' ;;
+
+	cmt_top_l_lower_b)
+		sed < "$2" > "$tmp1" -e 's/^CMT_LOWER_B\./CMT_TOP_L_LOWER_B./' ;;
+
 	cfg_center_mid)
 		cp "$2" "$tmp1" ;;
 

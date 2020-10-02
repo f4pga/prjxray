@@ -46,6 +46,8 @@ DB_SIMPLE=\
     $(addsuffix _r, $(DB_SIMPLE_LR) $(DB_SIMPLE_R)) \
     segbits_cmt_top_l_upper_t \
     segbits_cmt_top_r_upper_t \
+    segbits_cmt_top_l_lower_b \
+    segbits_cmt_top_r_lower_b \
     segbits_rioi3 \
     segbits_riob33 \
     segbits_hclk_cmt \

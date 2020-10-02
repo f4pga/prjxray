@@ -1,3 +1,4 @@
-# MMCM
+# Clock Management Tile (CMT) - MMCM Fuzzer
 
-`MMCME2_ADV` in [UG953](https://www.xilinx.com/support/documentation/sw_manuals/xilinx2017_2/ug953-vivado-7series-libraries.pdf) lists the available attributes.
+Bits that are part of the dynamic configration register interface (see APPNOTE
+XAPP888) are handled specially.
