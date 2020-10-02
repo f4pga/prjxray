@@ -11,7 +11,7 @@ include ../fuzzer.mk
 database: build/segbits_xioi3.db
 
 build/segbits_xioi3.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 6 -o build/segbits_xioi3.rdb $$(find -name segdata_*)
+	${XRAY_SEGMATCH} -c 7 -o build/segbits_xioi3.rdb $$(find -name segdata_*)
 
 build/segbits_xioi3.db: build/segbits_xioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@

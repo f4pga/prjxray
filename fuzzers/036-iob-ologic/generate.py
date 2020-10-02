@@ -30,24 +30,23 @@ def handle_data_width(segmk, d):
 
     site = d['ologic_loc']
 
-    for opt in [2, 3, 4, 5, 6, 7, 8]:
-        segmk.add_site_tag(
-            site, 'OSERDES.DATA_WIDTH.W{}'.format(opt), d['DATA_WIDTH'] == opt)
+    data_rate = verilog.unquote(d['DATA_RATE_OQ'])
+    segmk.add_site_tag(
+        site, 'OSERDES.DATA_WIDTH.{}.W{}'.format(data_rate, d['DATA_WIDTH']),
+        1)
 
-    if verilog.unquote(d['DATA_RATE_OQ']) == 'DDR':
-        # DDR + WIDTH 6/8 have some overlapping bits, create a feature.
-        OVERLAPPING_WIDTHS = [6, 8]
-        segmk.add_site_tag(
-            site, 'OSERDES.DATA_WIDTH.DDR.W{}'.format(
-                '_'.join(map(str, OVERLAPPING_WIDTHS))),
-            d['DATA_WIDTH'] in OVERLAPPING_WIDTHS)
-    else:
-        # SDR + WIDTH 2/4/5/6 have some overlapping bits, create a feature.
-        OVERLAPPING_WIDTHS = [2, 4, 5, 6]
-        segmk.add_site_tag(
-            site, 'OSERDES.DATA_WIDTH.SDR.W{}'.format(
-                '_'.join(map(str, OVERLAPPING_WIDTHS))),
-            d['DATA_WIDTH'] in OVERLAPPING_WIDTHS)
+
+def no_oserdes(segmk, site):
+    for mode in ['SDR', 'DDR']:
+        if mode == 'SDR':
+            widths = [2, 3, 4, 5, 6, 7, 8]
+        else:
+            assert mode == 'DDR'
+            widths = [4, 6, 8]
+
+        for opt in widths:
+            segmk.add_site_tag(
+                site, 'OSERDES.DATA_WIDTH.{}.W{}'.format(mode, opt), 0)
 
 
 def main():
@@ -72,10 +71,16 @@ def main():
                         site, 'OSERDES.DATA_RATE_OQ.{}'.format(opt),
                         verilog.unquote(d['DATA_RATE_OQ']) == opt)
 
+                data_rate_tq = verilog.unquote(d['DATA_RATE_TQ'])
+                segmk.add_site_tag(
+                    site, 'OSERDES.DATA_RATE_TQ.{}'.format(data_rate_tq), 1)
                 for opt in ['BUF', 'SDR', 'DDR']:
                     segmk.add_site_tag(
                         site, 'OSERDES.DATA_RATE_TQ.{}'.format(opt),
-                        verilog.unquote(d['DATA_RATE_TQ']) == opt)
+                        opt == data_rate_tq)
+
+                segmk.add_site_tag(
+                    site, 'OSERDES.DATA_RATE_TQ.ZBUF', data_rate_tq != 'BUF')
 
                 for opt in ['SRVAL_OQ', 'SRVAL_TQ', 'INIT_OQ', 'INIT_TQ']:
                     segmk.add_site_tag(site, opt, d[opt])
@@ -112,12 +117,39 @@ def main():
                         site, 'OSERDES.SERDES_MODE.{}'.format(opt),
                         opt == verilog.unquote(d['OSERDES_MODE']))
 
+            if 'o_sr_used' in d:
+                if d['o_sr_used'] in ['S', 'R']:
+                    segmk.add_site_tag(site, 'ODDR.SRUSED', 1)
+                    segmk.add_site_tag(site, 'ODDR.ZSRUSED', 0)
+                else:
+                    assert d['o_sr_used'] == 'None'
+                    segmk.add_site_tag(site, 'ODDR.SRUSED', 0)
+                    segmk.add_site_tag(site, 'ODDR.ZSRUSED', 1)
+
+            if 't_sr_used' in d:
+                if d['t_sr_used'] in ['S', 'R']:
+                    segmk.add_site_tag(site, 'TDDR.SRUSED', 1)
+                    segmk.add_site_tag(site, 'TDDR.ZSRUSED', 0)
+                else:
+                    assert d['t_sr_used'] == 'None'
+                    segmk.add_site_tag(site, 'TDDR.SRUSED', 0)
+                    segmk.add_site_tag(site, 'TDDR.ZSRUSED', 1)
+
+            if d['oddr_mux_config'] == 'direct':
+                segmk.add_site_tag(site, 'ODDR_TDDR.IN_USE', 1)
+
+            if d['tddr_mux_config'] == 'direct':
+                segmk.add_site_tag(site, 'ODDR_TDDR.IN_USE', 1)
+
             if d['oddr_mux_config'] == 'direct' and d[
                     'tddr_mux_config'] == 'direct':
-                for opt in ['OPPOSITE_EDGE', 'SAME_EDGE']:
-                    segmk.add_site_tag(
-                        site, 'ODDR.DDR_CLK_EDGE.{}'.format(opt),
-                        verilog.unquote(d['ODDR_CLK_EDGE']) == opt)
+                segmk.add_site_tag(site, 'ZINV_CLK', 1 ^ d['IS_CLK_INVERTED'])
+
+                if d['IS_CLK_INVERTED'] == 0:
+                    for opt in ['OPPOSITE_EDGE', 'SAME_EDGE']:
+                        segmk.add_site_tag(
+                            site, 'ODDR.DDR_CLK_EDGE.{}'.format(opt),
+                            verilog.unquote(d['ODDR_CLK_EDGE']) == opt)
 
                 segmk.add_site_tag(
                     site, 'TDDR.DDR_CLK_EDGE.INV',
@@ -138,7 +170,9 @@ def main():
                         verilog.unquote(d['TSRTYPE']) == opt)
 
             if not d['use_oserdese2']:
+                no_oserdes(segmk, site)
                 if d['oddr_mux_config'] == 'lut':
+                    segmk.add_site_tag(site, 'ODDR_TDDR.IN_USE', 0)
                     segmk.add_site_tag(site, 'OMUX.D1', 1)
                     segmk.add_site_tag(site, 'OQUSED', 1)
                 elif d['oddr_mux_config'] == 'direct':
