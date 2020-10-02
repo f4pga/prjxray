@@ -218,6 +218,21 @@ def main():
             tags_to_mask = [t for t in segbits.keys() if t.startswith(prefix)]
             mask_out_bits(segbits, segbits[tag], tags_to_mask)
 
+    tags_to_remove = set()
+    for tag, bits in segbits.items():
+        if len(bits) == 0:
+            tags_to_remove.add(tag)
+
+    for tag in tags_to_remove:
+        del segbits[tag]
+
+    for tag in segbits.keys():
+        if tag.endswith("_ACTIVE") and 'FREQ_BB' in tag:
+            m = re.search('FREQ_BB([0-9])', tag)
+            prefix = '.CMT_TOP_L_UPPER_T_FREQ_BB{}'.format(m.group(1))
+            tags_to_mask = [t for t in segbits.keys() if t.endswith(prefix)]
+            mask_out_bits(segbits, segbits[tag], tags_to_mask)
+
     # Find common bits
     bit_groups = find_common_bits_for_tag_groups(segbits, tag_groups)
     # Apply tag grouping
