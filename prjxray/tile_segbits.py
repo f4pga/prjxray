@@ -10,9 +10,8 @@
 # SPDX-License-Identifier: ISC
 from collections import namedtuple
 from prjxray import bitstream
-from prjxray.grid import BlockType
+from prjxray.grid_types import BlockType
 import enum
-import functools
 
 
 class PsuedoPipType(enum.Enum):

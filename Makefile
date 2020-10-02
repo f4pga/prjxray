@@ -18,18 +18,13 @@ endif
 # Tools + Environment
 IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi; source utils/environment.python.sh;
 env:
-	virtualenv --python=python3 env
-	# Install prjxray
-	ln -sf $(PWD)/prjxray env/lib/python3.*/site-packages/
-	$(IN_ENV) python -c "import prjxray"
-	# Install fasm from third_party
-	$(IN_ENV) pip install --upgrade -e third_party/fasm
-	# Install sdfparse form third party
-	$(IN_ENV) pip install --upgrade -e third_party/python-sdf-timing
+	python3 -mvenv env
 	# Install project dependencies
-	$(IN_ENV) pip install -r requirements.txt
+	$(IN_ENV) python -mpip install -r requirements.txt
 	# Install project's documentation dependencies
-	$(IN_ENV) pip install -r docs/requirements.txt
+	$(IN_ENV) python -mpip install -r docs/requirements.txt
+	# Check that prjxray are available
+	$(IN_ENV) python -c "import prjxray"
 	# Check fasm library was installed
 	$(IN_ENV) python -c "import fasm"
 	$(IN_ENV) python -c "import fasm.output"

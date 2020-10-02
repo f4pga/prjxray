@@ -50,14 +50,14 @@ verilog.top_harness(DIN_N, DOUT_N)
 
 f = open('params.csv', 'w')
 f.write('module,loc,bela,belb,belc,beld\n')
-slices = gen_slicems()
+slices = sorted(gen_slicems())
+random.shuffle(slices)
+
 print(
     'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
     (DIN_N - 1, DOUT_N - 1))
 randluts = 0
-for clbi in range(CLBN):
-    loc = next(slices)
-
+for clbi, loc in zip(range(CLBN), slices):
     params = ''
     cparams = ''
     # Multi module
@@ -126,9 +126,15 @@ for clbi in range(CLBN):
 
     print('    %s' % module)
     print('            #(.LOC("%s")%s)' % (loc, params))
-    print(
-        '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
-        % (clbi, 8 * clbi, 8 * clbi))
+    sel = random.random()
+    if sel > .15:
+        print(
+            '            clb_%d (.clk(clk), .din(din[  %d +: 8]), .dout(dout[  %d +: 8]));'
+            % (clbi, 8 * clbi, 8 * clbi))
+    else:
+        print(
+            "            clb_%d (.clk(clk), .din({8{1'b1}}), .dout());" %
+            (clbi, ))
 
     f.write('%s,%s%s\n' % (module, loc, cparams))
 f.close()

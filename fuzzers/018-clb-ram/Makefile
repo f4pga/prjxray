@@ -5,7 +5,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-N := 4
+N := 6
 SLICEL ?= N
 include ../clb.mk
 
