@@ -86,11 +86,11 @@ The :term:`tile <Tile>` type files are JSON files with the following shape::
 ^^^^^^^^^^^^^^
 
 The "pips" section describes all :term:`PIPs <PIP>` in the :term:`tile <Tile>`.
-Every :term:`PIP <PIP>` has its name - ``"<PIN_NAME>"`` and may be
+Every :term:`PIP <PIP>` has its name - ``"<PIP_NAME>"`` and may be
 characterized by the following attributes:
 
 - ``can_invert`` - takes a value which can be either **1** or **0**.
-  It defines whether the :term:`PIP <PIP>` has an inverter on it's output or not.
+  It defines whether the :term:`PIP <PIP>` has an inverter on its output or not.
 
 - ``dst_to_src`` - information about the connection in the direction
   from destination to source. It describes the following properties of the connection:
@@ -129,7 +129,7 @@ Every :term:`site <Site>` may be characterized by the following attributes:
 - ``prefix`` - the type of the :term:`site <Site>`
 
 - ``site_pins`` - describes the pins that belong to the :term:`site <Site>`.
-  Every pin has it's  name - ``<PIN_NAME>`` and may be described
+  Every pin has its  name - ``<PIN_NAME>`` and may be described
   by the following attributes:
 
    - ``cap`` - pin capacitance in uF (microfarads).
@@ -152,7 +152,7 @@ Every :term:`site <Site>` may be characterized by the following attributes:
 ^^^^^^^^^^^^^^^
 
 The "wires" section describes the wires located in the :term:`tile <Tile>`.
-Every wire has it's name - ``<WIRE_NAME>`` and may be characterized
+Every wire has its name - ``<WIRE_NAME>`` and may be characterized
 by the following attributes:
 
 - ``cap`` - wire capacitance in uF (microfarads)
