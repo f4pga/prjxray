@@ -79,9 +79,6 @@ def main():
                         site, 'OSERDES.DATA_RATE_TQ.{}'.format(opt),
                         opt == data_rate_tq)
 
-                segmk.add_site_tag(
-                    site, 'OSERDES.DATA_RATE_TQ.ZBUF', data_rate_tq != 'BUF')
-
                 for opt in ['SRVAL_OQ', 'SRVAL_TQ', 'INIT_OQ', 'INIT_TQ']:
                     segmk.add_site_tag(site, opt, d[opt])
                     segmk.add_site_tag(site, 'Z' + opt, 1 ^ d[opt])
