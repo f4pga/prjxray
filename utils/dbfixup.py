@@ -421,6 +421,17 @@ def remove_ambiguous_solutions(fn_in, db_lines, strict=True, verbose=True):
     return drops, output_lines
 
 
+def format_bits(tag, bits):
+    """ Format tag and bits into line. """
+    bit_strs = []
+    for bit in sorted(list(bits), key=lambda b: b[1]):
+        s = "!" if not bit[0] else ""
+        s += "{:02d}_{:02d}".format(bit[1][0], bit[1][1])
+        bit_strs.append(s)
+
+    return " ".join([tag] + bit_strs)
+
+
 def group_tags(lines, tag_groups, bit_groups):
     """
     Implements tag grouping. If a tag belongs to a group then the common bits
@@ -430,13 +441,13 @@ def group_tags(lines, tag_groups, bit_groups):
     >>> bg = [{(1, 2), (3, 4)}]
     >>> res = group_tags({"A 1_2", "B 3_4"}, tg, bg)
     >>> (res[0], sorted(list(res[1])))
-    (2, ['A 1_2 !3_4', 'B !1_2 3_4'])
+    (2, ['A 01_02 !03_04', 'B !01_02 03_04'])
 
     >>> tg = [{"A", "B"}]
     >>> bg = [{(1, 2), (3, 4)}]
     >>> res = group_tags({"A 1_2", "B 3_4", "C 1_2"}, tg, bg)
     >>> (res[0], sorted(list(res[1])))
-    (2, ['A 1_2 !3_4', 'B !1_2 3_4', 'C 1_2'])
+    (2, ['A 01_02 !03_04', 'B !01_02 03_04', 'C 01_02'])
     """
 
     changes = 0
@@ -467,13 +478,7 @@ def group_tags(lines, tag_groups, bit_groups):
                         bits.add((False, zero_bit))
 
                 # Format the line
-                bit_strs = []
-                for bit in sorted(list(bits), key=lambda b: b[1]):
-                    s = "!" if not bit[0] else ""
-                    s += "{}_{}".format(bit[1][0], bit[1][1])
-                    bit_strs.append(s)
-
-                new_line = " ".join([tag] + bit_strs)
+                new_line = format_bits(tag, bits)
 
                 # Add the line
                 new_lines.add(new_line)
@@ -482,7 +487,7 @@ def group_tags(lines, tag_groups, bit_groups):
 
         # It does not, pass it through unchanged
         else:
-            new_lines.add(line)
+            new_lines.add(format_bits(tag, bits))
 
     return changes, new_lines
 

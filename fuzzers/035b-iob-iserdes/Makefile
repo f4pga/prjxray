@@ -16,6 +16,7 @@ build/segbits_xioi3.rdb2: $(SPECIMENS_OK)
 build/segbits_xioi3.rdb: build/segbits_xioi3.rdb2
 	# Keep only solution for ISERDES related features.
 	grep -e ".ISERDES." $^ >$@
+	grep -e ".IDDR.IN_USE." $^ >>$@
 
 build/segbits_xioi3.db: build/segbits_xioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --groups tag_groups.txt --seg-fn-in $^ --seg-fn-out $@

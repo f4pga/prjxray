@@ -9,7 +9,6 @@
 #
 # SPDX-License-Identifier: ISC
 import json
-import re
 
 from prjxray.segmaker import Segmaker
 from prjxray import util
@@ -55,7 +54,7 @@ def run():
 
                 segmk.add_site_tag(loc, "IDDR_OR_ISERDES.IN_USE", 0)
                 segmk.add_site_tag(loc, "ISERDES.IN_USE", 0)
-                segmk.add_site_tag(loc, "IFF.IN_USE", 0)
+                segmk.add_site_tag(loc, "IDDR.IN_USE", 0)
 
                 segmk.add_site_tag(loc, "ISERDES.MODE.MASTER", 0)
                 segmk.add_site_tag(loc, "ISERDES.MODE.SLAVE", 0)
@@ -95,7 +94,6 @@ def run():
             elif verilog.unquote(params["BEL_TYPE"]) == "ISERDESE2":
 
                 segmk.add_site_tag(loc, "IDDR_OR_ISERDES.IN_USE", 1)
-                segmk.add_site_tag(loc, "IFF.IN_USE", 0)
                 segmk.add_site_tag(loc, "ISERDES.IN_USE", 1)
 
                 if "SHIFTOUT_USED" in params:
@@ -121,7 +119,6 @@ def run():
                         for j in data_rates:
                             for k in data_widths[j]:
                                 tag = "ISERDES.%s.%s.W%s" % (i, j, k)
-                                val = 0
 
                                 if i == iface_type:
                                     if j == data_rate:
@@ -202,10 +199,10 @@ def run():
                         loc, "ISERDES.OFB_USED", int(value == "TRUE"))
 
             # Site used as IDDR
-            elif verilog.unquote(params["BEL_TYPE"]) == "IDDR":
-
+            elif verilog.unquote(params["BEL_TYPE"]) in ["IDDR",
+                                                         "IDDR_NO_CLK"]:
                 segmk.add_site_tag(loc, "IDDR_OR_ISERDES.IN_USE", 1)
-                segmk.add_site_tag(loc, "IFF.IN_USE", 1)
+                segmk.add_site_tag(loc, "IDDR.IN_USE", 1)
                 segmk.add_site_tag(loc, "ISERDES.IN_USE", 0)
 
                 if "DDR_CLK_EDGE" in params:
