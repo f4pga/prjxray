@@ -966,6 +966,10 @@ def run(settings, output, verbose=False, allow_fake=False):
 
     get_setting = mk_get_setting(settings)
 
+    if output is None:
+        output = os.path.join(
+            os.path.curdir, 'html', get_setting('XRAY_DATABASE'))
+
     db_dir = os.path.join(
         get_setting("XRAY_DATABASE_DIR"), get_setting("XRAY_DATABASE"))
 
@@ -999,8 +1003,7 @@ def main():
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument(
         '--output',
-        default=os.path.join(
-            os.path.curdir, 'html', get_setting('XRAY_DATABASE')),
+        default=None,
         help='Put the generated files in this directory (default current dir).'
     )
     parser.add_argument(
