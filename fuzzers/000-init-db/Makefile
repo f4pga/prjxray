@@ -48,6 +48,7 @@ DB_SIMPLE=\
     segbits_cmt_top_r_upper_t \
     segbits_rioi3 \
     segbits_riob33 \
+    segbits_hclk_cmt \
     segbits_hclk_ioi3 \
 
 DB_SIMPLE += segbits_lioi3 segbits_liob33
