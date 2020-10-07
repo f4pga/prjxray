@@ -46,7 +46,9 @@ def parsebit(val):
         isset = False
         val = val[1:]
     # 28_05 => 28, 05
-    seg_word_column, word_bit_n = val.split('_')
+    parts = val.split('_')
+    assert len(parts) == 2, val
+    seg_word_column, word_bit_n = parts
 
     return Bit(
         word_column=int(seg_word_column),
