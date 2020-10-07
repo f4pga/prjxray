@@ -101,7 +101,7 @@ write_bitstream -force design.bit
 
 set fp [open params.json "w"]
 puts $fp "\["
-foreach cell [get_cells -hierarchical -filter {REF_NAME == PLLE2_ADV}] {
+foreach cell [get_cells -hierarchical -filter {REF_NAME == MMCME2_ADV}] {
     puts $fp " {"
         puts $fp "   \"tile\": \"[get_tiles -of [get_sites -of $cell]]\","
         puts $fp "   \"site\": \"[get_sites -of $cell]\","
