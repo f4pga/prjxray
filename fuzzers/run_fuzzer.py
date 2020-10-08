@@ -645,11 +645,11 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
 --------------------------------------------------------------------------
 !Failed! @ {time_end} with exit code: {retcode}
 --------------------------------------------------------------------------
-- STDOUT:                                                                -
+- STDOUT (see {stdout_fname} for full log):
 --------------------------------------------------------------------------
 {stdout_log}
 --------------------------------------------------------------------------
-- STDERR:                                                                -
+- STDERR (see {stderr_fname} for full log):
 --------------------------------------------------------------------------
 {stderr_log}
 --------------------------------------------------------------------------
@@ -657,8 +657,10 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
 --------------------------------------------------------------------------
 """,
             retcode=retcode,
-            stdout_log=open(fuzzer_stdout).read(),
-            stderr_log=open(fuzzer_stderr).read(),
+            stdout_fname=fuzzer_stdout,
+            stdout_log='\n'.join(last_lines(open(fuzzer_stdout), 1000)),
+            stderr_fname=fuzzer_stderr,
+            stderr_log='\n'.join(last_lines(open(fuzzer_stderr), 1000)),
             time_end=time_end.isoformat())
     else:
         # Log the last 100 lines of a successful run

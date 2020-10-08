@@ -28,7 +28,7 @@ action {
     # Whole directories
     # regex: "**/build/**" - Currently kokoro dies on number of artifacts.
     regex: "**/build/*.log"
-    regex: "**/logs/**"
+    regex: "**/logs_*/**"
     # The database
     regex: "**/database/%(part)s/**"
     strip_prefix: "github/symbiflow-prjxray-%(kokoro_type)s-db-%(part)s/"
