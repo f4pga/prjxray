@@ -11,7 +11,6 @@
 import os, random
 random.seed(int(os.getenv("SEED"), 16))
 
-import re
 import json
 
 from prjxray import util
@@ -37,16 +36,6 @@ def gen_sites():
     for iob_tile_name in tile_list:
         iob_gridinfo = grid.gridinfo_at_loc(
             grid.loc_of_tilename(iob_tile_name))
-
-        # Find IOI tile adjacent to IOB
-        for suffix in ["IOI3", "IOI3_TBYTESRC", "IOI3_TBYTETERM"]:
-            try:
-                ioi_tile_name = iob_tile_name.replace("IOB33", suffix)
-                ioi_gridinfo = grid.gridinfo_at_loc(
-                    grid.loc_of_tilename(ioi_tile_name))
-                break
-            except KeyError:
-                pass
 
         iob33s = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33S"][0]
         iob33m = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33M"][0]
@@ -137,7 +126,7 @@ def gen_iddr(loc):
         "USE_IDELAY":
         random.randint(0, 1),
         "BEL_TYPE":
-        verilog.quote("IDDR"),
+        verilog.quote(random.choice(["IDDR", "IDDR_NO_CLK"])),
         "INIT_Q1":
         random.randint(0, 1),
         "INIT_Q2":
@@ -444,6 +433,33 @@ end else if (IS_USED && BEL_TYPE == "IDDR") begin
   iddr
   (
   .C(clk1),
+  .CE( (CE1USED) ? ce : 1'hx ),
+  .D( (IFFDELMUX) ? ddly : I  ),
+  .S( (SR_MODE == "SET") ? rst : 1'd0 ),
+  .R( (SR_MODE == "RST") ? rst : 1'd0 ),
+  .Q1(x[0]),
+  .Q2(x[1])
+  );
+
+  assign x[8] = (IDELMUX) ? ddly : I;
+  assign x[7:2] = 0;
+
+end else if (IS_USED && BEL_TYPE == "IDDR_NO_CLK") begin
+
+  // IDDR
+  (* LOC=SITE_LOC, KEEP, DONT_TOUCH *)
+  IDDR #
+  (
+  .IS_C_INVERTED(IS_C_INVERTED),
+  .IS_D_INVERTED(IS_D_INVERTED),
+  .DDR_CLK_EDGE(DDR_CLK_EDGE),
+  .INIT_Q1(INIT_Q1),
+  .INIT_Q2(INIT_Q2),
+  .SRTYPE(SRTYPE)
+  )
+  iddr
+  (
+  .C(),
   .CE( (CE1USED) ? ce : 1'hx ),
   .D( (IFFDELMUX) ? ddly : I  ),
   .S( (SR_MODE == "SET") ? rst : 1'd0 ),
