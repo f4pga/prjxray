@@ -47,6 +47,116 @@ proc write_used_wires {filename} {
     close $fp
 }
 
+proc load_route {line} {
+    puts "MANROUTE: Line: $line"
+
+    # Parse the line
+    set fields [split $line " "]
+    set tile_name [lindex $fields 0]
+    set site_name [lindex $fields 1]
+    set pin_name  [lindex $fields 2]
+    set route_dir [lindex $fields 3]
+    set wires [lrange $fields 4 end]
+
+    # Get net
+    set tile [get_tiles $tile_name]
+    set site [get_sites -of_objects $tile $site_name]
+    set pin [get_site_pins -of_objects $site "*/$pin_name"]
+    set net [get_nets -quiet -of_objects $pin]
+
+    if {$net eq "" } {
+        puts "MANROUTE: No net for pin $pin_name found! Skipping..."
+        return
+    }
+
+    set source_pin [get_pins -of $net -filter "DIRECTION == OUT"]
+    if { [llength $source_pin] == 0 } {
+        error "Failed to find source pin of net $net"
+    }
+
+    set source_site_pins [get_site_pins -of $source_pin]
+    puts "MANROUTE: Possible site pins for net $net: $source_site_pins"
+
+    # Fixed part read from file
+    set route_list {}
+    if { [string first / $wires] != -1 } {
+        # Route list is just intermediate node and final node, fill it in
+        if { [llength $wires] != 2} {
+            error "Expected only 2 wires, found [llength $wires]"
+        }
+
+        set intermediate_node [get_nodes [lindex $wires 0]]
+        set dest_node [get_nodes -of_objects [get_wires -of_objects $tile "*/[lindex $wires 1]"]]
+        if [catch {find_routing_path -from $intermediate_node -to $dest_node} route_list] {
+            puts "MANROUTE: Failed to find routing path from $intermediate_node to $dest_node for net $net\nError: $route_list"
+            return
+        }
+
+        if { [llength $route_list] == 0 } {
+            puts "MANROUTE: Failed to find routing path from $intermediate_node to $dest_node for net $net"
+            return
+        }
+    } else {
+        foreach wire $wires {
+            lappend route_list [get_nodes -of_objects [get_wires -of_objects $tile "*/$wire"]]
+        }
+    }
+
+    # Complete the route
+    if {$route_dir eq "up"} {
+        set node_to [lindex $route_list 0]
+        set node_from [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
+
+        set rpart [find_routing_path -from $node_from -to $node_to]
+        if {$rpart eq ""} {
+            puts "MANROUTE: No possible route continuation for net $net"
+            return
+        }
+
+        set route_list [concat [lrange $rpart 0 end-1] $route_list]
+    }
+
+    if {$route_dir eq "down"} {
+        set node_from [lindex $route_list e]
+        set node_to [get_nodes -of_objects [get_site_pins -filter {DIRECTION == IN} -of_objects $net]]
+
+        set rpart [find_routing_path -from $node_from -to $node_to]
+        if {$rpart eq ""} {
+            puts "MANROUTE: No possible route continuation for net $net"
+            return
+        }
+        set route_list [concat $route_list [lrange $rpart 1 end]]
+    }
+
+    # Set the fixed route
+    puts "MANROUTE: Net: $net, Route: $route_list. routing..."
+    regsub -all {{}} $route_list "" route
+    if [catch {set_property FIXED_ROUTE $route $net} result] {
+        puts "MANROUTE: Net $net failed to set FIXED_ROUTE, ripping up...\nError: $result"
+        set_property FIXED_ROUTE "" $net
+        set_property IS_ROUTE_FIXED 0 $net
+        route_design -unroute -nets $net
+    }
+
+    # Route the single net. Needed to detect conflicts when evaluating
+    # other ones
+    puts "Running route design"
+    route_design -quiet -directive Quick -nets $net
+    puts "Done running route design"
+
+    # Check for conflicts.
+    set status [get_property ROUTE_STATUS $net]
+    if {$status ne "ROUTED"} {
+        # Ripup and discard the fixed route.
+        set_property FIXED_ROUTE "" $net
+        route_design -unroute -nets $net
+        puts "MANROUTE: Net $net status $status, ripping up..."
+    } else {
+        set_property IS_ROUTE_FIXED 1 $net
+        puts "MANROUTE: Successful manual route for $net"
+    }
+}
+
 proc load_routes {filename} {
     puts "MANROUTE: Loading routes from $filename"
 
@@ -56,86 +166,7 @@ proc load_routes {filename} {
             continue
         }
 
-        puts "MANROUTE: Line: $line"
-
-        # Parse the line
-        set fields [split $line " "]
-        set tile_name [lindex $fields 0]
-        set site_name [lindex $fields 1]
-        set pin_name  [lindex $fields 2]
-        set route_dir [lindex $fields 3]
-        set wires [lrange $fields 4 end]
-
-        # Get net
-        set tile [get_tiles $tile_name]
-        set site [get_sites -of_objects $tile $site_name]
-        set pin [get_site_pins -of_objects $site "*/$pin_name"]
-        set net [get_nets -quiet -of_objects $pin]
-
-        if {$net eq "" } {
-            puts "MANROUTE: No net for pin $pin_name found! Skipping..."
-            continue
-        }
-
-        # Fixed part read from file
-        set route_list {}
-        foreach wire $wires {
-            lappend route_list [get_nodes -of_objects [get_wires -of_objects $tile "*/$wire"]]
-        }
-
-        # Complete the route
-        if {$route_dir eq "up"} {
-            set node_to [lindex $route_list 0]
-            set node_from [get_nodes -of_objects [get_site_pins -filter {DIRECTION == OUT} -of_objects $net]]
-
-            set rpart [find_routing_path -from $node_from -to $node_to]
-            if {$rpart eq ""} {
-                puts "MANROUTE: No possible route continuation for net $net"
-                continue
-            }
-
-            set route_list [concat [lrange $rpart 0 end-1] $route_list]
-        }
-
-        if {$route_dir eq "down"} {
-            set node_from [lindex $route_list e]
-            set node_to [get_nodes -of_objects [get_site_pins -filter {DIRECTION == IN} -of_objects $net]]
-
-            set rpart [find_routing_path -from $node_from -to $node_to]
-            if {$rpart eq ""} {
-                puts "MANROUTE: No possible route continuation for net $net"
-                continue
-            }
-            set route_list [concat $route_list [lrange $rpart 1 end]]
-        }
-
-        # Set the fixed route
-        puts "MANROUTE: Net: $net, Route: $route_list. routing..."
-        regsub -all {{}} $route_list "" route
-        if [catch {set_property FIXED_ROUTE $route $net} ] {
-            puts "MANROUTE: Net $net failed to set FIXED_ROUTE, ripping up..."
-            set_property FIXED_ROUTE "" $net
-            set_property IS_ROUTE_FIXED 0 $net
-            route_design -unroute -nets $net
-        }
-
-        # Route the single net. Needed to detect conflicts when evaluating
-        # other ones
-        puts "Running route design"
-        route_design -quiet -directive Quick -nets $net
-        puts "Done running route design"
-
-        # Check for conflicts.
-        set status [get_property ROUTE_STATUS $net]
-        if {$status ne "ROUTED"} {
-            # Ripup and discard the fixed route.
-            set_property FIXED_ROUTE "" $net
-            route_design -unroute -nets $net
-            puts "MANROUTE: Net $net status $status, ripping up..."
-        } else {
-            set_property IS_ROUTE_FIXED 1 $net
-            puts "MANROUTE: Successful manual route for $net"
-        }
+        load_route $line
     }
 
     close $fp

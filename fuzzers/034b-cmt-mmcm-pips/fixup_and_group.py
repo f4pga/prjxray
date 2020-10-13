@@ -220,9 +220,6 @@ def main():
 
     tags_to_remove = set()
     for tag, bits in segbits.items():
-        if len(bits) == 0:
-            tags_to_remove.add(tag)
-
         if 'REBUF' in tag and 'ACTIVE' not in tag:
             # FIXME: Removing REBUF pips for now.
             tags_to_remove.add(tag)
@@ -232,15 +229,14 @@ def main():
 
     for tag in segbits.keys():
         if tag.endswith("_ACTIVE") and 'FREQ_BB' in tag:
-            if 'FREQ_BB_REBUF' in tag:
-                m = re.search('FREQ_BB_REBUF([0-9])', tag)
-            else:
-                m = re.search('FREQ_BB_NS([0-9])', tag)
-            assert m is not None, tag
-
-            prefix = '.CMT_R_LOWER_B_CLK_FREQ_BB{}'.format(m.group(1))
-            tags_to_mask = [t for t in segbits.keys() if t.endswith(prefix)]
-            mask_out_bits(segbits, segbits[tag], tags_to_mask)
+            for idx in range(4):
+                prefix1 = '.CMT_L_LOWER_B_CLK_FREQ_BB{}'.format(idx)
+                prefix2 = '.CMT_R_LOWER_B_CLK_FREQ_BB{}'.format(idx)
+                tags_to_mask = [
+                    t for t in segbits.keys()
+                    if t.endswith(prefix1) or t.endswith(prefix2)
+                ]
+                mask_out_bits(segbits, segbits[tag], tags_to_mask)
 
     # Find common bits
     bit_groups = find_common_bits_for_tag_groups(segbits, tag_groups)

@@ -84,6 +84,20 @@ def find_phasers_for_mmcm(grid, loc):
     return phasers
 
 
+def find_hclk_ref_wires_for_mmcm(grid, loc):
+    tilename = grid.tilename_at_loc((loc[0], loc[1] - 17))
+    gridinfo = grid.gridinfo_at_tilename(tilename)
+
+    assert gridinfo.tile_type in ['HCLK_CMT_L', 'HCLK_CMT']
+
+    # HCLK_CMT_MUX_OUT_FREQ_REF[0-3]
+    wires = []
+    for idx in range(4):
+        wires.append('{}/HCLK_CMT_MUX_OUT_FREQ_REF{}'.format(tilename, idx))
+
+    return wires
+
+
 def gen_sites():
     db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
@@ -94,11 +108,12 @@ def gen_sites():
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['MMCME2_ADV']:
                 phasers = find_phasers_for_mmcm(grid, loc)
-                yield tile_name, site_name, phasers
+                hclk_wires = find_hclk_ref_wires_for_mmcm(grid, loc)
+                yield tile_name, site_name, phasers, hclk_wires
 
 
 def get_random_route_from_site_pin(
-        pip_list, tile_name, site_pin, direction, occupied_wires):
+        pip_list, tile_name, site_pin, direction, occupied_wires, hclk_wires):
 
     # A map of MMCM site pins to wires they are connected to.
     pin_to_wire = {
@@ -137,6 +152,9 @@ def get_random_route_from_site_pin(
 
     # The first wire
     wire = pin_to_wire[tile_type][site_pin]
+
+    if site_pin in ["CLKIN1", "CLKIN2", "CLKFBIN"] and random.random() < .2:
+        return [random.choice(hclk_wires), wire]
 
     # Walk randomly.
     route = []
@@ -199,7 +217,7 @@ module top(
     count = 0
     mmcms = sorted(gen_sites(), key=lambda x: x[0])
     random.shuffle(mmcms)
-    for tile, site, phasers in mmcms:
+    for tile, site, phasers, hclk_wires in mmcms:
         in_use = random.randint(0, 2) > 0
         count += 1
 
@@ -219,20 +237,20 @@ module top(
 
             # Sometimes manually randomized route for CLKOUTx conflicts with
             # the verilog design.
-            ('CLKOUT0', 'down'),
-            ('CLKOUT1', 'down'),
-            ('CLKOUT2', 'down'),
-            ('CLKOUT3', 'down'),
-            ('CLKOUT4', 'down'),
-            ('CLKOUT5', 'down'),
-            ('CLKOUT6', 'down'),
+            #('CLKOUT0', 'down'),
+            #('CLKOUT1', 'down'),
+            #('CLKOUT2', 'down'),
+            #('CLKOUT3', 'down'),
+            #('CLKOUT4', 'down'),
+            #('CLKOUT5', 'down'),
+            #('CLKOUT6', 'down'),
         ]
 
         occupied_wires = set()
         for pin, dir in pins:
 
             route = get_random_route_from_site_pin(
-                pip_list, tile, pin, dir, occupied_wires)
+                pip_list, tile, pin, dir, occupied_wires, hclk_wires)
             if route is None:
                 endpoints[pin] = ""
                 continue
@@ -248,11 +266,10 @@ module top(
         # Store them in a random order so the TCL script will try to route
         # them also in the random order.
         lines = []
-        for pin, (
-                route,
-                dir,
-        ) in routes.items():
-
+        pins = sorted(routes.keys())
+        random.shuffle(pins)
+        for pin in pins:
+            (route, dir) = routes[pin]
             route_str = " ".join(route)
             lines.append(
                 '{} {} {} {} {}\n'.format(tile, site, pin, dir, route_str))
