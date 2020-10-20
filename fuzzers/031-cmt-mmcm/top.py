@@ -13,160 +13,300 @@ import random
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
-from prjxray.verilog import vrandbit, vrandbits
-import sys
+from prjxray.db import Database
 import json
-import numpy as np
 
 
 def gen_sites():
-    for _tile_name, site_name, _site_type in sorted(util.get_roi().gen_sites(
-        ["MMCME2_ADV"])):
-        yield site_name
+    db = Database(util.get_db_root(), util.get_part())
+    grid = db.grid()
+    for tile_name in sorted(grid.tiles()):
+        loc = grid.loc_of_tilename(tile_name)
+        gridinfo = grid.gridinfo_at_loc(loc)
+
+        tile_type = tile_name.rsplit("_", 1)[0]
+
+        for site_name, site_type in gridinfo.sites.items():
+            if site_type in ['MMCME2_ADV']:
+                yield tile_name, tile_type, site_name
 
 
-sites = list(gen_sites())
-DUTN = len(sites)
-DIN_N = DUTN * 8
-DOUT_N = DUTN * 8
+def main():
+    sites = sorted(list(gen_sites()))
+    max_sites = len(sites)
 
-verilog.top_harness(DIN_N, DOUT_N)
+    f = open('params.jl', 'w')
+    f.write('module,loc,params\n')
 
-f = open('params.jl', 'w')
-f.write('module,loc,params\n')
-print(
-    'module roi(input clk, input [%d:0] din, output [%d:0] dout);' %
-    (DIN_N - 1, DOUT_N - 1))
+    routes_file = open('routes.txt', 'w')
 
-for loci, site in enumerate(sites):
-
-    ports = {
-        'clk': 'clk',
-        'din': 'din[  %d +: 8]' % (8 * loci, ),
-        'dout': 'dout[  %d +: 8]' % (8 * loci, ),
-    }
-
-    params = {
-        "CLKOUT1_DIVIDE":
-        int(
-            np.random.choice(
-                [1, 63, 127, 128, random.randint(2, 127)],
-                p=[0.2, 0.1, 0.1, 0.1,
-                   0.5])),  # make sure that special values are present
-        "STARTUP_WAIT":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT4_CASCADE":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "STARTUP_WAIT":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKFBOUT_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT0_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT1_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT2_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT3_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT4_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT5_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-        "CLKOUT6_USE_FINE_PS":
-        random.choice(["\"TRUE\"", "\"FALSE\""]),
-    }
-
-    modname = "my_MMCME2_ADV"
-    verilog.instance(modname, "inst_%u" % loci, ports, params=params)
-    # LOC isn't supported
-    params["LOC"] = verilog.quote(site)
-
-    j = {'module': modname, 'i': loci, 'params': params}
-    f.write('%s\n' % (json.dumps(j)))
-    print('')
-
-f.close()
-print(
-    '''endmodule
-
-// ---------------------------------------------------------------------
-
-''')
-
-print(
-    '''
-module my_MMCME2_ADV (input clk, input [7:0] din, output [7:0] dout);
-    parameter CLKOUT1_DIVIDE = 1;
-    parameter CLKOUT2_DIVIDE = 1;
-    parameter CLKOUT3_DIVIDE = 1;
-    parameter CLKOUT4_DIVIDE = 1;
-    parameter CLKOUT5_DIVIDE = 1;
-    parameter CLKOUT6_DIVIDE = 1;
-    parameter DIVCLK_DIVIDE = 1;
-    parameter CLKFBOUT_MULT = 5;
-    parameter CLKOUT4_CASCADE = "FALSE";
-    parameter STARTUP_WAIT = "FALSE";
-    parameter CLKFBOUT_USE_FINE_PS = "FALSE";
-    parameter CLKOUT0_USE_FINE_PS = "FALSE";
-    parameter CLKOUT1_USE_FINE_PS = "FALSE";
-    parameter CLKOUT2_USE_FINE_PS = "FALSE";
-    parameter CLKOUT3_USE_FINE_PS = "FALSE";
-    parameter CLKOUT4_USE_FINE_PS = "FALSE";
-    parameter CLKOUT5_USE_FINE_PS = "FALSE";
-    parameter CLKOUT6_USE_FINE_PS = "FALSE";
+    print(
+        """
+module top(
+    input [{N}:0] clkin1,
+    input [{N}:0] clkin2,
+    input [{N}:0] clkfb,
+    input [{N}:0] dclk
+);
 
     (* KEEP, DONT_TOUCH *)
+    LUT1 dummy();
+""".format(N=max_sites - 1))
+
+    for i, (
+            tile_name,
+            tile_type,
+            site,
+    ) in enumerate(sorted(gen_sites())):
+        params = {
+            "site":
+            site,
+            'active':
+            random.random() > .2,
+            "clkin1_conn":
+            random.choice(
+                ("clkfbout_mult_BUFG_" + site, "clkin1[{}]".format(i), "")),
+            "clkin2_conn":
+            random.choice(
+                ("clkfbout_mult_BUFG_" + site, "clkin2[{}]".format(i), "")),
+            "dclk_conn":
+            random.choice((
+                "0",
+                "dclk[{}]".format(i),
+            )),
+            "dwe_conn":
+            random.choice((
+                "",
+                "1",
+                "0",
+                "dwe_" + site,
+                "den_" + site,
+            )),
+            "den_conn":
+            random.choice((
+                "",
+                "1",
+                "0",
+                "den_" + site,
+            )),
+            "daddr4_conn":
+            random.choice((
+                "0",
+                "dwe_" + site,
+            )),
+            "IS_RST_INVERTED":
+            random.randint(0, 1),
+            "IS_PWRDWN_INVERTED":
+            random.randint(0, 1),
+            "IS_CLKINSEL_INVERTED":
+            random.randint(0, 1),
+            "CLKFBOUT_MULT_F":
+            random.randint(2, 4),
+            "CLKOUT0_DIVIDE_F":
+            random.randint(1, 128),
+            "CLKOUT1_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT2_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT3_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT4_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT5_DIVIDE":
+            random.randint(1, 128),
+            "CLKOUT6_DIVIDE":
+            random.randint(1, 128),
+            "DIVCLK_DIVIDE":
+            random.randint(1, 5),
+            "CLKOUT0_DUTY_CYCLE":
+            "0.500",
+            "STARTUP_WAIT":
+            verilog.quote('TRUE' if random.randint(0, 1) else 'FALSE'),
+            "COMPENSATION":
+            verilog.quote(
+                random.choice((
+                    'ZHOLD',
+                    'BUF_IN',
+                    'EXTERNAL',
+                    'INTERNAL',
+                ))),
+            "BANDWIDTH":
+            verilog.quote(random.choice((
+                'OPTIMIZED',
+                'HIGH',
+                'LOW',
+            ))),
+        }
+
+        if verilog.unquote(params['COMPENSATION']) == 'ZHOLD':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    "",
+                    "clkfbout_mult_BUFG_" + site,
+                ))
+        elif verilog.unquote(params['COMPENSATION']) == 'INTERNAL':
+            params['clkfbin_conn'] = random.choice(
+                (
+                    "",
+                    "clkfbout_mult_" + site,
+                ))
+        else:
+            params['clkfbin_conn'] = random.choice(
+                ("", "clkfb[{}]".format(i), "clkfbout_mult_BUFG_" + site))
+
+        params['clkin1_route'] = random.choice(
+            (
+                "{}_CLKIN1",
+                "{}_FREQ_BB0",
+                "{}_FREQ_BB1",
+                "{}_FREQ_BB2",
+                "{}_FREQ_BB3",
+                "{}_MMCME2_CLK_IN1_INT",
+            )).format(tile_type)
+
+        params['clkin2_route'] = random.choice(
+            (
+                "{}_CLKIN2",
+                "{}_FREQ_BB0",
+                "{}_FREQ_BB1",
+                "{}_FREQ_BB2",
+                "{}_FREQ_BB3",
+                "{}_MMCME2_CLK_IN2_INT",
+            )).format(tile_type)
+
+        params['clkfbin_route'] = random.choice(
+            (
+                "{}_CLKFBOUT2IN",
+                "{}_UPPER_T_FREQ_BB0",
+                "{}_UPPER_T_FREQ_BB1",
+                "{}_UPPER_T_FREQ_BB2",
+                "{}_UPPER_T_FREQ_BB3",
+                "{}_UPPER_T_MMCME2_CLK_FB_INT",
+            )).format(tile_type.replace("_UPPER_T", ""))
+
+        f.write('%s\n' % (json.dumps(params)))
+
+        def make_ibuf_net(net):
+            p = net.find('[')
+            return net[:p] + '_IBUF' + net[p:]
+
+        if params['clkin1_conn'] != "":
+            net = make_ibuf_net(params['clkin1_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin1_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkin2_conn'] != "":
+            net = make_ibuf_net(params['clkin2_conn'])
+            wire = '{}/{}'.format(tile_name, params['clkin2_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if params['clkfbin_conn'] != "" and\
+           params['clkfbin_conn'] != ("clkfbout_mult_BUFG_" + site):
+            net = params['clkfbin_conn']
+            if "[" in net and "]" in net:
+                net = make_ibuf_net(net)
+            wire = '{}/{}'.format(tile_name, params['clkfbin_route'])
+            routes_file.write('{} {}\n'.format(net, wire))
+
+        if not params['active']:
+            continue
+
+        print(
+            """
+
+    wire den_{site};
+    wire dwe_{site};
+
+    LUT1 den_lut_{site} (
+        .O(den_{site})
+    );
+
+    LUT1 dwe_lut_{site} (
+        .O(dwe_{site})
+    );
+
+    wire clkfbout_mult_{site};
+    wire clkfbout_mult_BUFG_{site};
+    wire clkout0_{site};
+    wire clkout1_{site};
+    wire clkout2_{site};
+    wire clkout3_{site};
+    wire clkout4_{site};
+    wire clkout5_{site};
+    wire clkout6_{site};
+    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
     MMCME2_ADV #(
-            .CLKOUT1_DIVIDE(CLKOUT1_DIVIDE),
-            .CLKOUT2_DIVIDE(CLKOUT2_DIVIDE),
-            .CLKOUT3_DIVIDE(CLKOUT3_DIVIDE),
-            .CLKOUT4_DIVIDE(CLKOUT4_DIVIDE),
-            .CLKOUT5_DIVIDE(CLKOUT5_DIVIDE),
-            .CLKOUT6_DIVIDE(CLKOUT6_DIVIDE),
-            .CLKOUT4_CASCADE(CLKOUT4_CASCADE),
-            .STARTUP_WAIT(STARTUP_WAIT),
-            .CLKFBOUT_USE_FINE_PS(CLKFBOUT_USE_FINE_PS),
-            .CLKOUT0_USE_FINE_PS(CLKOUT0_USE_FINE_PS),
-            .CLKOUT1_USE_FINE_PS(CLKOUT1_USE_FINE_PS),
-            .CLKOUT2_USE_FINE_PS(CLKOUT2_USE_FINE_PS),
-            .CLKOUT3_USE_FINE_PS(CLKOUT3_USE_FINE_PS),
-            .CLKOUT4_USE_FINE_PS(CLKOUT4_USE_FINE_PS),
-            .CLKOUT5_USE_FINE_PS(CLKOUT5_USE_FINE_PS),
-            .CLKOUT6_USE_FINE_PS(CLKOUT6_USE_FINE_PS)
-    ) dut(
-            .CLKFBOUT(),
-            .CLKFBOUTB(),
-            .CLKFBSTOPPED(),
-            .CLKINSTOPPED(),
-            .CLKOUT0(dout[0]),
-            .CLKOUT0B(),
-            .CLKOUT1(),
-            .CLKOUT1B(),
-            .CLKOUT2(),
-            .CLKOUT2B(),
-            .CLKOUT3(),
-            .CLKOUT3B(),
-            .CLKOUT4(),
-            .CLKOUT5(),
-            .CLKOUT6(),
-            .DO(),
+            .IS_RST_INVERTED({IS_RST_INVERTED}),
+            .IS_PWRDWN_INVERTED({IS_PWRDWN_INVERTED}),
+            .IS_CLKINSEL_INVERTED({IS_CLKINSEL_INVERTED}),
+            .CLKOUT0_DIVIDE_F({CLKOUT0_DIVIDE_F}),
+            .CLKOUT1_DIVIDE({CLKOUT1_DIVIDE}),
+            .CLKOUT2_DIVIDE({CLKOUT2_DIVIDE}),
+            .CLKOUT3_DIVIDE({CLKOUT3_DIVIDE}),
+            .CLKOUT4_DIVIDE({CLKOUT4_DIVIDE}),
+            .CLKOUT5_DIVIDE({CLKOUT5_DIVIDE}),
+            .CLKOUT6_DIVIDE({CLKOUT6_DIVIDE}),
+            .CLKFBOUT_MULT_F({CLKFBOUT_MULT_F}),
+            .DIVCLK_DIVIDE({DIVCLK_DIVIDE}),
+            .STARTUP_WAIT({STARTUP_WAIT}),
+            .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
+            .COMPENSATION({COMPENSATION}),
+            .BANDWIDTH({BANDWIDTH}),
+            .CLKIN1_PERIOD(10.0),
+            .CLKIN2_PERIOD(10.0)
+    ) pll_{site} (
+            .CLKFBOUT(clkfbout_mult_{site}),
+            .CLKOUT0(clkout0_{site}),
+            .CLKOUT1(clkout1_{site}),
+            .CLKOUT2(clkout2_{site}),
+            .CLKOUT3(clkout3_{site}),
+            .CLKOUT4(clkout4_{site}),
+            .CLKOUT5(clkout5_{site}),
+            .CLKOUT6(clkout6_{site}),
             .DRDY(),
             .LOCKED(),
-            .PSDONE(),
-            .CLKFBIN(clk),
-            .CLKIN1(clk),
-            .CLKIN2(clk),
-            .CLKINSEL(clk),
-            .DADDR(),
-            .DCLK(clk),
-            .DEN(),
-            .DI(),
-            .DWE(),
-            .PSCLK(clk),
-            .PSEN(),
-            .PSINCDEC(),
+            .DO(),
+            .CLKFBIN({clkfbin_conn}),
+            .CLKIN1({clkin1_conn}),
+            .CLKIN2({clkin2_conn}),
+            .CLKINSEL(),
+            .DCLK({dclk_conn}),
+            .DEN({den_conn}),
+            .DWE({dwe_conn}),
             .PWRDWN(),
-            .RST(din[0]));
-endmodule
-''')
+            .RST(),
+            .DI(),
+            .DADDR({{7{{ {daddr4_conn} }} }}));
+
+    (* KEEP, DONT_TOUCH *)
+    BUFG bufg_{site} (
+        .I(clkfbout_mult_{site}),
+        .O(clkfbout_mult_BUFG_{site})
+    );
+
+    (* KEEP, DONT_TOUCH *)
+    FDRE reg_clkfbout_mult_{site} (
+        .C(clkfbout_mult_{site})
+    );
+            """.format(**params))
+
+        disabled_clkout = random.randint(0, 7)
+        for clk in range(0, 7):
+            if clk == disabled_clkout:
+                continue
+
+            print(
+                """
+            (* KEEP, DONT_TOUCH *)
+            FDRE reg_clkout{clk}_{site} (
+                .C(clkout{clk}_{site})
+            );
+            """.format(clk=clk, site=params['site']))
+
+    print('endmodule')
+
+    f.close()
+
+
+if __name__ == "__main__":
+    main()

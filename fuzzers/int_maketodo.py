@@ -32,7 +32,7 @@ def load_pipfile(pipfile, verbose=False):
     with open(pipfile, "r") as f:
         # INT_L.WW2BEG0.SR1BEG_S0
         for line in f:
-            tag = line.strip()
+            tag = line.strip().split(' ')[0]
             prefix_line = getprefix(tag)
             if tile_type is None:
                 tile_type = prefix_line

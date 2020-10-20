@@ -89,7 +89,7 @@ def run(fn_in, fn_out, verbose=False):
     tdb_fns = [
         ("iob", 42, 4),
         ("ioi", 42, 4),
-        ("mmcm", 30, 101),
+        ("mmcm", 30, 49),
         ("pll", 30, 27),
         ("monitor", 30, 101),
         ("bram", 28, 10),

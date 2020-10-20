@@ -69,7 +69,7 @@ def read_segbits(f):
 
         parts = l.split(' ')
 
-        assert len(parts) > 1
+        assert len(parts) > 1, l
 
         segbits[parts[0]] = [parsebit(val) for val in parts[1:]]
 
