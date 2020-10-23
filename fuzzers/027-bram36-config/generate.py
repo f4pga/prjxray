@@ -21,7 +21,7 @@ def write_ram_ext_tags(segmk, tile_param):
             segmk.add_site_tag(
                 tile_param['site'], "{}_{}".format(param, opt), set_val == opt)
         segmk.add_site_tag(
-            tile_param['site'], "{}_NONE_OR_UPPER".format(param, opt),
+            tile_param['site'], "{}_NONE_OR_UPPER".format(param),
             set_val != "LOWER")
 
 
@@ -33,12 +33,16 @@ def main():
         params = json.load(f)
 
     for tile_param in params:
-        write_ram_ext_tags(segmk, tile_param)
+        if tile_param['BRAM36_IN_USE']:
+            write_ram_ext_tags(segmk, tile_param)
 
-        segmk.add_site_tag(
-            tile_param['site'], 'EN_ECC_READ', tile_param['EN_ECC_READ'])
-        segmk.add_site_tag(
-            tile_param['site'], 'EN_ECC_WRITE', tile_param['EN_ECC_WRITE'])
+            segmk.add_site_tag(tile_param['site'], 'BRAM36_IN_USE', 1)
+            segmk.add_site_tag(
+                tile_param['site'], 'EN_ECC_READ', tile_param['EN_ECC_READ'])
+            segmk.add_site_tag(
+                tile_param['site'], 'EN_ECC_WRITE', tile_param['EN_ECC_WRITE'])
+        else:
+            segmk.add_site_tag(tile_param['site'], 'BRAM36_IN_USE', 0)
 
     segmk.compile()
     segmk.write()
