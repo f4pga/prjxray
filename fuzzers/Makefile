@@ -172,5 +172,6 @@ roi_only: 000-init-db/run.${XRAY_PART}.ok 001-part-yaml/run.${XRAY_PART}.ok 075-
 	# Copy tilegrid and tileconn
 	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
 	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
+	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/node_wires.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/node_wires.json
 
 .PHONY: all clean clean_fuzzers clean_logs quick part_only roi_only

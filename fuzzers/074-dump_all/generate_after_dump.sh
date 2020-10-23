@@ -26,3 +26,12 @@ python3 generate_grid.py \
   --output_dir ${BUILD_DIR}/output \
   --ignored_wires ignored_wires/${XRAY_DATABASE}/${XRAY_PART}_ignored_wires.txt \
   --max_cpu=${MAX_GRID_CPU:-${DEFAULT_MAX_GRID_CPU}}
+python3 node_names.py \
+  --root_dir ${BUILD_DIR}/specimen_001/ \
+  --output_dir ${BUILD_DIR}/output/ \
+  --max_cpu=${MAX_GRID_CPU:-${DEFAULT_MAX_GRID_CPU}}
+python3 check_nodes.py \
+  --root_dir ${BUILD_DIR}/specimen_001/ \
+  --output_dir ${BUILD_DIR}/output/ \
+  --ignored_wires ignored_wires/${XRAY_DATABASE}/${XRAY_PART}_ignored_wires.txt \
+  --max_cpu=${MAX_GRID_CPU:-${DEFAULT_MAX_GRID_CPU}}

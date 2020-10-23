@@ -15,6 +15,7 @@ from prjxray import tile
 from prjxray import tile_segbits
 from prjxray import site_type
 from prjxray import connections
+from prjxray.node_model import NodeModel
 
 
 def get_available_databases(prjxray_root):
@@ -47,7 +48,8 @@ class Database(object):
         # tilegrid.json JSON object
         self.tilegrid = None
         self.tileconn = None
-        self.tile_types = None
+        self.tile_types_json = None
+        self.node_wires = None
 
         self.tile_types = {}
         self.tile_segbits = {}
@@ -138,26 +140,64 @@ class Database(object):
                                    'tileconn.json')) as f:
                 self.tileconn = json.load(f)
 
+    def _read_node_wires(self):
+        """ Read node wires if not already read. """
+        if self.node_wires is None:
+            with open(os.path.join(self.db_root, self.part,
+                                   'node_wires.json')) as f:
+                self.node_wires = json.load(f)
+
     def grid(self):
         """ Return Grid object for database. """
         self._read_tilegrid()
         return grid.Grid(self, self.tilegrid)
 
     def _read_tile_types(self):
-        for tile_type, db in self.tile_types.items():
-            with open(db.tile_type) as f:
-                self.tile_types[tile_type] = json.load(f)
+        if self.tile_types_json is None:
+            self.tile_types_json = {}
+            for tile_type, db in self.tile_types.items():
+                with open(db.tile_type) as f:
+                    self.tile_types_json[tile_type] = json.load(f)
+
+    def _get_tile_wires(self):
+        self._read_tile_types()
+        tile_wires = dict(
+            (tile_type, db['wires'])
+            for tile_type, db in self.tile_types_json.items())
+
+        return tile_wires
 
     def connections(self):
         self._read_tilegrid()
         self._read_tileconn()
-        self._read_tile_types()
 
-        tile_wires = dict(
-            (tile_type, db['wires'])
-            for tile_type, db in self.tile_types.items())
         return connections.Connections(
-            self.tilegrid, self.tileconn, tile_wires)
+            self.tilegrid, self.tileconn, self._get_tile_wires())
+
+    def node_model(self, progressbar=lambda x: x):
+        """ Get node module for specified part.
+
+        progressbar - Should be a function that takes an iteraable, and
+                      yields all elements from that iterable.
+                      This can be used to generate a progressbar, for example
+                      the module progressbar satifies this interface.
+
+                        Example:
+
+                        import progressbar
+
+                        db = Database(...)
+                        node_model = db.node_model(progressbar.progressbar)
+
+        """
+        self._read_node_wires()
+
+        return NodeModel(
+            grid=self.grid(),
+            connections=self.connections(),
+            tile_wires=self._get_tile_wires(),
+            node_wires=self.node_wires,
+            progressbar=progressbar)
 
     def get_site_types(self):
         return self.site_types.keys()
