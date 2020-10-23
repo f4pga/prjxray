@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: ISC
 # read/write width is relatively slow to resolve
 # Even slower with multi bit masks...
-N ?= 2
+N ?= 10
 
 include ../fuzzer.mk
 
