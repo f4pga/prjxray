@@ -8,6 +8,20 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+""" This script creates node_wires.json, which describes how nodes are named.
+
+This script consumes the raw node data from root_dir and outputs
+node_wires.json to the output_dir.
+
+The class prjxray.node_model.NodeModel can be used to reconstruct node names
+and node <-> wire mapping.
+
+The contents of node_wires.json is:
+ - The set of tile type wires that are always nodes, key "node_pattern_wires"
+ - The set of tile wires that are nodes within the graph, key
+   "specific_node_wires".
+
+"""
 
 import argparse
 import datetime
@@ -28,9 +42,7 @@ def read_json5(fname):
 
 def main():
     parser = argparse.ArgumentParser(
-        description=
-        "Reduces raw database dump into prototype tiles, grid, and connections."
-    )
+        description="Reduce node names for wire connections.")
     parser.add_argument('--root_dir', required=True)
     parser.add_argument('--output_dir', required=True)
     parser.add_argument('--max_cpu', type=int, default=10)
@@ -42,6 +54,7 @@ def main():
     processes = min(multiprocessing.cpu_count(), args.max_cpu)
     pool = multiprocessing.Pool(processes=processes)
 
+    # Read tile grid and raw node data.
     print('{} Reading tilegrid'.format(datetime.datetime.now()))
     with open(os.path.join(util.get_db_root(), util.get_part(),
                            'tilegrid.json')) as f:
@@ -62,6 +75,7 @@ def main():
     remove_node_wires = set()
     specific_node_wires = set()
 
+    # Create initial node wire pattern
     for node in progressbar.progressbar(raw_node_data):
         if len(node['wires']) <= 1:
             continue
@@ -81,6 +95,8 @@ def main():
         'Initial number of wires that are node drivers: {}'.format(
             len(node_wires)))
 
+    # Remove exceptional node wire names, create specific_node_wires set,
+    # which is simply the list of wires that are nodes in the graph.
     for node in progressbar.progressbar(raw_node_data):
         if len(node['wires']) <= 1:
             continue
@@ -97,6 +113,8 @@ def main():
                     specific_node_wires.add(node['node'])
                     remove_node_wires.add(key)
 
+    # Complete the specific_node_wires list after the pruning of the
+    # node_pattern_wires sets.
     for node in progressbar.progressbar(raw_node_data):
         if len(node['wires']) <= 1:
             continue
@@ -117,6 +135,7 @@ def main():
         'Number of wires that are node drivers: {}'.format(
             len(specific_node_wires)))
 
+    # Verify the node wire data.
     for node in progressbar.progressbar(raw_node_data):
         if len(node['wires']) <= 1:
             continue
@@ -140,6 +159,7 @@ def main():
                 else:
                     assert node['node'] != wire['wire']
 
+    # Normalize output.
     tile_types = {}
     for tile_type, tile_wire in node_wires:
         if tile_type not in tile_types:

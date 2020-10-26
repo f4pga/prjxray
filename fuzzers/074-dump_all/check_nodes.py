@@ -8,6 +8,8 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+""" Load tileconn.json and node_wires.json and verify both node names and
+node <-> wire mapping against raw node data. """
 
 import argparse
 import datetime
@@ -29,6 +31,7 @@ def read_json5(fname):
 
 
 def read_raw_node_data(pool, root_dir):
+    """ Read raw node data from root dir. """
     _, nodes = lib.read_root_csv(root_dir)
 
     raw_node_data = []
@@ -46,7 +49,8 @@ def read_raw_node_data(pool, root_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="")
+    parser = argparse.ArgumentParser(
+        description="Verify tileconn and node_wires.")
     parser.add_argument('--root_dir', required=True)
     parser.add_argument('--output_dir', required=True)
     parser.add_argument('--max_cpu', type=int, default=10)
@@ -104,12 +108,16 @@ def main():
     with multiprocessing.Pool(processes=processes) as pool:
         raw_node_data = read_raw_node_data(pool, args.root_dir)
 
+    print('{} Read ignored wires list'.format(datetime.datetime.now()))
     ignored_wires = []
     ignored_wires_file = args.ignored_wires
     if os.path.exists(ignored_wires_file):
         with open(ignored_wires_file) as f:
             ignored_wires = set(tuple(l.strip().split('/')) for l in f)
 
+    print(
+        '{} Verify nodes against raw node data'.format(
+            datetime.datetime.now()))
     for node in progressbar.progressbar(raw_node_data):
         tile, wire = node['node'].split('/')
 
