@@ -47,6 +47,9 @@ RAM_EXTENSION_OPTS = [
     "UPPER",
 ]
 
+BRAM36_WIDTHS = [1, 2]
+BRAM36_TO_18_WIDTHS = {1: 1, 2: 1}
+
 
 def main():
     db = Database(util.get_db_root(), util.get_part())
@@ -59,9 +62,27 @@ module top();
     params = []
     for tile_name, bram36_site_name, bram18_site_name, fifo18_site_name in gen_bram36(
             grid):
+        bram36_ra_width = random.choice(BRAM36_WIDTHS)
+        bram36_wa_width = random.choice(BRAM36_WIDTHS)
+        bram36_rb_width = random.choice(BRAM36_WIDTHS)
+        bram36_wb_width = random.choice(BRAM36_WIDTHS)
+
+        bram18_ra_width = BRAM36_TO_18_WIDTHS[bram36_ra_width]
+        bram18_wa_width = BRAM36_TO_18_WIDTHS[bram36_wa_width]
+        bram18_rb_width = BRAM36_TO_18_WIDTHS[bram36_rb_width]
+        bram18_wb_width = BRAM36_TO_18_WIDTHS[bram36_wb_width]
+
         if random.random() < .8:
-            ram_extension_a = random.choice(RAM_EXTENSION_OPTS)
-            ram_extension_b = random.choice(RAM_EXTENSION_OPTS)
+            if bram36_ra_width == 1 and bram36_wa_width == 1:
+                ram_extension_a = random.choice(RAM_EXTENSION_OPTS)
+            else:
+                ram_extension_a = 'NONE'
+
+            if bram36_rb_width == 1 and bram36_wb_width == 1:
+                ram_extension_b = random.choice(RAM_EXTENSION_OPTS)
+            else:
+                ram_extension_b = 'NONE'
+
             en_ecc_read = random.randint(0, 1)
             en_ecc_write = random.randint(0, 1)
 
@@ -69,10 +90,10 @@ module top();
                 '''
                 (* KEEP, DONT_TOUCH, LOC = "{site}" *)
                 RAMB36E1 #(
-                    .READ_WIDTH_A(1),
-                    .WRITE_WIDTH_A(1),
-                    .READ_WIDTH_B(1),
-                    .WRITE_WIDTH_B(1),
+                    .READ_WIDTH_A({bram36_ra_width}),
+                    .WRITE_WIDTH_A({bram36_wa_width}),
+                    .READ_WIDTH_B({bram36_rb_width}),
+                    .WRITE_WIDTH_B({bram36_wb_width}),
                     .RAM_EXTENSION_A({ram_extension_a}),
                     .RAM_EXTENSION_B({ram_extension_b}),
                     .EN_ECC_READ({en_ecc_read}),
@@ -106,6 +127,10 @@ module top();
                     ram_extension_b=verilog.quote(ram_extension_b),
                     en_ecc_read=en_ecc_read,
                     en_ecc_write=en_ecc_write,
+                    bram36_ra_width=bram36_ra_width,
+                    bram36_wa_width=bram36_wa_width,
+                    bram36_rb_width=bram36_rb_width,
+                    bram36_wb_width=bram36_wb_width,
                 ))
 
             params.append(
@@ -117,16 +142,20 @@ module top();
                     'RAM_EXTENSION_B': ram_extension_b,
                     'EN_ECC_READ': en_ecc_read,
                     'EN_ECC_WRITE': en_ecc_write,
+                    'bram36_ra_width': bram36_ra_width,
+                    'bram36_wa_width': bram36_wa_width,
+                    'bram36_rb_width': bram36_rb_width,
+                    'bram36_wb_width': bram36_wb_width,
                 })
         else:
             print(
                 '''
                 (* KEEP, DONT_TOUCH, LOC = "{bram18}" *)
                 RAMB18E1 #(
-                    .READ_WIDTH_A(1),
-                    .WRITE_WIDTH_A(1),
-                    .READ_WIDTH_B(1),
-                    .WRITE_WIDTH_B(1)
+                    .READ_WIDTH_A({bram18_ra_width}),
+                    .WRITE_WIDTH_A({bram18_wa_width}),
+                    .READ_WIDTH_B({bram18_rb_width}),
+                    .WRITE_WIDTH_B({bram18_wb_width})
                     ) bram_{bram18} (
                         .CLKARDCLK(),
                         .CLKBWRCLK(),
@@ -153,10 +182,10 @@ module top();
 
                 (* KEEP, DONT_TOUCH, LOC = "{fifo18}" *)
                 RAMB18E1 #(
-                    .READ_WIDTH_A(1),
-                    .WRITE_WIDTH_A(1),
-                    .READ_WIDTH_B(1),
-                    .WRITE_WIDTH_B(1)
+                    .READ_WIDTH_A({bram18_ra_width}),
+                    .WRITE_WIDTH_A({bram18_wa_width}),
+                    .READ_WIDTH_B({bram18_rb_width}),
+                    .WRITE_WIDTH_B({bram18_wb_width})
                     ) bram_{fifo18} (
                         .CLKARDCLK(),
                         .CLKBWRCLK(),
@@ -183,6 +212,10 @@ module top();
                 '''.format(
                     bram18=bram18_site_name,
                     fifo18=fifo18_site_name,
+                    bram18_ra_width=bram18_ra_width,
+                    bram18_wa_width=bram18_wa_width,
+                    bram18_rb_width=bram18_rb_width,
+                    bram18_wb_width=bram18_wb_width,
                 ))
 
             params.append(
@@ -190,6 +223,10 @@ module top();
                     'tile': tile_name,
                     'BRAM36_IN_USE': False,
                     'site': bram36_site_name,
+                    'bram36_ra_width': bram36_ra_width,
+                    'bram36_wa_width': bram36_wa_width,
+                    'bram36_rb_width': bram36_rb_width,
+                    'bram36_wb_width': bram36_wb_width,
                 })
 
     print("endmodule")
