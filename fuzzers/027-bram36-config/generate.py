@@ -36,13 +36,23 @@ def main():
         if tile_param['BRAM36_IN_USE']:
             write_ram_ext_tags(segmk, tile_param)
 
-            segmk.add_site_tag(tile_param['site'], 'BRAM36_IN_USE', 1)
             segmk.add_site_tag(
                 tile_param['site'], 'EN_ECC_READ', tile_param['EN_ECC_READ'])
             segmk.add_site_tag(
                 tile_param['site'], 'EN_ECC_WRITE', tile_param['EN_ECC_WRITE'])
-        else:
-            segmk.add_site_tag(tile_param['site'], 'BRAM36_IN_USE', 0)
+
+    for ab in 'ab':
+        for rw in 'rw':
+            if rw == 'r':
+                dir = 'READ'
+            else:
+                dir = 'WRITE'
+
+            width = tile_param['bram36_{}{}_width'.format(rw, ab)]
+            tag = 'BRAM36_{}_WIDTH_{}_1'.format(dir, ab.upper())
+            if width == 1:
+                segmk.add_site_tag(
+                    tile_param['site'], tag, tile_param['BRAM36_IN_USE'])
 
     segmk.compile()
     segmk.write()
