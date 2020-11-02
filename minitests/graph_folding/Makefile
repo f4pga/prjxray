@@ -8,7 +8,7 @@ all: build_${PART}/wire_patterns.bin
 build_${PART}:
 	mkdir -p build_${PART}
 
-${DATABASE}: build_node_lookup.py node_lookup.py build_${PART}
+${DATABASE}: build_node_lookup.py node_lookup.py | build_${PART}
 	python3 build_node_lookup.py \
 		--db-root ${DB_ROOT} \
 		--part ${PART} \

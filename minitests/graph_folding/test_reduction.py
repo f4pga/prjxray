@@ -40,6 +40,9 @@ def main():
     wire_to_node_patterns = {}
     tile_nodes_to_wire_patterns = {}
 
+    all_wire_to_nodes = set()
+    all_node_to_wires = set()
+
     for tile_pkey, tile_type_pkey, tile_name, tile_x, tile_y in progressbar.progressbar(
             cur.execute("SELECT pkey, tile_type_pkey, name, x, y FROM tile;")):
 
@@ -59,12 +62,13 @@ WHERE node.pkey = ?;
                 """, (node_pkey, ))
             node_tile_x, node_tile_y, node_wire_in_tile_pkey = cur3.fetchone()
 
-            wire_to_nodes.append(
-                WireToNode(
-                    wire_in_tile_pkey=wire_in_tile_pkey,
-                    delta_x=node_tile_x - tile_x,
-                    delta_y=node_tile_y - tile_y,
-                    node_wire_in_tile_pkey=node_wire_in_tile_pkey))
+            pattern = WireToNode(
+                wire_in_tile_pkey=wire_in_tile_pkey,
+                delta_x=node_tile_x - tile_x,
+                delta_y=node_tile_y - tile_y,
+                node_wire_in_tile_pkey=node_wire_in_tile_pkey)
+            wire_to_nodes.append(pattern)
+            all_wire_to_nodes.add(pattern)
 
         key = frozenset(wire_to_nodes)
 
@@ -94,6 +98,7 @@ WHERE wire.node_pkey = ?;
                         delta_y=wire_tile_y - tile_y,
                         wire_in_tile_pkey=wire_in_tile_pkey))
 
+            all_node_to_wires.add(frozenset(node_to_wires))
             tile_nodes_to_wires.append(
                 (node_wire_in_tile_pkey, frozenset(node_to_wires)))
 
@@ -103,6 +108,10 @@ WHERE wire.node_pkey = ?;
             tile_nodes_to_wire_patterns[key] = set()
 
         tile_nodes_to_wire_patterns[key].add(tile_pkey)
+
+    cur.execute("SELECT COUNT(pkey) FROM tile;")
+    num_tiles = cur.fetchone()[0]
+    print(len(all_wire_to_nodes), len(all_node_to_wires), num_tiles)
 
     #wire_names = {}
     #for wire_in_tile_pkey, name in cur.execute("SELECT pkey, name FROM wire_in_tile;"):
