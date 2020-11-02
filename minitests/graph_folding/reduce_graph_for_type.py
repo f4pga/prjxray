@@ -30,7 +30,7 @@ WireToNode = namedtuple(
 NodeToWire = namedtuple('NodeToWire', 'wire_in_tile_pkey delta_x delta_y')
 
 
-def get_graph(database, tile):
+def get_wire_to_node_graph(database, tile_type):
     lookup = NodeLookup(database=database)
     cur = lookup.conn.cursor()
     cur2 = lookup.conn.cursor()
@@ -41,7 +41,7 @@ def get_graph(database, tile):
 
     graph = BipartiteAdjacencyMatrix()
 
-    cur.execute("SELECT pkey FROM tile_type WHERE name = ?;", (tile, ))
+    cur.execute("SELECT pkey FROM tile_type WHERE name = ?;", (tile_type, ))
     tile_type_pkey = cur.fetchone()[0]
 
     for tile_pkey, tile_type_pkey, tile_name, tile_x, tile_y in progressbar.progressbar(
@@ -83,16 +83,83 @@ WHERE node.pkey = ?;
     return graph
 
 
+def get_node_to_wires_graph(database, tile_type):
+    lookup = NodeLookup(database=database)
+    cur = lookup.conn.cursor()
+    cur2 = lookup.conn.cursor()
+    cur3 = lookup.conn.cursor()
+
+    all_tiles = set()
+    all_node_to_wires = set()
+
+    graph = BipartiteAdjacencyMatrix()
+
+    cur.execute("SELECT pkey FROM tile_type WHERE name = ?;", (tile_type, ))
+    tile_type_pkey = cur.fetchone()[0]
+
+    for tile_pkey, tile_type_pkey, tile_name, tile_x, tile_y in progressbar.progressbar(
+            cur.execute(
+                "SELECT pkey, tile_type_pkey, name, x, y FROM tile WHERE tile_type_pkey = ?;",
+                (tile_type_pkey, ))):
+        tile = Tile(tile_pkey=tile_pkey)
+        graph.add_u(tile)
+        all_tiles.add(tile)
+
+        for node_pkey, node_wire_in_tile_pkey in cur2.execute("""
+SELECT node.pkey, node.wire_in_tile_pkey
+FROM node
+WHERE node.tile_pkey = ?;
+            """, (tile_pkey, )):
+
+            node_to_wires = []
+
+            for wire_in_tile_pkey, wire_tile_x, wire_tile_y in cur3.execute("""
+SELECT wire.wire_in_tile_pkey, tile.x, tile.y
+FROM wire
+INNER JOIN tile ON wire.tile_pkey = tile.pkey
+WHERE wire.node_pkey = ?;
+                """, (node_pkey, )):
+                node_to_wires.append(
+                    NodeToWire(
+                        delta_x=wire_tile_x - tile_x,
+                        delta_y=wire_tile_y - tile_y,
+                        wire_in_tile_pkey=wire_in_tile_pkey))
+
+            node_to_wires = (node_wire_in_tile_pkey, frozenset(node_to_wires))
+            if node_to_wires not in all_node_to_wires:
+                all_node_to_wires.add(node_to_wires)
+                graph.add_v(node_to_wires)
+
+            graph.add_edge(tile, node_to_wires)
+
+    graph.build()
+
+    return graph
+
+
 def main():
     multiprocessing.set_start_method('spawn')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--database', required=True)
     parser.add_argument('--tile', required=True)
+    parser.add_argument('--wire_to_node', action='store_true')
+    parser.add_argument('--node_to_wires', action='store_true')
 
     args = parser.parse_args()
 
-    graph = get_graph(args.database, args.tile)
+    if args.wire_to_node and args.node_to_wires:
+        parser.error('Cannot supply both --wire_to_node and --node_to_wires')
+    elif not args.wire_to_node and not args.node_to_wires:
+        parser.error('Must supply --wire_to_node or --node_to_wires')
+
+    if args.wire_to_node:
+        graph = get_wire_to_node_graph(args.database, args.tile)
+    elif args.node_to_wires:
+        graph = get_node_to_wires_graph(args.database, args.tile)
+    else:
+        assert False
+
     all_edges = set(graph.frozen_edges)
     gc.collect()
 
@@ -101,19 +168,54 @@ def main():
     P = (0.6 - 0.8 * beta) * math.exp((4 + 3 * beta) * density)
     N = 0.01 * len(graph.u) * len(graph.v)
 
-    tile_wire_ids = set()
-    dxdys = set()
-    max_dxdy = 0
-    for pattern in graph.v:
-        tile_wire_ids.add(pattern.node_wire_in_tile_pkey)
-        dxdys.add((pattern.delta_x, pattern.delta_y))
-        max_dxdy = max(max_dxdy, abs(pattern.delta_x))
-        max_dxdy = max(max_dxdy, abs(pattern.delta_y))
+    if args.wire_to_node:
+        tile_wire_ids = set()
+        dxdys = set()
+        max_dxdy = 0
+        for pattern in graph.v:
+            tile_wire_ids.add(pattern.node_wire_in_tile_pkey)
+            dxdys.add((pattern.delta_x, pattern.delta_y))
+            max_dxdy = max(max_dxdy, abs(pattern.delta_x))
+            max_dxdy = max(max_dxdy, abs(pattern.delta_y))
 
-    print('Unique node wire in tile pkey {}'.format(len(tile_wire_ids)))
-    print('Unique pattern {}'.format(len(graph.v)))
-    print('Unique dx dy {}'.format(len(dxdys)))
-    print('Unique dx dy dist {}'.format(max_dxdy))
+        print('Unique node wire in tile pkey {}'.format(len(tile_wire_ids)))
+        print('Unique pattern {}'.format(len(graph.v)))
+        print('Unique dx dy {}'.format(len(dxdys)))
+        print('Unique dx dy dist {}'.format(max_dxdy))
+    elif args.node_to_wires:
+        tile_wire_ids = set()
+        patterns = set()
+        dxdys = set()
+        max_dxdy = 0
+        max_patterns_to_node = 0
+
+        node_to_wires_to_count = {}
+
+        for node_wire_in_tile_pkey, node_to_wires in graph.v:
+            if node_to_wires not in node_to_wires_to_count:
+                node_to_wires_to_count[node_to_wires] = len(node_to_wires)
+
+            max_patterns_to_node = max(max_patterns_to_node, len(node_to_wires))
+            for pattern in node_to_wires:
+                patterns.add(pattern)
+                tile_wire_ids.add(pattern.wire_in_tile_pkey)
+                dxdys.add((pattern.delta_x, pattern.delta_y))
+                max_dxdy = max(max_dxdy, abs(pattern.delta_x))
+                max_dxdy = max(max_dxdy, abs(pattern.delta_y))
+
+        pattern_count = 0
+        for num_patterns in node_to_wires_to_count.values():
+            pattern_count += num_patterns
+
+        print('Minimum number of pattern storage: {}'.format(pattern_count))
+        print('Unique wire in tile pkey {}'.format(len(tile_wire_ids)))
+        print('Unique node_to_wires {}'.format(len(graph.v)))
+        print('Unique patterns {}'.format(len(patterns)))
+        print('Unique dx dy {}'.format(len(dxdys)))
+        print('Unique dx dy dist {}'.format(max_dxdy))
+    else:
+        assert False
+
     print(
         'density = {}, beta = {}, P = {}, N = {}'.format(density, beta, P, N))
 

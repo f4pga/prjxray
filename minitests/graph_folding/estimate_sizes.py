@@ -24,6 +24,7 @@ def main():
     args = parser.parse_args()
 
     db = Database(args.db_root, args.part)
+    print('Reporting tile usage for part {}'.format(args.part))
     grid = db.grid()
 
     sizeof_delta = struct.calcsize('i')
