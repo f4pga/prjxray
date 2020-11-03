@@ -31,6 +31,13 @@ def gen_sites():
                 yield tile_name, tile_type, site_name
 
 
+def gen_true_false(p):
+    if random.random() <= p:
+        return verilog.quote("TRUE")
+    else:
+        return verilog.quote("FALSE")
+
+
 def main():
     sites = sorted(list(gen_sites()))
     max_sites = len(sites)
@@ -100,6 +107,10 @@ module top(
             random.randint(0, 1),
             "IS_CLKINSEL_INVERTED":
             random.randint(0, 1),
+            "IS_PSEN_INVERTED":
+            random.randint(0, 1),
+            "IS_PSINCDEC_INVERTED":
+            random.randint(0, 1),
             "CLKFBOUT_MULT_F":
             random.randint(2, 4),
             "CLKOUT0_DIVIDE_F":
@@ -136,7 +147,13 @@ module top(
                 'HIGH',
                 'LOW',
             ))),
+            "SS_EN":
+            gen_true_false(0.15),
         }
+
+        # SS_EN requires BANDWIDTH to be LOW
+        if verilog.unquote(params["SS_EN"]) == "TRUE":
+            params["BANDWIDTH"] = verilog.quote("LOW")
 
         if verilog.unquote(params['COMPENSATION']) == 'ZHOLD':
             params['clkfbin_conn'] = random.choice(
@@ -239,6 +256,8 @@ module top(
             .IS_RST_INVERTED({IS_RST_INVERTED}),
             .IS_PWRDWN_INVERTED({IS_PWRDWN_INVERTED}),
             .IS_CLKINSEL_INVERTED({IS_CLKINSEL_INVERTED}),
+            .IS_PSEN_INVERTED({IS_PSEN_INVERTED}),
+            .IS_PSINCDEC_INVERTED({IS_PSINCDEC_INVERTED}),
             .CLKOUT0_DIVIDE_F({CLKOUT0_DIVIDE_F}),
             .CLKOUT1_DIVIDE({CLKOUT1_DIVIDE}),
             .CLKOUT2_DIVIDE({CLKOUT2_DIVIDE}),
@@ -252,6 +271,7 @@ module top(
             .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
             .COMPENSATION({COMPENSATION}),
             .BANDWIDTH({BANDWIDTH}),
+            .SS_EN({SS_EN}),
             .CLKIN1_PERIOD(10.0),
             .CLKIN2_PERIOD(10.0)
     ) pll_{site} (
