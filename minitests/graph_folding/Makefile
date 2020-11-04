@@ -19,7 +19,11 @@ ${WIRE_PATTERNS}: test_reduction.py ${DATABASE}
 		--database ${DATABASE} \
 		--wire_patterns ${WIRE_PATTERNS}
 
-.PHONY: clean
+.PHONY: clean database wire_patterns
+
+database: ${DATABASE}
+
+wire_patterns: ${WIRE_PATTERNS}
 
 clean:
 	rm -rf build_${PART}

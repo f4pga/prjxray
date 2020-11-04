@@ -30,6 +30,7 @@ def main():
     sizeof_delta = struct.calcsize('i')
     sizeof_wire_in_tile_idx = struct.calcsize('i')
     cost_per_wire = 2 * sizeof_delta + sizeof_wire_in_tile_idx
+    max_wires_per_tile = 0
     _ = cost_per_wire
 
     all_wires = 0
@@ -48,6 +49,7 @@ def main():
         tile_type_info = db.get_tile_type(tile_type)
         tile_type_to_wires[tile_type] = len(tile_type_info.get_wires())
         all_wires += len(tile_type_info.get_wires())
+        max_wires_per_tile = max(max_wires_per_tile, len(tile_type_info.get_wires()))
 
     for tile_type in sorted(
             tile_type_to_count, key=
@@ -56,7 +58,9 @@ def main():
         print(
             tile_type, tile_type_to_count[tile_type],
             tile_type_to_wires[tile_type])
-    print(all_wires)
+
+    print('Total number of wires:', all_wires)
+    print('Max wires per tile:', max_wires_per_tile)
 
 
 if __name__ == "__main__":

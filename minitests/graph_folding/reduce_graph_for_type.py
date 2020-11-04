@@ -66,10 +66,16 @@ WHERE node.pkey = ?;
                 """, (node_pkey, ))
             node_tile_x, node_tile_y, node_wire_in_tile_pkey = cur3.fetchone()
 
+            delta_x = node_tile_x - tile_x
+            delta_y = node_tile_y - tile_y
+
+            if delta_x == 0 and delta_y == 0 and wire_in_tile_pkey == node_wire_in_tile_pkey:
+                continue
+
             pattern = WireToNode(
                 wire_in_tile_pkey=wire_in_tile_pkey,
-                delta_x=node_tile_x - tile_x,
-                delta_y=node_tile_y - tile_y,
+                delta_x=delta_x,
+                delta_y=delta_y,
                 node_wire_in_tile_pkey=node_wire_in_tile_pkey)
 
             if pattern not in all_wire_to_nodes:
@@ -117,13 +123,24 @@ WHERE node.tile_pkey = ?;
 SELECT wire.wire_in_tile_pkey, tile.x, tile.y
 FROM wire
 INNER JOIN tile ON wire.tile_pkey = tile.pkey
-WHERE wire.node_pkey = ?;
+INNER JOIN wire_in_tile ON wire.wire_in_tile_pkey = wire_in_tile.pkey
+WHERE wire.node_pkey = ? and wire_in_tile.has_pip_from;
                 """, (node_pkey, )):
+
+                delta_x = wire_tile_x - tile_x
+                delta_y = wire_tile_y - tile_y
+
+                if delta_x == 0 and delta_y == 0 and wire_in_tile_pkey == node_wire_in_tile_pkey:
+                    continue
+
                 node_to_wires.append(
                     NodeToWire(
-                        delta_x=wire_tile_x - tile_x,
-                        delta_y=wire_tile_y - tile_y,
+                        delta_x=delta_x,
+                        delta_y=delta_y,
                         wire_in_tile_pkey=wire_in_tile_pkey))
+
+            if len(node_to_wires) == 0:
+                continue
 
             node_to_wires = (node_wire_in_tile_pkey, frozenset(node_to_wires))
             if node_to_wires not in all_node_to_wires:
@@ -170,20 +187,24 @@ def main():
 
     if args.wire_to_node:
         tile_wire_ids = set()
+        wire_nodes = set()
         dxdys = set()
         max_dxdy = 0
         for pattern in graph.v:
             tile_wire_ids.add(pattern.node_wire_in_tile_pkey)
+            wire_nodes.add(pattern.wire_in_tile_pkey)
             dxdys.add((pattern.delta_x, pattern.delta_y))
             max_dxdy = max(max_dxdy, abs(pattern.delta_x))
             max_dxdy = max(max_dxdy, abs(pattern.delta_y))
 
+        print('Wire nodes {}'.format(len(wire_nodes)))
         print('Unique node wire in tile pkey {}'.format(len(tile_wire_ids)))
         print('Unique pattern {}'.format(len(graph.v)))
         print('Unique dx dy {}'.format(len(dxdys)))
         print('Unique dx dy dist {}'.format(max_dxdy))
     elif args.node_to_wires:
         tile_wire_ids = set()
+        node_wires = set()
         patterns = set()
         dxdys = set()
         max_dxdy = 0
@@ -192,6 +213,8 @@ def main():
         node_to_wires_to_count = {}
 
         for node_wire_in_tile_pkey, node_to_wires in graph.v:
+            node_wires.add(node_wire_in_tile_pkey)
+
             if node_to_wires not in node_to_wires_to_count:
                 node_to_wires_to_count[node_to_wires] = len(node_to_wires)
 
@@ -204,9 +227,13 @@ def main():
                 max_dxdy = max(max_dxdy, abs(pattern.delta_y))
 
         pattern_count = 0
+        max_node_to_wires = 0
         for num_patterns in node_to_wires_to_count.values():
             pattern_count += num_patterns
+            max_node_to_wires = max(max_node_to_wires, num_patterns)
 
+        print('Node wires: {}'.format(len(node_wires)))
+        print('Max number of patterns: {}'.format(max_node_to_wires))
         print('Minimum number of pattern storage: {}'.format(pattern_count))
         print('Unique wire in tile pkey {}'.format(len(tile_wire_ids)))
         print('Unique node_to_wires {}'.format(len(graph.v)))
@@ -264,13 +291,15 @@ def main():
         tile_to_tile_patterns[tile] = tile_pattern
         tile_patterns.add(tile_pattern)
 
+    number_of_tile_pattern_elements = 0
+    for tile_pattern in tile_patterns:
+        number_of_tile_pattern_elements += len(tile_pattern)
+
     print('Have {} tile patterns'.format(len(tile_patterns)))
     print(
         'Max {} patterns'.format(
             max(len(patterns) for patterns in tile_to_tile_patterns.values())))
-
-    #for tile, pattern in tile_to_tile_patterns.items():
-    #    print(tile, pattern)
+    print('Number of tile pattern elements: {}'.format(number_of_tile_pattern_elements))
 
 
 if __name__ == "__main__":

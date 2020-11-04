@@ -36,6 +36,7 @@ def main():
         lookup.build_database(db, progressbar.progressbar)
     except Exception:
         os.unlink(args.database)
+        raise
 
 
 if __name__ == "__main__":

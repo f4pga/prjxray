@@ -25,7 +25,19 @@ CREATE TABLE wire_in_tile(
     pkey            INTEGER PRIMARY KEY,
     tile_type_pkey  INTEGER,
     name            TEXT,
+    has_pip_from    BOOLEAN,
     FOREIGN KEY(tile_type_pkey) REFERENCES tile_type(pkey)
+    );
+
+CREATE TABLE pip_in_tile(
+    pkey INTEGER PRIMARY KEY,
+    tile_type_pkey INTEGER,
+    wire0_in_tile_pkey INTEGER,
+    wire1_in_tile_pkey INTEGER,
+    is_directional BOOLEAN,
+    FOREIGN KEY(tile_type_pkey) REFERENCES tile_type(pkey),
+    FOREIGN KEY(wire0_in_tile_pkey) REFERENCES wire_in_tile(pkey),
+    FOREIGN KEY(wire1_in_tile_pkey) REFERENCES wire_in_tile(pkey)
     );
 
 CREATE TABLE tile(
@@ -78,12 +90,24 @@ class NodeLookup(object):
             tile_type_pkey = c.lastrowid
             tile_type_pkeys[tile_type_name] = tile_type_pkey
             tile_type = db.get_tile_type(tile_type_name)
-            tile_type
+
+            wires_with_pips = set()
+            for pip in tile_type.get_pips():
+                wires_with_pips.add(pip.net_from)
+
+                if not pip.is_directional:
+                    wires_with_pips.add(pip.net_to)
+
             for wire in tile_type.get_wires():
                 c.execute(
-                    "INSERT INTO wire_in_tile(name, tile_type_pkey) VALUES (?, ?);",
-                    (wire, tile_type_pkey))
+                    "INSERT INTO wire_in_tile(name, tile_type_pkey, has_pip_from) VALUES (?, ?, ?);",
+                    (wire, tile_type_pkey, wire in wires_with_pips))
                 wire_in_tile_pkeys[tile_type_name, wire] = c.lastrowid
+
+            for pip in tile_type.get_pips():
+                c.execute(
+                    "INSERT INTO pip_in_tile(tile_type_pkey, wire0_in_tile_pkey, wire1_in_tile_pkey, is_directional) VALUES (?, ?, ?, ?);",
+                    (tile_type_pkey, wire_in_tile_pkeys[tile_type_name, pip.net_from], wire_in_tile_pkeys[tile_type_name, pip.net_to], pip.is_directional))
 
         tile_pkeys = {}
         for tile_name in progressbar(grid.tiles()):
