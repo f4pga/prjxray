@@ -35,6 +35,8 @@ def bus_tags(segmk, ps, site):
         ('RST', 1),
         ('PWRDWN', 1),
         ('CLKINSEL', 0),
+        ('PSEN', 1),
+        ('PSINCDEC', 1),
     ]:
         opt = 'IS_{}_INVERTED'.format(reg)
 
@@ -129,6 +131,9 @@ def bus_tags(segmk, ps, site):
 #    segmk.add_site_tag(
 #        site, 'COMPENSATION.INTERNAL',
 #        verilog.unquote(ps['COMPENSATION']) in ['INTERNAL'])
+
+    opt = (verilog.unquote(ps["SS_EN"]) == "TRUE")
+    segmk.add_site_tag(site, "SS_EN", opt)
 
     for param in ['CLKFBOUT_MULT_F']:
         paramadj = int(ps[param])

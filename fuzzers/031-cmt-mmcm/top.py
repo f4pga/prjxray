@@ -17,6 +17,20 @@ from prjxray.db import Database
 import json
 
 
+def find_hclk_ref_wires_for_mmcm(grid, loc):
+    tilename = grid.tilename_at_loc((loc[0], loc[1] - 17))
+    gridinfo = grid.gridinfo_at_tilename(tilename)
+
+    assert gridinfo.tile_type in ['HCLK_CMT_L', 'HCLK_CMT']
+
+    # HCLK_CMT_MUX_OUT_FREQ_REF[0-3]
+    wires = []
+    for idx in range(4):
+        wires.append('{}/HCLK_CMT_MUX_OUT_FREQ_REF{}'.format(tilename, idx))
+
+    return wires
+
+
 def gen_sites():
     db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
@@ -28,7 +42,15 @@ def gen_sites():
 
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['MMCME2_ADV']:
-                yield tile_name, tile_type, site_name
+                hclk_wires = find_hclk_ref_wires_for_mmcm(grid, loc)
+                yield tile_name, tile_type, site_name, hclk_wires
+
+
+def gen_true_false(p):
+    if random.random() <= p:
+        return verilog.quote("TRUE")
+    else:
+        return verilog.quote("FALSE")
 
 
 def main():
@@ -53,11 +75,8 @@ module top(
     LUT1 dummy();
 """.format(N=max_sites - 1))
 
-    for i, (
-            tile_name,
-            tile_type,
-            site,
-    ) in enumerate(sorted(gen_sites())):
+    for i, (tile_name, tile_type, site,
+            hclk_wires) in enumerate(sorted(gen_sites())):
         params = {
             "site":
             site,
@@ -100,6 +119,10 @@ module top(
             random.randint(0, 1),
             "IS_CLKINSEL_INVERTED":
             random.randint(0, 1),
+            "IS_PSEN_INVERTED":
+            random.randint(0, 1),
+            "IS_PSINCDEC_INVERTED":
+            random.randint(0, 1),
             "CLKFBOUT_MULT_F":
             random.randint(2, 4),
             "CLKOUT0_DIVIDE_F":
@@ -136,7 +159,13 @@ module top(
                 'HIGH',
                 'LOW',
             ))),
+            "SS_EN":
+            gen_true_false(0.15),
         }
+
+        # SS_EN requires BANDWIDTH to be LOW
+        if verilog.unquote(params["SS_EN"]) == "TRUE":
+            params["BANDWIDTH"] = verilog.quote("LOW")
 
         if verilog.unquote(params['COMPENSATION']) == 'ZHOLD':
             params['clkfbin_conn'] = random.choice(
@@ -154,35 +183,30 @@ module top(
             params['clkfbin_conn'] = random.choice(
                 ("", "clkfb[{}]".format(i), "clkfbout_mult_BUFG_" + site))
 
-        params['clkin1_route'] = random.choice(
-            (
-                "{}_CLKIN1",
-                "{}_FREQ_BB0",
-                "{}_FREQ_BB1",
-                "{}_FREQ_BB2",
-                "{}_FREQ_BB3",
-                "{}_MMCME2_CLK_IN1_INT",
-            )).format(tile_type)
+        def get_clkin_wires(idx):
+            wires = [
+                "{tile}_CLKIN{idx}", "{tile}_FREQ_BB0", "{tile}_FREQ_BB1",
+                "{tile}_FREQ_BB2", "{tile}_FREQ_BB3", "{tile}_CLK_IN{idx}_INT"
+                "{tile}_CLK_IN{idx}_HCLK"
+            ]
+            return [
+                tile_name + "/" + w.format(tile=tile_type, idx=idx)
+                for w in wires
+            ]
 
-        params['clkin2_route'] = random.choice(
-            (
-                "{}_CLKIN2",
-                "{}_FREQ_BB0",
-                "{}_FREQ_BB1",
-                "{}_FREQ_BB2",
-                "{}_FREQ_BB3",
-                "{}_MMCME2_CLK_IN2_INT",
-            )).format(tile_type)
+        params['clkin1_route'] = random.choice(get_clkin_wires(1) + hclk_wires)
+        params['clkin2_route'] = random.choice(get_clkin_wires(2) + hclk_wires)
 
         params['clkfbin_route'] = random.choice(
             (
                 "{}_CLKFBOUT2IN",
-                "{}_UPPER_T_FREQ_BB0",
-                "{}_UPPER_T_FREQ_BB1",
-                "{}_UPPER_T_FREQ_BB2",
-                "{}_UPPER_T_FREQ_BB3",
-                "{}_UPPER_T_MMCME2_CLK_FB_INT",
-            )).format(tile_type.replace("_UPPER_T", ""))
+                "{}_FREQ_BB0",
+                "{}_FREQ_BB1",
+                "{}_FREQ_BB2",
+                "{}_FREQ_BB3",
+                "{}_CLK_IN3_INT",
+                "{}_CLK_IN3_HCLK",
+            )).format(tile_type)
 
         f.write('%s\n' % (json.dumps(params)))
 
@@ -191,13 +215,17 @@ module top(
             return net[:p] + '_IBUF' + net[p:]
 
         if params['clkin1_conn'] != "":
-            net = make_ibuf_net(params['clkin1_conn'])
-            wire = '{}/{}'.format(tile_name, params['clkin1_route'])
+            net = params['clkin1_conn']
+            if "[" in net and "]" in net:
+                net = make_ibuf_net(net)
+            wire = params['clkin1_route']
             routes_file.write('{} {}\n'.format(net, wire))
 
         if params['clkin2_conn'] != "":
-            net = make_ibuf_net(params['clkin2_conn'])
-            wire = '{}/{}'.format(tile_name, params['clkin2_route'])
+            net = params['clkin2_conn']
+            if "[" in net and "]" in net:
+                net = make_ibuf_net(net)
+            wire = params['clkin2_route']
             routes_file.write('{} {}\n'.format(net, wire))
 
         if params['clkfbin_conn'] != "" and\
@@ -239,6 +267,8 @@ module top(
             .IS_RST_INVERTED({IS_RST_INVERTED}),
             .IS_PWRDWN_INVERTED({IS_PWRDWN_INVERTED}),
             .IS_CLKINSEL_INVERTED({IS_CLKINSEL_INVERTED}),
+            .IS_PSEN_INVERTED({IS_PSEN_INVERTED}),
+            .IS_PSINCDEC_INVERTED({IS_PSINCDEC_INVERTED}),
             .CLKOUT0_DIVIDE_F({CLKOUT0_DIVIDE_F}),
             .CLKOUT1_DIVIDE({CLKOUT1_DIVIDE}),
             .CLKOUT2_DIVIDE({CLKOUT2_DIVIDE}),
@@ -252,6 +282,7 @@ module top(
             .CLKOUT0_DUTY_CYCLE({CLKOUT0_DUTY_CYCLE}),
             .COMPENSATION({COMPENSATION}),
             .BANDWIDTH({BANDWIDTH}),
+            .SS_EN({SS_EN}),
             .CLKIN1_PERIOD(10.0),
             .CLKIN2_PERIOD(10.0)
     ) pll_{site} (

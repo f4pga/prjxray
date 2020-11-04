@@ -21,7 +21,7 @@ proc make_manual_routes {filename} {
         # Parse the line
         set fields [split $line " "]
         set net_name [lindex $fields 0]
-        set wire_name [lindex $fields 1]
+        set wire_names [lrange $fields 1 end]
 
         # Check if that net exist
         if {[get_nets $net_name] eq ""} {
@@ -30,7 +30,7 @@ proc make_manual_routes {filename} {
         }
 
         # Make the route
-        set status [route_via $net_name [list $wire_name] 0]
+        set status [route_via $net_name $wire_names 0]
 
         # Failure, skip manual routing of this net
         if { $status != 1 } {
@@ -80,7 +80,7 @@ write_checkpoint -force design_pre_route.dcp
 
 route_design -directive Quick -preserve
 
-set unrouted_nets [get_nets -filter {ROUTE_STATUS!="ROUTED"}]
+set unrouted_nets [get_nets -filter {ROUTE_STATUS!="ROUTED" && ROUTE_STATUS!="INTRASITE"}]
 if {[llength $unrouted_nets] ne 0} {
     puts "MANROUTE: Got unrouted nets: $unrouted_nets"
     puts "MANROUTE: Ripping up and starting again with no fixed routes"
