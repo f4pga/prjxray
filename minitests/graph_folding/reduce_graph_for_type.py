@@ -91,7 +91,7 @@ WHERE node.pkey = ?;
     return graph
 
 
-def get_node_to_wires_graph(database, tile_type):
+def get_node_to_wires_graph(database, tile_type, only_pips):
     lookup = NodeLookup(database=database)
     cur = lookup.conn.cursor()
     cur2 = lookup.conn.cursor()
@@ -104,6 +104,11 @@ def get_node_to_wires_graph(database, tile_type):
 
     cur.execute("SELECT pkey FROM tile_type WHERE name = ?;", (tile_type, ))
     tile_type_pkey = cur.fetchone()[0]
+
+    if only_pips:
+        extra_conditions = " AND wire_in_tile.has_pip_from"
+    else:
+        extra_conditions = ""
 
     for tile_pkey, tile_type_pkey, tile_name, tile_x, tile_y in progressbar.progressbar(
             cur.execute(
@@ -126,8 +131,8 @@ SELECT wire.wire_in_tile_pkey, tile.x, tile.y
 FROM wire
 INNER JOIN tile ON wire.tile_pkey = tile.pkey
 INNER JOIN wire_in_tile ON wire.wire_in_tile_pkey = wire_in_tile.pkey
-WHERE wire.node_pkey = ? and wire_in_tile.has_pip_from;
-                """, (node_pkey, )):
+WHERE wire.node_pkey = ? {};
+                """.format(extra_conditions), (node_pkey, )):
 
                 delta_x = wire_tile_x - tile_x
                 delta_y = wire_tile_y - tile_y
@@ -276,7 +281,7 @@ def write_wire_to_node(
 
 def write_node_to_wires(
         graph, required_solutions, tile_patterns, tile_to_tile_patterns,
-        output_dir, tile_type):
+        output_dir, tile_type, only_pips):
     node_wire_in_tile_pkeys = set()
     all_wire_patterns = set()
 
@@ -386,9 +391,12 @@ def write_node_to_wires(
     serialized = node_to_wires.to_bytes()
     print('Size on disk: ', len(serialized))
     if output_dir:
-        with open(os.path.join(output_dir,
-                               '{}_node_to_wires.bin'.format(tile_type)),
-                  'wb') as f:
+        if only_pips:
+            fname = '{}_node_to_pip_wires.bin'.format(tile_type)
+        else:
+            fname = '{}_node_to_wires.bin'.format(tile_type)
+
+        with open(os.path.join(output_dir, fname), 'wb') as f:
             f.write(serialized)
 
 
@@ -529,6 +537,7 @@ def main():
     parser.add_argument('--wire_to_node', action='store_true')
     parser.add_argument('--node_to_wires', action='store_true')
     parser.add_argument('--output_dir')
+    parser.add_argument('--only_pips', action='store_true')
 
     args = parser.parse_args()
 
@@ -540,7 +549,8 @@ def main():
     if args.wire_to_node:
         graph = get_wire_to_node_graph(args.database, args.tile)
     elif args.node_to_wires:
-        graph = get_node_to_wires_graph(args.database, args.tile)
+        graph = get_node_to_wires_graph(
+            args.database, args.tile, args.only_pips)
     else:
         assert False
 
@@ -565,7 +575,7 @@ def main():
     if args.node_to_wires:
         write_node_to_wires(
             graph, required_solutions, tile_patterns, tile_to_tile_patterns,
-            args.output_dir, args.tile)
+            args.output_dir, args.tile, args.only_pips)
 
 
 if __name__ == "__main__":

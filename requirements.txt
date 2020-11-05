@@ -1,6 +1,7 @@
 -e third_party/fasm
 -e third_party/python-sdf-timing
 -e .
+bitarray
 intervaltree
 junit-xml
 numpy
