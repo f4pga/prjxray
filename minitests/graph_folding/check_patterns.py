@@ -43,6 +43,12 @@ def main():
             os.path.join(
                 args.output_dir, '{}_node_to_wires.bin'.format(tile_type)))
 
+    def read_tile_type_n2w_pips_only(tile_type):
+        return NodeToWiresLookup(
+            graph_storage_schema,
+            os.path.join(
+                args.output_dir, '{}_node_to_pip_wires.bin'.format(tile_type)))
+
     lookup = NodeLookup(database=args.database)
     cur = lookup.conn.cursor()
 
@@ -51,6 +57,7 @@ def main():
     tile_pkey_to_tile_type_name = {}
     tile_type_to_wire_to_node_lookup = {}
     tile_type_to_node_to_wires_lookup = {}
+    tile_type_to_node_to_pip_wires_lookup = {}
 
     for tile_pkey, tile_x, tile_y, tile_type_name in cur.execute("""
 SELECT tile.pkey, tile.x, tile.y, tile_type.name
@@ -59,6 +66,11 @@ INNER JOIN tile_type ON tile.tile_type_pkey = tile_type.pkey;"""):
         tile_xy_to_tile_pkey[tile_x, tile_y] = tile_pkey
         tile_pkey_to_xy[tile_pkey] = (tile_x, tile_y)
         tile_pkey_to_tile_type_name[tile_pkey] = tile_type_name
+
+    wire_in_tile_pkey_has_pip = set()
+    for (wire_in_tile_pkey, ) in cur.execute("""
+SELECT pkey FROM wire_in_tile WHERE has_pip_from;"""):
+        wire_in_tile_pkey_has_pip.add(wire_in_tile_pkey)
 
     def check_node(node_pkey, current_node_elements):
         cur = lookup.conn.cursor()
@@ -94,6 +106,7 @@ INNER JOIN tile_type ON tile.tile_type_pkey = tile_type.pkey;"""):
                 any_errors = True
 
         current_node_elements_set = set(current_node_elements)
+        leftover_node_elements = set(current_node_elements)
 
         node_tile_type = tile_pkey_to_tile_type_name[node_tile_pkey]
         if node_tile_type not in tile_type_to_node_to_wires_lookup:
@@ -105,10 +118,27 @@ INNER JOIN tile_type ON tile.tile_type_pkey = tile_type.pkey;"""):
                     node_tile_pkey, node_x, node_y, node_wire_in_tile_pkey):
             tile_pkey = tile_xy_to_tile_pkey[wire_x, wire_y]
             assert (tile_pkey, wire_in_tile_pkey) in current_node_elements_set
+            leftover_node_elements.remove((tile_pkey, wire_in_tile_pkey))
 
-            # FIXME: This only confirms that all wires from the lookup are
-            # part of the node.  This does not confirm that all wires that
-            # should be part of this node are.
+        assert len(leftover_node_elements) == 0
+
+        # Check pip only wires.
+        pip_node_elements = set()
+
+        if node_tile_type not in tile_type_to_node_to_pip_wires_lookup:
+            tile_type_to_node_to_pip_wires_lookup[
+                node_tile_type] = read_tile_type_n2w_pips_only(node_tile_type)
+
+        for wire_x, wire_y, wire_in_tile_pkey in tile_type_to_node_to_pip_wires_lookup[
+                node_tile_type].get_wires_for_node(
+                    node_tile_pkey, node_x, node_y, node_wire_in_tile_pkey):
+            tile_pkey = tile_xy_to_tile_pkey[wire_x, wire_y]
+            assert (tile_pkey, wire_in_tile_pkey) in current_node_elements_set
+            pip_node_elements.add((tile_pkey, wire_in_tile_pkey))
+
+        for _, wire_in_tile_pkey in (
+                current_node_elements_set - pip_node_elements):
+            assert wire_in_tile_pkey not in wire_in_tile_pkey_has_pip
 
         return any_errors
 
