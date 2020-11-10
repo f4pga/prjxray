@@ -101,16 +101,27 @@ write_bitstream -force design.bit
 
 set fp [open params.json "w"]
 puts $fp "\["
-foreach cell [get_cells -hierarchical -filter {REF_NAME == MMCME2_ADV}] {
+set cells [get_cells -hierarchical -filter {REF_NAME == MMCME2_ADV}]
+set i [llength $cells]
+foreach cell $cells {
     puts $fp " {"
         puts $fp "   \"tile\": \"[get_tiles -of [get_sites -of $cell]]\","
         puts $fp "   \"site\": \"[get_sites -of $cell]\","
         puts $fp "   \"params\": {"
-            foreach prop [list_property $cell] {
-                puts $fp "    \"$prop\": \"[get_property $prop $cell]\","
+            set props [list_property $cell]
+            set j [llength $props]
+            foreach prop $props {
+                set str "    \"$prop\": \"[get_property $prop $cell]\""
+                incr j -1
+                if {$j != 0} {append str ","}
+                puts $fp $str
             }
         puts $fp "   }"
-    puts $fp " },"
+
+    set str " }"
+    incr i -1
+    if {$i != 0} {append str ","}
+    puts $fp $str
 
 }
 puts $fp "\]"

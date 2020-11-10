@@ -22,14 +22,16 @@ def bitfilter(frame, word):
     return True
 
 
-def bus_tags(segmk, ps, site):
+def bus_tags(segmk, ps, all_params, site):
     segmk.add_site_tag(site, 'IN_USE', ps['active'])
 
     if not ps['active']:
         return
 
-    for k in ps:
-        segmk.add_site_tag(site, 'param_' + k + '_' + str(ps[k]), 1)
+    params = all_params[site]["params"]
+
+    #for k in ps:
+    #    segmk.add_site_tag(site, 'param_' + k + '_' + str(ps[k]), 1)
 
     for reg, invert in [
         ('RST', 1),
@@ -51,86 +53,15 @@ def bus_tags(segmk, ps, site):
         elif verilog.unquote(ps['BANDWIDTH']) == 'LOW':
             segmk.add_site_tag(site, 'BANDWIDTH.' + opt, 0)
 
-    for opt in ['ZHOLD', 'BUF_IN', 'EXTERNAL', 'INTERNAL']:
-        continue
+    # "INTERNAL" compensation conflicts with the CLKFBOUT2IN->CLKFBIN PIP.
+    # There is no telling which of these two is actually controlled by those
+    # bits. It is better to leave them for the PIP.
+    COMPENSATION_OPTS = ['ZHOLD', 'BUF_IN', 'EXTERNAL']
 
-        opt_match = verilog.unquote(ps['COMPENSATION']) == opt
-
-        if ps['clkfbin_conn'] == '':
-            segmk.add_site_tag(site, 'COMP.NOFB_' + opt, opt_match)
-            segmk.add_site_tag(site, 'COMP.ZNOFB_' + opt, opt_match)
-            continue
-
-        for conn in ['clk', 'clkfbout_mult_BUFG_' + ps['site'],
-                     'clkfbout_mult_' + ps['site']]:
-            conn_match = ps['clkfbin_conn'] == conn
-            segmk.add_site_tag(
-                site, 'COMP.' + opt + '_' + conn + '_' + ps['site'], opt_match
-                and conn_match)
-            segmk.add_site_tag(
-                site, 'COMP.Z' + opt + '_' + conn + '_' + ps['site'],
-                not opt_match and conn_match)
-            segmk.add_site_tag(
-                site, 'COMP.Z' + opt + '_Z' + conn + '_' + ps['site'],
-                not opt_match and not conn_match)
-            segmk.add_site_tag(
-                site, 'COMP.' + opt + '_Z' + conn + '_' + ps['site'], opt_match
-                and not conn_match)
-
-    #bufg_on_clkin = \
-    #        'BUFG' in ps['clkin1_conn'] or \
-    #        'BUFG' in ps['clkin2_conn']
-
-    # This one is in conflict with some clock routing bits.
-    #    match = verilog.unquote(ps['COMPENSATION']) in ['BUF_IN', 'EXTERNAL']
-    #    if not match:
-    #        if verilog.unquote(ps['COMPENSATION']) == 'ZHOLD' and bufg_on_clkin:
-    #            match = True
-    #    segmk.add_site_tag(
-    #        site, 'COMPENSATION.BUF_IN_OR_EXTERNAL_OR_ZHOLD_CLKIN_BUF', match)
-
-    #match = verilog.unquote(ps['COMPENSATION']) in ['ZHOLD']
-    #segmk.add_site_tag(
-    #    site, 'COMPENSATION.Z_ZHOLD_OR_CLKIN_BUF', not match
-    #    or (match and bufg_on_clkin))
-    #segmk.add_site_tag(
-    #        site, 'COMPENSATION.ZHOLD_NO_CLKIN_BUF', match and \
-    #                not bufg_on_clkin
-    #                )
-    #segmk.add_site_tag(
-    #        site, 'COMPENSATION.ZHOLD_NO_CLKIN_BUF_NO_TOP', match and \
-    #                not bufg_on_clkin and \
-    #                site != "PLLE2_ADV_X0Y3" and site != "PLLE2_ADV_X0Y0"
-    #                )
-    #segmk.add_site_tag(
-    #        site, 'COMP.ZHOLD_NO_CLKIN_BUF_TOP', match and \
-    #                not bufg_on_clkin and \
-    #                (site == "PLLE2_ADV_X0Y3" or site == "PLLE2_ADV_X0Y0")
-    #                )
-
-    # No INTERNAL as it has conflicting bits
-    #for opt in ['ZHOLD', 'BUF_IN', 'EXTERNAL']:
-    #    if opt in ['BUF_IN', 'EXTERNAL']:
-    #        if ps['clkfbin_conn'] not in ['', 'clk']:
-    #            continue
-    #
-    #    if site == "PLLE2_ADV_X0Y2" and opt == 'ZHOLD':
-    #        segmk.add_site_tag(
-    #            site, 'TOP.COMPENSATION.' + opt,
-    #            verilog.unquote(ps['COMPENSATION']) == opt)
-    #    else:
-    #        segmk.add_site_tag(
-    #            site, 'COMPENSATION.' + opt,
-    #            verilog.unquote(ps['COMPENSATION']) == opt)
-    #    segmk.add_site_tag(
-    #        site, 'COMPENSATION.Z_' + opt,
-    #        verilog.unquote(ps['COMPENSATION']) != opt)
-
-
-# This one has bits that are in conflict with clock routing
-#    segmk.add_site_tag(
-#        site, 'COMPENSATION.INTERNAL',
-#        verilog.unquote(ps['COMPENSATION']) in ['INTERNAL'])
+    for opt in COMPENSATION_OPTS:
+        val = params["COMPENSATION"] == opt
+        segmk.add_site_tag(site, "COMP.{}".format(opt), val)
+        segmk.add_site_tag(site, "COMP.Z_{}".format(opt), not val)
 
     opt = (verilog.unquote(ps["SS_EN"]) == "TRUE")
     segmk.add_site_tag(site, "SS_EN", opt)
@@ -178,12 +109,17 @@ def run():
 
     segmk = Segmaker("design.bits")
 
+    print("Loading params")
+    f = open("params.json")
+    params = json.load(f)
+    params = {p["site"]: p for p in params}
+
     print("Loading tags")
     f = open('params.jl', 'r')
     f.readline()
     for l in f:
         j = json.loads(l)
-        bus_tags(segmk, j, j['site'])
+        bus_tags(segmk, j, params, j['site'])
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()
