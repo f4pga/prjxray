@@ -218,15 +218,6 @@ def main():
             tags_to_mask = [t for t in segbits.keys() if t.startswith(prefix)]
             mask_out_bits(segbits, segbits[tag], tags_to_mask)
 
-    tags_to_remove = set()
-    for tag, bits in segbits.items():
-        if 'REBUF' in tag and 'ACTIVE' not in tag:
-            # FIXME: Removing REBUF pips for now.
-            tags_to_remove.add(tag)
-
-    for tag in tags_to_remove:
-        del segbits[tag]
-
     for tag in segbits.keys():
         if tag.endswith("_ACTIVE") and 'FREQ_BB' in tag:
             for idx in range(4):
