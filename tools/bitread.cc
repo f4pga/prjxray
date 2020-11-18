@@ -54,6 +54,10 @@ DEFINE_string(part_file, "", "YAML file describing a Xilinx part");
 DEFINE_string(architecture,
               "Series7",
               "Architecture of the provided bitstream");
+DEFINE_string(
+    aux,
+    "",
+    "write machine-readable output file with auxiliary bitstream data");
 
 namespace xilinx = prjxray::xilinx;
 
@@ -113,6 +117,25 @@ struct BitReader {
 			}
 		} else {
 			fprintf(f, "\n");
+		}
+
+		if (!FLAGS_aux.empty()) {
+			FILE* aux_file = fopen(FLAGS_aux.c_str(), "w");
+			if (aux_file == nullptr) {
+				printf(
+				    "Can't open aux output file '%s' for "
+				    "writing!\n",
+				    FLAGS_aux.c_str());
+				return 1;
+			}
+			// Extract and decode header information as in RBT file
+			xilinx::BitstreamReader<ArchType>::ExtractHeader(
+			    bytes_, aux_file);
+			// Extract FPGA configuration logic information
+			reader->ExtractFpgaConfigurationLogicData(aux_file);
+			// Extract configuration frames' addresses
+			config->ExtractFrameAddresses(aux_file);
+			fclose(aux_file);
 		}
 
 		std::vector<std::vector<bool>> pgmdata;

@@ -68,6 +68,14 @@ class BitstreamReader {
 	static absl::optional<BitstreamReader<ArchType>> InitWithBytes(
 	    T bitstream);
 
+	// Extract information from bitstream necessary to reconstruct RBT
+	// header and add it to the AUX data
+	template <typename T>
+	static void ExtractHeader(T bitstream, FILE* aux_fp);
+
+	// Extract configuration logic data and add to the AUX data
+	void ExtractFpgaConfigurationLogicData(FILE* aux_fp);
+
 	const std::vector<uint32_t>& words() { return words_; };
 
 	// Returns an iterator that yields `ConfigurationPackets`
@@ -77,9 +85,60 @@ class BitstreamReader {
 
        private:
 	static std::array<uint8_t, 4> kSyncWord;
+	const std::vector<uint32_t> kWcfgCmd = {0x30008001, 0x1};
+	const std::vector<uint32_t> kNullCmd = {0x30008001, 0x0};
 
 	std::vector<uint32_t> words_;
 };
+
+// Extract FPGA configuration logic information
+template <typename ArchType>
+void BitstreamReader<ArchType>::ExtractFpgaConfigurationLogicData(
+    FILE* aux_fp) {
+	// Get the data before the first FDRI_WRITE command packet
+	const auto fpga_conf_end = std::search(
+	    words_.cbegin(), words_.cend(), kWcfgCmd.cbegin(), kWcfgCmd.cend());
+	fprintf(aux_fp, "FPGA configuration logic prefix: ");
+	for (auto it = words_.cbegin(); it != fpga_conf_end; ++it) {
+		fprintf(aux_fp, "%08X ", *it);
+	}
+	fseek(aux_fp, -1, SEEK_CUR);
+	fprintf(aux_fp, "\n");
+
+	// Get the data after the last Null Command packet
+	const auto last_null_cmd = std::find_end(
+	    words_.cbegin(), words_.cend(), kNullCmd.cbegin(), kNullCmd.cend());
+	fprintf(aux_fp, "FPGA configuration logic suffix: ");
+	for (auto it = last_null_cmd; it != words_.cend(); ++it) {
+		fprintf(aux_fp, "%08X ", *it);
+	}
+	fseek(aux_fp, -1, SEEK_CUR);
+	fprintf(aux_fp, "\n");
+}
+
+template <typename ArchType>
+template <typename T>
+void BitstreamReader<ArchType>::ExtractHeader(T bitstream, FILE* aux_fp) {
+	// If this is really a Xilinx bitstream, there will be a sync
+	// word somewhere toward the beginning.
+	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),
+	                            kSyncWord.begin(), kSyncWord.end());
+	if (sync_pos == bitstream.end()) {
+		return;
+	}
+	sync_pos += kSyncWord.size();
+	// Wrap the provided container in a span that strips off the preamble.
+	absl::Span<typename T::value_type> bitstream_span(bitstream);
+	auto header_packets =
+	    bitstream_span.subspan(0, sync_pos - bitstream.begin());
+
+	fprintf(aux_fp, "Header bytes: ");
+	for (auto& word : header_packets) {
+		fprintf(aux_fp, "%02X ", word);
+	}
+	fseek(aux_fp, -1, SEEK_CUR);
+	fprintf(aux_fp, "\n");
+}
 
 template <typename ArchType>
 template <typename T>

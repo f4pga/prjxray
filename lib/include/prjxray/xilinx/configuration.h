@@ -68,6 +68,7 @@ class Configuration {
 
 	const typename ArchType::Part& part() const { return part_; }
 	const FrameMap& frames() const { return frames_; }
+	void ExtractFrameAddresses(FILE* fp);
 
        private:
 	typename ArchType::Part part_;
@@ -356,6 +357,19 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 	}
 
 	return Configuration(part, frames);
+}
+
+template <typename ArchType>
+void Configuration<ArchType>::ExtractFrameAddresses(FILE* fp) {
+	fprintf(fp, "Frame addresses in bitstream: ");
+	for (auto frame = frames_.begin(); frame != frames_.end(); ++frame) {
+		fprintf(fp, "%08X", (int)frame->first);
+		if (std::next(frame) != frames_.end()) {
+			fprintf(fp, " ");
+		} else {
+			fprintf(fp, "\n");
+		}
+	}
 }
 
 }  // namespace xilinx
