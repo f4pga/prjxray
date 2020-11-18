@@ -61,7 +61,10 @@ test-cpp:
 	cd build && ctest --no-compress-output -T Test -C RelWithDebInfo --output-on-failure
 	xsltproc .github/kokoro/ctest2junit.xsl build/Testing/*/Test.xml > build/cpp_test_results.xml
 
-.PHONY: test test-py test-cpp
+test-tools:
+	$(MAKE) -f Makefile.tools_tests
+
+.PHONY: test test-py test-cpp test-tools
 
 # Run HTML test
 # ------------------------
@@ -73,7 +76,7 @@ test-htmlgen:
 
 # Auto formatting of code.
 # ------------------------
-FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*') -and -not -name *.bit
+FORMAT_EXCLUDE = $(foreach x,$(ALL_EXCLUDE),-and -not -path './$(x)/*') -and -not -name *.bit -and -not -name *.tar.gz
 
 CLANG_FORMAT ?= clang-format-5.0
 format-cpp:
@@ -100,7 +103,7 @@ WS_CMD = sed -i '\''s@\s\+$$@@g'\''
 # xargs later) is a file, and not a directory or link.  Also filters out .bit
 # files as these are the only binary files currently tracked by Git and we don't
 # want to inadvertently change these at all.
-WS_FILTER = [ -f {} -a ! -L {} ] && [[ {} != *.bit ]]
+WS_FILTER = [ -f {} -a ! -L {} ] && [[ {} != *.bit ]] && [[ {} != *.tar.gz ]]
 
 # For every file piped to $(WS_FORMAT) apply the filter and perform the command,
 # if a file does not match the filter, just returns true.
