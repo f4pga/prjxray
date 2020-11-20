@@ -202,8 +202,7 @@ can not do this alone, **we need your help**!
 
 ## Adding a new part to an existing family
 
-We have written a [detailed guide](./NEWPART.md) that walks through the process
-of adding a new part to an existing family.
+We have written a [detailed guide](https://symbiflow.readthedocs.io/projects/prjxray/en/latest/db_dev_process/newpart.html) that walks through the process of adding a new part to an existing family.
 
 ## TODO List
 

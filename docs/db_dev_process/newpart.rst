@@ -45,8 +45,8 @@ Step 1
 
 Follow the Project X-Ray developer setup instructions in the
 `documentation <https://symbiflow.readthedocs.io/en/latest/prjxray/docs/db_dev_process/readme.html>`__,
-up through Step 7, Option 1. That is, source the
-``./download-latest-db.sh`` script. This script will clone the official
+up through Step 7 and choose Option 1 (invoke the
+``./download-latest-db.sh`` script). This script will clone the official
 prjxray-db database under ``database/``. The following steps will make
 changes under this directory. You may want to put these changes on your
 own fork of ``prjxray-db`` for testing. This is explained at the end,
