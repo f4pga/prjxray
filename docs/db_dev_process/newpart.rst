@@ -280,12 +280,12 @@ Push to GitHub:
    git push origin <new_branch_name>
 
 Then make a pull request. Navigate to the GitHub page for your
-``prjxray`` fork/branch, and click the “New pull request” button. Just
-making the request will kick off continuous integration tests. Watch the
-results and fix any issues.
+``prjxray`` fork/branch, and click the “New pull request” button. 
+Making the pull request will kick off continuous integration tests. 
+Watch the results and fix any issues.
 
 Database Updates
-----------------
+~~~~~~~~~~~~~~~~
 
 The process above (steps 4 and 5) will create some new files and modify
 some existing files under database/, which is a different repo,
@@ -303,7 +303,7 @@ follow one of the approaches suggested in the checked solution of this
 StackOverflow
 `post <https://stackoverflow.com/questions/25545613/how-can-i-push-to-my-fork-from-a-clone-of-the-original-repo>`__.
 
-You are NEVER going to send a PR on prjxray-db. It is always rebuilt
+You are NEVER going to send a pull request on `prjxray-db`. The database is always rebuilt
 from scratch. After your changes on prjxray are merged, they will
 reflected in the next prjxray-db rebuild. The changes submitted to your
 prjxray-db fork are only for your own testing.
