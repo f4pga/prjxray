@@ -280,8 +280,8 @@ Push to GitHub:
    git push origin <new_branch_name>
 
 Then make a pull request. Navigate to the GitHub page for your
-``prjxray`` fork/branch, and click the “New pull request” button. 
-Making the pull request will kick off continuous integration tests. 
+``prjxray`` fork/branch, and click the “New pull request” button.
+Making the pull request will kick off continuous integration tests.
 Watch the results and fix any issues.
 
 Database Updates
