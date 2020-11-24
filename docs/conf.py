@@ -30,6 +30,8 @@ import recommonmark
 #
 import os
 import sys
+import subprocess
+
 sys.path.insert(0, os.path.abspath('.'))
 from markdown_code_symlinks import LinkParser, MarkdownSymlinksDomain
 
@@ -86,7 +88,6 @@ if not on_rtd:
 else:
     docs_dir = os.path.abspath(os.path.dirname(__file__))
     print("Docs dir is:", docs_dir)
-    import subprocess
     subprocess.call('git fetch origin --unshallow', cwd=docs_dir, shell=True)
     subprocess.check_call('git fetch origin --tags', cwd=docs_dir, shell=True)
     subprocess.check_call('make links', cwd=docs_dir, shell=True)
@@ -268,6 +269,9 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 
 def setup(app):
+    # Generate links for markdown-code-symlinks
+    subprocess.check_call("make links", shell=True)
+
     github_code_repo = 'https://github.com/SymbiFlow/prjxray/'
     github_code_branch = 'blob/master/'
 
