@@ -45,7 +45,7 @@ class NodeModel():
 
         self.nodes = None
 
-        self.wire_to_node_map = {}
+        self.wire_to_node_map = None
 
         if progressbar is None:
             self.progressbar = lambda x: x
@@ -143,6 +143,8 @@ class NodeModel():
         return self.nodes[tile, wire]
 
     def _build_wire_to_node_map(self):
+        self.wire_to_node_map = {}
+
         if self.nodes is None:
             self._build_nodes()
 
@@ -153,7 +155,7 @@ class NodeModel():
 
     def get_node_for_wire(self, tile, wire):
         """ Get node for specified tile and wire. """
-        if not self.wire_to_node_map:
+        if self.wire_to_node_map is None:
             self._build_wire_to_node_map()
 
         return self.wire_to_node_map[tile, wire]
