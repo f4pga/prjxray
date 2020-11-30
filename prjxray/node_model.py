@@ -143,6 +143,11 @@ class NodeModel():
         return self.nodes[tile, wire]
 
     def _build_wire_to_node_map(self):
+        self.wire_to_node_map = {}
+
+        if self.nodes is None:
+            self._build_nodes()
+
         for node, wires in self.nodes.items():
             for tile_wire in wires:
                 assert tile_wire not in self.wire_to_node_map
