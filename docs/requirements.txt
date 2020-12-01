@@ -1,8 +1,7 @@
 sphinx_materialdesign_theme
 
 docutils
-# Disabling direct sphinx because of https://github.com/pypa/pip/issues/9031
-# sphinx
+sphinx>=3.0
 sphinx-autobuild
 
 breathe
