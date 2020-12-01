@@ -68,7 +68,7 @@ class Configuration {
 
 	const typename ArchType::Part& part() const { return part_; }
 	const FrameMap& frames() const { return frames_; }
-	void ExtractFrameAddresses(FILE* fp);
+	void PrintFrameAddresses(FILE* fp);
 
        private:
 	typename ArchType::Part part_;
@@ -360,7 +360,7 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 }
 
 template <typename ArchType>
-void Configuration<ArchType>::ExtractFrameAddresses(FILE* fp) {
+void Configuration<ArchType>::PrintFrameAddresses(FILE* fp) {
 	fprintf(fp, "Frame addresses in bitstream: ");
 	for (auto frame = frames_.begin(); frame != frames_.end(); ++frame) {
 		fprintf(fp, "%08X", (int)frame->first);

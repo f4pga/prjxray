@@ -129,12 +129,12 @@ struct BitReader {
 				return 1;
 			}
 			// Extract and decode header information as in RBT file
-			xilinx::BitstreamReader<ArchType>::ExtractHeader(
+			xilinx::BitstreamReader<ArchType>::PrintHeader(
 			    bytes_, aux_file);
 			// Extract FPGA configuration logic information
-			reader->ExtractFpgaConfigurationLogicData(aux_file);
+			reader->PrintFpgaConfigurationLogicData(aux_file);
 			// Extract configuration frames' addresses
-			config->ExtractFrameAddresses(aux_file);
+			config->PrintFrameAddresses(aux_file);
 			fclose(aux_file);
 		}
 

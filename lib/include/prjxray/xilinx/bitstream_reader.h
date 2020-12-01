@@ -71,10 +71,10 @@ class BitstreamReader {
 	// Extract information from bitstream necessary to reconstruct RBT
 	// header and add it to the AUX data
 	template <typename T>
-	static void ExtractHeader(T bitstream, FILE* aux_fp);
+	static void PrintHeader(T bitstream, FILE* aux_fp);
 
 	// Extract configuration logic data and add to the AUX data
-	void ExtractFpgaConfigurationLogicData(FILE* aux_fp);
+	void PrintFpgaConfigurationLogicData(FILE* aux_fp);
 
 	const std::vector<uint32_t>& words() { return words_; };
 
@@ -93,7 +93,7 @@ class BitstreamReader {
 
 // Extract FPGA configuration logic information
 template <typename ArchType>
-void BitstreamReader<ArchType>::ExtractFpgaConfigurationLogicData(
+void BitstreamReader<ArchType>::PrintFpgaConfigurationLogicData(
     FILE* aux_fp) {
 	// Get the data before the first FDRI_WRITE command packet
 	const auto fpga_conf_end = std::search(
@@ -118,7 +118,7 @@ void BitstreamReader<ArchType>::ExtractFpgaConfigurationLogicData(
 
 template <typename ArchType>
 template <typename T>
-void BitstreamReader<ArchType>::ExtractHeader(T bitstream, FILE* aux_fp) {
+void BitstreamReader<ArchType>::PrintHeader(T bitstream, FILE* aux_fp) {
 	// If this is really a Xilinx bitstream, there will be a sync
 	// word somewhere toward the beginning.
 	auto sync_pos = std::search(bitstream.begin(), bitstream.end(),
