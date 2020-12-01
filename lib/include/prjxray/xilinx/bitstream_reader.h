@@ -84,9 +84,9 @@ class BitstreamReader {
 	iterator end();
 
        private:
-	static std::array<uint8_t, 4> kSyncWord;
-	const std::vector<uint32_t> kWcfgCmd = {0x30008001, 0x1};
-	const std::vector<uint32_t> kNullCmd = {0x30008001, 0x0};
+	static const std::array<uint8_t, 4> kSyncWord;
+	static const std::array<uint32_t, 2> kWcfgCmd;
+	static const std::array<uint32_t, 2> kNullCmd;
 
 	std::vector<uint32_t> words_;
 };
@@ -170,8 +170,18 @@ BitstreamReader<ArchType>::InitWithBytes(T bitstream) {
 
 // Sync word as specified in UG470 page 81
 template <typename ArchType>
-std::array<uint8_t, 4> BitstreamReader<ArchType>::kSyncWord{0xAA, 0x99, 0x55,
+const std::array<uint8_t, 4> BitstreamReader<ArchType>::kSyncWord{0xAA, 0x99, 0x55,
                                                             0x66};
+
+// Writing the WCFG(0x1) command in type 1 packet with 1 word to the CMD register (0x30008001)
+// Refer to UG470 page 110
+template <typename ArchType>
+const std::array<uint32_t, 2> BitstreamReader<ArchType>::kWcfgCmd = {0x30008001, 0x1};
+
+// Writing the NULL(0x0) command in type 1 packet with 1 word to the CMD register (0x30008001)
+// Refer to UG470 page 110
+template <typename ArchType>
+const std::array<uint32_t, 2> BitstreamReader<ArchType>::kNullCmd = {0x30008001, 0x0};
 
 template <typename ArchType>
 typename BitstreamReader<ArchType>::iterator
