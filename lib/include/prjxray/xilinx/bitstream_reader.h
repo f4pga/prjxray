@@ -98,21 +98,19 @@ void BitstreamReader<ArchType>::PrintFpgaConfigurationLogicData(
 	// Get the data before the first FDRI_WRITE command packet
 	const auto fpga_conf_end = std::search(
 	    words_.cbegin(), words_.cend(), kWcfgCmd.cbegin(), kWcfgCmd.cend());
-	fprintf(aux_fp, "FPGA configuration logic prefix: ");
+	fprintf(aux_fp, "FPGA configuration logic prefix:");
 	for (auto it = words_.cbegin(); it != fpga_conf_end; ++it) {
-		fprintf(aux_fp, "%08X ", *it);
+		fprintf(aux_fp, " %08X", *it);
 	}
-	fseek(aux_fp, -1, SEEK_CUR);
 	fprintf(aux_fp, "\n");
 
 	// Get the data after the last Null Command packet
 	const auto last_null_cmd = std::find_end(
 	    words_.cbegin(), words_.cend(), kNullCmd.cbegin(), kNullCmd.cend());
-	fprintf(aux_fp, "FPGA configuration logic suffix: ");
+	fprintf(aux_fp, "FPGA configuration logic suffix:");
 	for (auto it = last_null_cmd; it != words_.cend(); ++it) {
-		fprintf(aux_fp, "%08X ", *it);
+		fprintf(aux_fp, " %08X", *it);
 	}
-	fseek(aux_fp, -1, SEEK_CUR);
 	fprintf(aux_fp, "\n");
 }
 
@@ -132,11 +130,10 @@ void BitstreamReader<ArchType>::PrintHeader(T bitstream, FILE* aux_fp) {
 	auto header_packets =
 	    bitstream_span.subspan(0, sync_pos - bitstream.begin());
 
-	fprintf(aux_fp, "Header bytes: ");
+	fprintf(aux_fp, "Header bytes:");
 	for (auto& word : header_packets) {
-		fprintf(aux_fp, "%02X ", word);
+		fprintf(aux_fp, " %02X", word);
 	}
-	fseek(aux_fp, -1, SEEK_CUR);
 	fprintf(aux_fp, "\n");
 }
 
