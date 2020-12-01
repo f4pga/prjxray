@@ -4,7 +4,7 @@ BITS2RBT = build/tools/bits2rbt/bits2rbt
 TEST_DATA_PATH = lib/test_data
 
 #FIXME Uncomment bits2rbt_bram_xc7 once https://github.com/SymbiFlow/prjxray/issues/1285 is fixed
-BITS2RBT_TESTS = bits2rbt_xc7 bits2rbt_bram_xc7
+BITS2RBT_TESTS = bits2rbt_xc7 #bits2rbt_bram_xc7
 
 TESTS = $(BITS2RBT_TESTS)
 
