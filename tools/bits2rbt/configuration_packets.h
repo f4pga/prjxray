@@ -23,6 +23,7 @@ class ConfigurationPackets {
        private:
 	using ConfigurationFrame = std::pair<uint32_t, std::vector<uint32_t>>;
 	using ConfigurationFrames = std::map<uint32_t, std::vector<uint32_t>>;
+	// Refer to UG470 page 109 for address of configuration registers and commands
 	const uint32_t kCmdWrite = 0x30008000;
 	const uint32_t kFdriWrite = 0x30004000;
 	const uint32_t kFarWrite = 0x30002000;
@@ -32,7 +33,8 @@ class ConfigurationPackets {
 	const uint32_t kFdriReg = 0x2;
 	const uint32_t kCmdReg = 0x4;
 	const uint32_t kWcfgCmd = 0x1;
-	const std::vector<uint32_t> kRCrcCmd = {0x30008001, 0x7};
+	// Writing the RCRC(0x7) command in type 1 packet with 1 word to the CMD register (0x30008001)
+	const std::array<uint32_t, 2> kRCrcCmd = {0x30008001, 0x7};
 	size_t words_per_frame_;
 	std::string architecture_;
 	ConfigurationFrames configuration_data_packets_;
