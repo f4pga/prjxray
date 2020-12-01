@@ -48,7 +48,7 @@ install:
 # ------------------------
 TEST_EXCLUDE = $(foreach x,$(ALL_EXCLUDE) docs fuzzers minitests experiments,--ignore $(x))
 
-test: test-py test-cpp
+test: test-py test-cpp test-tools
 	@true
 
 test-py:
