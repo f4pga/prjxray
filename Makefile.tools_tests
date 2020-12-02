@@ -1,0 +1,45 @@
+SHELL=/bin/bash
+BITREAD = build/tools/bitread
+BITS2RBT = build/tools/bits2rbt/bits2rbt
+TEST_DATA_PATH = lib/test_data
+
+#FIXME Uncomment bits2rbt_bram_xc7 once https://github.com/SymbiFlow/prjxray/issues/1285 is fixed
+BITS2RBT_TESTS = bits2rbt_xc7 #bits2rbt_bram_xc7
+
+TESTS = $(BITS2RBT_TESTS)
+
+bits2rbt_xc7_ARGS_1 = -part_file build/Series7/part.yaml -architecture Series7 -y -o build/xc7.bits -aux build/xc7.aux build/Series7/design.bit
+bits2rbt_xc7_ARGS_2 = -arch Series7 -aux build/xc7.aux -o build/xc7.rbt build/xc7.bits
+bits2rbt_xc7_TEST = diff <(tail -n +8 build/Series7/design.rbt) <(tail -n +8 build/xc7.rbt)
+
+bits2rbt_bram_xc7_ARGS_1 = -part_file build/Series7/part.yaml -architecture Series7 -y -o build/bram_xc7.bits -aux build/bram_xc7.aux build/Series7/bram.bit
+bits2rbt_bram_xc7_ARGS_2 = -arch Series7 -aux build/bram_xc7.aux -o build/bram_xc7.rbt build/bram_xc7.bits
+bits2rbt_bram_xc7_TEST = diff <(tail -n +8 build/Series7/bram.rbt) <(tail -n +8 build/bram_xc7.rbt)
+
+all: $(TESTS)
+
+test_data: $(TEST_DATA_PATH)/ToolsTestData.tar.gz
+	@echo "Unpacking test data"
+	tar -zxf $< -C build
+
+define bitread_test_tpl =
+$(1): $(2) $(3) test_data
+	@echo "Started test $(1)"
+	$(2) $$($(1)_ARGS_1) > /dev/null && $(3) $$($(1)_ARGS_2) > /dev/null && $$($(1)_TEST); \
+	RETVAL=$$$$? ; \
+	if [ $$$$RETVAL -eq 0 ]; then \
+		echo "$(1) PASS"; \
+		true; \
+	else \
+		echo "$(1) FAIL"; \
+		false; \
+	fi
+
+$(1)_clean:
+	rm -rf build/*.frm build/*.aux build/*.bits build/*.rbt
+
+endef
+$(foreach test,$(BITS2RBT_TESTS),$(eval $(call bitread_test_tpl,$(test),$(BITREAD),$(BITS2RBT))))
+
+clean: $(foreach test,$(TESTS),$(test)_clean)
+	@true
