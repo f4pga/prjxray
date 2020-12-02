@@ -34,7 +34,7 @@ class ConfigurationPackets {
 	const uint32_t kCmdReg = 0x4;
 	const uint32_t kWcfgCmd = 0x1;
 	// Writing the RCRC(0x7) command in type 1 packet with 1 word to the CMD register (0x30008001)
-	const std::array<uint32_t, 2> kRCrcCmd = {0x30008001, 0x7};
+	const std::array<uint32_t, 2> kRCrcCmd = {{0x30008001, 0x7}};
 	size_t words_per_frame_;
 	std::string architecture_;
 	ConfigurationFrames configuration_data_packets_;
