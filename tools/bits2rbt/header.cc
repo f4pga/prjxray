@@ -42,7 +42,7 @@ Header::Header(const std::string& line,
 std::string Header::GetDate() {
 	int year, month, day, hour, min, sec;
 	std::replace_if(date_.begin(), date_.end(),
-	    		[](char c) { return c == '/' or c == ':'; }, ' ');
+	                [](char c) { return c == '/' or c == ':'; }, ' ');
 	std::istringstream(date_) >> year >> month >> day >> hour >> min >> sec;
 	std::tm time_raw = {sec, min, hour, day, month - 1, year - 1900};
 	time_t time = mktime(&time_raw);
