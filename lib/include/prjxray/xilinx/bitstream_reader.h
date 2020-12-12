@@ -93,8 +93,7 @@ class BitstreamReader {
 
 // Extract FPGA configuration logic information
 template <typename ArchType>
-void BitstreamReader<ArchType>::PrintFpgaConfigurationLogicData(
-    FILE* aux_fp) {
+void BitstreamReader<ArchType>::PrintFpgaConfigurationLogicData(FILE* aux_fp) {
 	// Get the data before the first FDRI_WRITE command packet
 	const auto fpga_conf_end = std::search(
 	    words_.cbegin(), words_.cend(), kWcfgCmd.cbegin(), kWcfgCmd.cend());
@@ -167,18 +166,20 @@ BitstreamReader<ArchType>::InitWithBytes(T bitstream) {
 
 // Sync word as specified in UG470 page 81
 template <typename ArchType>
-const std::array<uint8_t, 4> BitstreamReader<ArchType>::kSyncWord{0xAA, 0x99, 0x55,
-                                                            0x66};
+const std::array<uint8_t, 4> BitstreamReader<ArchType>::kSyncWord{0xAA, 0x99,
+                                                                  0x55, 0x66};
 
-// Writing the WCFG(0x1) command in type 1 packet with 1 word to the CMD register (0x30008001)
-// Refer to UG470 page 110
+// Writing the WCFG(0x1) command in type 1 packet with 1 word to the CMD
+// register (0x30008001) Refer to UG470 page 110
 template <typename ArchType>
-const std::array<uint32_t, 2> BitstreamReader<ArchType>::kWcfgCmd = {0x30008001, 0x1};
+const std::array<uint32_t, 2> BitstreamReader<ArchType>::kWcfgCmd = {0x30008001,
+                                                                     0x1};
 
-// Writing the NULL(0x0) command in type 1 packet with 1 word to the CMD register (0x30008001)
-// Refer to UG470 page 110
+// Writing the NULL(0x0) command in type 1 packet with 1 word to the CMD
+// register (0x30008001) Refer to UG470 page 110
 template <typename ArchType>
-const std::array<uint32_t, 2> BitstreamReader<ArchType>::kNullCmd = {0x30008001, 0x0};
+const std::array<uint32_t, 2> BitstreamReader<ArchType>::kNullCmd = {0x30008001,
+                                                                     0x0};
 
 template <typename ArchType>
 typename BitstreamReader<ArchType>::iterator
