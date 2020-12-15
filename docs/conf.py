@@ -30,6 +30,8 @@ import recommonmark
 #
 import os
 import sys
+import subprocess
+
 sys.path.insert(0, os.path.abspath('.'))
 from markdown_code_symlinks import LinkParser, MarkdownSymlinksDomain
 
@@ -37,7 +39,7 @@ from markdown_code_symlinks import LinkParser, MarkdownSymlinksDomain
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-# needs_sphinx = '1.0'
+needs_sphinx = '3.0'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -51,7 +53,8 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'recommonmark'
 ]
 # yapf: enable
 
@@ -86,7 +89,6 @@ if not on_rtd:
 else:
     docs_dir = os.path.abspath(os.path.dirname(__file__))
     print("Docs dir is:", docs_dir)
-    import subprocess
     subprocess.call('git fetch origin --unshallow', cwd=docs_dir, shell=True)
     subprocess.check_call('git fetch origin --tags', cwd=docs_dir, shell=True)
     subprocess.check_call('make links', cwd=docs_dir, shell=True)
@@ -268,6 +270,9 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 
 def setup(app):
+    # Generate links for markdown-code-symlinks
+    subprocess.check_call("make links", shell=True)
+
     github_code_repo = 'https://github.com/SymbiFlow/prjxray/'
     github_code_branch = 'blob/master/'
 
