@@ -23,7 +23,7 @@ def load(f):
         data = data.decode('utf-8')
     # Strip out of !<tags>
     data = re.sub("!<[^>]*>", "", data)
-    return yaml.load(io.StringIO(data))
+    return yaml.safe_load(io.StringIO(data))
 
 
 def tojson(f):
