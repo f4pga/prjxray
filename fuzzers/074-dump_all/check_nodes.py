@@ -59,7 +59,7 @@ def main():
     args = parser.parse_args()
 
     print('{} Reading tilegrid'.format(datetime.datetime.now()))
-    with open(os.path.join(util.get_db_root(), util.get_part(),
+    with open(os.path.join(util.get_db_root(), util.get_fabric(),
                            'tilegrid.json')) as f:
         tilegrid = json.load(f)
         grid = Grid(db=None, tilegrid=tilegrid)

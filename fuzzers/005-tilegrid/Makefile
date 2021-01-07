@@ -44,22 +44,23 @@ else
 TILEGRID_TDB_DEPENDENCIES += dsp_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
-BASICDB_TILEGRID=$(BUILD_FOLDER)/basicdb/${XRAY_PART}/tilegrid.json
+BASICDB_TILEGRID=$(BUILD_FOLDER)/basicdb/${XRAY_FABRIC}/tilegrid.json
 
 database: $(BUILD_FOLDER)/tilegrid.json
 
 pushdb: $(BUILD_FOLDER)/tilegrid.json
-	cp $(BUILD_FOLDER)/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
+	cp $(BUILD_FOLDER)/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_FABRIC}/tilegrid.json
 
 $(BUILD_FOLDER)/tiles/tiles.txt:
 	bash generate.sh $(BUILD_FOLDER)/tiles tiles
 
 ${BASICDB_TILEGRID}: generate.py $(BUILD_FOLDER)/tiles/tiles.txt
-	mkdir -p $(BUILD_FOLDER)/basicdb/${XRAY_PART}
+	mkdir -p $(BUILD_FOLDER)/basicdb/${XRAY_FABRIC}
+	ln -sf $(XRAY_DATABASE_DIR)/$(XRAY_DATABASE)/mapping $(BUILD_FOLDER)/basicdb/
 	cd $(BUILD_FOLDER) && python3 ${FUZDIR}/generate.py \
 		--tiles $(BUILD_DIR)/tiles/tiles.txt \
 		--pin_func $(BUILD_DIR)/tiles/pin_func.txt \
-		--out ${BUILD_DIR}/basicdb/${XRAY_PART}/tilegrid.json
+		--out ${BUILD_DIR}/basicdb/${XRAY_FABRIC}/tilegrid.json
 
 clb/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd clb && $(MAKE)
