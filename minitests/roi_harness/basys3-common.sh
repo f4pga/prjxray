@@ -10,7 +10,7 @@
 source $(dirname ${BASH_SOURCE[0]})/../../settings/artix7_50t.sh
 
 export XRAY_PART=xc7a35tcpg236-1
-export XRAY_EQUIV_PART=xc7a50tfgg484-1
+
 if [ -z "$XRAY_PINCFG" ]; then
 	echo "XRAY_PINCFG not set"
 	return 1
@@ -23,15 +23,6 @@ if [ -z "$XRAY_DOUT_N_LARGE" ]; then
 	echo "XRAY_DOUT_N_LARGE not set"
 	return 1
 fi
-
-# For generating DB
-export XRAY_PIN_00="V17"
-export XRAY_PIN_01="V16"
-export XRAY_PIN_02="W16"
-export XRAY_PIN_03="W17"
-export XRAY_PIN_04="W15"
-export XRAY_PIN_05="V15"
-export XRAY_PIN_06="W14"
 
 # ROI is in the top left
 export XRAY_ROI_LARGE=SLICE_X0Y100:SLICE_X35Y149

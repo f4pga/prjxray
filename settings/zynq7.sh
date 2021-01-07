@@ -27,9 +27,4 @@ export XRAY_ROI_GRID_X2="86"
 export XRAY_ROI_GRID_Y1="105"
 export XRAY_ROI_GRID_Y2="155"
 
-export XRAY_PIN_00="Y9"
-export XRAY_PIN_01="U10"
-export XRAY_PIN_02="N17"
-export XRAY_PIN_03="P18"
-
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
