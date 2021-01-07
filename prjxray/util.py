@@ -12,6 +12,7 @@ import math
 import os
 import random
 import re
+import yaml
 from .roi import Roi
 
 
@@ -29,6 +30,47 @@ def get_part():
     ret = os.getenv("XRAY_PART", None)
 
     return ret
+
+
+def get_fabric():
+    ret = os.getenv("XRAY_FABRIC", None)
+
+    return ret
+
+
+def get_part_information(db_root, part):
+    filename = os.path.join(db_root, "mapping", "parts.yaml")
+    assert os.path.isfile(filename), \
+        "Mapping file {} does not exists".format(filename)
+    with open(filename, 'r') as stream:
+        part_mapping = yaml.load(stream, Loader=yaml.FullLoader)
+    part = part_mapping.get(part, None)
+    assert part, "Part {} not found in {}".format(part, part_mapping)
+    return part
+
+
+def get_part_resources(file_path, part):
+    filename = os.path.join(file_path, "resources.yaml")
+    assert os.path.isfile(filename), \
+        "Mapping file {} does not exists".format(filename)
+    with open(filename, 'r') as stream:
+        res_mapping = yaml.load(stream, Loader=yaml.FullLoader)
+    res = res_mapping.get(part, None)
+    assert res, "Part {} not found in {}".format(part, part_mapping)
+    return res
+
+
+def get_fabric_for_part(db_root, part):
+    filename = os.path.join(db_root, "mapping", "devices.yaml")
+    assert os.path.isfile(filename), \
+        "Mapping file {} does not exists".format(filename)
+    part = get_part_information(db_root, part)
+    with open(filename, 'r') as stream:
+        device_mapping = yaml.load(stream, Loader=yaml.FullLoader)
+    device = device_mapping.get(part['device'], None)
+    assert device, "Device {} not found in {}".format(
+        part['device'], device_mapping)
+    return device['fabric']
 
 
 def roi_xy():

@@ -9,6 +9,7 @@
 #
 # SPDX-License-Identifier: ISC
 import os.path
+import pathlib
 import simplejson as json
 from prjxray import grid
 from prjxray import tile
@@ -16,6 +17,7 @@ from prjxray import tile_segbits
 from prjxray import site_type
 from prjxray import connections
 from prjxray.node_model import NodeModel
+from prjxray.util import get_fabric_for_part
 
 
 def get_available_databases(prjxray_root):
@@ -45,6 +47,8 @@ class Database(object):
     """
         self.db_root = db_root
         self.part = part
+        self.fabric = get_fabric_for_part(db_root, part)
+
         # tilegrid.json JSON object
         self.tilegrid = None
         self.tileconn = None
@@ -129,21 +133,21 @@ class Database(object):
     def _read_tilegrid(self):
         """ Read tilegrid database if not already read. """
         if not self.tilegrid:
-            with open(os.path.join(self.db_root, self.part,
+            with open(os.path.join(self.db_root, self.fabric,
                                    'tilegrid.json')) as f:
                 self.tilegrid = json.load(f)
 
     def _read_tileconn(self):
         """ Read tileconn database if not already read. """
         if not self.tileconn:
-            with open(os.path.join(self.db_root, self.part,
+            with open(os.path.join(self.db_root, self.fabric,
                                    'tileconn.json')) as f:
                 self.tileconn = json.load(f)
 
     def _read_node_wires(self):
         """ Read node wires if not already read. """
         if self.node_wires is None:
-            with open(os.path.join(self.db_root, self.part,
+            with open(os.path.join(self.db_root, self.fabric,
                                    'node_wires.json')) as f:
                 self.node_wires = json.load(f)
 
