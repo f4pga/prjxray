@@ -132,7 +132,7 @@ check-license:
 # Targets related to Project X-Ray databases
 # ------------------------
 
-DATABASES=artix7 kintex7 zynq7
+DATABASES=artix7 spartan7 kintex7 zynq7
 
 define database
 
@@ -173,10 +173,11 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 # --------------------------------------
 
 ARTIX_PARTS=artix7_50t artix7_200t
+SPARTAN_PARTS=spartan7_50
 ZYNQ_PARTS=zynq7010
 KINTEX_PARTS=kintex70t
 
-XRAY_PARTS=${ARTIX_PARTS} ${ZYNQ_PARTS} ${KINTEX_PARTS}
+XRAY_PARTS=${ARTIX_PARTS} ${SPARTAN_PARTS} ${ZYNQ_PARTS} ${KINTEX_PARTS}
 
 define multiple-parts
 
@@ -222,6 +223,14 @@ db-extras-artix7-harness:
 	+source minitests/roi_harness/arty-swbut.sh && \
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/swbut copy
+
+db-extras-spartan7-parts: $(addprefix db-part-only-,$(SPARTAN_PARTS))
+
+db-extras-spartan7-harness:
+	+source settings/spartan7_50.sh && \
+		XRAY_PIN_02=H16 XRAY_PIN_03=H13 XRAY_PIN_04=H14 XRAY_PIN_05=H15 XRAY_PIN_06=G13 \
+		XRAY_PART=xc7s50csga324-1 XRAY_EQUIV_PART=xc7s50fgga484-1 \
+		$(MAKE) -C fuzzers roi_only
 
 db-extras-kintex7-parts:
 	@true
