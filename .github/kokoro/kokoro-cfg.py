@@ -57,11 +57,7 @@ env_vars {
 """
 
 for part in ['artix7', 'kintex7', 'zynq7', 'spartan7']:
-    if part != 'spartan7':
-        script = 'db-full.sh'
-    else:
-        # Emit dummy script for spartan7 for now until it is working.
-        script = 'nothing.sh'
+    script = 'db-full.sh'
 
     with open("continuous-db-%s.cfg" % part, "w") as f:
         f.write(
