@@ -1,0 +1,3 @@
+# device to fabric mapping
+"xc7a200t":
+  fabric: "xc7a200t"
