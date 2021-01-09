@@ -14,6 +14,7 @@
 
 import os, sys, json, re
 from io import StringIO
+from prjxray.util import get_fabric_for_part
 
 
 def mk_get_setting(settings_filename):
@@ -234,9 +235,9 @@ class Tweaks():
         pass
 
 
-def load_tilegrid(db_dir, part, verbose=False, allow_fake=False):
+def load_tilegrid(db_dir, fabric, verbose=False, allow_fake=False):
     print("Loading tilegrid.")
-    with db_open(os.path.join(part, "tilegrid.json"), db_dir) as f:
+    with db_open(os.path.join(fabric, "tilegrid.json"), db_dir) as f:
         data = f.read()
         if not data:
             assert allow_fake, 'No tilegrid.json found'
@@ -983,11 +984,9 @@ def run(settings, output, verbose=False, allow_fake=False):
 
     # Load source data
     dbstate = DBState()
+    fabric = get_fabric_for_part(db_dir, get_setting("XRAY_PART"))
     grid = load_tilegrid(
-        db_dir,
-        get_setting("XRAY_PART"),
-        verbose=verbose,
-        allow_fake=allow_fake)
+        db_dir, fabric, verbose=verbose, allow_fake=allow_fake)
     db_reads(dbstate, db_dir)
 
     # Create pages
