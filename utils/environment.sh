@@ -27,6 +27,9 @@ fi
 export XRAY_PART_YAML="${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/${XRAY_PART}/part.yaml"
 source $XRAY_UTILS_DIR/environment.python.sh
 
+# Set environment to default output and overwrite localisation settings
+export LC_ALL=C
+
 # tools
 export XRAY_GENHEADER="${XRAY_UTILS_DIR}/genheader.sh"
 export XRAY_BITREAD="${XRAY_TOOLS_DIR}/bitread --part_file ${XRAY_PART_YAML}"
