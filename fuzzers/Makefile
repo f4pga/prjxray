@@ -156,6 +156,9 @@ $(eval $(call fuzzer,075-pins,,part))
 ifeq ($(XRAY_DATABASE),zynq7)
 $(eval $(call fuzzer,076-ps7,,all))
 endif
+ifeq ($(XRAY_DATABASE),artix7)
+$(eval $(call fuzzer,061-pcie-conf,005-tilegrid,all))
+endif
 endif
 endif
 $(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid,all))
