@@ -1,0 +1,33 @@
+# part number to device, package and speed grade mapping
+"xc7a200tffg1156-1":
+  device: "xc7a200t"
+  package: "ffg1156"
+  speedgrade: "1"
+"xc7a200tsbg484-1":
+  device: "xc7a200t"
+  package: "sbg484"
+  speedgrade: "1"
+"xc7a100tfgg676-1":
+  device: "xc7a100t"
+  package: "fgg676"
+  speedgrade: "1"
+"xc7a100tcsg324-1":
+  device: "xc7a100t"
+  package: "csg324"
+  speedgrade: "1"
+"xc7a50tfgg484-1":
+  device: "xc7a50t"
+  package: "fgg484"
+  speedgrade: "1"
+"xc7a35tcsg324-1":
+  device: "xc7a35t"
+  package: "csg324"
+  speedgrade: "1"
+"xc7a35tftg256-1":
+  device: "xc7a35t"
+  package: "ftg256"
+  speedgrade: "1"
+"xc7a35tcpg236-1":
+  device: "xc7a35t"
+  package: "cpg236"
+  speedgrade: "1"

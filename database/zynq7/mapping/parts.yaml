@@ -1,0 +1,13 @@
+# part number to device, package and speed grade mapping
+"xc7z020clg484-1":
+  device: "xc7z020s"
+  package: "clg481"
+  speedgrade: "1"
+"xc7z020clg400-1":
+  device: "xc7z020s"
+  package: "clg400"
+  speedgrade: "1"
+"xc7z010clg400-1":
+  device: "xc7z010s"
+  package: "clg400"
+  speedgrade: "1"
