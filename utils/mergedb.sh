@@ -157,6 +157,9 @@ case "$1" in
 	hclk_ioi3)
 		cp "$2" "$tmp1" ;;
 
+	pcie_bot)
+		cp "$2" "$tmp1" ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true
