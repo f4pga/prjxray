@@ -101,6 +101,7 @@ def run(fn_in, fn_out, verbose=False):
         ("clk_bufg", 30, 8),
         ("hclk_cmt", 30, 10),
         ("hclk_ioi", 42, 1),
+        ("pcie", 36, 101),
         ("clb_int", int_frames, int_words),
         ("iob_int", int_frames, int_words),
         ("bram_int", int_frames, int_words),

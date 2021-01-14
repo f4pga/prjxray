@@ -30,6 +30,11 @@ TILEGRID_TDB_DEPENDENCIES += pll/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += hclk_ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
+ifeq (${XRAY_DATABASE}, artix7)
+# Artix7 only
+TILEGRID_TDB_DEPENDENCIES += pcie/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+endif
+
 ifeq (${XRAY_DATABASE}, zynq7)
 # Zynq7 only
 TILEGRID_TDB_DEPENDENCIES += ps7_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
@@ -130,6 +135,9 @@ hclk_cmt/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 hclk_ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd hclk_ioi && $(MAKE)
 
+pcie/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd pcie && $(MAKE)
+
 $(BUILD_FOLDER)/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
 		--fn-in ${BASICDB_TILEGRID} \
@@ -170,6 +178,7 @@ clean:
 	cd clk_bufg && $(MAKE) clean
 	cd hclk_cmt && $(MAKE) clean
 	cd hclk_ioi && $(MAKE) clean
+	cd pcie && $(MAKE) clean
 
 .PHONY: database pushdb clean run
 
