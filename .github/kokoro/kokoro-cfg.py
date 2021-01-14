@@ -12,7 +12,7 @@
 db_full = """\
 # Format: //devtools/kokoro/config/proto/build.proto
 
-build_file: "symbiflow-prjxray-%(kokoro_type)s-db-%(part)s/.github/kokoro/db-full.sh"
+build_file: "symbiflow-prjxray-%(kokoro_type)s-db-%(part)s/.github/kokoro/%(script)s"
 
 timeout_mins: 4320
 
@@ -56,15 +56,25 @@ env_vars {
 }
 """
 
-for part in ['artix7', 'kintex7', 'zynq7']:
+for part in ['artix7', 'kintex7', 'zynq7', 'spartan7']:
+    if part != 'spartan7':
+        script = 'db-full.sh'
+    else:
+        # Emit dummy script for spartan7 for now until it is working.
+        script = 'nothing.sh'
+
     with open("continuous-db-%s.cfg" % part, "w") as f:
-        f.write(db_full % {
-            'part': part,
-            'kokoro_type': 'continuous',
-        })
+        f.write(
+            db_full % {
+                'part': part,
+                'kokoro_type': 'continuous',
+                'script': script,
+            })
 
     with open("presubmit-db-%s.cfg" % part, "w") as f:
-        f.write(db_full % {
-            'part': part,
-            'kokoro_type': 'presubmit',
-        })
+        f.write(
+            db_full % {
+                'part': part,
+                'kokoro_type': 'presubmit',
+                'script': script,
+            })
