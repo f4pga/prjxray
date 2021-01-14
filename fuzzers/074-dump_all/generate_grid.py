@@ -592,7 +592,7 @@ def main():
     wire_map_file = os.path.join(args.output_dir, 'wiremap.pickle')
 
     print('{} Reading tilegrid'.format(datetime.datetime.now()))
-    with open(os.path.join(util.get_db_root(), util.get_part(),
+    with open(os.path.join(util.get_db_root(), util.get_fabric(),
                            'tilegrid.json')) as f:
         grid = json.load(f)
 

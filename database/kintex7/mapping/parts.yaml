@@ -1,0 +1,5 @@
+# part number to device, package and speed grade mapping
+"xc7k70tfbg676-2":
+  device: "xc7k70t"
+  package: "fbg676"
+  speedgrade: "2"

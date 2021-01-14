@@ -21,8 +21,8 @@ pushdb:
 	cp $(BUILD_DIR)/output/tile_type_*.json ${XRAY_FAMILY_DIR}/
 	rm ${XRAY_FAMILY_DIR}/tile_type_*_site_type_*.json
 	cp $(BUILD_DIR)/output/site_type_*.json ${XRAY_FAMILY_DIR}/
-	cp $(BUILD_DIR)/output/tileconn.json ${XRAY_FAMILY_DIR}/$(XRAY_PART)/
-	cp $(BUILD_DIR)/output/node_wires.json ${XRAY_FAMILY_DIR}/$(XRAY_PART)/
+	cp $(BUILD_DIR)/output/tileconn.json ${XRAY_FAMILY_DIR}/$(XRAY_FABRIC)/
+	cp $(BUILD_DIR)/output/node_wires.json ${XRAY_FAMILY_DIR}/$(XRAY_FABRIC)/
 
 $(SPECIMENS_OK):
 	bash generate.sh $(subst /OK,,$@) -p=$(MAX_VIVADO_PROCESS) -t=$(MAX_TILES_INSTANCE) -n=$(MAX_NODES_INSTANCE)

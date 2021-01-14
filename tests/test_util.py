@@ -9,7 +9,7 @@
 #
 # SPDX-License-Identifier: ISC
 
-from os import environ, getcwd, chdir
+from os import environ, getcwd, chdir, mkdir, environ
 import json
 from tempfile import TemporaryDirectory
 from contextlib import contextmanager
@@ -19,7 +19,7 @@ from unittest import TestCase, main
 # in the current subdirectory, which will be a temporary one, to allow concurent
 # testing.
 environ['XRAY_DATABASE_ROOT'] = '.'
-environ['XRAY_PART'] = './'
+environ['XRAY_PART'] = 'xc7a200tffg1156-1'
 
 from prjxray.util import get_roi, get_db_root
 from prjxray.overlay import Overlay
@@ -31,9 +31,18 @@ def setup_database(contents):
     with TemporaryDirectory() as d:
         olddir = getcwd()
         chdir(d)
+        mkdir('xc7a200t')
+        mkdir('mapping')
+        environ['XRAY_DATABASE_ROOT'] = d
         e = None
-        with open('tilegrid.json', 'w') as fd:
+        with open('xc7a200t/tilegrid.json', 'w') as fd:
             json.dump(contents, fd)
+        # Create some dummy data
+        with open('mapping/devices.yaml', 'w') as fd:
+            json.dump({'xc7a200t': {'fabric': "xc7a200t"}}, fd)
+        with open('mapping/parts.yaml', 'w') as fd:
+            json.dump({'xc7a200tffg1156-1': {"device": "xc7a200t"}}, fd)
+
         try:
             yield
         except Exception as ereal:

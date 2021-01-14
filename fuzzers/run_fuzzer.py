@@ -22,6 +22,8 @@ import signal
 import subprocess
 import sys
 import traceback
+from prjxray.util import get_part_information, get_part_resources
+from prjxray.util import get_fabric_for_part
 
 import junit_xml
 
@@ -446,6 +448,21 @@ def main(argv):
     if not os.path.exists(fuzzer_logdir):
         os.makedirs(fuzzer_logdir)
     assert os.path.exists(fuzzer_logdir)
+
+    # Set part information from the mapping files and set into the env
+    db_root = os.path.join(
+        os.environ['XRAY_DATABASE_DIR'], os.environ['XRAY_DATABASE'])
+    part = get_part_information(db_root, os.environ['XRAY_PART'])
+    os.environ['XRAY_DEVICE'] = part['device']
+    os.environ['XRAY_PACKAGE'] = part['package']
+    os.environ['XRAY_SPEED_GRADE'] = part['speedgrade']
+    fabric = get_fabric_for_part(db_root, os.environ['XRAY_PART'])
+    os.environ['XRAY_FABRIC'] = fabric
+    res_path = os.path.join(
+        os.environ['XRAY_DIR'], 'settings', os.environ['XRAY_DATABASE'])
+    resources = get_part_resources(res_path, os.environ['XRAY_PART'])
+    for number, pin in resources['pins'].items():
+        os.environ['XRAY_PIN_{:02d}'.format(number)] = pin
 
     exit_code = -1
     args.retries += 1

@@ -11,7 +11,7 @@ needed. You just need to rerun some fuzzers for the new device to
 understand how the tiles are connected to each other and to IOs.
 
 *If you are*\ \  **just**\ \  *adding a new package for a device that is
-already supported, you can skip Steps 2 through 4.*
+already supported, you can skip Steps 2 through 5.*
 
 Note: Since this guide was written, the xc7a100t has become the primary
 device in the database, not a secondary device as it was when it was
@@ -88,14 +88,7 @@ Update the following values in the new settings file:
    `comments <https://github.com/SymbiFlow/prjxray/blob/master/fuzzers/005-tilegrid/generate_full.py#L401>`__
    in the 005 fuzzer for more information.
 
--  ``XRAY_PIN_00`` – this must be a clock pin. You can look at the device in the Vivado GUI
-   interactively (click on IOs and check their properties until you find
-   one with IS_CLOCK=true), or run a small clocked design in Vivado and see
-   which pin is assigned to ‘clk’.
-
--  ``XRAY_PIN_01`` and on – these should be normal data pins on the device.
-
-`This <https://github.com/tcal-x/prjxray/blob/fbf4dd897d5a1025ebfeb7c51c5077a6b6c9bc47/settings/artix7_100t.sh>`__
+`This <https://github.com/SymbiFlow/prjxray/blob/master/settings/artix7_100t.sh>`__
 is what the new settings file looked like in the example.
 
 Source this new settings file:
@@ -105,6 +98,54 @@ Source this new settings file:
    source settings/<new_device>.sh
 
 Step 3
+~~~~~~
+
+Add all informations about the part. YAML files for each family are located
+at database/<family>/mapping/, which contain the part information (parts.yaml),
+device to fabric mapping (devices.yaml) or hints about resources
+(resources.yaml).
+
+The first file contains a mapping between a part number and informations
+about the device, package and speed grade used by the fuzzers. The
+complete part number is used as key. Device, package and speedgrade are parts
+of the part numbers.
+
+::
+  "xc7a100tcsg324-1":
+    device: "xc7a100t"
+    package: "csg324"
+    speedgrade: "1"
+    pins:
+      0: "N15"
+      1: "U17"
+      2: "V17"
+      3: "V16"
+      4: "V14"
+      5: "U14"
+      6: "U16"
+
+The second file maps devices to fabrics. Because some fabrics are added to
+multiple devices, they are only generated for one and parts with the same link
+to the result.
+
+::
+  "xc7a50t":
+    fabric: "xc7a50t"
+  "xc7a35t":
+    fabric: "xc7a50t"
+
+The last file contains information about the information about a resource
+to support the fuzzers generating the informations. The dictionary pins
+defines package pins with the following purpose:
+
+-  ``00`` – this must be a clock pin. You can look at the device in the Vivado
+   GUI interactively (click on IOs and check their properties until you find
+   one with IS_CLOCK=true), or run a small clocked design in Vivado and see
+   which pin is assigned to ‘clk’.
+
+-  ``01`` and on – these should be normal data pins on the device.
+
+Step 4
 ~~~~~~
 
 Edit the top Makefile
@@ -125,7 +166,7 @@ Edit the top Makefile
 
    ARTIX_PARTS=artix7_200t artix7_100t
 
-Step 4
+Step 5
 ~~~~~~
 
 Make sure you’ve sourced your new device settings file (see the end of
@@ -176,7 +217,7 @@ file that was added. For example,
 -  Rerun the top make command,
    e.g. ``make -j32 MAX_VIVADO_PROCESS=32 db-part-only-artix7_100t``
 
-Step 5
+Step 6
 ~~~~~~
 
 The next task is handling the extra parts – those not fully bonded out.
@@ -194,13 +235,9 @@ These are usually the parts you actually have on the boards you buy.
 
    db-extras-artix7-harness:
        +source settings/artix7.sh && \
-             XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
-             XRAY_PART=xc7a35tftg256-1 XRAY_EQUIV_PART=xc7a50tfgg484-1 \
-             $(MAKE) -C fuzzers roi_only
+             XRAY_PART=xc7a35tftg256-1 $(MAKE) -C fuzzers roi_only
    +   +source settings/artix7_100t.sh && \
-   +         XRAY_PIN_00=N15 \
-   +         XRAY_PART=xc7a100tcsg324-1 XRAY_EQUIV_PART=xc7a100tfgg676-1 \
-   +         $(MAKE) -C fuzzers roi_only
+   +         XRAY_PART=xc7a100tcsg324-1 $(MAKE) -C fuzzers roi_only
        +source settings/artix7_200t.sh && \
              XRAY_PIN_00=V10 XRAY_PIN_01=W10 XRAY_PIN_02=Y11 XRAY_PIN_03=Y12 \
              XRAY_PART=xc7a200tsbg484-1 XRAY_EQUIV_PART=xc7a200tffg1156-1 \
@@ -215,7 +252,7 @@ Make the appropriate harness target (adjusting for your family):
 This target will make updates for the extra parts of all of the family
 devices, not just your new device.
 
-Step 6
+Step 7
 ~~~~~~
 
 Do a spot check.
@@ -224,26 +261,24 @@ Do a spot check.
 
 ::
 
-   $ ll database/artix7/xc7a100*
-   database/artix7/xc7a100tcsg324-1:
-   total 19884
-   drwxrwxr-x  2 tcal tcal     4096 Apr 29 08:01 ./
-   drwxrwxr-x 13 tcal tcal    32768 Apr 29 08:00 ../
-   -rw-rw-r--  1 tcal tcal    10364 Apr 29 08:00 package_pins.csv
-   -rw-rw-r--  1 tcal tcal    32142 Apr 29 08:01 part.json
-   -rw-rw-r--  1 tcal tcal    22440 Apr 29 08:01 part.yaml
-   -rw-rw-r--  1 tcal tcal  8601612 Apr 29 08:01 tileconn.json
-   -rw-rw-r--  1 tcal tcal 11648042 Apr 29 08:01 tilegrid.json
+   $ ll database/artix7/xc7a*
+   xc7a35tftg256-1:
+   total 48
+   -rw-rw-r-- 1 daniel daniel  8234 Jan  9 13:01 package_pins.csv
+   -rw-rw-r-- 1 daniel daniel 18816 Jan  9 13:01 part.json
+   -rw-rw-r-- 1 daniel daniel 13099 Jan  9 13:01 part.yaml
 
-   database/artix7/xc7a100tfgg676-1:
-   total 19892
-   drwxrwxr-x  2 tcal tcal     4096 Apr 29 02:03 ./
-   drwxrwxr-x 13 tcal tcal    32768 Apr 29 08:00 ../
-   -rw-rw-r--  1 tcal tcal    16645 Apr 28 22:16 package_pins.csv
-   -rw-rw-r--  1 tcal tcal    32165 Apr 28 22:17 part.json
-   -rw-rw-r--  1 tcal tcal    22440 Apr 28 22:17 part.yaml
-   -rw-rw-r--  1 tcal tcal  8601612 Apr 29 02:03 tileconn.json
-   -rw-rw-r--  1 tcal tcal 11648042 Apr 28 22:37 tilegrid.json
+   xc7a50t:
+   total 15480
+   -rw-rw-r-- 1 daniel daniel  695523 Jan  9 12:53 node_wires.json
+   -rw-rw-r-- 1 daniel daniel 8587682 Jan  9 12:53 tileconn.json
+   -rw-rw-r-- 1 daniel daniel 6562851 Jan  9 10:31 tilegrid.json
+
+   xc7a50tfgg484-1:
+   total 52
+   -rw-rw-r-- 1 daniel daniel 13056 Jan  9 09:54 package_pins.csv
+   -rw-rw-r-- 1 daniel daniel 18840 Jan  9 09:58 part.json
+   -rw-rw-r-- 1 daniel daniel 13099 Jan  9 09:58 part.yaml
 
 In this case, the tile grid is the same size since it’s the same chip,
 but the size of the package pins files differs, since there are
@@ -255,7 +290,7 @@ that your changes in ``prjxray`` will do the right thing when the
 official database is fully rebuilt. See “Database Updates” below for
 more information.
 
-Step 7
+Step 8
 ~~~~~~
 
 Assuming everything looks good, commit to your ``prjxray`` fork/branch.
@@ -270,7 +305,7 @@ of the example for reference).
    git status
    git commit --signoff
 
-Step 8
+Step 9
 ~~~~~~
 
 Push to GitHub:

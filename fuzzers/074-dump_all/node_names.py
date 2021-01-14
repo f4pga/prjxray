@@ -56,7 +56,7 @@ def main():
 
     # Read tile grid and raw node data.
     print('{} Reading tilegrid'.format(datetime.datetime.now()))
-    with open(os.path.join(util.get_db_root(), util.get_part(),
+    with open(os.path.join(util.get_db_root(), util.get_fabric(),
                            'tilegrid.json')) as f:
         grid = Grid(db=None, tilegrid=json.load(f))
 

@@ -169,9 +169,5 @@ quick:
 # roi_only runs the fuzzers required for supporting additional parts when building
 # a roi harness.
 roi_only: 000-init-db/run.${XRAY_PART}.ok 001-part-yaml/run.${XRAY_PART}.ok 075-pins/run.${XRAY_PART}.ok
-	# Copy tilegrid and tileconn
-	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tilegrid.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tilegrid.json
-	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/tileconn.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/tileconn.json
-	cp ${XRAY_FAMILY_DIR}/${XRAY_EQUIV_PART}/node_wires.json ${XRAY_FAMILY_DIR}/${XRAY_PART}/node_wires.json
 
 .PHONY: all clean clean_fuzzers clean_logs quick part_only roi_only

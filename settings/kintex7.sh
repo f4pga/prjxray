@@ -25,13 +25,4 @@ export XRAY_ROI_GRID_X2="38"
 export XRAY_ROI_GRID_Y1="104"
 export XRAY_ROI_GRID_Y2="156"
 
-# Choose the first N High Range I/Os
-export XRAY_PIN_00="K25"
-export XRAY_PIN_01="K26"
-export XRAY_PIN_02="L24"
-export XRAY_PIN_03="L25"
-export XRAY_PIN_04="M19"
-export XRAY_PIN_05="M20"
-export XRAY_PIN_06="M21"
-
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh

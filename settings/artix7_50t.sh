@@ -30,14 +30,4 @@ export XRAY_ROI_GRID_X2="58"
 export XRAY_ROI_GRID_Y1="0"
 export XRAY_ROI_GRID_Y2="51"
 
-# clock pin
-export XRAY_PIN_00="E22"
-# data pins
-export XRAY_PIN_01="D22"
-export XRAY_PIN_02="E21"
-export XRAY_PIN_03="D21"
-export XRAY_PIN_04="G21"
-export XRAY_PIN_05="G22"
-export XRAY_PIN_06="F21"
-
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh

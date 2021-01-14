@@ -199,16 +199,11 @@ db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
 #    override the XRAY_PIN_0X setting below to pick a pin that *is* bonded.
 db-extras-artix7-harness:
 	+source settings/artix7.sh && \
-		XRAY_PIN_00=N15 XRAY_PART=xc7a100tcsg324-1 XRAY_EQUIV_PART=xc7a100tfgg676-1 \
-		$(MAKE) -C fuzzers roi_only
+		XRAY_PART=xc7a100tcsg324-1 $(MAKE) -C fuzzers roi_only
 	+source settings/artix7_50t.sh && \
-		XRAY_PIN_00=J13 XRAY_PIN_01=J14 XRAY_PIN_02=K15 XRAY_PIN_03=K16 \
-		XRAY_PART=xc7a35tftg256-1 XRAY_EQUIV_PART=xc7a50tfgg484-1 \
-		$(MAKE) -C fuzzers roi_only
+		XRAY_PART=xc7a35tftg256-1 $(MAKE) -C fuzzers roi_only
 	+source settings/artix7_200t.sh && \
-		XRAY_PIN_00=V10 XRAY_PIN_01=W10 XRAY_PIN_02=Y11 XRAY_PIN_03=Y12 \
-		XRAY_PART=xc7a200tsbg484-1 XRAY_EQUIV_PART=xc7a200tffg1156-1 \
-		$(MAKE) -C fuzzers roi_only
+		XRAY_PART=xc7a200tsbg484-1 $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && \
@@ -238,9 +233,7 @@ db-extras-zynq7-parts: $(addprefix db-part-only-,$(ZYNQ_PARTS))
 
 db-extras-zynq7-harness:
 	+source settings/zynq7.sh && \
-                XRAY_PIN_00=T9 XRAY_PIN_01=P14 XRAY_PIN_02=T14 XRAY_PIN_03=R18 \
-                XRAY_PART=xc7z020clg400-1 XRAY_EQUIV_PART=xc7z020clg484-1 \
-                $(MAKE) -C fuzzers roi_only
+		XRAY_PART=xc7z020clg400-1 $(MAKE) -C fuzzers roi_only
 db-check:
 	@true
 

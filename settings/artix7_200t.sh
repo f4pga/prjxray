@@ -21,14 +21,4 @@ export XRAY_EXCLUDE_ROI_TILEGRID=""
 # If you have a FASM mismatch or unknown bits in IOIs, CHECK THIS FIRST.
 export XRAY_IOI3_TILES="RIOI3_X105Y9 LIOI3_X0Y9"
 
-# clock pin
-export XRAY_PIN_00="R26"
-# data pins
-export XRAY_PIN_01="P26"
-export XRAY_PIN_02="N26"
-export XRAY_PIN_03="M27"
-export XRAY_PIN_04="U25"
-export XRAY_PIN_05="T25"
-export XRAY_PIN_06="P24"
-
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh

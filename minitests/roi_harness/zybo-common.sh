@@ -7,7 +7,6 @@
 #
 # SPDX-License-Identifier: ISC
 export XRAY_PART=xc7z010clg400-1
-export XRAY_EQUIV_PART=xc7z010clg400-1
 
 if [ -z "$XRAY_PINCFG" ]; then
 	echo "XRAY_PINCFG not set"
@@ -21,15 +20,6 @@ if [ -z "$XRAY_DOUT_N_LARGE" ]; then
 	echo "XRAY_DOUT_N_LARGE not set"
 	return 1
 fi
-
-# For generating DB
-export XRAY_PIN_00="G15"
-export XRAY_PIN_01="P15"
-export XRAY_PIN_02="W13"
-export XRAY_PIN_03="T16"
-export XRAY_PIN_04="K18"
-export XRAY_PIN_05="P16"
-export XRAY_PIN_06="K19"
 
 # ROI is in top right
 export XRAY_ROI_LARGE="SLICE_X22Y50:SLICE_X43Y99"

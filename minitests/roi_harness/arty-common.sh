@@ -10,7 +10,6 @@
 source $(dirname ${BASH_SOURCE[0]})/../../settings/artix7_50t.sh
 
 export XRAY_PART=xc7a35tcsg324-1
-export XRAY_EQUIV_PART=xc7a50tfgg484-1
 
 if [ -z "$XRAY_PINCFG" ]; then
 	echo "XRAY_PINCFG not set"
@@ -24,15 +23,6 @@ if [ -z "$XRAY_DOUT_N_LARGE" ]; then
 	echo "XRAY_DOUT_N_LARGE not set"
 	return 1
 fi
-
-# For generating DB
-export XRAY_PIN_00="G13"
-export XRAY_PIN_01="B11"
-export XRAY_PIN_02="E15"
-export XRAY_PIN_03="U12"
-export XRAY_PIN_04="D13"
-export XRAY_PIN_05="J17"
-export XRAY_PIN_06="U14"
 
 # HCLK Tile
 export XRAY_ROI_HCLK="CLK_HROW_TOP_R_X60Y130/CLK_HROW_CK_BUFHCLK_L0"
