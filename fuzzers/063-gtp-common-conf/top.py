@@ -45,8 +45,14 @@ def gen_sites():
 
 
 def main():
-    print('''
-module top();
+    print(
+        '''
+module top(
+    input wire in,
+    output wire out
+);
+
+assign out = in;
 ''')
 
     site_name, site_type = gen_sites()
@@ -63,30 +69,48 @@ module top();
     with open(os.path.join(fuz_dir, "attrs.json"), "r") as attrs_file:
         attrs = json.load(attrs_file)
 
-    for param, param_info in attrs.items():
-        param_type = param_info["type"]
-        param_values = param_info["values"]
-        param_digits = param_info["digits"]
+    in_use = bool(random.randint(0, 9))
+    params["IN_USE"] = in_use
 
-        if param_type == INT:
-            value = random.choice(param_values)
-            value_str = value
-        else:
-            assert param_type == BIN
-            value = random.randint(0, param_values[0])
-            value_str = "{digits}'b{value:0{digits}b}".format(
-                value=value, digits=param_digits)
+    if in_use:
+        for param, param_info in attrs.items():
+            param_type = param_info["type"]
+            param_values = param_info["values"]
+            param_digits = param_info["digits"]
 
-        params[param] = value
+            if param_type == INT:
+                value = random.choice(param_values)
+                value_str = value
+            else:
+                assert param_type == BIN
+                value = random.randint(0, param_values[0])
+                value_str = "{digits}'b{value:0{digits}b}".format(
+                    value=value, digits=param_digits)
 
-        verilog_attr += """
-    .{}({}),""".format(param, value_str)
+            params[param] = value
 
-    verilog_attr = verilog_attr.rstrip(",")
-    verilog_attr += "\n)"
+            verilog_attr += """
+        .{}({}),""".format(param, value_str)
 
-    print("(* KEEP, DONT_TOUCH *)")
-    print("GTPE2_COMMON {} gtp_common ();".format(verilog_attr))
+        for param in ["GTGREFCLK1", "GTGREFCLK0", "PLL0LOCKDETCLK",
+                      "PLL1LOCKDETCLK", "DRPCLK"]:
+            is_inverted = random.randint(0, 1)
+
+            params[param] = is_inverted
+
+            verilog_attr += """
+        .IS_{}_INVERTED({}),""".format(param, is_inverted)
+
+        verilog_attr = verilog_attr.rstrip(",")
+        verilog_attr += "\n)"
+
+        print("(* KEEP, DONT_TOUCH *)")
+        print(
+            """GTPE2_COMMON {} gtp_common (
+    .GTREFCLK0(1'b0),
+    .GTREFCLK1(1'b0)
+);""".format(verilog_attr))
+
     print("endmodule")
 
     with open('params.json', 'w') as f:

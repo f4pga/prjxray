@@ -36,11 +36,15 @@ def main():
         attrs = json.load(attr_file)
 
     print("Loading tags")
-    with open('params.json') as f:
+    with open("params.json") as f:
         params = json.load(f)
 
-        site = params['site']
+    site = params["site"]
+    in_use = params["IN_USE"]
 
+    segmk.add_site_tag(site, "IN_USE", in_use)
+
+    if in_use:
         for param, param_info in attrs.items():
             value = params[param]
             param_type = param_info["type"]
@@ -65,7 +69,15 @@ def main():
                 ]
 
                 for i in range(param_digits):
-                    segmk.add_site_tag(site, '%s[%u]' % (param, i), bitstr[i])
+                    segmk.add_site_tag(site, "%s[%u]" % (param, i), bitstr[i])
+
+        for param, invert in [("GTGREFCLK1", 0), ("GTGREFCLK0", 0),
+                              ("PLL0LOCKDETCLK", 1), ("PLL1LOCKDETCLK",
+                                                      1), ("DRPCLK", 1)]:
+            if invert:
+                segmk.add_site_tag(site, "ZINV_" + param, 1 ^ params[param])
+            else:
+                segmk.add_site_tag(site, "INV_" + param, params[param])
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()
