@@ -1,0 +1,21 @@
+# Litex
+-e git+https://github.com/enjoy-digital/litex#egg=litex
+-e git+https://github.com/enjoy-digital/litedram#egg=litedram
+-e git+https://github.com/enjoy-digital/liteeth#egg=liteeth
+-e git+https://github.com/enjoy-digital/liteiclink#egg=liteiclink
+-e git+https://github.com/enjoy-digital/litejesd204b#egg=litejesd204b
+-e git+https://github.com/enjoy-digital/litepcie#egg=litepcie
+-e git+https://github.com/enjoy-digital/litesata#egg=litesata
+-e git+https://github.com/enjoy-digital/litescope#egg=litescope
+-e git+https://github.com/enjoy-digital/litesdcard#egg=litesdcard
+-e git+https://github.com/enjoy-digital/litevideo#egg=litevideo
+-e git+https://github.com/litex-hub/litehyperbus#egg=litehyperbus
+-e git+https://github.com/litex-hub/litespi#egg=litespi
+-e git+https://github.com/litex-hub/litex-boards#egg=litex_boards
+
+# Migen and nMigen
+-e git+https://github.com/m-labs/migen#egg=migen
+-e git+https://github.com/nmigen/nmigen#egg=nmigen
+
+
+-e git+https://github.com/litex-hub/pythondata-cpu-vexriscv#egg=pythondata_cpu_vexriscv
