@@ -18,6 +18,7 @@ def run(
         fnout,
         oneval,
         dframe,
+        auto_frame,
         dword,
         dbit,
         multi=False,
@@ -30,6 +31,8 @@ def run(
         metastr += ".DFRAME:%02x" % dframe
     if multi:
         metastr += ".MULTI"
+    if auto_frame:
+        metastr += ".AUTO_FRAME"
 
     tags = dict()
     f = open(design_fn, 'r')
@@ -67,6 +70,10 @@ def main():
         default="",
         help="Reference frame delta (base 16)")
     parser.add_argument(
+        "--auto-frame",
+        action='store_true',
+        help="Auto align frame address to next lowest multiple of 0x80")
+    parser.add_argument(
         "--dword",
         type=str,
         required=True,
@@ -85,6 +92,7 @@ def main():
         args.fnout,
         args.oneval,
         None if args.dframe == "" else int(args.dframe, 16),
+        args.auto_frame,
         int(args.dword, 10),
         None if args.dbit == "" else int(args.dbit, 10),
         multi=args.multi,
