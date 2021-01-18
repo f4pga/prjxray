@@ -30,7 +30,11 @@ help:
 $(YOSYS):
 	cd $(XRAY_DIR)/third_party/yosys && make config-gcc && make -j$(shell nproc)
 
-build.ok:
+litex-install.ok:
+	pip install -r requirements.txt
+	touch litex-install.ok
+
+build/build.ok: litex-install.ok
 	./src/litex-boards/litex_boards/targets/nexys_video.py --with-sata --integrated-rom-size 0x10000
 	touch build/build.ok
 
