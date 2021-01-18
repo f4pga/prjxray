@@ -14,7 +14,7 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf build_*
+	rm -rf $(BUILD_DIR)
 
 .PHONY: database clean
 
