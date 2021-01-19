@@ -10,16 +10,19 @@ SHELL = bash
 
 N ?= 20
 
-SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
+BUILD_DIR = build_${XRAY_PART}
+
+SPECIMENS := $(addprefix ${BUILD_DIR}/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 FUZDIR ?= ${PWD}
+
 
 all: database
 
 # generate.sh / top_generate.sh call make, hence the command must
 # have a + before it.
 $(SPECIMENS_OK): $(SPECIMENS_DEPS)
-	mkdir -p build
+	mkdir -p ${BUILD_DIR}
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
 
 run:
@@ -29,22 +32,22 @@ run:
 	touch run.${XRAY_PART}.ok
 
 clean:
-	rm -rf build run.ok
+	rm -rf ${BUILD_DIR} run.${XRAY_PART}.ok
 
 .PHONY: all run clean
 
-database: build/segbits_gtp_common.db
+database: ${BUILD_DIR}/segbits_gtp_common.db
 
-build/segbits_gtp_common.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_gtp_common.rdb $$(find $(SPECIMENS) -name "segdata_gtp_common*")
+${BUILD_DIR}/segbits_gtp_common.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o ${BUILD_DIR}/segbits_gtp_common.rdb $$(find $(SPECIMENS) -name "segdata_gtp_common*")
 
-build/segbits_gtp_common.db: build/segbits_gtp_common.rdb
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
-		--seg-fn-in build/segbits_gtp_common.rdb \
-		--seg-fn-out build/segbits_gtp_common.db
-	${XRAY_MASKMERGE} build/mask_gtp_common.db $$(find $(SPECIMENS) -name "segdata_gtp_common*")
+${BUILD_DIR}/segbits_gtp_common.db: ${BUILD_DIR}/segbits_gtp_common.rdb
+	${XRAY_DBFIXUP} --db-root ${BUILD_DIR} --zero-db bits.dbf \
+		--seg-fn-in ${BUILD_DIR}/segbits_gtp_common.rdb \
+		--seg-fn-out ${BUILD_DIR}/segbits_gtp_common.db
+	${XRAY_MASKMERGE} ${BUILD_DIR}/mask_gtp_common.db $$(find $(SPECIMENS) -name "segdata_gtp_common*")
 
 pushdb:
-	source pushdb.sh
+	BUILD_DIR=$(BUILD_DIR) source pushdb.sh
 
 .PHONY: database pushdb
