@@ -5,6 +5,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+
 FUZDIR=$(shell pwd)
 BUILD_FOLDER=build_${XRAY_PART}
 BUILD_DIR=$(FUZDIR)/$(BUILD_FOLDER)
@@ -185,5 +186,33 @@ clean:
 	cd pcie && $(MAKE) clean
 	cd gtp_common && $(MAKE) clean
 
-.PHONY: database pushdb clean run
+clean_all:
+	rm -rf build_* run.*.ok
+	cd clb && $(MAKE) clean_all
+	cd clb_int && $(MAKE) clean_all
+	cd cfg && $(MAKE) clean_all
+	cd iob && $(MAKE) clean_all
+	cd iob_int && $(MAKE) clean_all
+	cd ioi && $(MAKE) clean_all
+	cd mmcm && $(MAKE) clean_all
+	cd pll && $(MAKE) clean_all
+	cd ps7_int && $(MAKE) clean_all
+	cd bram && $(MAKE) clean_all
+	cd bram_block && $(MAKE) clean_all
+	cd bram_int && $(MAKE) clean_all
+	cd dsp && $(MAKE) clean_all
+	cd dsp_int && $(MAKE) clean_all
+	cd fifo_int && $(MAKE) clean_all
+	cd monitor && $(MAKE) clean_all
+	cd monitor_int && $(MAKE) clean_all
+	cd cfg_int && $(MAKE) clean_all
+	cd orphan_int_column && $(MAKE) clean_all
+	cd clk_hrow && $(MAKE) clean_all
+	cd clk_bufg && $(MAKE) clean_all
+	cd hclk_cmt && $(MAKE) clean_all
+	cd hclk_ioi && $(MAKE) clean_all
+	cd pcie && $(MAKE) clean_all
+	cd gtp_common && $(MAKE) clean_all
+
+.PHONY: database pushdb clean clean_all run
 
