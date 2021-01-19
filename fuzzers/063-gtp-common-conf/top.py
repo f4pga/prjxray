@@ -23,7 +23,7 @@ INT = "INT"
 BIN = "BIN"
 
 
-def gen_sites():
+def gen_sites(site):
     db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
     for tile_name in sorted(grid.tiles()):
@@ -35,12 +35,14 @@ def gen_sites():
                 "GTP_COMMON_MID_RIGHT",
         ]:
             continue
+        else:
+            tile_type = gridinfo.tile_type
 
         for site_name, site_type in gridinfo.sites.items():
-            if site_type != "GTPE2_COMMON":
+            if site_type != site:
                 continue
 
-            yield site_name, site_type
+            yield tile_name, tile_type, site_name, site_type
 
 
 def main():
@@ -54,9 +56,17 @@ module top(
 assign out = in;
 ''')
 
+    params_dict = {"tile_type": None}
     params_list = list()
 
-    for site_name, site_type in gen_sites():
+    for tile_name, tile_type, site_name, site_type in gen_sites(
+            "GTPE2_COMMON"):
+
+        if params_dict["tile_type"]:
+            assert tile_type == params_dict["tile_type"]
+        else:
+            params_dict["tile_type"] = tile_type
+
         params = dict()
         params['site'] = site_name
 
@@ -113,10 +123,50 @@ assign out = in;
 
         params_list.append(params)
 
+    clkswing_cfg_tiles = dict()
+    for tile_name, _, site_name, site_type in gen_sites("IBUFDS_GTE2"):
+        # Both the IBUFDS_GTE2 in the same tile need to have
+        # the same CLKSWING_CFG parameter
+        if tile_name not in clkswing_cfg_tiles:
+            clkswing_cfg = random.randint(0, 3)
+            clkswing_cfg_tiles[tile_name] = clkswing_cfg
+        else:
+            clkswing_cfg = clkswing_cfg_tiles[tile_name]
+
+        in_use = bool(random.randint(0, 9))
+        params = {
+            "site":
+            site_name,
+            "tile":
+            tile_name,
+            "IN_USE":
+            in_use,
+            "CLKRCV_TRST":
+            verilog.quote("TRUE" if random.randint(0, 1) else "FALSE"),
+            "CLKCM_CFG":
+            verilog.quote("TRUE" if random.randint(0, 1) else "FALSE"),
+            "CLKSWING_CFG":
+            clkswing_cfg,
+        }
+
+        if in_use:
+            print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
+            print(
+                """
+IBUFDS_GTE2 #(
+    .CLKRCV_TRST({CLKRCV_TRST}),
+    .CLKCM_CFG({CLKCM_CFG}),
+    .CLKSWING_CFG({CLKSWING_CFG})
+) {site} (
+    );""".format(**params))
+
+        params_list.append(params)
+
     print("endmodule")
 
+    params_dict["params"] = params_list
     with open('params.json', 'w') as f:
-        json.dump(params_list, f, indent=2)
+        json.dump(params_dict, f, indent=2)
 
 
 if __name__ == '__main__':

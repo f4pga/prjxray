@@ -19,9 +19,17 @@ INT = "INT"
 BIN = "BIN"
 
 
-def bitfilter(frame, bit):
+def bitfilter_gtp_common_mid(frame, bit):
     # Filter out interconnect bits.
-    if frame not in [28, 29, 0, 1]:
+    if frame not in [0, 1]:
+        return False
+
+    return True
+
+
+def bitfilter_gtp_common(frame, bit):
+    # Filter out interconnect bits.
+    if frame not in [28, 29]:
         return False
 
     return True
@@ -37,10 +45,16 @@ def main():
 
     print("Loading tags")
     with open("params.json") as f:
-        params_list = json.load(f)
+        params_dict = json.load(f)
+        tile_type = params_dict["tile_type"]
+        params_list = params_dict["params"]
 
     for params in params_list:
         site = params["site"]
+
+        if "GTPE2_COMMON" not in site:
+            continue
+
         in_use = params["IN_USE"]
 
         segmk.add_site_tag(site, "IN_USE", in_use)
@@ -82,6 +96,38 @@ def main():
                         site, "ZINV_" + param, 1 ^ params[param])
                 else:
                     segmk.add_site_tag(site, "INV_" + param, params[param])
+
+    for params in params_list:
+        site = params["site"]
+
+        if "IBUFDS_GTE2" not in site:
+            continue
+
+        in_use = params["IN_USE"]
+        segmk.add_site_tag(site, "IN_USE", in_use)
+
+        if in_use:
+            tile = params["tile"]
+
+            for param in ["CLKRCV_TRST", "CLKCM_CFG"]:
+                value = params[param]
+                segmk.add_site_tag(site, param, "TRUE" in value)
+
+            bitstr = [
+                int(x) for x in "{value:0{digits}b}".format(
+                    value=params["CLKSWING_CFG"], digits=2)[::-1]
+            ]
+
+            for i in range(2):
+                segmk.add_tile_tag(
+                    tile, "IBUFDS_GTE2.%s[%u]" % (param, i), bitstr[i])
+
+    if tile_type == "GTP_COMMON":
+        bitfilter = bitfilter_gtp_common
+    elif tile_type == "GTP_COMMON_MID_RIGHT":
+        bitfilter = bitfilter_gtp_common_mid
+    else:
+        assert False, tile_type
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()
