@@ -5,27 +5,49 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-N ?= 40
 
-include ../fuzzer.mk
+SHELL = bash
 
-database: build/segbits_gtp_channelx.db
+N ?= 10
 
-build/segbits_gtp_channelx.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o build/segbits_gtp_channelx.rdb $(addsuffix /segdata_gtp_channel_[0123].txt,$(SPECIMENS))
+BUILD_DIR = build_${XRAY_PART}
 
-build/segbits_gtp_channelx.db: build/segbits_gtp_channelx.rdb
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in $^ --seg-fn-out $@
-	${XRAY_MASKMERGE} build/mask_gtp_channelx.db $(addsuffix /segdata_gtp_channel_[0123].txt,$(SPECIMENS))
+SPECIMENS := $(addprefix ${BUILD_DIR}/specimen_,$(shell seq -f '%03.0f' $(N)))
+SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
+FUZDIR ?= ${PWD}
+
+
+all: database
+
+# generate.sh / top_generate.sh call make, hence the command must
+# have a + before it.
+$(SPECIMENS_OK): $(SPECIMENS_DEPS)
+	mkdir -p ${BUILD_DIR}
+	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
+
+run:
+	$(MAKE) clean
+	$(MAKE) database
+	$(MAKE) pushdb
+	touch run.${XRAY_PART}.ok
+
+clean:
+	rm -rf ${BUILD_DIR} run.${XRAY_PART}.ok
+
+.PHONY: all run clean
+
+database: ${BUILD_DIR}/segbits_gtp_channelx.db
+
+${BUILD_DIR}/segbits_gtp_channelx.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} -o ${BUILD_DIR}/segbits_gtp_channelx.rdb $$(find $(SPECIMENS) -name "segdata_gtp_channel_[0123]*")
+
+${BUILD_DIR}/segbits_gtp_channelx.db: ${BUILD_DIR}/segbits_gtp_channelx.rdb
+	${XRAY_DBFIXUP} --db-root ${BUILD_DIR} --zero-db bits.dbf \
+		--seg-fn-in ${BUILD_DIR}/segbits_gtp_channelx.rdb \
+		--seg-fn-out ${BUILD_DIR}/segbits_gtp_channelx.db
+	${XRAY_MASKMERGE} ${BUILD_DIR}/mask_gtp_channelx.db $$(find $(SPECIMENS) -name "segdata_gtp_channel_[0123]*")
 
 pushdb:
-	${XRAY_MERGEDB} gtp_channel_0 build/segbits_gtp_channelx.db
-	${XRAY_MERGEDB} gtp_channel_1 build/segbits_gtp_channelx.db
-	${XRAY_MERGEDB} gtp_channel_2 build/segbits_gtp_channelx.db
-	${XRAY_MERGEDB} gtp_channel_3 build/segbits_gtp_channelx.db
-	${XRAY_MERGEDB} mask_gtp_channel_0 build/mask_gtp_channelx.db
-	${XRAY_MERGEDB} mask_gtp_channel_1 build/mask_gtp_channelx.db
-	${XRAY_MERGEDB} mask_gtp_channel_2 build/mask_gtp_channelx.db
-	${XRAY_MERGEDB} mask_gtp_channel_3 build/mask_gtp_channelx.db
+	BUILD_DIR=$(BUILD_DIR) source pushdb.sh
 
 .PHONY: database pushdb

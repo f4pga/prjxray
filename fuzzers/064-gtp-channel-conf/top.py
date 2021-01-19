@@ -25,21 +25,44 @@ BOOL = "BOOL"
 STR = "STR"
 
 
-def gen_sites():
+def gen_sites(site):
     db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
+    already_used = list()
     for tile_name in sorted(grid.tiles()):
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
 
-        if "GTP_CHANNEL" not in gridinfo.tile_type:
+        if gridinfo.tile_type not in [
+                "GTP_CHANNEL_0",
+                "GTP_CHANNEL_1",
+                "GTP_CHANNEL_2",
+                "GTP_CHANNEL_3",
+                "GTP_CHANNEL_0_MID_LEFT",
+                "GTP_CHANNEL_1_MID_LEFT",
+                "GTP_CHANNEL_2_MID_LEFT",
+                "GTP_CHANNEL_3_MID_LEFT",
+                "GTP_CHANNEL_0_MID_RIGHT",
+                "GTP_CHANNEL_1_MID_RIGHT",
+                "GTP_CHANNEL_2_MID_RIGHT",
+                "GTP_CHANNEL_3_MID_RIGHT",
+        ] or gridinfo.tile_type in already_used:
             continue
+        else:
+            tile_type = gridinfo.tile_type
+            already_used.append(tile_type)
 
         for site_name, site_type in gridinfo.sites.items():
-            if site_type != "GTPE2_CHANNEL":
+            if site_type != site:
                 continue
 
-            return site_name
+            if "RIGHT" in tile_type and "X0" in site_name:
+                continue
+
+            if "LEFT" in tile_type and "X1" in site_name:
+                continue
+
+            yield tile_name, tile_type, site_name, site_type
 
 
 def main():
@@ -53,66 +76,78 @@ module top(
 assign out = in;
 ''')
 
-    site_name = gen_sites()
+    primitives_list = list()
 
-    params = dict()
-    params['site'] = site_name
+    for tile_name, tile_type, site_name, site_type in gen_sites(
+            "GTPE2_CHANNEL"):
 
-    verilog_attr = ""
+        params_list = list()
+        params_dict = dict()
 
-    verilog_attr = "#("
+        params_dict["tile_type"] = tile_type
+        params = dict()
+        params['site'] = site_name
 
-    fuz_dir = os.getenv("FUZDIR", None)
-    assert fuz_dir
-    with open(os.path.join(fuz_dir, "attrs.json"), "r") as attrs_file:
-        attrs = json.load(attrs_file)
+        verilog_attr = ""
 
-    in_use = bool(random.randint(0, 9))
-    params["IN_USE"] = in_use
+        verilog_attr = "#("
 
-    for param, param_info in attrs.items():
-        param_type = param_info["type"]
-        param_values = param_info["values"]
-        param_digits = param_info["digits"]
+        fuz_dir = os.getenv("FUZDIR", None)
+        assert fuz_dir
+        with open(os.path.join(fuz_dir, "attrs.json"), "r") as attrs_file:
+            attrs = json.load(attrs_file)
 
-        if param_type == INT:
-            value = random.choice(param_values)
-            value_str = value
-        elif param_type == BIN:
-            value = random.randint(0, param_values[0])
-            value_str = "{digits}'b{value:0{digits}b}".format(
-                value=value, digits=param_digits)
-        elif param_type in [BOOL, STR]:
-            value = random.choice(param_values)
-            value_str = verilog.quote(value)
+        in_use = bool(random.randint(0, 9))
+        params["IN_USE"] = in_use
 
-        params[param] = value
+        if in_use:
+            for param, param_info in attrs.items():
+                param_type = param_info["type"]
+                param_values = param_info["values"]
+                param_digits = param_info["digits"]
 
-        verilog_attr += """
-    .{}({}),""".format(param, value_str)
+                if param_type == INT:
+                    value = random.choice(param_values)
+                    value_str = value
+                elif param_type == BIN:
+                    value = random.randint(0, param_values[0])
+                    value_str = "{digits}'b{value:0{digits}b}".format(
+                        value=value, digits=param_digits)
+                elif param_type in [BOOL, STR]:
+                    value = random.choice(param_values)
+                    value_str = verilog.quote(value)
 
-    for param in ["TXUSRCLK", "TXUSRCLK2", "TXPHDLYTSTCLK",
-                  "SIGVALIDCLK", "RXUSRCLK", "RXUSRCLK2",
-                  "DRPCLK", "DMONITORCLK", "CLKRSVD0", "CLKRSVD1"]:
-        is_inverted = random.randint(0, 1)
+                params[param] = value
 
-        params[param] = is_inverted
+                verilog_attr += """
+            .{}({}),""".format(param, value_str)
 
-        verilog_attr += """
-    .IS_{}_INVERTED({}),""".format(param, is_inverted)
+            for param in ["TXUSRCLK", "TXUSRCLK2", "TXPHDLYTSTCLK",
+                          "SIGVALIDCLK", "RXUSRCLK", "RXUSRCLK2", "DRPCLK",
+                          "DMONITORCLK", "CLKRSVD0", "CLKRSVD1"]:
+                is_inverted = random.randint(0, 1)
 
-    verilog_attr = verilog_attr.rstrip(",")
-    verilog_attr += "\n)"
+                params[param] = is_inverted
 
-    print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
-    print(
-            """GTPE2_CHANNEL {} gtp_channel ();
-    """.format(verilog_attr))
+                verilog_attr += """
+            .IS_{}_INVERTED({}),""".format(param, is_inverted)
+
+            verilog_attr = verilog_attr.rstrip(",")
+            verilog_attr += "\n)"
+
+            print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
+            print(
+                """GTPE2_CHANNEL {} {} ();
+            """.format(verilog_attr, tile_type.lower()))
+
+        params_list.append(params)
+        params_dict["params"] = params_list
+        primitives_list.append(params_dict)
 
     print("endmodule")
 
     with open('params.json', 'w') as f:
-        json.dump(params, f, indent=2)
+        json.dump(primitives_list, f, indent=2)
 
 
 if __name__ == '__main__':

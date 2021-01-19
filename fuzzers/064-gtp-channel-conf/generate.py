@@ -21,9 +21,17 @@ BOOL = "BOOL"
 STR = "STR"
 
 
-def bitfilter(frame, bit):
+def bitfilter_gtp_channel_x(frame, bit):
     # Filter out interconnect bits.
     if frame not in [28, 29, 30, 31]:
+        return False
+
+    return True
+
+
+def bitfilter_gtp_channel_x_mid(frame, bit):
+    # Filter out interconnect bits.
+    if frame not in [0, 1, 2, 3]:
         return False
 
     return True
@@ -39,53 +47,91 @@ def main():
 
     print("Loading tags")
     with open("params.json") as f:
-        params = json.load(f)
+        primitives_list = json.load(f)
 
-    site = params["site"]
-    in_use = params["IN_USE"]
+    for primitive in primitives_list:
+        tile_type = primitive["tile_type"]
+        params_list = primitive["params"]
 
-    segmk.add_site_tag(site, "IN_USE", in_use)
+        for params in params_list:
+            site = params["site"]
 
-    for param, param_info in attrs.items():
-        value = params[param]
-        param_type = param_info["type"]
-        param_digits = param_info["digits"]
-        param_values = param_info["values"]
+            if "GTPE2_CHANNEL" not in site:
+                continue
 
-        if param_type == INT:
-            param_encodings = param_info["encoding"]
-            param_encoding = param_encodings[param_values.index(value)]
-            bitstr = [
-                int(x) for x in "{value:0{digits}b}".format(
-                    value=param_encoding, digits=param_digits)[::-1]
-            ]
+            in_use = params["IN_USE"]
 
-            for i in range(param_digits):
-                segmk.add_site_tag(site, '%s[%u]' % (param, i), bitstr[i])
-        elif param_type == BIN:
-            bitstr = [
-                int(x) for x in "{value:0{digits}b}".format(
-                    value=value, digits=param_digits)[::-1]
-            ]
+            segmk.add_site_tag(site, "IN_USE", in_use)
 
-            for i in range(param_digits):
-                segmk.add_site_tag(site, "%s[%u]" % (param, i), bitstr[i])
-        elif param_type == BOOL:
-            segmk.add_site_tag(site, param, value == "TRUE")
-        else:
-            assert param_type == STR
+            if in_use:
+                for param, param_info in attrs.items():
+                    value = params[param]
+                    param_type = param_info["type"]
+                    param_digits = param_info["digits"]
+                    param_values = param_info["values"]
 
-            for param_value in param_values:
-                segmk.add_site_tag(site, "{}.{}".format(param, param_value), value == param_value)
+                    if param_type == INT:
+                        param_encodings = param_info["encoding"]
+                        param_encoding = param_encodings[param_values.index(
+                            value)]
+                        bitstr = [
+                            int(x) for x in "{value:0{digits}b}".format(
+                                value=param_encoding, digits=param_digits)
+                            [::-1]
+                        ]
 
-        for param, invert in [("TXUSRCLK", 1), ("TXUSRCLK2", 1), ("TXPHDLYTSTCLK", 1),
-                      ("SIGVALIDCLK", 1), ("RXUSRCLK", 1), ("RXUSRCLK2", 1),
-                      ("DRPCLK", 1), ("DMONITORCLK", 1), ("CLKRSVD0", 1),
-                      ("CLKRSVD1", 1)]:
-            if invert:
-                segmk.add_site_tag(site, "ZINV_" + param, 1 ^ params[param])
-            else:
-                segmk.add_site_tag(site, "INV_" + param, params[param])
+                        for i in range(param_digits):
+                            segmk.add_site_tag(
+                                site, '%s[%u]' % (param, i), bitstr[i])
+                    elif param_type == BIN:
+                        bitstr = [
+                            int(x) for x in "{value:0{digits}b}".format(
+                                value=value, digits=param_digits)[::-1]
+                        ]
+
+                        for i in range(param_digits):
+                            segmk.add_site_tag(
+                                site, "%s[%u]" % (param, i), bitstr[i])
+                    elif param_type == BOOL:
+                        segmk.add_site_tag(site, param, value == "TRUE")
+                    else:
+                        assert param_type == STR
+
+                        for param_value in param_values:
+                            segmk.add_site_tag(
+                                site, "{}.{}".format(param, param_value),
+                                value == param_value)
+
+                for param in ["TXUSRCLK", "TXUSRCLK2", "TXPHDLYTSTCLK",
+                              "SIGVALIDCLK", "RXUSRCLK", "RXUSRCLK2", "DRPCLK",
+                              "DMONITORCLK", "CLKRSVD0", "CLKRSVD1"]:
+                    segmk.add_site_tag(
+                        site, "ZINV_" + param, 1 ^ params[param])
+
+    gtp_channel_x = [
+        "GTP_CHANNEL_0",
+        "GTP_CHANNEL_1",
+        "GTP_CHANNEL_2",
+        "GTP_CHANNEL_3",
+    ]
+
+    gtp_channel_x_mid = [
+        "GTP_CHANNEL_0_MID_LEFT",
+        "GTP_CHANNEL_1_MID_LEFT",
+        "GTP_CHANNEL_2_MID_LEFT",
+        "GTP_CHANNEL_3_MID_LEFT",
+        "GTP_CHANNEL_0_MID_RIGHT",
+        "GTP_CHANNEL_1_MID_RIGHT",
+        "GTP_CHANNEL_2_MID_RIGHT",
+        "GTP_CHANNEL_3_MID_RIGHT",
+    ]
+
+    if tile_type in gtp_channel_x:
+        bitfilter = bitfilter_gtp_channel_x
+    elif tile_type in gtp_channel_x_mid:
+        bitfilter = bitfilter_gtp_channel_x_mid
+    else:
+        assert False, tile_type
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()
