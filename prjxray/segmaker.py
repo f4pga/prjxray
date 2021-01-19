@@ -375,6 +375,8 @@ class Segmaker:
                 tile_type_norm = 'IOI3'
             if tile_type_norm in ['CMT_TOP_L_LOWER_B', 'CMT_TOP_R_LOWER_B']:
                 tile_type_norm = 'CMT_LOWER_B'
+            if 'GTP_CHANNEL' in tile_type_norm:
+                tile_type_norm = 'GTP_CHANNEL'
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:
