@@ -169,6 +169,18 @@ case "$1" in
 	gtp_common_mid_right)
 		cp "$2" "$tmp1" ;;
 
+	gtp_channel_0)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_0./' ;;
+
+	gtp_channel_1)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_1./' ;;
+
+	gtp_channel_2)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_2./' ;;
+
+	gtp_channel_3)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_3./' ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true
