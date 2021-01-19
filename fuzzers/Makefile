@@ -159,6 +159,7 @@ endif
 ifeq ($(XRAY_DATABASE),artix7)
 $(eval $(call fuzzer,061-pcie-conf,005-tilegrid,all))
 $(eval $(call fuzzer,063-gtp-common-conf,005-tilegrid,part))
+$(eval $(call fuzzer,064-gtp-channel-conf,005-tilegrid,all))
 endif
 endif
 endif
