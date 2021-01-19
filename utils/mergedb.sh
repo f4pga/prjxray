@@ -181,6 +181,30 @@ case "$1" in
 	gtp_channel_3)
 		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_3./' ;;
 
+	gtp_channel_0_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_0_MID_LEFT./' ;;
+
+	gtp_channel_1_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_1_MID_LEFT./' ;;
+
+	gtp_channel_2_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_2_MID_LEFT./' ;;
+
+	gtp_channel_3_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_3_MID_LEFT./' ;;
+
+	gtp_channel_0_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_0_MID_RIGHT./' ;;
+
+	gtp_channel_1_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_1_MID_RIGHT./' ;;
+
+	gtp_channel_2_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_2_MID_RIGHT./' ;;
+
+	gtp_channel_3_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_3_MID_RIGHT./' ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true
