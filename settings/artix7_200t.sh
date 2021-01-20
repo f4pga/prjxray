@@ -22,3 +22,5 @@ export XRAY_EXCLUDE_ROI_TILEGRID=""
 export XRAY_IOI3_TILES="RIOI3_X105Y9 LIOI3_X0Y9"
 
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
+
+eval $(python3 ${XRAY_UTILS_DIR}/create_environment.py)

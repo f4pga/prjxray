@@ -26,3 +26,5 @@ export XRAY_ROI_GRID_Y1="104"
 export XRAY_ROI_GRID_Y2="156"
 
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
+
+eval $(python3 ${XRAY_UTILS_DIR}/create_environment.py)
