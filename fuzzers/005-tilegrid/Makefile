@@ -5,6 +5,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+
 FUZDIR=$(shell pwd)
 BUILD_FOLDER=build_${XRAY_PART}
 BUILD_DIR=$(FUZDIR)/$(BUILD_FOLDER)
@@ -33,6 +34,7 @@ GENERATE_FULL_ARGS=
 ifeq (${XRAY_DATABASE}, artix7)
 # Artix7 only
 TILEGRID_TDB_DEPENDENCIES += pcie/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += gtp_common/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
 ifeq (${XRAY_DATABASE}, zynq7)
@@ -139,6 +141,9 @@ hclk_ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 pcie/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd pcie && $(MAKE)
 
+gtp_common/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd gtp_common && $(MAKE)
+
 $(BUILD_FOLDER)/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
 		--fn-in ${BASICDB_TILEGRID} \
@@ -148,14 +153,13 @@ $(BUILD_FOLDER)/tilegrid.json: generate_full.py $(BUILD_FOLDER)/tilegrid_tdb.jso
 	cd $(BUILD_FOLDER) && python3 ${FUZDIR}/generate_full.py \
         --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json
 run:
-	find -name $(BUILD_FOLDER) -exec rm -rf {} \;
-	find -name run.${XRAY_PART}.ok -delete
+	$(MAKE) clean
 	$(MAKE) database
 	$(MAKE) pushdb
 	touch run.${XRAY_PART}.ok
 
 clean:
-	rm -rf build_* run.*.ok
+	rm -rf $(BUILD_FOLDER) run.${XRAY_PART}.ok
 	cd clb && $(MAKE) clean
 	cd clb_int && $(MAKE) clean
 	cd cfg && $(MAKE) clean
@@ -180,6 +184,35 @@ clean:
 	cd hclk_cmt && $(MAKE) clean
 	cd hclk_ioi && $(MAKE) clean
 	cd pcie && $(MAKE) clean
+	cd gtp_common && $(MAKE) clean
 
-.PHONY: database pushdb clean run
+clean_all:
+	rm -rf build_* run.*.ok
+	cd clb && $(MAKE) clean_all
+	cd clb_int && $(MAKE) clean_all
+	cd cfg && $(MAKE) clean_all
+	cd iob && $(MAKE) clean_all
+	cd iob_int && $(MAKE) clean_all
+	cd ioi && $(MAKE) clean_all
+	cd mmcm && $(MAKE) clean_all
+	cd pll && $(MAKE) clean_all
+	cd ps7_int && $(MAKE) clean_all
+	cd bram && $(MAKE) clean_all
+	cd bram_block && $(MAKE) clean_all
+	cd bram_int && $(MAKE) clean_all
+	cd dsp && $(MAKE) clean_all
+	cd dsp_int && $(MAKE) clean_all
+	cd fifo_int && $(MAKE) clean_all
+	cd monitor && $(MAKE) clean_all
+	cd monitor_int && $(MAKE) clean_all
+	cd cfg_int && $(MAKE) clean_all
+	cd orphan_int_column && $(MAKE) clean_all
+	cd clk_hrow && $(MAKE) clean_all
+	cd clk_bufg && $(MAKE) clean_all
+	cd hclk_cmt && $(MAKE) clean_all
+	cd hclk_ioi && $(MAKE) clean_all
+	cd pcie && $(MAKE) clean_all
+	cd gtp_common && $(MAKE) clean_all
+
+.PHONY: database pushdb clean clean_all run
 

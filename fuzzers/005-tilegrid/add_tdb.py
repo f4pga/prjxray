@@ -56,7 +56,13 @@ def load_db(fn):
 
         tparts = tagstr.split('.')
         tile = tparts[0]
+
         for part in tparts[1:]:
+            # Auto align the frame address to the next lowest multiple of 0x80.
+            if part == 'AUTO_FRAME':
+                frame -= (frame % 0x80)
+                continue
+
             k, v = part.split(':')
             if k == "DFRAME":
                 frame -= int(v, 16)
@@ -102,6 +108,7 @@ def run(fn_in, fn_out, verbose=False):
         ("hclk_cmt", 30, 10),
         ("hclk_ioi", 42, 1),
         ("pcie", 36, 101),
+        ("gtp_common", 42, 101),
         ("clb_int", int_frames, int_words),
         ("iob_int", int_frames, int_words),
         ("bram_int", int_frames, int_words),
