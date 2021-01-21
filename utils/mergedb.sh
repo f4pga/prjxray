@@ -160,6 +160,15 @@ case "$1" in
 	pcie_bot)
 		cp "$2" "$tmp1" ;;
 
+	gtp_common)
+		cp "$2" "$tmp1" ;;
+
+	gtp_common_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTP_COMMON_MID_RIGHT\./GTP_COMMON_MID_LEFT./' ;;
+
+	gtp_common_mid_right)
+		cp "$2" "$tmp1" ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true
