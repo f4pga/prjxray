@@ -12,6 +12,7 @@ SYNTH ?= vivado
 YOSYS = $(XRAY_DIR)/third_party/yosys/yosys
 PART = xc7a200tsbg484-1
 PROJECT_NAME = sata
+RISCV_DIR = riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14
 
 all: $(PROJECT_NAME).fasm
 
@@ -28,6 +29,10 @@ clean_litex:
 	@rm -rf ${VIRTUAL_ENV}/src
 	@rm -f litex-install.ok
 
+clean_riscv:
+	@rm -rf $(RISCV_DIR)
+	@rm -f riscv-gcc.ok
+
 help:
 	@echo "Usage: make all [SYNTH=<vivado/yosys>]"
 
@@ -40,8 +45,12 @@ litex-install.ok:
 	pip install -r requirements.txt
 	touch litex-install.ok
 
-build/build.ok: litex-install.ok
-	${VIRTUAL_ENV}/src/litex-boards/litex_boards/targets/nexys_video.py --with-sata --integrated-rom-size 0x10000
+riscv-gcc.ok:
+	wget -qO- https://static.dev.sifive.com/dev-tools/$(RISCV_DIR).tar.gz | tar -xz
+	touch riscv-gcc.ok
+
+build/build.ok: litex-install.ok riscv-gcc.ok
+	env PATH=${PATH}:${PWD}/${RISCV_DIR}/bin ${VIRTUAL_ENV}/src/litex-boards/litex_boards/targets/nexys_video.py --with-sata --integrated-rom-size 0x10000
 	touch build/build.ok
 
 VERILOG_FILES = ./build/nexys_video/gateware/nexys_video.v \
