@@ -25,3 +25,6 @@
 [submodule "third_party/sanitizers-cmake"]
 	path = third_party/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake.git
+[submodule "third_party/display_port"]
+	path = third_party/display_port
+	url = https://github.com/hamsternz/DisplayPort_Verilog.git
