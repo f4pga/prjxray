@@ -228,8 +228,7 @@ db-extras-spartan7-parts: $(addprefix db-part-only-,$(SPARTAN_PARTS))
 
 db-extras-spartan7-harness:
 	+source settings/spartan7_50.sh && \
-		XRAY_PIN_02=H16 XRAY_PIN_03=H13 XRAY_PIN_04=H14 XRAY_PIN_05=H15 XRAY_PIN_06=G13 \
-		XRAY_PART=xc7s50csga324-1 XRAY_EQUIV_PART=xc7s50fgga484-1 \
+		XRAY_PART=xc7s50csga324-1 \
 		$(MAKE) -C fuzzers roi_only
 
 db-extras-kintex7-parts:

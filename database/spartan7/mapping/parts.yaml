@@ -1,0 +1,9 @@
+# part number to device, package and speed grade mapping
+"xc7s50fgga484-1":
+  device: "xc7s50"
+  package: "fgga484"
+  speedgrade: "1"
+"xc7s50csga324-1":
+  device: "xc7s50"
+  package: "csga324"
+  speedgrade: "1"
