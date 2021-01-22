@@ -4,3 +4,4 @@ src
 # Build data
 build*
 sata.*
+*.ok

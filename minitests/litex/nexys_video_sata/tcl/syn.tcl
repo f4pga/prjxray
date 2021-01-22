@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: ISC
 create_project -force -name $env(PROJECT_NAME) -part $env(XRAY_PART)
 
-read_verilog ../build/nexys_video/gateware/nexys_video.v ../src/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv/verilog/VexRiscv.v
+read_verilog ../build/nexys_video/gateware/nexys_video.v $env(VIRTUAL_ENV)/src/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv/verilog/VexRiscv.v
 
 synth_design -top nexys_video -max_dsp 0
 

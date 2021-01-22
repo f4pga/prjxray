@@ -13,14 +13,20 @@ YOSYS = $(XRAY_DIR)/third_party/yosys/yosys
 PART = xc7a200tsbg484-1
 PROJECT_NAME = sata
 
+all: $(PROJECT_NAME).fasm
+
 clean:
-	@find . -name "build-par.*" | xargs rm -rf
-	@find . -name "build-syn.*" | xargs rm -rf
+	@rm -rf build*
 	@rm -f *.edif
 	@rm -f *.bit
 	@rm -f *.bin
 	@rm -f *.log
 	@rm -f *.dcp
+	@rm -f *.fasm
+
+clean_litex:
+	@rm -rf ${VIRTUAL_ENV}/src
+	@rm -f litex-install.ok
 
 help:
 	@echo "Usage: make all [SYNTH=<vivado/yosys>]"
@@ -35,15 +41,15 @@ litex-install.ok:
 	touch litex-install.ok
 
 build/build.ok: litex-install.ok
-	./src/litex-boards/litex_boards/targets/nexys_video.py --with-sata --integrated-rom-size 0x10000
+	${VIRTUAL_ENV}/src/litex-boards/litex_boards/targets/nexys_video.py --with-sata --integrated-rom-size 0x10000
 	touch build/build.ok
 
 VERILOG_FILES = ./build/nexys_video/gateware/nexys_video.v \
-				./src/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv/verilog/VexRiscv.v
+                ${VIRTUAL_ENV}/src/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv/verilog/VexRiscv.v
 
 ifeq ($(SYNTH), yosys)
 $(PROJECT_NAME).edif: $(YOSYS) build/build.ok
-	$(YOSYS) -p "read_verilog $(VERILOG_FILES); techmap -map retarget.v; synth_xilinx -flatten -nosrl; write_edif -pvector bra -attrprop $@"  -l $@.log
+	$(YOSYS) -p "read_verilog $(VERILOG_FILES); techmap -map retarget.v; synth_xilinx -flatten -nosrl -nodsp; write_edif -pvector bra -attrprop $@"  -l $@.log
 
 else ifeq ($(SYNTH), vivado)
 $(PROJECT_NAME).edif: build/build.ok tcl/syn.tcl
