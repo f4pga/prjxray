@@ -13,7 +13,7 @@ import json
 import os
 from enum import Enum
 
-from prjxray.segmaker import Segmaker
+from prjxray.segmaker import Segmaker, add_site_group_zero
 
 INT = "INT"
 BIN = "BIN"
@@ -97,10 +97,18 @@ def main():
                     else:
                         assert param_type == STR
 
-                        for param_value in param_values:
-                            segmk.add_site_tag(
-                                site, "{}.{}".format(param, param_value),
-                                value == param_value)
+                        # The RXSLIDE_MODE parameter has overlapping bits
+                        # for its possible values. We need to treat it
+                        # differently
+                        if param == "RXSLIDE_MODE":
+                            add_site_group_zero(
+                                segmk, site, "{}.".format(param), param_values,
+                                "OFF", value)
+                        else:
+                            for param_value in param_values:
+                                segmk.add_site_tag(
+                                    site, "{}.{}".format(param, param_value),
+                                    value == param_value)
 
                 for param in ["TXUSRCLK", "TXUSRCLK2", "TXPHDLYTSTCLK",
                               "SIGVALIDCLK", "RXUSRCLK", "RXUSRCLK2", "DRPCLK",

@@ -291,8 +291,8 @@
     },
     "RXLPM_LF_CFG": {
         "type": "BIN",
-        "values": [3, 65535],
-        "digits": 16
+        "values": [262144],
+        "digits": 18
     },
     "RXLPM_HF_CFG": {
         "type": "BIN",

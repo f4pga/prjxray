@@ -19,8 +19,6 @@ FUZDIR ?= ${PWD}
 
 all: database
 
-# generate.sh / top_generate.sh call make, hence the command must
-# have a + before it.
 $(SPECIMENS_OK): $(SPECIMENS_DEPS)
 	mkdir -p ${BUILD_DIR}
 	bash ${XRAY_DIR}/utils/top_generate.sh $(subst /OK,,$@)
@@ -39,7 +37,7 @@ clean:
 database: ${BUILD_DIR}/segbits_gtp_channelx.db
 
 ${BUILD_DIR}/segbits_gtp_channelx.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -o ${BUILD_DIR}/segbits_gtp_channelx.rdb $$(find $(SPECIMENS) -name "segdata_gtp_channel_[0123]*")
+	${XRAY_SEGMATCH} -c 9 -o ${BUILD_DIR}/segbits_gtp_channelx.rdb $$(find $(SPECIMENS) -name "segdata_gtp_channel_[0123]*")
 
 ${BUILD_DIR}/segbits_gtp_channelx.db: ${BUILD_DIR}/segbits_gtp_channelx.rdb
 	${XRAY_DBFIXUP} --db-root ${BUILD_DIR} --zero-db bits.dbf \
