@@ -24,3 +24,5 @@ __pycache__
 *.pyc
 *.swp
 *.egg-info
+*vivado*.jou
+*vivado*.log
