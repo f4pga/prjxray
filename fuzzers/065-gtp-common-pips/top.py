@@ -20,7 +20,10 @@ from prjxray.db import Database
 
 def read_site_to_cmt():
     """ Yields clock sources and which CMT they route within. """
-    with open(os.path.join(os.getenv('FUZDIR'), 'build',
+    fuzdir = os.getenv('FUZDIR')
+    part = os.getenv('XRAY_PART')
+
+    with open(os.path.join(fuzdir, 'build_{}'.format(part),
                            'cmt_regions.csv')) as f:
         for l in f:
             site, cmt = l.strip().split(',')

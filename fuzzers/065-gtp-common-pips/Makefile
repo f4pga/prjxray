@@ -6,51 +6,53 @@
 #
 # SPDX-License-Identifier: ISC
 export FUZDIR=$(shell pwd)
-PIP_TYPE?=gtp_common
+PIP_TYPE?=gtp_common_${XRAY_PART}
+SEG_TYPE?=gtp_common
 PIPLIST_TCL=$(FUZDIR)/gtp_common_pip_list.tcl
 
+BUILD_DIR = ${FUZDIR}/build_${XRAY_PART}
+RUN_OK = run.${XRAY_PART}.ok
 
 TODO_RE=".*"
 
-MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE) --sides ""
-N = 20
+MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(SEG_TYPE) --re $(TODO_RE) --sides ""
+N = 60
 
 SEGMATCH_FLAGS=-c 2
-SPECIMENS_DEPS=build/cmt_regions.csv
-A_PIPLIST=gtp_common.txt
+SPECIMENS_DEPS=$(BUILD_DIR)/cmt_regions.csv
+A_PIPLIST=gtp_common_${XRAY_PART}.txt
 
 include ../pip_loop.mk
 
-build/segbits_gtp_common.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o build/segbits_gtp_common.rdb \
-		$(shell find build -name segdata_gtp_common*.txt)
+$(BUILD_DIR)/segbits_gtp_common.rdb: $(SPECIMENS_OK)
+	${XRAY_SEGMATCH} ${SEGMATCH_FLAGS} -o $(BUILD_DIR)/segbits_gtp_common.rdb \
+		$(shell find $(BUILD_DIR) -name segdata_gtp_common*.txt)
 
-RDBS = build/segbits_gtp_common.rdb
+RDBS = $(BUILD_DIR)/segbits_gtp_common.rdb
 
 database: ${RDBS}
-	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf \
-		--seg-fn-in build/segbits_gtp_common.rdb \
-		--seg-fn-out build/segbits_gtp_common.db
+	${XRAY_DBFIXUP} --db-root $(BUILD_DIR) --zero-db bits.dbf \
+		--seg-fn-in $(BUILD_DIR)/segbits_gtp_common.rdb \
+		--seg-fn-out $(BUILD_DIR)/segbits_gtp_common.db
 
 	# Keep a copy to track iter progress
-	cp build/segbits_gtp_common.rdb build/$(ITER)/segbits_gtp_common.rdb
-	cp build/segbits_gtp_common.db build/$(ITER)/segbits_gtp_common.db
+	cp $(BUILD_DIR)/segbits_gtp_common.rdb $(BUILD_DIR)/$(ITER)/segbits_gtp_common.rdb
+	cp $(BUILD_DIR)/segbits_gtp_common.db $(BUILD_DIR)/$(ITER)/segbits_gtp_common.db
 
 	# Clobber existing .db to eliminate potential conflicts
-	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db build/database/${XRAY_DATABASE}
-	XRAY_DATABASE_DIR=${FUZDIR}/build/database ${XRAY_MERGEDB} gtp_common build/segbits_gtp_common.db
+	cp ${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/segbits*.db $(BUILD_DIR)/database/${XRAY_DATABASE}
+	XRAY_DATABASE_DIR=$(BUILD_DIR)/database ${XRAY_MERGEDB} gtp_common_mid_left $(BUILD_DIR)/segbits_gtp_common.db
+	XRAY_DATABASE_DIR=$(BUILD_DIR)/database ${XRAY_MERGEDB} gtp_common_mid_right $(BUILD_DIR)/segbits_gtp_common.db
 
-build/cmt_regions.csv: output_cmt.tcl
-	mkdir -p build
-	cd build/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
+$(BUILD_DIR)/cmt_regions.csv: output_cmt.tcl
+	mkdir -p $(BUILD_DIR)
+	cd $(BUILD_DIR)/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
+
+clean_all:
+	rm -rf build_* run.*.ok
 
 pushdb: database
-	${XRAY_MERGEDB} gtp_common_mid_left build/segbits_gtp_common.db
-	${XRAY_MERGEDB} gtp_common_mid_right build/segbits_gtp_common.db
+	${XRAY_MERGEDB} gtp_common_mid_left $(BUILD_DIR)/segbits_gtp_common.db
+	${XRAY_MERGEDB} gtp_common_mid_right $(BUILD_DIR)/segbits_gtp_common.db
 
-run:
-	$(MAKE) clean
-	+$(FUZDIR)/../int_loop.sh --check-args "--zero-entries --timeout-iters 10"
-	touch run.${XRAY_PART}.ok
-
-.PHONY: database pushdb run
+.PHONY: database pushdb run clean
