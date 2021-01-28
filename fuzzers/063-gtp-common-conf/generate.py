@@ -88,14 +88,11 @@ def main():
                         segmk.add_site_tag(
                             site, "%s[%u]" % (param, i), bitstr[i])
 
-            for param, invert in [("GTGREFCLK1", 0), ("GTGREFCLK0", 0),
-                                  ("PLL0LOCKDETCLK", 1), ("PLL1LOCKDETCLK",
-                                                          1), ("DRPCLK", 1)]:
-                if invert:
-                    segmk.add_site_tag(
-                        site, "ZINV_" + param, 1 ^ params[param])
-                else:
-                    segmk.add_site_tag(site, "INV_" + param, params[param])
+            for param in ["PLL0LOCKDETCLK", "PLL1LOCKDETCLK", "DRPCLK"]:
+                segmk.add_site_tag(site, "ZINV_" + param, 1 ^ params[param])
+
+            for param in ["GTREFCLK0", "GTREFCLK1", "BOTH_GTREFCLK_USED"]:
+                segmk.add_site_tag(site, param, params[param])
 
     for params in params_list:
         site = params["site"]
