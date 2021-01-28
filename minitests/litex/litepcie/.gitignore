@@ -1,6 +1,6 @@
 # Build data
 build*
-sata.*
+*.fasm
 *.ok
 
 # Riscv toolchain
