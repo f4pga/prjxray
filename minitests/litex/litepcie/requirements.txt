@@ -1,0 +1,14 @@
+# Litex
+-e git+https://github.com/enjoy-digital/litex@7abfbd9825188d1f6d97453838e18ed7af5526a7#egg=litex
+-e git+https://github.com/enjoy-digital/litedram@ab2423e3dd06783d80fef7aeb43b7c5513c1f2f0#egg=litedram
+-e git+https://github.com/enjoy-digital/liteeth@7448170390ddf4b7c353ae10932377255581c25a#egg=liteeth
+-e git+https://github.com/enjoy-digital/liteiclink@0980a7cf4ffcb0b69a84fa0343a66180408b2a91#egg=liteiclink
+-e git+https://github.com/enjoy-digital/litepcie@01d7b584e8c222ba986b4c8f939d690b9c6f6f7c#egg=litepcie
+-e git+https://github.com/litex-hub/litex-boards@1d8f0a98298e0ed9d5fed08daa7c25aded7ecbb4#egg=litex_boards
+
+# Migen and nMigen
+-e git+https://github.com/m-labs/migen@40b1092a05ec7659c42c8087b0c229dcfb5d9ca1#egg=migen
+-e git+https://github.com/nmigen/nmigen@490fca57457b16421f7b3f2c7812bb229b17744a#egg=nmigen
+
+
+-e git+https://github.com/litex-hub/pythondata-cpu-vexriscv@16c5dded21ca50b73a2bdafab10eeef2ca816818#egg=pythondata_cpu_vexriscv
