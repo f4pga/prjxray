@@ -15,7 +15,7 @@ RISCV_DIR = riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14
 all: $(PROJECT_NAME).fasm
 
 clean:
-	@rm -rf build*
+	@rm -rf build
 	@rm -f *.fasm
 
 clean_litex:
@@ -40,7 +40,9 @@ riscv-gcc.ok:
 	touch riscv-gcc.ok
 
 build/netv2/gateware/netv2.bit: litex-install.ok riscv-gcc.ok
-	env PATH=${PATH}:${PWD}/${RISCV_DIR}/bin ${VIRTUAL_ENV}/src/litex-boards/litex_boards/targets/netv2.py --with-pcie --variant a7-100 --build
+	export PATH=${PATH}:${PWD}/${RISCV_DIR}/bin && \
+		source ${XRAY_VIVADO_SETTINGS} && \
+		${VIRTUAL_ENV}/src/litex-boards/litex_boards/targets/netv2.py --with-pcie --variant a7-100 --build
 
 $(PROJECT_NAME).fasm: build/netv2/gateware/netv2.bit
 	source $(XRAY_DIR)/settings/artix7.sh && env XRAY_PART=$(PART) ${XRAY_BIT2FASM} --verbose build/netv2/gateware/netv2.bit > $(PROJECT_NAME).fasm
