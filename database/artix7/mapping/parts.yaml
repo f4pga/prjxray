@@ -11,6 +11,10 @@
   device: "xc7a100t"
   package: "fgg676"
   speedgrade: "1"
+"xc7a100tfgg484-2":
+  device: "xc7a100t"
+  package: "fgg484"
+  speedgrade: "2"
 "xc7a100tcsg324-1":
   device: "xc7a100t"
   package: "csg324"

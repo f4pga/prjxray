@@ -3,7 +3,7 @@
 -e git+https://github.com/enjoy-digital/litedram@ab2423e3dd06783d80fef7aeb43b7c5513c1f2f0#egg=litedram
 -e git+https://github.com/enjoy-digital/liteeth@7448170390ddf4b7c353ae10932377255581c25a#egg=liteeth
 -e git+https://github.com/enjoy-digital/liteiclink@0980a7cf4ffcb0b69a84fa0343a66180408b2a91#egg=liteiclink
--e git+https://github.com/enjoy-digital/litesata@fae9f8d5b7b6d4c6a0a93b496bd15db5201d14f7#egg=litesata
+-e git+https://github.com/enjoy-digital/litepcie@01d7b584e8c222ba986b4c8f939d690b9c6f6f7c#egg=litepcie
 -e git+https://github.com/litex-hub/litex-boards@1d8f0a98298e0ed9d5fed08daa7c25aded7ecbb4#egg=litex_boards
 
 # Migen and nMigen

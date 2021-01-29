@@ -200,6 +200,8 @@ db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
 db-extras-artix7-harness:
 	+source settings/artix7.sh && \
 		XRAY_PART=xc7a100tcsg324-1 $(MAKE) -C fuzzers roi_only
+	+source settings/artix7.sh && \
+		XRAY_PART=xc7a100tfgg484-2 $(MAKE) -C fuzzers roi_only
 	+source settings/artix7_50t.sh && \
 		XRAY_PART=xc7a35tftg256-1 $(MAKE) -C fuzzers roi_only
 	+source settings/artix7_200t.sh && \
