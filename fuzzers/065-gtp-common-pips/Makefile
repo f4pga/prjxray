@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: ISC
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=gtp_common_${XRAY_PART}
-SEG_TYPE?=gtp_common
+SEG_TYPE?=gtp_common_mid_left
 PIPLIST_TCL=$(FUZDIR)/gtp_common_pip_list.tcl
 
 BUILD_DIR = ${FUZDIR}/build_${XRAY_PART}
@@ -21,6 +21,8 @@ N = 60
 SEGMATCH_FLAGS=-c 2
 SPECIMENS_DEPS=$(BUILD_DIR)/cmt_regions.csv
 A_PIPLIST=gtp_common_${XRAY_PART}.txt
+
+CHECK_ARGS= --zero-entries --timeout-iters 5 --todo-dir $(BUILD_DIR)/todo
 
 include ../pip_loop.mk
 

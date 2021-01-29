@@ -31,7 +31,7 @@ proc print_tile_pips {tile_type filename} {
             set dst_gtp_mux_match [regexp {GTPE2_COMMON_[RT]XOUTCLK_MUX_[0123]} $dst_wire]
 
             if { $dst_hclk_match || $dst_ibufds_mux_match || $dst_gtp_mux_match } {
-                set pip_string "$tile_type.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
+                set pip_string "GTP_COMMON.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
                 if ![dict exists $pips $pip_string] {
                     puts $fp $pip_string
                     dict set pips $pip_string 1

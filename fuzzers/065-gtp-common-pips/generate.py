@@ -88,7 +88,7 @@ def main():
         tile_type = pips_srcs_dsts["type"]
         pips = pips_srcs_dsts["pips"]
 
-        for src, dst in pipdata["GTP_COMMON_MID_LEFT"]:
+        for src, dst in pipdata["GTP_COMMON"]:
             if (src, dst) in ignpip:
                 pass
             elif (src, dst) in pips:

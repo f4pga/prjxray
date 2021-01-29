@@ -39,7 +39,7 @@ proc shuffle_list {list} {
 
 # Get the dictionary of nets with one corresponding source wire
 # of a PIP from the todo list
-proc get_nets_with_todo_pip_wires {direction net_regexp wire_regexp used_destinations {verbose false}} {
+proc get_nets_with_todo_pip_wires {direction net_regexp wire_regexp used_destinations {verbose false} {cmt_net false}} {
     set todo_map [load_todo $direction]
     set nets [get_nets]
     set todo_nets [dict create]
@@ -70,6 +70,10 @@ proc get_nets_with_todo_pip_wires {direction net_regexp wire_regexp used_destina
         set wire [lindex [split $wire /] 1]
         set tile_type [get_property TILE_TYPE [get_tiles $tile]]
 
+        if { $cmt_net } {
+            dict set todo_nets $net [list $tile $wire]
+            continue
+        }
 
         if { ![dict exists $todo_map $wire] } {
             continue
@@ -122,40 +126,11 @@ proc get_nets_with_todo_pip_wires {direction net_regexp wire_regexp used_destina
             puts "Interesting net $net (including $wire) is being rerouted."
         }
     }
+
     return $todo_nets
 }
 
-proc remove_net_randomly {wire_regexp} {
-    # Randomly removes a net containing a given wire
-    set nets [get_nets]
-    set net_to_remove ""
-
-    foreach net $nets {
-        set wires [get_wires -of_objects $net]
-
-        foreach wire $wires {
-            if [regexp $wire_regexp $wire] {
-                set net_to_remove $net
-                break
-            }
-        }
-    }
-
-    if { $net_to_remove != "" && rand() <= 0.1  } {
-        puts "Removing net: $net_to_remove"
-        remove_net $net_to_remove
-    }
-}
-
 proc route_todo {} {
-
-    # It is very common to have nets passing through the
-    # HCLK_GTP_CK_IN[01] wires, resulting in <const1> results.
-    # This step removes the net containing the problematic
-    # wire with a 10% probability
-    remove_net_randomly "HCLK_GTP_CK_IN0"
-    remove_net_randomly "HCLK_GTP_CK_IN1"
-
     set used_destinations [dict create]
     set todo_map [load_todo "dsts"]
     set gtp_channel_nets [get_nets_with_todo_pip_wires "dsts" "gtp_channel_clock" "GTPE2_COMMON_\[TR\]XOUTCLK_MUX_\[0123\]" $used_destinations true]
@@ -239,8 +214,8 @@ proc route_todo {} {
     }
 
     set todo_map [load_todo "srcs"]
-    set pll_nets [get_nets_with_todo_pip_wires "srcs" "pll_clock" "HCLK_GTP_CK_IN" $used_destinations true]
-    set mmcm_nets [get_nets_with_todo_pip_wires "srcs" "mmcm_clock" "HCLK_GTP_CK_IN" $used_destinations true]
+    set pll_nets [get_nets_with_todo_pip_wires "srcs" "pll_clock" "HCLK_GTP_CK_IN" $used_destinations true true]
+    set mmcm_nets [get_nets_with_todo_pip_wires "srcs" "mmcm_clock" "HCLK_GTP_CK_IN" $used_destinations true true]
     set cmt_nets [dict merge $pll_nets $mmcm_nets]
     puts "CMT nets: $cmt_nets"
     dict for {net tile_wire} $cmt_nets {
@@ -304,13 +279,11 @@ proc route_todo {} {
             set src_wire [lindex $wire_pair 0]
             set dst_wire [lindex $wire_pair 1]
 
-            if { [dict exists $used_destinations "$tile/$dst_wire"] } {
-                puts "Not routing to $tile / $dst_wire, in use."
-                continue
-            }
+            set used_dst_wire [dict exists $used_destinations "$tile/$dst_wire"]
+            set used_src_wire [dict exists $used_destinations "$tile/$src_wire"]
 
-            if { [dict exists $used_destinations "$tile/$src_wire"] } {
-                puts "Not routing to $tile / $src_wire, in use."
+            if { $used_dst_wire || $used_src_wire } {
+                puts "Not routing to $tile / $src_wire or $dst_wire, in use."
                 continue
             }
 

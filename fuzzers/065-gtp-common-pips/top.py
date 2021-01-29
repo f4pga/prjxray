@@ -30,6 +30,28 @@ def read_site_to_cmt():
             yield (site, cmt)
 
 
+def todo_pips():
+    """ Returns a boolean tuple corresponding to the presence or not
+        of a type of PIP in the todo list."""
+
+    is_gtp_channel_left = False
+    is_ibufds_left = False
+    is_cmt_left = False
+
+    with open("../../todo_all.txt", "r") as todo_file:
+        for line in todo_file:
+            fields = line.split(".")
+
+            if "HCLK_GTP_CK_IN" not in fields[1]:
+                continue
+
+            is_gtp_channel_left |= fields[2].startswith("GTPE2_COMMON")
+            is_ibufds_left |= fields[2].startswith("IBUFDS")
+            is_cmt_left |= fields[2].startswith("HCLK")
+
+    return (is_gtp_channel_left, is_ibufds_left, is_cmt_left)
+
+
 class ClockSources(object):
     """ Class for tracking clock sources.
     """
@@ -288,7 +310,7 @@ module top(
     );""".format(site=site, rx=gtp_channel_clock_rx, tx=gtp_channel_clock_tx))
 
     for cmt in cmt_with_gtp:
-        cmt_clock_used = 0
+        cmt_clock_used = False
 
         for _, bufhce in gen_sites('BUFHCE'):
             if site_to_cmt[bufhce] != cmt:
@@ -296,12 +318,16 @@ module top(
 
             chance = random.random()
 
-            if chance < 0.2 or cmt_clock_used < 3:
-                cmt_clock_used += 1
+            use_gtp_channel, use_ibufds, use_cmt = todo_pips()
+
+            if (chance < 0.3 and use_cmt) or not cmt_clock_used:
+                # There must always be at least one CMT clock used
+                # to trigger the bits for the GTP_COMMON and IBUFDS pips
+                cmt_clock_used = True
                 clock_name = cmt_clock_sources.get_random_source(cmt)
-            elif chance > 0.2 and chance < 0.4:
+            elif chance > 0.3 and chance < 0.4 and use_ibufds:
                 clock_name = ibufds_clock_sources.get_random_source(cmt)
-            elif chance < 0.6:
+            elif chance < 0.7 and use_gtp_channel:
                 clock_name = gtp_channel_clock_sources.get_random_source(cmt)
             else:
                 continue
