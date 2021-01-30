@@ -89,6 +89,16 @@ running any other commands:
     source settings/artix7.sh
 
 ### Step 7: ###
+Prepare the database with static part information, which are needed by the
+fuzzers, either for all device families
+
+    make db-prepare-parts
+
+or only for a selected one
+
+    make db-prepare-artix7
+
+### Step 8: ###
 (Option 1, recommended) - Download a current stable version (you can use the
 Python API with a pre-generated database)
 
@@ -99,13 +109,13 @@ Python API with a pre-generated database)
     cd fuzzers
     make -j$(nproc)
 
-### Step 8: ###
+### Step 9: ###
 Pick a fuzzer (or write your own) and run:
 
     cd fuzzers/010-clb-lutinit
     make -j$(nproc) run
 
-### Step 9: ###
+### Step 10: ###
 Create HTML documentation:
 
     cd htmlgen
