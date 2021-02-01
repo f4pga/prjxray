@@ -91,7 +91,8 @@ def main():
             for param in ["PLL0LOCKDETCLK", "PLL1LOCKDETCLK", "DRPCLK"]:
                 segmk.add_site_tag(site, "ZINV_" + param, 1 ^ params[param])
 
-            for param in ["GTREFCLK0", "GTREFCLK1", "BOTH_GTREFCLK_USED"]:
+            for param in ["GTREFCLK0_USED", "GTREFCLK1_USED",
+                          "BOTH_GTREFCLK_USED"]:
                 segmk.add_site_tag(site, param, params[param])
 
     for params in params_list:

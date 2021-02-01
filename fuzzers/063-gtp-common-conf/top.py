@@ -165,7 +165,8 @@ IBUFDS_GTE2 #(
 
             verilog_ports = ""
 
-            for param in ["GTREFCLK0", "GTREFCLK1", "BOTH_GTREFCLK_USED"]:
+            for param in ["GTREFCLK0_USED", "GTREFCLK1_USED",
+                          "BOTH_GTREFCLK_USED"]:
                 params[param] = 0
 
             if tile_name in ibufds_out_wires:
@@ -179,7 +180,7 @@ IBUFDS_GTE2 #(
             .GTREFCLK{}({}),""".format(location, wire)
 
                     gtrefclk_ports_used += 1
-                    params["GTREFCLK{}".format(location)] = 1
+                    params["GTREFCLK{}_USED".format(location)] = 1
 
                 if gtrefclk_ports_used == 2:
                     params["BOTH_GTREFCLK_USED"] = 1
