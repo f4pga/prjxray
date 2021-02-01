@@ -221,6 +221,99 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
             tile = database[tile_name]
 
 
+def propagate_INT_INTERFACE_bits_in_column(
+        database, tiles_by_grid, int_interface_name):
+    """ Propigate INT offsets up and down INT columns.
+
+    INT columns appear to be fairly regular, where starting from offset 0,
+    INT tiles next to INT tiles increase the word offset by 2.  The HCLK tile
+    is surrounded above and sometimes below by an INT tile.  Because the HCLK
+    tile only useds one word, the offset increase by one at the HCLK.
+
+    """
+
+    seen_int = set()
+
+    int_frames, int_words, _ = localutil.get_entry('INT', 'CLB_IO_CLK')
+    hclk_frames, hclk_words, _ = localutil.get_entry('HCLK', 'CLB_IO_CLK')
+
+    for tile_name in sorted(database.keys()):
+        tile = database[tile_name]
+
+        if not tile['type'].startswith(int_interface_name):
+            continue
+
+        if not tile['bits']:
+            continue
+
+        if tile_name in seen_int:
+            continue
+
+        # Walk down INT column
+        down_tile = tile
+        down_tile_name = tile_name
+        while True:
+            seen_int.add(down_tile_name)
+
+            baseaddr = int(down_tile['bits']['CLB_IO_CLK']['baseaddr'], 0)
+            offset = down_tile['bits']['CLB_IO_CLK']['offset']
+            extra_offset = 0
+
+            next_tile = tiles_by_grid[(
+                down_tile['grid_x'], down_tile['grid_y'] + 1)]
+            if next_tile.startswith("HCLK"):
+                next_tile = tiles_by_grid[(
+                    down_tile['grid_x'], down_tile['grid_y'] + 2)]
+                extra_offset = hclk_words
+
+            next_tile_type = database[next_tile]['type']
+
+            if next_tile_type != tile['type']:
+                break
+
+            if next_tile_type == down_tile['type']:
+                # INT next to INT
+                offset -= (int_words + extra_offset)
+                localutil.add_tile_bits(
+                    next_tile, database[next_tile], baseaddr, offset,
+                    int_frames, int_words)
+
+            down_tile_name = next_tile
+            down_tile = database[down_tile_name]
+
+        # Walk up INT column
+        up_tile = tile
+        up_tile_name = tile_name
+        while True:
+            seen_int.add(up_tile_name)
+
+            baseaddr = int(up_tile['bits']['CLB_IO_CLK']['baseaddr'], 0)
+            offset = up_tile['bits']['CLB_IO_CLK']['offset']
+            extra_offset = 0
+
+            next_tile = tiles_by_grid[(
+                up_tile['grid_x'], up_tile['grid_y'] - 1)]
+            if next_tile.startswith("HCLK"):
+                next_tile = tiles_by_grid[(
+                    up_tile['grid_x'], up_tile['grid_y'] - 2)]
+                extra_offset = hclk_words
+
+            next_tile_type = database[next_tile]['type']
+
+            if next_tile_type != tile['type']:
+                break
+
+            if next_tile_type == up_tile['type']:
+                # INT next to INT
+                offset += (int_words + extra_offset)
+                localutil.add_tile_bits(
+                    next_tile, database[next_tile], baseaddr, offset,
+                    int_frames, int_words)
+
+            up_tile_name = next_tile
+            up_tile = database[up_tile_name]
+
+
 def propagate_rebuf(database, tiles_by_grid):
     """ Writing a fuzzer for the CLK_BUFG_REBUF tiles is hard, so propigate from CLK_HROW tiles.
 
@@ -454,6 +547,8 @@ def run(json_in_fn, json_out_fn, verbose=False):
 
     propagate_INT_lr_bits(database, tiles_by_grid, verbose=verbose)
     propagate_INT_bits_in_column(database, tiles_by_grid)
+    propagate_INT_INTERFACE_bits_in_column(
+        database, tiles_by_grid, "GTP_INT_INTERFACE")
     propagate_rebuf(database, tiles_by_grid)
     propagate_IOB_SING(database, tiles_by_grid)
     propagate_IOI_SING(database, tiles_by_grid)
