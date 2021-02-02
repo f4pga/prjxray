@@ -149,7 +149,7 @@ class FasmDisassembler(object):
                         len(remaining_bits),
                     ))
 
-                for bit in remaining_bits:
+                for bit in sorted(remaining_bits):
                     frame_offset = frame % bitstream.FRAME_ALIGNMENT
                     aligned_frame = frame - frame_offset
                     wordidx = bit // bitstream.WORD_SIZE_BITS
