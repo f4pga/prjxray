@@ -131,10 +131,14 @@ proc get_nets_with_todo_pip_wires {direction net_regexp wire_regexp used_destina
 }
 
 proc route_todo {} {
+    set verbose false
+
     set used_destinations [dict create]
+
+    # Re-route GTP-related nets, which are originated from the GTPE2_CHANNEL and/or IBUFDS_GTE2 primitives.
     set todo_map [load_todo "dsts"]
-    set gtp_channel_nets [get_nets_with_todo_pip_wires "dsts" "gtp_channel_clock" "GTPE2_COMMON_\[TR\]XOUTCLK_MUX_\[0123\]" $used_destinations true]
-    set ibufds_nets [get_nets_with_todo_pip_wires "dsts" "ibufds_clock" "IBUFDS_GTPE2_\[01\]_MGTCLKOUT_MUX" $used_destinations true]
+    set gtp_channel_nets [get_nets_with_todo_pip_wires "dsts" "gtp_channel_clock" "GTPE2_COMMON_\[TR\]XOUTCLK_MUX_\[0123\]" $used_destinations $verbose]
+    set ibufds_nets [get_nets_with_todo_pip_wires "dsts" "ibufds_clock" "IBUFDS_GTPE2_\[01\]_MGTCLKOUT_MUX" $used_destinations $verbose]
     set gtp_nets [dict merge $gtp_channel_nets $ibufds_nets]
     puts "GTP nets: $gtp_nets"
     dict for {net tile_wire} $gtp_nets {
@@ -213,9 +217,10 @@ proc route_todo {} {
         }
     }
 
+    # Re-route CMT-related nets, which are originated from the fabric's PLL/MMCM primitives
     set todo_map [load_todo "srcs"]
-    set pll_nets [get_nets_with_todo_pip_wires "srcs" "pll_clock" "HCLK_GTP_CK_IN" $used_destinations true true]
-    set mmcm_nets [get_nets_with_todo_pip_wires "srcs" "mmcm_clock" "HCLK_GTP_CK_IN" $used_destinations true true]
+    set pll_nets [get_nets_with_todo_pip_wires "srcs" "pll_clock" "HCLK_GTP_CK_IN" $used_destinations $verbose true]
+    set mmcm_nets [get_nets_with_todo_pip_wires "srcs" "mmcm_clock" "HCLK_GTP_CK_IN" $used_destinations $verbose true]
     set cmt_nets [dict merge $pll_nets $mmcm_nets]
     puts "CMT nets: $cmt_nets"
     dict for {net tile_wire} $cmt_nets {
@@ -230,19 +235,25 @@ proc route_todo {} {
             continue
         }
 
+        # All clock nets which have a source belonging to a PLL/MMCM tile can be routed to any
+        # HCLK_GTP_CK_MUX --> HCLK_GTP_CK_IN wire pair, hence we build a list of all the remaining
+        # PIPs to choose from.
         puts "Rerouting net $net at $tile / $wire (type $tile_type)"
         puts "Previous target wire: $old_origin_dst_wire"
 
-        set old_origin_node [get_nodes -of_objects $old_origin_dst_wire]
-        if [regexp "HCLK_GTP_CK_IN.*" $old_origin_dst_wire match group] {
-            set old_target_side $group
-        }
         foreach dst $dsts {
             set srcs [dict get $todo_map $dst]
             foreach src $srcs {
-
+                # For each HCLK_GTP_CK_IN wire, get the source node (HCLK_GTP_CK_MUX) from the todo_map
+                # that still needs to be documented.
+                #
+                # Each HCLK_GTP_CK_IN has two possible HCLK_GTP_CK_MUX sources to be paired with.
                 set src_wire [lindex $src 1]
 
+                # There are PIPs that do connect HCLK_GTP_CK_IN wires to GTP_CHANNEL- and IBUFDS-related wires.
+                #
+                # These kinds of PIPs are solved at a previous stage of this process, hence, the todo PIP list should
+                # not contain these src/dst pairs at this stage, but only PIPs to the fabric (PLL/MMCM nets).
                 set is_gtp_net 1
                 if [regexp "HCLK_GTP_CK_MUX.*" $src_wire match group] {
                     set is_gtp_net 0
@@ -282,6 +293,7 @@ proc route_todo {} {
             set used_dst_wire [dict exists $used_destinations "$tile/$dst_wire"]
             set used_src_wire [dict exists $used_destinations "$tile/$src_wire"]
 
+            # If one between MUX or IN wire pairs is already used, skip this todo
             if { $used_dst_wire || $used_src_wire } {
                 puts "Not routing to $tile / $src_wire or $dst_wire, in use."
                 continue

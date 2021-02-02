@@ -17,9 +17,13 @@ import os.path
 def bitfilter(frame, word):
     word = int(word / 32)
 
+    # Clock-related PIPs in the GTP_COMMON_MID_[LEFT|RIGHT] have bits
+    # from frame 0 to 7, hence, all the other frames are skipped.
     if frame not in [0, 1, 2, 3, 4, 5, 6, 7]:
         return False
 
+    # All the Clock-related PIPs have bits at word 50 in the GTP_COMMON tile.
+    # Filter out all bits not belonging to word 50.
     if word != 50:
         return False
 
