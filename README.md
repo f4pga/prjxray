@@ -40,8 +40,10 @@ shell that is then only used to run Vivado to avoid these problems.
 **Is 2017.2 really required?** Yes, only `2017.2` works. Until Issue #14 is solved, **only** `2017.2` works and will be supported.
 
 ### Step 2: ###
-Pull submodules:
+Clone the ``prjxray`` repository and its submodules:
 
+    git clone git@github.com:SymbiFlow/prjxray.git
+    cd prjxray
     git submodule update --init --recursive
 
 ### Step 3: ###
