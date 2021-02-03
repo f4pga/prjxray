@@ -47,17 +47,18 @@ set -ex
 MAKE=${MAKE:-make}
 echo $MAKE
 i=1
+BUILD_DIR=${BUILD_DIR:-build}
 while true; do
     ${MAKE} ITER=$i cleaniter
-    ${MAKE} ITER=$i build/todo.txt
-    if [ ! -s build/todo.txt -a $i -eq 1 ]; then
+    ${MAKE} ITER=$i $BUILD_DIR/todo.txt
+    if [ ! -s $BUILD_DIR/todo.txt -a $i -eq 1 ]; then
         echo "Empty TODO file, assuming all the ints were already solved!"
         exit 0
     fi
     if python3 ${XRAY_DIR}/fuzzers/int_loop_check.py $check_args ; then
         break
     fi
-    if [ -f build/todo/timeout ] ; then
+    if [ -f $BUILD_DIR/todo/timeout ] ; then
         echo "ERROR: timeout"
         exit 1
     fi

@@ -164,10 +164,10 @@ case "$1" in
 		cp "$2" "$tmp1" ;;
 
 	gtp_common_mid_left)
-		sed < "$2" > "$tmp1" -e 's/^GTP_COMMON_MID_RIGHT\./GTP_COMMON_MID_LEFT./' ;;
+		sed < "$2" > "$tmp1" -e 's/^GTP_COMMON\./GTP_COMMON_MID_LEFT./' ;;
 
 	gtp_common_mid_right)
-		cp "$2" "$tmp1" ;;
+		sed < "$2" > "$tmp1" -e 's/^GTP_COMMON\./GTP_COMMON_MID_RIGHT./' ;;
 
 	gtp_channel_0)
 		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_0./' ;;

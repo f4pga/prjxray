@@ -7,7 +7,7 @@
 #
 # SPDX-License-Identifier: ISC
 
-if ! test $(find . -name "segdata_gtp_channel_[0123]_mid_*.txt" | wc -c) -eq 0
+if ! test $(find ${BUILD_DIR} -name "segdata_gtp_channel_[0123]_mid_*.txt" | wc -c) -eq 0
 then
     ${XRAY_MERGEDB} gtp_channel_0_mid_left ${BUILD_DIR}/segbits_gtp_channelx.db
     ${XRAY_MERGEDB} gtp_channel_1_mid_left ${BUILD_DIR}/segbits_gtp_channelx.db
@@ -27,7 +27,7 @@ then
     ${XRAY_MERGEDB} mask_gtp_channel_3_mid_right ${BUILD_DIR}/mask_gtp_channelx.db
 fi
 
-if ! test $(find . -name "segdata_gtp_channel_[0123].txt" | wc -c) -eq 0
+if ! test $(find ${BUILD_DIR} -name "segdata_gtp_channel_[0123].txt" | wc -c) -eq 0
 then
     ${XRAY_MERGEDB} gtp_channel_0 ${BUILD_DIR}/segbits_gtp_channelx.db
     ${XRAY_MERGEDB} gtp_channel_1 ${BUILD_DIR}/segbits_gtp_channelx.db
