@@ -34,6 +34,7 @@ GENERATE_FULL_ARGS=
 ifeq (${XRAY_DATABASE}, artix7)
 # Artix7 only
 TILEGRID_TDB_DEPENDENCIES += pcie/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += pcie_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += gtp_common/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += gtp_channel/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += gtp_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb
@@ -143,6 +144,9 @@ hclk_ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 pcie/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd pcie && $(MAKE)
 
+pcie_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd pcie_int_interface && $(MAKE)
+
 gtp_common/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd gtp_common && $(MAKE)
 
@@ -192,6 +196,7 @@ clean:
 	cd hclk_cmt && $(MAKE) clean
 	cd hclk_ioi && $(MAKE) clean
 	cd pcie && $(MAKE) clean
+	cd pcie_int_interface && $(MAKE) clean
 	cd gtp_common && $(MAKE) clean
 	cd gtp_channel && $(MAKE) clean
 	cd gtp_int_interface && $(MAKE) clean
@@ -222,6 +227,7 @@ clean_all:
 	cd hclk_cmt && $(MAKE) clean_all
 	cd hclk_ioi && $(MAKE) clean_all
 	cd pcie && $(MAKE) clean_all
+	cd pcie_int_interface && $(MAKE) clean_all
 	cd gtp_common && $(MAKE) clean_all
 	cd gtp_channel && $(MAKE) clean_all
 	cd gtp_int_interface && $(MAKE) clean_all
