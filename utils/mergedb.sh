@@ -160,6 +160,12 @@ case "$1" in
 	pcie_bot)
 		cp "$2" "$tmp1" ;;
 
+	pcie_int_interface_l)
+		sed < "$2" > "$tmp1" -e 's/^PCIE_INT_INTERFACE\./PCIE_INT_INTERFACE_L./' ;;
+
+	pcie_int_interface_r)
+		sed < "$2" > "$tmp1" -e 's/^PCIE_INT_INTERFACE\./PCIE_INT_INTERFACE_R./' ;;
+
 	gtp_common)
 		cp "$2" "$tmp1" ;;
 
