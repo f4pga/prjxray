@@ -23,12 +23,16 @@ proc parse_csv {} {
             continue
         }
 
+        # Skip empty lines
+        if { $line == "" } {
+            continue
+        }
+
         set parts [split $line ","]
 
         dict lappend params_map [lindex $parts 0] [lindex $parts 1]
     }
 
-    puts $params_map
     return $params_map
 }
 
@@ -39,11 +43,6 @@ proc route_through_delay {} {
 
     dict for { key value } $params_map {
         if { $value == 0 } {
-            continue
-        }
-
-        if { $key == "" } {
-            puts "Dictionary key is incorrect, continuing"
             continue
         }
 
