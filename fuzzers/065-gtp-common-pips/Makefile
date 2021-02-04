@@ -16,7 +16,7 @@ RUN_OK = run.${XRAY_PART}.ok
 TODO_RE=".*"
 
 MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(SEG_TYPE) --re $(TODO_RE) --sides ""
-N = 60
+N = 100
 
 SEGMATCH_FLAGS=-c 2
 SPECIMENS_DEPS=$(BUILD_DIR)/cmt_regions.csv
