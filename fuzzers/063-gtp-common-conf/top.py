@@ -59,6 +59,56 @@ assign out = in;
     params_dict = {"tile_type": None}
     params_list = list()
 
+    clkswing_cfg_tiles = dict()
+    ibufds_out_wires = dict()
+    for tile_name, _, site_name, site_type in gen_sites("IBUFDS_GTE2"):
+        # Both the IBUFDS_GTE2 in the same tile need to have
+        # the same CLKSWING_CFG parameter
+        if tile_name not in clkswing_cfg_tiles:
+            clkswing_cfg = random.randint(0, 3)
+            clkswing_cfg_tiles[tile_name] = clkswing_cfg
+        else:
+            clkswing_cfg = clkswing_cfg_tiles[tile_name]
+
+        in_use = bool(random.randint(0, 9))
+        params = {
+            "site":
+            site_name,
+            "tile":
+            tile_name,
+            "IN_USE":
+            in_use,
+            "CLKRCV_TRST":
+            verilog.quote("TRUE" if random.randint(0, 1) else "FALSE"),
+            "CLKCM_CFG":
+            verilog.quote("TRUE" if random.randint(0, 1) else "FALSE"),
+            "CLKSWING_CFG":
+            clkswing_cfg,
+        }
+
+        if in_use:
+            ibufds_out_wire = "{}_O".format(site_name)
+
+            if tile_name not in ibufds_out_wires:
+                ibufds_out_wires[tile_name] = list()
+
+            ibufds_out_wires[tile_name].append(
+                (ibufds_out_wire, int(site_name[-1]) % 2))
+
+            print("wire {};".format(ibufds_out_wire))
+            print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
+            print(
+                """
+IBUFDS_GTE2 #(
+    .CLKRCV_TRST({CLKRCV_TRST}),
+    .CLKCM_CFG({CLKCM_CFG}),
+    .CLKSWING_CFG({CLKSWING_CFG})
+) {site} (
+    .O({out})
+);""".format(**params, out=ibufds_out_wire))
+
+        params_list.append(params)
+
     for tile_name, tile_type, site_name, site_type in gen_sites(
             "GTPE2_COMMON"):
 
@@ -102,8 +152,7 @@ assign out = in;
                 verilog_attr += """
             .{}({}),""".format(param, value_str)
 
-            for param in ["GTGREFCLK1", "GTGREFCLK0", "PLL0LOCKDETCLK",
-                          "PLL1LOCKDETCLK", "DRPCLK"]:
+            for param in ["PLL0LOCKDETCLK", "PLL1LOCKDETCLK", "DRPCLK"]:
                 is_inverted = random.randint(0, 1)
 
                 params[param] = is_inverted
@@ -114,51 +163,34 @@ assign out = in;
             verilog_attr = verilog_attr.rstrip(",")
             verilog_attr += "\n)"
 
+            verilog_ports = ""
+
+            for param in ["GTREFCLK0_USED", "GTREFCLK1_USED",
+                          "BOTH_GTREFCLK_USED"]:
+                params[param] = 0
+
+            if tile_name in ibufds_out_wires:
+                gtrefclk_ports_used = 0
+
+                for wire, location in ibufds_out_wires[tile_name]:
+                    if random.random() < 0.5:
+                        continue
+
+                    verilog_ports += """
+            .GTREFCLK{}({}),""".format(location, wire)
+
+                    gtrefclk_ports_used += 1
+                    params["GTREFCLK{}_USED".format(location)] = 1
+
+                if gtrefclk_ports_used == 2:
+                    params["BOTH_GTREFCLK_USED"] = 1
+
             print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
             print(
                 """GTPE2_COMMON {attrs} {site} (
-        .GTREFCLK0(1'b0),
-        .GTREFCLK1(1'b0)
-    );""".format(attrs=verilog_attr, site=site_name))
-
-        params_list.append(params)
-
-    clkswing_cfg_tiles = dict()
-    for tile_name, _, site_name, site_type in gen_sites("IBUFDS_GTE2"):
-        # Both the IBUFDS_GTE2 in the same tile need to have
-        # the same CLKSWING_CFG parameter
-        if tile_name not in clkswing_cfg_tiles:
-            clkswing_cfg = random.randint(0, 3)
-            clkswing_cfg_tiles[tile_name] = clkswing_cfg
-        else:
-            clkswing_cfg = clkswing_cfg_tiles[tile_name]
-
-        in_use = bool(random.randint(0, 9))
-        params = {
-            "site":
-            site_name,
-            "tile":
-            tile_name,
-            "IN_USE":
-            in_use,
-            "CLKRCV_TRST":
-            verilog.quote("TRUE" if random.randint(0, 1) else "FALSE"),
-            "CLKCM_CFG":
-            verilog.quote("TRUE" if random.randint(0, 1) else "FALSE"),
-            "CLKSWING_CFG":
-            clkswing_cfg,
-        }
-
-        if in_use:
-            print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
-            print(
-                """
-IBUFDS_GTE2 #(
-    .CLKRCV_TRST({CLKRCV_TRST}),
-    .CLKCM_CFG({CLKCM_CFG}),
-    .CLKSWING_CFG({CLKSWING_CFG})
-) {site} (
-    );""".format(**params))
+    {ports}
+    .DRPCLK(1'b0)
+);""".format(attrs=verilog_attr, ports=verilog_ports, site=site_name))
 
         params_list.append(params)
 
