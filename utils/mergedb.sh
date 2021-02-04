@@ -205,6 +205,15 @@ case "$1" in
 	gtp_channel_3_mid_right)
 		sed < "$2" > "$tmp1" -e 's/^GTP_CHANNEL\./GTP_CHANNEL_3_MID_RIGHT./' ;;
 
+	gtp_int_interface_l)
+		sed < "$2" > "$tmp1" -e 's/^GTP_INT_INTERFACE\.GTPE2_INT/GTP_INT_INTERFACE_L\.GTPE2_INT_LEFT/' ;;
+
+	gtp_int_interface_r)
+		sed < "$2" > "$tmp1" -e 's/^GTP_INT_INTERFACE\.GTPE2_INT/GTP_INT_INTERFACE_R\.GTPE2_INT_R/' ;;
+
+	gtp_int_interface)
+		cp "$2" "$tmp1" ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true

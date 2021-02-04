@@ -379,6 +379,8 @@ class Segmaker:
                 tile_type_norm = 'GTP_CHANNEL'
             if 'GTP_COMMON' in tile_type_norm:
                 tile_type_norm = 'GTP_COMMON'
+            if 'GTP_INT_INTERFACE' in tile_type_norm:
+                tile_type_norm = 'GTP_INT_INTERFACE'
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:
