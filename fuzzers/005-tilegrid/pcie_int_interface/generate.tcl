@@ -30,7 +30,7 @@ proc parse_csv {} {
 
         set parts [split $line ","]
 
-        dict lappend params_map [lindex $parts 2] [lindex $parts 1]
+        dict lappend params_map [lindex $parts 0] [lindex $parts 1]
     }
 
     return $params_map
@@ -39,24 +39,29 @@ proc parse_csv {} {
 
 proc route_through_delay {} {
     set params_map [parse_csv]
+    set nets [get_nets]
 
     dict for { key value } $params_map {
         if { $value == 0 } {
             continue
         }
 
-        set net_name "PLL0LOCKEN_$key"
-        set net [get_nets $net_name]
+        foreach net $nets {
+            set wire [get_wires -of_objects $net -filter {TILE_NAME =~ "*PCIE_INT_INTERFACE*" && NAME =~ "*OUT0*"}]
 
-        set wire [get_wires -of_objects $net -filter {TILE_NAME =~ "*GTP_INT_INTERFACE*" && NAME =~ "*IMUX_OUT42*"}]
-        set wire_parts [split $wire "/"]
+            if { $wire == "" || ![regexp $key $wire] } {
+                continue
+            }
 
-        set gtp_int_tile [lindex $wire_parts 0]
-        set node [get_nodes -of_object [get_tiles $gtp_int_tile] -filter { NAME =~ "*DELAY42" }]
+            set wire_parts [split $wire "/"]
 
-        route_design -unroute -nets $net
-        puts "Attempting to route net $net through $node."
-        route_via $net [list $node]
+            set pcie_int_tile [lindex $wire_parts 0]
+            set node [get_nodes -of_object [get_tiles $pcie_int_tile] -filter { NAME =~ "*DELAY0" }]
+
+            route_design -unroute -nets $net
+            puts "Attempting to route net $net through $node."
+            route_via $net [list $node]
+        }
     }
 }
 
@@ -71,11 +76,11 @@ proc run {} {
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
 
     # Disable MMCM frequency etc sanity checks
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-47}]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-48}]
 
     place_design
     route_design
+
+    write_checkpoint -force design_pre_force_route.dcp
 
     route_through_delay
 

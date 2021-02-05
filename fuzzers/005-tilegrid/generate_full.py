@@ -223,13 +223,17 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
 
 def propagate_INT_INTERFACE_bits_in_column(
         database, tiles_by_grid, int_interface_name):
-    """ Propigate INT offsets up and down INT columns.
+    """ Propagate INT_INTERFACE column for a given INT_INTERFACE tile name.
 
-    INT columns appear to be fairly regular, where starting from offset 0,
-    INT tiles next to INT tiles increase the word offset by 2.  The HCLK tile
-    is surrounded above and sometimes below by an INT tile.  Because the HCLK
-    tile only useds one word, the offset increase by one at the HCLK.
+    INT_INTERFACE tiles do not usually have any PIPs or baseaddresses,
+    except for a few cases such as PCIE or GTP INTERFACE tiles.
 
+    These are very regular tiles, except for the horizontal clock line,
+    which adds a one-word offset.
+
+    This function replicates the baseaddress and calculates the correct offset
+    for each INT INTERFACE tile in a column, starting from a tile in the column
+    that has the baseaddress calculated from the corresponding tilegrid fuzzer.
     """
 
     seen_int = set()
@@ -549,6 +553,8 @@ def run(json_in_fn, json_out_fn, verbose=False):
     propagate_INT_bits_in_column(database, tiles_by_grid)
     propagate_INT_INTERFACE_bits_in_column(
         database, tiles_by_grid, "GTP_INT_INTERFACE")
+    propagate_INT_INTERFACE_bits_in_column(
+        database, tiles_by_grid, "PCIE_INT_INTERFACE")
     propagate_rebuf(database, tiles_by_grid)
     propagate_IOB_SING(database, tiles_by_grid)
     propagate_IOI_SING(database, tiles_by_grid)
