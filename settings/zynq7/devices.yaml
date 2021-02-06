@@ -1,0 +1,5 @@
+# device to fabric mapping
+"xc7z020":
+  fabric: "xc7z020"
+"xc7z010":
+  fabric: "xc7z010"
