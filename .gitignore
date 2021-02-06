@@ -3,6 +3,7 @@ build
 build_*
 logs_*
 database
+settings/*/resources.yaml
 .Xil
 **/specimen_*
 **/output
