@@ -10,11 +10,8 @@
 # SPDX-License-Identifier: ISC
 import os
 import random
-import math
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
-from prjxray import verilog
-from prjxray import lut_maker
 from prjxray.db import Database
 
 
@@ -28,28 +25,6 @@ def read_site_to_cmt():
         for l in f:
             site, cmt = l.strip().split(',')
             yield (site, cmt)
-
-
-def todo_pips():
-    """ Returns a boolean tuple corresponding to the presence or not
-        of a type of PIP in the todo list."""
-
-    is_gtp_channel_left = False
-    is_ibufds_left = False
-    is_cmt_left = False
-
-    with open("../../todo_all.txt", "r") as todo_file:
-        for line in todo_file:
-            fields = line.split(".")
-
-            if "HCLK_GTP_CK_IN" not in fields[1]:
-                continue
-
-            is_gtp_channel_left |= fields[2].startswith("GTPE2_COMMON")
-            is_ibufds_left |= fields[2].startswith("IBUFDS")
-            is_cmt_left |= fields[2].startswith("HCLK")
-
-    return (is_gtp_channel_left, is_ibufds_left, is_cmt_left)
 
 
 class ClockSources(object):
@@ -127,14 +102,10 @@ def main():
     """
     GTP_COMMON_MID has clock pips from:
 
-    2 IBUFDS_GTE2 sites (within the GTP_CMMON tile)
-    4 GTP_CHANNEL sites within the same column. Each GTP_CHANNEL can provide 2 clocks
     14 clocks lines from the HROW spine
     """
 
     cmt_clock_sources = ClockSources()
-    gtp_channel_clock_sources = ClockSources()
-    ibufds_clock_sources = ClockSources()
     site_to_cmt = dict(read_site_to_cmt())
     clock_region_limit = dict()
     clock_region_serdes_location = dict()
@@ -163,27 +134,11 @@ def main():
     for tile_name, site in gen_sites('GTPE2_COMMON'):
         cmt_with_gtp.add(site_to_cmt[site])
 
-    ibufds_inputs = dict()
-    input_wires = list()
-    for _, site in gen_sites('IBUFDS_GTE2'):
-        if site_to_cmt[site] not in cmt_with_gtp:
-            continue
+    print('''module top();
 
-        ibufds_i = "{}_ibufds_i".format(site)
-        ibufds_ib = "{}_ibufds_ib".format(site)
-        ibufds_inputs[site] = [ibufds_i, ibufds_ib]
-
-        input_wires.append("input wire {}".format(ibufds_i))
-        input_wires.append("input wire {}".format(ibufds_ib))
-
-    print(
-        '''
-module top(
-    {}
-);
-    (* KEEP, DONT_TOUCH *)
-    LUT6 dummy();
-    '''.format(",\n\t".join(input_wires)))
+(* KEEP, DONT_TOUCH *)
+LUT6 dummy();
+''')
 
     for _, site in gen_sites('MMCME2_ADV'):
         if site_to_cmt[site] not in cmt_with_gtp:
@@ -259,76 +214,13 @@ module top(
                 c6=pll_clocks[6],
             ))
 
-    for tile, site in gen_sites('IBUFDS_GTE2'):
-        if site_to_cmt[site] not in cmt_with_gtp:
-            continue
-
-        ibufds_clock = 'ibufds_clock_{site}'.format(site=site)
-
-        ibufds_clock_sources.add_clock_source(ibufds_clock, site_to_cmt[site])
-
-        out_port = "O" if random.random() < 0.5 else "ODIV2"
-        i_port = ibufds_inputs[site][0]
-        ib_port = ibufds_inputs[site][1]
-
-        print(
-            """
-    wire {o};
-    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    IBUFDS_GTE2 ibufds_{site} (
-        .I({i}),
-        .IB({ib}),
-        .{out_port}({o})
-    );""".format(
-                site=site,
-                i=i_port,
-                ib=ib_port,
-                o=ibufds_clock,
-                out_port=out_port))
-
-    for _, site in gen_sites('GTPE2_CHANNEL'):
-        if site_to_cmt[site] not in cmt_with_gtp:
-            continue
-
-        gtp_channel_clock_rx = 'gtp_channel_clock_{site}_rxclkout'.format(
-            site=site)
-        gtp_channel_clock_tx = 'gtp_channel_clock_{site}_txclkout'.format(
-            site=site)
-
-        gtp_channel_clock_sources.add_clock_source(
-            gtp_channel_clock_rx, site_to_cmt[site])
-        gtp_channel_clock_sources.add_clock_source(
-            gtp_channel_clock_tx, site_to_cmt[site])
-
-        print(
-            """
-    wire {rx}, {tx};
-    (* KEEP, DONT_TOUCH, LOC = "{site}" *)
-    GTPE2_CHANNEL gtp_channel_{site} (
-        .RXOUTCLK({rx}),
-        .TXOUTCLK({tx})
-    );""".format(site=site, rx=gtp_channel_clock_rx, tx=gtp_channel_clock_tx))
-
     for cmt in cmt_with_gtp:
-        cmt_clock_used = False
-
         for _, bufhce in gen_sites('BUFHCE'):
             if site_to_cmt[bufhce] != cmt:
                 continue
 
-            chance = random.random()
-
-            use_gtp_channel, use_ibufds, use_cmt = todo_pips()
-
-            if (chance < 0.2 and use_cmt) or not cmt_clock_used:
-                # There must always be at least one CMT clock used
-                # to trigger the bits for the GTP_COMMON and IBUFDS pips
-                cmt_clock_used = True
+            if random.random() < 0.7:
                 clock_name = cmt_clock_sources.get_random_source(cmt)
-            elif chance > 0.2 and chance < 0.4 and use_ibufds:
-                clock_name = ibufds_clock_sources.get_random_source(cmt)
-            elif chance < 0.7 and use_gtp_channel:
-                clock_name = gtp_channel_clock_sources.get_random_source(cmt)
             else:
                 continue
 

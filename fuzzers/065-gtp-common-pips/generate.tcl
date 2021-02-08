@@ -8,7 +8,7 @@
 source "$::env(XRAY_DIR)/utils/utils.tcl"
 
 proc load_todo {{dir "dst"}} {
-    set fp [open "../../todo_all.txt" r]
+    set fp [open "$::env(FUZDIR)/../piplist/build/gtp_common_mid_$::env(XRAY_PART)/gtp_common_mid.txt" r]
 
     # Create map of pip source to remaining destinations for that pip
     set todo_map [dict create]

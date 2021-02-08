@@ -7,23 +7,22 @@
 # SPDX-License-Identifier: ISC
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=gtp_common_mid_${XRAY_PART}
-PIP_FILE?=gtp_common_mid
+PIP_FILE?=gtp_common_mid_ck_mux
 SEG_TYPE?=gtp_common_mid_left
 PIPLIST_TCL=$(FUZDIR)/gtp_common_pip_list.tcl
 
 BUILD_DIR = ${FUZDIR}/build_${XRAY_PART}
 RUN_OK = run.${XRAY_PART}.ok
 
-TODO_RE=".*"
-EXCLUDE_RE=".*HCLK_GTP_CK_MUX.*"
+TODO_RE=".*HCLK_GTP_CK_MUX.*"
 PIP_DIR=${XRAY_FUZZERS_DIR}/piplist/build/$(PIP_TYPE)
 
-MAKETODO_FLAGS=--pip-type ${PIP_FILE} --seg-type $(SEG_TYPE) --re $(TODO_RE) --sides "" --exclude-re $(EXCLUDE_RE) --pip-dir $(PIP_DIR)
-N = 60
+MAKETODO_FLAGS=--pip-type ${PIP_FILE} --seg-type $(SEG_TYPE) --re $(TODO_RE) --sides "" --pip-dir $(PIP_DIR)
+N = 20
 
-SEGMATCH_FLAGS=-c 2
+SEGMATCH_FLAGS=-c 3
 SPECIMENS_DEPS=$(BUILD_DIR)/cmt_regions.csv
-A_PIPLIST=gtp_common_mid.txt
+A_PIPLIST=gtp_common_mid_ck_mux.txt
 
 CHECK_ARGS= --zero-entries --timeout-iters 5 --todo-dir $(BUILD_DIR)/todo
 

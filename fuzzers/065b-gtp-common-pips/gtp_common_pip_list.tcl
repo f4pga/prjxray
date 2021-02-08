@@ -27,10 +27,11 @@ proc print_tile_pips {tile_type filename} {
 
             set dst_wire [regsub {.*/} $dst ""]
             set dst_hclk_match [regexp {HCLK_GTP_CK_IN[0-9]+} $dst_wire]
-            set dst_ibufds_mux_match [regexp {IBUFDS_GTPE2_[01]_MGTCLKOUT_MUX} $dst_wire]
-            set dst_gtp_mux_match [regexp {GTPE2_COMMON_[RT]XOUTCLK_MUX_[0123]} $dst_wire]
 
-            if { $dst_hclk_match || $dst_ibufds_mux_match || $dst_gtp_mux_match } {
+            set src_wire [regsub {.*/} $src ""]
+            set src_cmt_match [regexp {HCLK_GTP_CK_MUX[0-9]+} $src_wire]
+
+            if { $dst_hclk_match && $src_cmt_match } {
                 set pip_string "GTP_COMMON.[regsub {.*/} $dst ""].[regsub {.*/} $src ""]"
                 if ![dict exists $pips $pip_string] {
                     puts $fp $pip_string
@@ -46,4 +47,4 @@ create_project -force -part $::env(XRAY_PART) design design
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
-print_tile_pips GTP_COMMON_MID_LEFT gtp_common_mid.txt
+print_tile_pips GTP_COMMON_MID_LEFT gtp_common_mid_ck_mux.txt

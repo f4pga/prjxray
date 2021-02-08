@@ -53,7 +53,7 @@ def main():
     ignpip = set()
     tile_ports = {}
 
-    read_pip_data('gtp_common_mid.txt', pipdata, tile_ports)
+    read_pip_data('gtp_common_mid_ck_mux.txt', pipdata, tile_ports)
 
     print("Loading tags from design.txt.")
     with open("design.txt", "r") as f:
@@ -87,7 +87,7 @@ def main():
                 tiledata[tile]["srcs"].add(dst)
                 tiledata[tile]["dsts"].add(src)
 
-            if "HCLK_GTP_CK_MUX" in src:
+            if "HCLK_GTP_CK_MUX" not in src:
                 ignpip.add((src, dst))
 
     for tile, pips_srcs_dsts in tiledata.items():
@@ -99,7 +99,8 @@ def main():
                 pass
             elif (src, dst) in pips:
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 1)
-            elif dst not in tiledata[tile]["dsts"]:
+            elif src not in tiledata[tile]["srcs"] and dst not in tiledata[
+                    tile]["dsts"]:
                 segmk.add_tile_tag(tile, "%s.%s" % (dst, src), 0)
 
     segmk.compile(bitfilter=bitfilter)
