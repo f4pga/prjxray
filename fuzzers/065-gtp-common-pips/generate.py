@@ -33,7 +33,7 @@ def bitfilter(frame, word):
 def read_pip_data(pipfile, pipdata, tile_ports):
     part = os.getenv('XRAY_PART')
     with open(os.path.join(os.getenv('FUZDIR'), '..', 'piplist', 'build',
-                           'gtp_common_{}'.format(part), pipfile)) as f:
+                           'gtp_common_mid_{}'.format(part), pipfile)) as f:
         for l in f:
             tile_type, dst, src = l.strip().split('.')
             if tile_type not in pipdata:
@@ -53,8 +53,7 @@ def main():
     ignpip = set()
     tile_ports = {}
 
-    part = os.getenv('XRAY_PART')
-    read_pip_data('gtp_common_{}.txt'.format(part), pipdata, tile_ports)
+    read_pip_data('gtp_common_mid.txt', pipdata, tile_ports)
 
     print("Loading tags from design.txt.")
     with open("design.txt", "r") as f:
@@ -87,6 +86,9 @@ def main():
             if pdir == 0:
                 tiledata[tile]["srcs"].add(dst)
                 tiledata[tile]["dsts"].add(src)
+
+            if "HCLK_GTP_CK_MUX" in src:
+                ignpip.add((src, dst))
 
     for tile, pips_srcs_dsts in tiledata.items():
         tile_type = pips_srcs_dsts["type"]

@@ -320,12 +320,12 @@ module top(
 
             use_gtp_channel, use_ibufds, use_cmt = todo_pips()
 
-            if (chance < 0.3 and use_cmt) or not cmt_clock_used:
+            if (chance < 0.2 and use_cmt) or not cmt_clock_used:
                 # There must always be at least one CMT clock used
                 # to trigger the bits for the GTP_COMMON and IBUFDS pips
                 cmt_clock_used = True
                 clock_name = cmt_clock_sources.get_random_source(cmt)
-            elif chance > 0.3 and chance < 0.4 and use_ibufds:
+            elif chance > 0.2 and chance < 0.4 and use_ibufds:
                 clock_name = ibufds_clock_sources.get_random_source(cmt)
             elif chance < 0.7 and use_gtp_channel:
                 clock_name = gtp_channel_clock_sources.get_random_source(cmt)

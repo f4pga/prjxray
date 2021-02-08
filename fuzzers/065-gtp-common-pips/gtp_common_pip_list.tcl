@@ -46,4 +46,4 @@ create_project -force -part $::env(XRAY_PART) design design
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
-print_tile_pips GTP_COMMON_MID_LEFT gtp_common_$::env(XRAY_PART).txt
+print_tile_pips GTP_COMMON_MID_LEFT gtp_common_mid.txt
