@@ -17,23 +17,21 @@ from collections import namedtuple
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
+from prjxray.lut_maker import LutMaker
 from prjxray.db import Database
 
 INT = "INT"
 BIN = "BIN"
 
 
-def gen_sites(site):
+def gen_sites(tile, site, filter_cmt=None):
     db = Database(util.get_db_root(), util.get_part())
     grid = db.grid()
     for tile_name in sorted(grid.tiles()):
         loc = grid.loc_of_tilename(tile_name)
         gridinfo = grid.gridinfo_at_loc(loc)
 
-        if gridinfo.tile_type not in [
-                "GTP_COMMON",
-                "GTP_COMMON_MID_RIGHT",
-        ]:
+        if tile not in gridinfo.tile_type:
             continue
         else:
             tile_type = gridinfo.tile_type
@@ -42,7 +40,12 @@ def gen_sites(site):
             if site_type != site:
                 continue
 
-            yield tile_name, tile_type, site_name, site_type
+            cmt = gridinfo.clock_region
+
+            if filter_cmt is not None and cmt != filter_cmt:
+                continue
+
+            yield tile_name, tile_type, site_name, cmt
 
 
 def main():
@@ -56,12 +59,14 @@ module top(
 assign out = in;
 ''')
 
+    luts = LutMaker()
+
     params_dict = {"tile_type": None}
     params_list = list()
 
     clkswing_cfg_tiles = dict()
     ibufds_out_wires = dict()
-    for tile_name, _, site_name, site_type in gen_sites("IBUFDS_GTE2"):
+    for tile_name, _, site_name, _ in gen_sites("GTP_COMMON", "IBUFDS_GTE2"):
         # Both the IBUFDS_GTE2 in the same tile need to have
         # the same CLKSWING_CFG parameter
         if tile_name not in clkswing_cfg_tiles:
@@ -109,16 +114,18 @@ IBUFDS_GTE2 #(
 
         params_list.append(params)
 
-    for tile_name, tile_type, site_name, site_type in gen_sites(
-            "GTPE2_COMMON"):
+    DRP_PORTS = [
+        ("DRPCLK", "clk"), ("DRPEN", "in"), ("DRPWE", "in"), ("DRPRDY", "out")
+    ]
 
-        if params_dict["tile_type"]:
-            assert tile_type == params_dict["tile_type"]
-        else:
-            params_dict["tile_type"] = tile_type
+    for tile_name, tile_type, site_name, cmt in gen_sites("GTP_COMMON",
+                                                          "GTPE2_COMMON"):
+
+        params_dict["tile_type"] = tile_type
 
         params = dict()
         params['site'] = site_name
+        params['tile'] = tile_name
 
         verilog_attr = ""
 
@@ -185,14 +192,58 @@ IBUFDS_GTE2 #(
                 if gtrefclk_ports_used == 2:
                     params["BOTH_GTREFCLK_USED"] = 1
 
-            print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
-            print(
-                """GTPE2_COMMON {attrs} {site} (
+            enable_drp = random.randint(0, 1)
+            params["ENABLE_DRP"] = enable_drp
+
+            for _, _, channel_site_name, _ in gen_sites("GTP_CHANNEL",
+                                                        "GTPE2_CHANNEL", cmt):
+
+                if not enable_drp:
+                    break
+
+                verilog_ports_channel = ""
+                for port, direction in DRP_PORTS:
+                    if direction == "in":
+                        verilog_ports_channel += """
+    .{}({}),""".format(port, luts.get_next_output_net())
+
+                    elif direction == "clk":
+                        # DRPCLK needs to come from a clock source
+                        print(
+                            """
+wire clk_bufg_{site};
+
+(* KEEP, DONT_TOUCH *)
+BUFG bufg_{site} (.O(clk_bufg_{site}));""".format(site=channel_site_name))
+
+                        verilog_ports_channel += """
+    .{}(clk_bufg_{}),""".format(port, channel_site_name)
+
+                    elif direction == "out":
+                        verilog_ports_channel += """
+    .{}({}),""".format(port, luts.get_next_input_net())
+
+                print(
+                    """
+(* KEEP, DONT_TOUCH, LOC=\"{site}\" *)
+GTPE2_CHANNEL {site} (
     {ports}
-    .DRPCLK(1'b0)
-);""".format(attrs=verilog_attr, ports=verilog_ports, site=site_name))
+);""".format(ports=verilog_ports_channel.rstrip(","), site=channel_site_name))
+
+            print(
+                """
+(* KEEP, DONT_TOUCH, LOC=\"{site}\" *)
+GTPE2_COMMON {attrs} {site} (
+    {ports}
+);""".format(
+                    attrs=verilog_attr,
+                    ports=verilog_ports.rstrip(","),
+                    site=site_name))
 
         params_list.append(params)
+
+    for l in luts.create_wires_and_luts():
+        print(l)
 
     print("endmodule")
 

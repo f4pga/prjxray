@@ -20,7 +20,12 @@ BIN = "BIN"
 
 
 def bitfilter_gtp_common_mid(frame, bit):
-    # Filter out interconnect bits.
+    # Filter out non interesting bits.
+    word = int(bit / 32)
+
+    if word < 44 or word > 56:
+        return False
+
     if frame not in [0, 1]:
         return False
 
@@ -28,11 +33,19 @@ def bitfilter_gtp_common_mid(frame, bit):
 
 
 def bitfilter_gtp_common(frame, bit):
-    # Filter out interconnect bits.
-    if frame not in [28, 29]:
+    # Filter out non interesting bits.
+    word = int(bit / 32)
+
+    if word < 44 or word > 56:
         return False
 
-    return True
+    if frame in [28, 29]:
+        return True
+
+    if frame in [24, 25] and word == 50:
+        return True
+
+    return False
 
 
 def main():
@@ -51,6 +64,7 @@ def main():
 
     for params in params_list:
         site = params["site"]
+        tile = params["tile"]
 
         if "GTPE2_COMMON" not in site:
             continue
@@ -95,6 +109,8 @@ def main():
                           "BOTH_GTREFCLK_USED"]:
                 segmk.add_site_tag(site, param, params[param])
 
+            segmk.add_tile_tag(tile, "ENABLE_DRP", params["ENABLE_DRP"])
+
     for params in params_list:
         site = params["site"]
 
@@ -120,10 +136,10 @@ def main():
                 segmk.add_tile_tag(
                     tile, "IBUFDS_GTE2.%s[%u]" % (param, i), bitstr[i])
 
-    if tile_type == "GTP_COMMON":
-        bitfilter = bitfilter_gtp_common
-    elif tile_type == "GTP_COMMON_MID_RIGHT":
+    if tile_type.startswith("GTP_COMMON_MID"):
         bitfilter = bitfilter_gtp_common_mid
+    elif tile_type == "GTP_COMMON":
+        bitfilter = bitfilter_gtp_common
     else:
         assert False, tile_type
 
