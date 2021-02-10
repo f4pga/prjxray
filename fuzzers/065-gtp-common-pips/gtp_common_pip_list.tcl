@@ -42,7 +42,7 @@ proc print_tile_pips {tile_type filename} {
     close $fp
 }
 
-create_project -force -part $::env(XRAY_PART) design design
+create_project -force -part $::env(XRAY_PART) design_gtp_ibufds design_gtp_ibufds
 set_property design_mode PinPlanning [current_fileset]
 open_io_design -name io_1
 
