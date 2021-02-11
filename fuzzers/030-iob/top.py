@@ -50,9 +50,7 @@ def write_params(params):
 
 
 def run():
-    tile_types = [
-        'IBUF', 'OBUF', 'IOBUF_INTERMDISABLE', None, None, None, None, None
-    ]
+    tile_types = ['IBUF', 'OBUF', 'IOBUF_INTERMDISABLE', None, None]
 
     i_idx = 0
     o_idx = 0
@@ -112,12 +110,22 @@ def run():
     }
 
     with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
-        iobanks = [int(l.strip().split(',')[1]) for l in f]
+        iobanks = set()
+        iob_sites = dict()
+        for l in f:
+            fields = l.split(',')
+            iob_site = fields[0]
+            iobank = fields[1].rstrip()
+
+            iobanks.add(iobank)
+            iob_sites[iob_site] = iobank
 
     params['iobanks'] = iobanks
 
-    if iostandard in ['SSTL135', 'SSTL15']:
-        for iobank in iobanks:
+    iostandard_map = dict()
+    for iobank in iobanks:
+        iostandard = random.choice(iostandards)
+        if iostandard in ['SSTL135', 'SSTL15']:
             params['INTERNAL_VREF'][iobank] = random.choice(
                 (
                     .600,
@@ -126,10 +134,28 @@ def run():
                     .90,
                 ))
 
+        iostandard_map[iobank] = iostandard
+
+    params['iobanks'] = list(iobanks)
+
     any_idelay = False
     for tile, sites in gen_sites():
+        iostandard = None
+
         site_bels = {}
-        for site_type in sites:
+        for site_type, site_name in sites.items():
+            iobank = iob_sites[site_name]
+            iostandard = iostandard_map[iobank]
+
+            if iostandard in ['LVTTL', 'LVCMOS18']:
+                drives = [4, 8, 12, 16, 24]
+            elif iostandard in ['LVCMOS12']:
+                drives = [4, 8, 12]
+            elif iostandard in ['SSTL135', 'SSTL15', 'LVDS', 'LVDS_25']:
+                drives = None
+            else:
+                drives = [4, 8, 12, 16]
+
             if site_type.endswith('M'):
                 if iostandard in diff_map:
                     site_bels[site_type] = random.choice(
