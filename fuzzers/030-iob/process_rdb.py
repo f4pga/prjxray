@@ -30,7 +30,7 @@ def get_site(l):
 
 def parse_bits(l):
     parts = l.strip().split(' ')
-    if parts[1] in ['<0', '<const0>']:
+    if parts[1] in ['<0', '<const0>', '<const1>']:
         return frozenset()
     else:
         return frozenset(parts[1:])
@@ -64,23 +64,7 @@ def filter_bits(site, bits):
     return frozenset(inner())
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Convert IOB rdb into good rdb."
-        "")
-    parser.add_argument('input_rdb')
-
-    args = parser.parse_args()
-
-    iostandard_lines = []
-    with open(args.input_rdb) as f:
-        for l in f:
-            if ('.SSTL' in l or '.LVCMOS' in l
-                    or '.LVTTL' in l) and 'IOB_' in l:
-                iostandard_lines.append(l)
-            else:
-                print(l.strip())
-
+def process_features_sets(iostandard_lines, only_diff=False):
     sites = {}
 
     for l in iostandard_lines:
@@ -102,8 +86,8 @@ def main():
         if group in ['DRIVE', 'SLEW']:
             enum = feature_parts[4]
             sites[site][group][(iostandard, enum)] = bits
-        elif group in ['IN', 'IN_DIFF', 'IN_ONLY', 'IN_USE', 'OUT',
-                       'STEPDOWN']:
+        elif group in ['IN', 'IN_DIFF', 'IN_ONLY', 'IN_USE', 'OUT', 'STEPDOWN',
+                       'ZIBUF_LOW_PWR']:
             sites[site][group][(iostandard, None)] = bits
         else:
             assert False, group
@@ -129,26 +113,29 @@ def main():
     slew_in_drives = {}
 
     for site in sites:
-        common_bits[(site, 'DRIVE')] -= common_bits[(site, 'SLEW')]
-        common_bits[(site, 'DRIVE')] -= common_bits[(site, 'STEPDOWN')]
-        common_bits[(site, 'IN_ONLY')] |= common_bits[(site, 'DRIVE')]
-        common_bits[(site, 'IN_ONLY')] -= common_bits[(site, 'STEPDOWN')]
-
         common_bits[(site, 'IN')] |= common_bits[(site, 'IN_DIFF')]
         common_bits[(site, 'IN_DIFF')] |= common_bits[(site, 'IN')]
 
-        for iostandard, enum in sites[site]['DRIVE']:
-            slew_in_drive = common_bits[
-                (site, 'SLEW')] & sites[site]['DRIVE'][(iostandard, enum)]
-            if slew_in_drive:
-                if (site, iostandard) not in slew_in_drives:
-                    slew_in_drives[(site, iostandard)] = set()
+        # Only DIFF IOSTANDARDS such as LVDS or TMDS do not have DRIVE,
+        # STEPDOWN or SLEW features
+        if not only_diff:
+            common_bits[(site, 'DRIVE')] -= common_bits[(site, 'SLEW')]
+            common_bits[(site, 'DRIVE')] -= common_bits[(site, 'STEPDOWN')]
+            common_bits[(site, 'IN_ONLY')] |= common_bits[(site, 'DRIVE')]
+            common_bits[(site, 'IN_ONLY')] -= common_bits[(site, 'STEPDOWN')]
 
-                slew_in_drives[(site, iostandard)] |= slew_in_drive
-                sites[site]['DRIVE'][(iostandard, enum)] -= slew_in_drive
+            for iostandard, enum in sites[site]['DRIVE']:
+                slew_in_drive = common_bits[
+                    (site, 'SLEW')] & sites[site]['DRIVE'][(iostandard, enum)]
+                if slew_in_drive:
+                    if (site, iostandard) not in slew_in_drives:
+                        slew_in_drives[(site, iostandard)] = set()
 
-            sites[site]['DRIVE'][(iostandard,
-                                  enum)] -= common_bits[(site, 'STEPDOWN')]
+                    slew_in_drives[(site, iostandard)] |= slew_in_drive
+                    sites[site]['DRIVE'][(iostandard, enum)] -= slew_in_drive
+
+                sites[site]['DRIVE'][(iostandard,
+                                      enum)] -= common_bits[(site, 'STEPDOWN')]
 
     for site, iostandard in slew_in_drives:
         for _, enum in sites[site]['SLEW']:
@@ -165,9 +152,10 @@ def main():
                 sites[site]['IN_DIFF'][(iostandard, enum)] |= \
                         sites[site]['IN'][(iostandard, enum)]
 
-    for site in sites:
-        del sites[site]['OUT']
-        del sites[site]['IN_USE']
+    if not only_diff:
+        for site in sites:
+            del sites[site]['OUT']
+            del sites[site]['IN_USE']
 
     allow_zero = ['SLEW']
 
@@ -217,6 +205,30 @@ def main():
                     for b in (common_bits[(site, group)] - bits))
                 print(
                     '{} {}'.format(feature, ' '.join(sorted(bits | neg_bits))))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Convert IOB rdb into good rdb."
+        "")
+    parser.add_argument('input_rdb')
+
+    args = parser.parse_args()
+
+    iostandard_lines = []
+    iostandard_lines_only_diff = []
+    with open(args.input_rdb) as f:
+        for l in f:
+            if ('.SSTL' in l or '.LVCMOS' in l
+                    or '.LVTTL' in l) and 'IOB_' in l:
+                iostandard_lines.append(l)
+            elif ('.TMDS' in l or 'LVDS' in l):
+                iostandard_lines_only_diff.append(l)
+            else:
+                print(l.strip())
+
+    process_features_sets(iostandard_lines)
+    process_features_sets(iostandard_lines_only_diff, True)
 
 
 if __name__ == "__main__":

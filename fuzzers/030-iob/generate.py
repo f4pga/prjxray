@@ -46,7 +46,9 @@ def drives_for_iostandard(iostandard):
 STEPDOWN_IOSTANDARDS = [
     'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135', 'SSTL15'
 ]
-IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15']
+IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15', 'LVDS_25', 'TMDS_33']
+
+ONLY_DIFF_IOSTANDARDS = ['LVDS_25', 'TMDS_33']
 
 
 def main():
@@ -95,8 +97,9 @@ def main():
 
         for d in design['tiles']:
             site = d['site']
+            tile = d['tile']
 
-            if d['tile'] in pudc_tiles:
+            if tile in pudc_tiles:
                 continue
 
             if site in diff_pairs:
@@ -118,6 +121,8 @@ def main():
                         'NONE', 'UNTUNED_SPLIT_40', 'UNTUNED_SPLIT_50',
                         'UNTUNED_SPLIT_60'
                     ], 'NONE', d['IN_TERM'])
+
+            only_diff_io = iostandard in ONLY_DIFF_IOSTANDARDS
 
             if d['type'] is None:
                 segmk.add_site_tag(site, 'INOUT', 0)
@@ -148,6 +153,12 @@ def main():
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
                 segmk.add_tile_tag(d['tile'], 'IN_DIFF', 1)
+
+                if iostandard in IBUF_LOW_PWR_SUPPORTED:
+                    segmk.add_tile_tag(
+                        tile, 'DIFF.IBUF_LOW_PWR', d['IBUF_LOW_PWR'])
+                    segmk.add_tile_tag(
+                        tile, 'DIFF.ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
             elif d['type'] == 'OBUF':
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
@@ -159,15 +170,18 @@ def main():
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 1)
+                segmk.add_tile_tag(
+                    d['tile'], 'OUT_DIFF', 1 and not only_diff_io)
                 segmk.add_tile_tag(d['tile'], 'OUT_TDIFF', 0)
             elif d['type'] == 'OBUFTDS':
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_TDIFF', 1)
+                segmk.add_tile_tag(
+                    d['tile'], 'OUT_DIFF', 1 and not only_diff_io)
+                segmk.add_tile_tag(
+                    d['tile'], 'OUT_TDIFF', 1 and not only_diff_io)
             elif d['type'] == 'IOBUF_INTERMDISABLE':
                 segmk.add_site_tag(site, 'INOUT', 1)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
@@ -197,15 +211,18 @@ def main():
 
             drive_opts.add(mk_drive_opt("SSTL135", None))
             drive_opts.add(mk_drive_opt("SSTL15", None))
+            drive_opts.add(mk_drive_opt("LVDS_25", None))
+            drive_opts.add(mk_drive_opt("TMDS_33", None))
 
             segmaker.add_site_group_zero(
                 segmk, site, '', drive_opts, mk_drive_opt('LVCMOS25', '12'),
                 mk_drive_opt(iostandard, d['DRIVE']))
 
-            for opt in ["SLOW", "FAST"]:
-                segmk.add_site_tag(
-                    site, iostandard + ".SLEW." + opt, opt == verilog.unquote(
-                        d['SLEW']))
+            if d['SLEW']:
+                for opt in ["SLOW", "FAST"]:
+                    segmk.add_site_tag(
+                        site, iostandard + ".SLEW." + opt,
+                        opt == verilog.unquote(d['SLEW']))
 
             if 'ibufdisable_wire' in d:
                 segmk.add_site_tag(
@@ -277,6 +294,15 @@ def main():
         iostandard = list(iobank_iostandards[iobank])[0]
         segmk.add_tile_tag(
             hclk_cmt_tile, 'STEPDOWN', iostandard in STEPDOWN_IOSTANDARDS)
+
+        for only_diff_io in ONLY_DIFF_IOSTANDARDS:
+            segmk.add_tile_tag(
+                hclk_cmt_tile, '{}_IN_USE'.format(only_diff_io),
+                iostandard == only_diff_io)
+
+        segmk.add_tile_tag(
+            hclk_cmt_tile, 'ONLY_DIFF_IN_USE',
+            iostandard in ONLY_DIFF_IOSTANDARDS)
 
     # For IOBANK's with no active VREF, clear all VREF options.
     for cmt, (_, hclk_cmt_tile) in cmt_to_idelay.items():
