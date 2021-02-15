@@ -65,11 +65,18 @@ def run():
         'LVTTL',
         'SSTL135',
         'SSTL15',
+        'LVDS_25',
+        'TMDS_33',
     ]
 
     diff_map = {
         "SSTL135": ["DIFF_SSTL135"],
         "SSTL15": ["DIFF_SSTL15"],
+    }
+
+    only_diff_map = {
+        "LVDS_25": ["LVDS_25"],
+        "TMDS_33": ["TMDS_33"],
     }
 
     IN_TERM_ALLOWED = [
@@ -84,17 +91,6 @@ def run():
         'HSTL_II',
         'HSTL_II_18',
     ]
-
-    iostandard = random.choice(iostandards)
-
-    if iostandard in ['LVTTL', 'LVCMOS18']:
-        drives = [4, 8, 12, 16, 24]
-    elif iostandard in ['LVCMOS12']:
-        drives = [4, 8, 12]
-    elif iostandard in ['SSTL135', 'SSTL15']:
-        drives = None
-    else:
-        drives = [4, 8, 12, 16]
 
     slews = ['FAST', 'SLOW']
     pulls = ["NONE", "KEEPER", "PULLDOWN", "PULLUP"]
@@ -151,7 +147,7 @@ def run():
                 drives = [4, 8, 12, 16, 24]
             elif iostandard in ['LVCMOS12']:
                 drives = [4, 8, 12]
-            elif iostandard in ['SSTL135', 'SSTL15', 'LVDS', 'LVDS_25']:
+            elif iostandard in ['SSTL135', 'SSTL15', 'LVDS_25', 'TMDS_33']:
                 drives = None
             else:
                 drives = [4, 8, 12, 16]
@@ -160,6 +156,9 @@ def run():
                 if iostandard in diff_map:
                     site_bels[site_type] = random.choice(
                         tile_types + ['IBUFDS', 'OBUFDS', 'OBUFTDS'])
+                elif iostandard in only_diff_map:
+                    site_bels[site_type] = random.choice(
+                        ['IBUFDS', 'OBUFDS', 'OBUFTDS', None, None])
                 else:
                     site_bels[site_type] = random.choice(tile_types)
                 is_m_diff = site_bels[site_type] is not None and site_bels[
@@ -167,7 +166,7 @@ def run():
             else:
                 site_bels[site_type] = random.choice(tile_types)
 
-        if is_m_diff:
+        if is_m_diff or iostandard in only_diff_map:
             site_bels['IOB33S'] = None
 
         for site_type, site in sites.items():
@@ -177,7 +176,10 @@ def run():
             p['type'] = site_bels[site_type]
 
             if p['type'] is not None and p['type'].endswith('DS'):
-                iostandard_site = random.choice(diff_map[iostandard])
+                if iostandard in diff_map:
+                    iostandard_site = random.choice(diff_map[iostandard])
+                elif iostandard in only_diff_map:
+                    iostandard_site = random.choice(only_diff_map[iostandard])
                 p['pair_site'] = sites['IOB33S']
             else:
                 iostandard_site = iostandard
@@ -285,6 +287,13 @@ def run():
                 else:
                     p['DRIVE_STR'] = ''
 
+            if 'SLEW' in p:
+                p['SLEW_STR'] = ''
+                if iostandard in only_diff_map:
+                    p['SLEW'] = None
+                elif p['DRIVE'] is not None:
+                    p['SLEW_STR'] = '.SLEW({}),'.format(p['SLEW'])
+
             if p['type'] is not None:
                 tile_params.append(
                     (
@@ -380,9 +389,9 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
                 '''
         (* KEEP, DONT_TOUCH *)
         OBUF #(
-            .IOSTANDARD({IOSTANDARD}),
             {DRIVE_STR}
-            .SLEW({SLEW})
+            {SLEW_STR}
+            .IOSTANDARD({IOSTANDARD})
         ) obuf_{site} (
             .O({pad_wire}),
             .I({iwire})
@@ -393,9 +402,9 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
                 '''
         (* KEEP, DONT_TOUCH *)
         OBUFDS #(
-            .IOSTANDARD({IOSTANDARD}),
             {DRIVE_STR}
-            .SLEW({SLEW})
+            {SLEW_STR}
+            .IOSTANDARD({IOSTANDARD})
         ) obufds_{site} (
             .O({pad_wire}),
             .OB({bpad_wire}),
@@ -407,9 +416,9 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
                 '''
         (* KEEP, DONT_TOUCH *)
         OBUFTDS #(
-            .IOSTANDARD({IOSTANDARD}),
             {DRIVE_STR}
-            .SLEW({SLEW})
+            {SLEW_STR}
+            .IOSTANDARD({IOSTANDARD})
         ) obufds_{site} (
             .O({pad_wire}),
             .OB({bpad_wire}),
@@ -422,9 +431,9 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
                 '''
         (* KEEP, DONT_TOUCH *)
         IOBUF_INTERMDISABLE #(
-            .IOSTANDARD({IOSTANDARD}),
             {DRIVE_STR}
-            .SLEW({SLEW})
+            {SLEW_STR}
+            .IOSTANDARD({IOSTANDARD})
         ) ibuf_{site} (
             .IO({pad_wire}),
             .I({iwire}),
