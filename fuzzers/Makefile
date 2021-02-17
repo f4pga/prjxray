@@ -168,6 +168,7 @@ endif
 endif
 endif
 $(eval $(call fuzzer,100-dsp-mskpat,005-tilegrid,all))
+$(eval $(call fuzzer,101-dsp-pips,005-tilegrid,all))
 
 quick:
 	$(MAKE) QUICK=Y
