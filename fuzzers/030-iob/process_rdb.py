@@ -151,7 +151,11 @@ def process_features_sets(iostandard_lines):
                 iostandard, None)]
 
         for iostandard, enum in sites[site]['IN']:
-            if sites[site]['IN_DIFF'][(iostandard, enum)]:
+            _, iostd_type = site
+            if iostd_type == "ONLY_DIFF":
+                sites[site]['IN_DIFF'][(iostandard, enum)] = \
+                        sites[site]['IN'][(iostandard, enum)]
+            elif sites[site]['IN_DIFF'][(iostandard, enum)]:
                 sites[site]['IN_DIFF'][(iostandard, enum)] |= \
                         sites[site]['IN'][(iostandard, enum)]
 
@@ -169,6 +173,9 @@ def process_features_sets(iostandard_lines):
 
         key = (site, iostd_type)
         for group in sites[key]:
+            if iostd_type == "ONLY_DIFF" and group == "IN":
+                continue
+
             # Merge features that are identical.
             #
             # For example:
