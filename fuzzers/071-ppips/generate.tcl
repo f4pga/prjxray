@@ -146,6 +146,50 @@ proc write_pss_ppips_db {filename tile} {
     }
 }
 
+proc write_gtp_channel_ppips_db {filename tile tile_suffix} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+
+            if {![regexp "IMUX" $src_wire] && ![regexp "GTPE2_CTRL" $src_wire] && ![regexp "GTPE2_CLK" $src_wire]} {
+                continue
+            }
+
+            puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
+
+    close $fp
+}
+
+proc write_gtp_int_interface_ppips_db {filename tile} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        set src_wire [get_wires -uphill -of_objects $pip]
+
+        if {![regexp "IMUX_OUT" $dst_wire]} {
+            continue
+        }
+
+        if {[regexp "DELAY" $src_wire]} {
+            continue
+        }
+
+        puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+    }
+
+    close $fp
+}
+
 foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
@@ -200,5 +244,23 @@ foreach tile_type {PSS0 PSS1 PSS2 PSS3 PSS4 INT_INTERFACE_PSS_L} {
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
         write_pss_ppips_db "ppips_[string tolower $tile_type].db" $tile
+    }
+}
+
+foreach tile_type {GTP_CHANNEL_0 GTP_CHANNEL_1 GTP_CHANNEL_2 GTP_CHANNEL_3 GTP_COMMON} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_gtp_channel_ppips_db "ppips_[string tolower $tile_type].db" $tile ""
+        write_gtp_channel_ppips_db "ppips_[string tolower $tile_type]_mid_left.db" $tile "_MID_LEFT"
+        write_gtp_channel_ppips_db "ppips_[string tolower $tile_type]_mid_right.db" $tile "_MID_RIGHT"
+    }
+}
+
+foreach tile_type {GTP_INT_INTERFACE} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
