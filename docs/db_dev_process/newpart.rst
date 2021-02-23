@@ -10,9 +10,6 @@ are just more or fewer of them, arranged differently. No new fuzzers are
 needed. You just need to rerun some fuzzers for the new device to
 understand how the tiles are connected to each other and to IOs.
 
-*If you are*\ \  **just**\ \  *adding a new package for a device that is
-already supported, you can skip Steps 2 through 5.*
-
 Note: Since this guide was written, the xc7a100t has become the primary
 device in the database, not a secondary device as it was when it was
 originally added. Therefore the files currently in the repo don’t match
@@ -100,50 +97,28 @@ Source this new settings file:
 Step 3
 ~~~~~~
 
-Add all informations about the part. YAML files for each family are located
-at database/<family>/mapping/, which contain the part information (parts.yaml),
-device to fabric mapping (devices.yaml) or hints about resources
-(resources.yaml).
-
-The first file contains a mapping between a part number and informations
-about the device, package and speed grade used by the fuzzers. The
-complete part number is used as key. Device, package and speedgrade are parts
-of the part numbers.
+The project needs to know which device is now available and which fabric it
+uses. Because some devices share the same fabric, this mapping needs to be
+done manuelly. Edit the device.yaml file for the used family under
+settings/<familiy>/device.yaml be adding the device-fabric mapping:
 
 ::
-  "xc7a100tcsg324-1":
-    device: "xc7a100t"
-    package: "csg324"
-    speedgrade: "1"
-    pins:
-      0: "N15"
-      1: "U17"
-      2: "V17"
-      3: "V16"
-      4: "V14"
-      5: "U14"
-      6: "U16"
 
-The second file maps devices to fabrics. Because some fabrics are added to
-multiple devices, they are only generated for one and parts with the same link
-to the result.
-
-::
+  # device to fabric mapping
+  "xc7a200t":
+    fabric: "xc7a200t"
+  "xc7a100t":
+    fabric: "xc7a100t"
   "xc7a50t":
     fabric: "xc7a50t"
   "xc7a35t":
     fabric: "xc7a50t"
 
-The last file contains information about the information about a resource
-to support the fuzzers generating the informations. The dictionary pins
-defines package pins with the following purpose:
+Now, generate all device information for the family:
 
--  ``00`` – this must be a clock pin. You can look at the device in the Vivado
-   GUI interactively (click on IOs and check their properties until you find
-   one with IS_CLOCK=true), or run a small clocked design in Vivado and see
-   which pin is assigned to ‘clk’.
+::
 
--  ``01`` and on – these should be normal data pins on the device.
+  make db-prepare-artix7
 
 Step 4
 ~~~~~~
@@ -170,8 +145,9 @@ Step 5
 ~~~~~~
 
 Make sure you’ve sourced your new device settings file (see the end of
-step 2). Now it is time to run some fuzzers to figure out how the tiles
-on your new device are connected.
+step 2) and generated the device information (see the end of set 3). Now it is
+time to run some fuzzers to figure out how the tiles on your new device are
+connected.
 
 Make the following target, with ``<new_device>`` as above, and setting
 the parallelism factor ``-j<n>`` appropriate for the number of cores
@@ -223,34 +199,12 @@ Step 6
 The next task is handling the extra parts – those not fully bonded out.
 These are usually the parts you actually have on the boards you buy.
 
--  Add a new entry in the appropriate ‘harness’ section for any
-   alternative packages (typically with fewer pins, in this example, 324
-   versus 676). If any ``XRAY_PIN_<XX>`` values you listed in the
-   settings file are not bonded out on the new part, you must specify
-   alternatives. In this example, we need to specify a new clock pin,
-   ``XRAY_PIN_00=N15``. Here, ``XRAY_PART`` is the extra part, and
-   ``XRAY_EQUIV_PART`` is the original, fully-bonded version:
+After the fabric data is generated with step 5, an further target can generate
+all extra parts for the device.
 
 ::
 
-   db-extras-artix7-harness:
-       +source settings/artix7.sh && \
-             XRAY_PART=xc7a35tftg256-1 $(MAKE) -C fuzzers roi_only
-   +   +source settings/artix7_100t.sh && \
-   +         XRAY_PART=xc7a100tcsg324-1 $(MAKE) -C fuzzers roi_only
-       +source settings/artix7_200t.sh && \
-             XRAY_PIN_00=V10 XRAY_PIN_01=W10 XRAY_PIN_02=Y11 XRAY_PIN_03=Y12 \
-             XRAY_PART=xc7a200tsbg484-1 XRAY_EQUIV_PART=xc7a200tffg1156-1 \
-             $(MAKE) -C fuzzers roi_only
-
-Make the appropriate harness target (adjusting for your family):
-
-::
-
-   make -j32 db-extras-artix7-harness
-
-This target will make updates for the extra parts of all of the family
-devices, not just your new device.
+   make -j<n> MAX_VIVADO_PROCESS=<n> db-roi-only-<new_device>
 
 Step 7
 ~~~~~~
@@ -279,10 +233,6 @@ Do a spot check.
    -rw-rw-r-- 1 daniel daniel 13056 Jan  9 09:54 package_pins.csv
    -rw-rw-r-- 1 daniel daniel 18840 Jan  9 09:58 part.json
    -rw-rw-r-- 1 daniel daniel 13099 Jan  9 09:58 part.yaml
-
-In this case, the tile grid is the same size since it’s the same chip,
-but the size of the package pins files differs, since there are
-different numbers of bonded pins.
 
 Note: These changes/additions under ``database/`` do *not* get checked
 in. They are in the ``prjxray-db`` repo. This spot check is to make sure
