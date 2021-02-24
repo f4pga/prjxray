@@ -64,33 +64,35 @@ def filter_bits(site, bits):
     return frozenset(inner())
 
 
-def process_features_sets(iostandard_lines, only_diff=False):
+def process_features_sets(iostandard_lines):
     sites = {}
 
-    for l in iostandard_lines:
-        feature = get_name(l)
-        feature_parts = feature.split('.')
-        site = get_site(l)
-        iostandard = feature_parts[2]
+    for iostd_type, iostd_list in iostandard_lines.items():
+        for iostd_line in iostd_list:
+            feature = get_name(iostd_line)
+            feature_parts = feature.split('.')
+            site = get_site(iostd_line)
+            iostandard = feature_parts[2]
 
-        bits = parse_bits(l)
-        bits = filter_bits(site, bits)
+            bits = parse_bits(iostd_line)
+            bits = filter_bits(site, bits)
 
-        if site not in sites:
-            sites[site] = {}
+            key = (site, iostd_type)
+            if key not in sites:
+                sites[key] = {}
 
-        group = feature_parts[3]
-        if group not in sites[site]:
-            sites[site][group] = {}
+            group = feature_parts[3]
+            if group not in sites[key]:
+                sites[key][group] = {}
 
-        if group in ['DRIVE', 'SLEW']:
-            enum = feature_parts[4]
-            sites[site][group][(iostandard, enum)] = bits
-        elif group in ['IN', 'IN_DIFF', 'IN_ONLY', 'IN_USE', 'OUT', 'STEPDOWN',
-                       'ZIBUF_LOW_PWR']:
-            sites[site][group][(iostandard, None)] = bits
-        else:
-            assert False, group
+            if group in ['DRIVE', 'SLEW']:
+                enum = feature_parts[4]
+                sites[key][group][(iostandard, enum)] = bits
+            elif group in ['IN', 'IN_DIFF', 'IN_ONLY', 'IN_USE', 'OUT',
+                           'STEPDOWN', 'ZIBUF_LOW_PWR']:
+                sites[key][group][(iostandard, None)] = bits
+            else:
+                assert False, group
 
     for site in sites:
         for iostandard, enum in sites[site]['DRIVE']:
@@ -102,40 +104,41 @@ def process_features_sets(iostandard_lines, only_diff=False):
                 iostandard, enum)]
 
     common_bits = {}
-    for site in sites:
-        for group in sites[site]:
+    for site, iostd_type in sites:
+        for group in sites[(site, iostd_type)]:
             if (site, group) not in common_bits:
                 common_bits[(site, group)] = set()
 
-            for bits in sites[site][group].values():
+            for bits in sites[(site, iostd_type)][group].values():
                 common_bits[(site, group)] |= bits
 
     slew_in_drives = {}
 
-    for site in sites:
+    for site, iostd_type in sites:
         common_bits[(site, 'IN')] |= common_bits[(site, 'IN_DIFF')]
         common_bits[(site, 'IN_DIFF')] |= common_bits[(site, 'IN')]
 
         # Only DIFF IOSTANDARDS such as LVDS or TMDS do not have DRIVE,
         # STEPDOWN or SLEW features
-        if not only_diff:
+        if iostd_type == "NORMAL":
+            key = (site, iostd_type)
             common_bits[(site, 'DRIVE')] -= common_bits[(site, 'SLEW')]
             common_bits[(site, 'DRIVE')] -= common_bits[(site, 'STEPDOWN')]
             common_bits[(site, 'IN_ONLY')] |= common_bits[(site, 'DRIVE')]
             common_bits[(site, 'IN_ONLY')] -= common_bits[(site, 'STEPDOWN')]
 
-            for iostandard, enum in sites[site]['DRIVE']:
+            for iostandard, enum in sites[key]['DRIVE']:
                 slew_in_drive = common_bits[
-                    (site, 'SLEW')] & sites[site]['DRIVE'][(iostandard, enum)]
+                    (site, 'SLEW')] & sites[key]['DRIVE'][(iostandard, enum)]
                 if slew_in_drive:
-                    if (site, iostandard) not in slew_in_drives:
-                        slew_in_drives[(site, iostandard)] = set()
+                    if (key, iostandard) not in slew_in_drives:
+                        slew_in_drives[(key, iostandard)] = set()
 
-                    slew_in_drives[(site, iostandard)] |= slew_in_drive
-                    sites[site]['DRIVE'][(iostandard, enum)] -= slew_in_drive
+                    slew_in_drives[(key, iostandard)] |= slew_in_drive
+                    sites[key]['DRIVE'][(iostandard, enum)] -= slew_in_drive
 
-                sites[site]['DRIVE'][(iostandard,
-                                      enum)] -= common_bits[(site, 'STEPDOWN')]
+                sites[key]['DRIVE'][(iostandard,
+                                     enum)] -= common_bits[(site, 'STEPDOWN')]
 
     for site, iostandard in slew_in_drives:
         for _, enum in sites[site]['SLEW']:
@@ -148,20 +151,30 @@ def process_features_sets(iostandard_lines, only_diff=False):
                 iostandard, None)]
 
         for iostandard, enum in sites[site]['IN']:
-            if sites[site]['IN_DIFF'][(iostandard, enum)]:
+            _, iostd_type = site
+            if iostd_type == "ONLY_DIFF":
+                sites[site]['IN_DIFF'][(iostandard, enum)] = \
+                        sites[site]['IN'][(iostandard, enum)]
+            elif sites[site]['IN_DIFF'][(iostandard, enum)]:
                 sites[site]['IN_DIFF'][(iostandard, enum)] |= \
                         sites[site]['IN'][(iostandard, enum)]
 
-    if not only_diff:
-        for site in sites:
-            del sites[site]['OUT']
-            del sites[site]['IN_USE']
+    for site, iostd_type in sites:
+        del sites[(site, iostd_type)]['IN_USE']
+        if iostd_type == "NORMAL":
+            del sites[(site, iostd_type)]['OUT']
 
     allow_zero = ['SLEW']
 
-    for site in sites:
-        for group in sites[site]:
-            common_groups = {}
+    common_groups = dict()
+    for site, iostd_type in sites:
+        if site not in common_groups:
+            common_groups[site] = dict()
+
+        key = (site, iostd_type)
+        for group in sites[key]:
+            if iostd_type == "ONLY_DIFF" and group == "IN":
+                continue
 
             # Merge features that are identical.
             #
@@ -171,40 +184,40 @@ def process_features_sets(iostandard_lines, only_diff=False):
             #  IOB33.IOB_Y1.LVCMOS18.IN 38_42 39_41
             #
             # Must be grouped.
-            for (iostandard, enum), bits in sites[site][group].items():
-                if bits not in common_groups:
-                    common_groups[bits] = {
+            for (iostandard, enum), bits in sites[key][group].items():
+                if (bits, group) not in common_groups[site]:
+                    common_groups[site][(bits, group)] = {
                         'IOSTANDARDS': set(),
                         'enums': set(),
                     }
 
-                common_groups[bits]['IOSTANDARDS'].add(iostandard)
+                common_groups[site][(bits,
+                                     group)]['IOSTANDARDS'].add(iostandard)
                 if enum is not None:
-                    common_groups[bits]['enums'].add(enum)
+                    common_groups[site][(bits, group)]['enums'].add(enum)
 
-            for bits, v in common_groups.items():
-                if v['enums']:
-                    feature = 'IOB33.{site}.{iostandards}.{group}.{enums}'.format(
-                        site=site,
-                        iostandards='_'.join(sorted(v['IOSTANDARDS'])),
-                        group=group,
-                        enums='_'.join(sorted(v['enums'])),
-                    )
-                else:
-                    feature = 'IOB33.{site}.{iostandards}.{group}'.format(
-                        site=site,
-                        iostandards='_'.join(sorted(v['IOSTANDARDS'])),
-                        group=group,
-                    )
+    for site, groups in common_groups.items():
+        for (bits, group), v in groups.items():
+            if v['enums']:
+                feature = 'IOB33.{site}.{iostandards}.{group}.{enums}'.format(
+                    site=site,
+                    iostandards='_'.join(sorted(v['IOSTANDARDS'])),
+                    group=group,
+                    enums='_'.join(sorted(v['enums'])),
+                )
+            else:
+                feature = 'IOB33.{site}.{iostandards}.{group}'.format(
+                    site=site,
+                    iostandards='_'.join(sorted(v['IOSTANDARDS'])),
+                    group=group,
+                )
 
-                if not bits and group not in allow_zero:
-                    continue
+            if not bits and group not in allow_zero:
+                continue
 
-                neg_bits = frozenset(
-                    '!{}'.format(b)
-                    for b in (common_bits[(site, group)] - bits))
-                print(
-                    '{} {}'.format(feature, ' '.join(sorted(bits | neg_bits))))
+            neg_bits = frozenset(
+                '!{}'.format(b) for b in (common_bits[(site, group)] - bits))
+            print('{} {}'.format(feature, ' '.join(sorted(bits | neg_bits))))
 
 
 def main():
@@ -215,20 +228,22 @@ def main():
 
     args = parser.parse_args()
 
-    iostandard_lines = []
-    iostandard_lines_only_diff = []
+    iostandard_lines = {
+        "NORMAL": list(),
+        "ONLY_DIFF": list(),
+    }
+
     with open(args.input_rdb) as f:
         for l in f:
             if ('.SSTL' in l or '.LVCMOS' in l
                     or '.LVTTL' in l) and 'IOB_' in l:
-                iostandard_lines.append(l)
+                iostandard_lines["NORMAL"].append(l)
             elif ('.TMDS' in l or 'LVDS' in l):
-                iostandard_lines_only_diff.append(l)
+                iostandard_lines["ONLY_DIFF"].append(l)
             else:
                 print(l.strip())
 
     process_features_sets(iostandard_lines)
-    process_features_sets(iostandard_lines_only_diff, True)
 
 
 if __name__ == "__main__":
