@@ -283,7 +283,7 @@ class Segmaker:
                     segment["tags"][tag] = value
 
             def add_site_tags():
-                site_prefix = site.split('_')[0]
+                site_prefix = "_".join(site.split('_')[0:-1])
 
                 def name_slice():
                     '''
@@ -331,7 +331,7 @@ class Segmaker:
                     'IDELAY': name_y0y1,
                     'ILOGIC': name_y0y1,
                     'OLOGIC': name_y0y1,
-                    'IBUFDS': name_y0y1,
+                    'IBUFDS_GTE2': name_y0y1,
                 }.get(site_prefix, name_default)()
                 self.verbose and print(
                     'site %s w/ %s prefix => tag %s' %
