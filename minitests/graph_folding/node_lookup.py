@@ -58,7 +58,7 @@ CREATE TABLE node(
     );
 
 CREATE TABLE wire(
-    pkey                INTEGER PRIMARY KEY,
+    pkey                INTEGER PRIMARY KEY, 
     tile_pkey           INTEGER,
     wire_in_tile_pkey   INTEGER,
     node_pkey           INTEGER,
@@ -107,7 +107,15 @@ class NodeLookup(object):
             for pip in tile_type.get_pips():
                 c.execute(
                     "INSERT INTO pip_in_tile(tile_type_pkey, wire0_in_tile_pkey, wire1_in_tile_pkey, is_directional) VALUES (?, ?, ?, ?);",
+<<<<<<< HEAD
                     (tile_type_pkey, wire_in_tile_pkeys[tile_type_name, pip.net_from], wire_in_tile_pkeys[tile_type_name, pip.net_to], pip.is_directional))
+=======
+                    (
+                        tile_type_pkey,
+                        wire_in_tile_pkeys[tile_type_name, pip.net_from],
+                        wire_in_tile_pkeys[tile_type_name, pip.net_to],
+                        pip.is_directional)) 
+>>>>>>> 7bf2be5c... All changed for max shared algorithm. The code is not yet complete, but this is just a work in progress.
 
         tile_pkeys = {}
         for tile_name in progressbar(grid.tiles()):

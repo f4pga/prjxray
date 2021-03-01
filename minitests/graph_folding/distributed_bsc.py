@@ -35,10 +35,10 @@ class BipartiteAdjacencyMatrix():
         self.vj_to_idx = {}
 
         for idx, ui in enumerate(self.u):
-            self.ui_to_idx[ui] = idx
+            self.ui_to_idx[ui] = idx #ESR ui_to_idx gives the index of the ordered u's
 
         for idx, vj in enumerate(self.v):
-            self.vj_to_idx[vj] = idx
+            self.vj_to_idx[vj] = idx # vj_to_idx gives the index of the ordered v's
 
         self.u_to_v = [
             bitarray.bitarray(len(self.v)) for _ in range(len(self.u))
@@ -62,7 +62,7 @@ class BipartiteAdjacencyMatrix():
 
         for ui, vj in edges:
             add_edge(ui, vj)
-            assert self.is_edge(ui, vj)
+            assert self.is_edge(ui, vj)  #ESR verifies that every u_to_v and v_to_u exist
             assert self.is_edge_reverse(ui, vj)
 
         for ui_idx in range(len(self.u)):
