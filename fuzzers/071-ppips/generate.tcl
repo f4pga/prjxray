@@ -173,7 +173,7 @@ proc write_gtp_channel_ppips_db {filename tile tile_suffix} {
     close $fp
 }
 
-proc write_gtp_int_interface_ppips_db {filename tile} {
+proc write_gtp_int_interface_ppips_db {filename tile tile_suffix wire_suffix} {
     set fp [open $filename "w"]
     set tile [get_tiles $tile]
     set tile_type [get_property TILE_TYPE $tile]
@@ -186,7 +186,13 @@ proc write_gtp_int_interface_ppips_db {filename tile} {
             continue
         }
 
-        puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        set map {}
+        lappend map {GTPE2} GTPE2${wire_suffix}
+
+        set dst_wire [string map $map $dst_wire]
+        set src_wire [string map $map $src_wire]
+
+        puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
     }
 
     close $fp
@@ -263,6 +269,8 @@ foreach tile_type {GTP_INT_INTERFACE} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
-        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile
+        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile "" ""
+        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type]_r.db" $tile "_R" "_R"
+        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type]_l.db" $tile "_L" "_LEFT"
     }
 }
