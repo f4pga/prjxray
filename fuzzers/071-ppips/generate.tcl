@@ -153,21 +153,27 @@ proc write_gtp_channel_ppips_db {filename tile tile_suffix} {
 
     foreach pip [get_pips -of_objects $tile] {
         set dst_wire [get_wires -downhill -of_objects $pip]
-        if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
-            set src_wire [get_wires -uphill -of_objects $pip]
+        set src_wire [get_wires -uphill -of_objects $pip]
 
-            if {![regexp "IMUX" $src_wire] && ![regexp "GTPE2_CTRL" $src_wire] && ![regexp "GTPE2_CLK" $src_wire]} {
-                continue
-            }
-
-            puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        set logic_outs [regexp "LOGIC_OUTS" $dst_wire]
+        set imux [regexp "IMUX" $src_wire]
+        set ctrl [regexp "GTPE2_CTRL" $src_wire]
+        set clk [regexp "GTPE2_CLK" $src_wire]
+        set ibufds [regexp "IBUFDS" $src_wire]
+        set refclk [regexp "COMMON_REFCLK" $src_wire]
+        set tx_pads [regexp "TX\[NP\]_PAD" $dst_wire]
+        set rx_pads [regexp "RX\[NP\]_PAD" $src_wire]
+        if {!$logic_outs && !$tx_pads && !$rx_pads && !$imux && !$ctrl && !$clk && !$refclk && !($ibufds && $tile_suffix == "")} {
+            continue
         }
+
+        puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
     }
 
     close $fp
 }
 
-proc write_gtp_int_interface_ppips_db {filename tile} {
+proc write_gtp_int_interface_ppips_db {filename tile tile_suffix wire_suffix} {
     set fp [open $filename "w"]
     set tile [get_tiles $tile]
     set tile_type [get_property TILE_TYPE $tile]
@@ -176,15 +182,17 @@ proc write_gtp_int_interface_ppips_db {filename tile} {
         set dst_wire [get_wires -downhill -of_objects $pip]
         set src_wire [get_wires -uphill -of_objects $pip]
 
-        if {![regexp "IMUX_OUT" $dst_wire]} {
-            continue
-        }
-
         if {[regexp "DELAY" $src_wire]} {
             continue
         }
 
-        puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        set map {}
+        lappend map {GTPE2} GTPE2${wire_suffix}
+
+        set dst_wire [string map $map $dst_wire]
+        set src_wire [string map $map $src_wire]
+
+        puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
     }
 
     close $fp
@@ -261,6 +269,8 @@ foreach tile_type {GTP_INT_INTERFACE} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
-        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile
+        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile "" ""
+        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type]_r.db" $tile "_R" "_R"
+        write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type]_l.db" $tile "_L" "_LEFT"
     }
 }
