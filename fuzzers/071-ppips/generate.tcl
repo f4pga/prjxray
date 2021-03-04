@@ -155,15 +155,32 @@ proc write_gtp_channel_ppips_db {filename tile tile_suffix} {
         set dst_wire [get_wires -downhill -of_objects $pip]
         set src_wire [get_wires -uphill -of_objects $pip]
 
+        # GTP-related wires
         set logic_outs [regexp "LOGIC_OUTS" $dst_wire]
         set imux [regexp "IMUX" $src_wire]
         set ctrl [regexp "GTPE2_CTRL" $src_wire]
         set clk [regexp "GTPE2_CLK" $src_wire]
-        set ibufds [regexp "IBUFDS" $src_wire]
+
+        # IBUFDS wires
+        set ibufds [regexp "IBUFDS_GTPE2" $src_wire]
+        set mux [regexp "MUX" $dst_wire]
+
         set refclk [regexp "COMMON_REFCLK" $src_wire]
         set tx_pads [regexp "TX\[NP\]_PAD" $dst_wire]
         set rx_pads [regexp "RX\[NP\]_PAD" $src_wire]
-        if {!$logic_outs && !$tx_pads && !$rx_pads && !$imux && !$ctrl && !$clk && !$refclk && !($ibufds && $tile_suffix == "")} {
+
+        # GTP_CHANNEL OUTCLK wires
+        set gtxoutclk [regexp "GT\[RT\]XOUTCLK" $src_wire]
+
+        if {!$logic_outs    &&
+            !$tx_pads       &&
+            !$rx_pads       &&
+            !$imux          &&
+            !$ctrl          &&
+            !$clk           &&
+            !$refclk        &&
+            !$gtxoutclk     &&
+            !($ibufds && !$mux)} {
             continue
         }
 
@@ -192,9 +209,20 @@ proc write_gtp_int_interface_ppips_db {filename tile tile_suffix wire_suffix} {
         set dst_wire [string map $map $dst_wire]
         set src_wire [string map $map $src_wire]
 
-        puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
-    }
+        # Adding GTPE2_ prefix to wires only for GTP_INT_INTERFACE_[RL] and the wire is a LOGIC_OUTS type
+        # The GTP_INT_INTERFACE tile does not have the GTPE2_ prefix for this wires
+        set logic_outs [regexp "LOGIC_OUTS\[0-9\]+" $dst_wire]
+        if {$logic_outs && $wire_suffix != ""} {
+            set map {}
+            lappend map {INT_INTERFACE} GTPE2_INT_INTERFACE
 
+            set dst_wire [string map $map $dst_wire]
+            set src_wire [string map $map $src_wire]
+        }
+
+        puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+
+    }
     close $fp
 }
 
