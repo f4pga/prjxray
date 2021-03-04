@@ -123,6 +123,7 @@ def run(fn_in, fn_out, verbose=False):
         ("pcie_int_interface", int_frames, int_words),
     ]
 
+    tile_frames_map = localutil.TileFrames()
     for (subdir, frames, words) in tdb_fns:
         tdb_fn = os.path.join(
             subdir, 'build_{}'.format(os.environ['XRAY_PART']),
@@ -134,7 +135,8 @@ def run(fn_in, fn_out, verbose=False):
         for (tile, frame, wordidx) in load_db(tdb_fn):
             tilej = database[tile]
             verbose and print("Add %s %08X_%03u" % (tile, frame, wordidx))
-            localutil.add_tile_bits(tile, tilej, frame, wordidx, frames, words)
+            localutil.add_tile_bits(
+                tile, tilej, frame, wordidx, frames, words, tile_frames_map)
 
     # Save
     xjson.pprint(open(fn_out, "w"), database)

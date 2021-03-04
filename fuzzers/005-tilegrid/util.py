@@ -10,9 +10,49 @@
 # SPDX-License-Identifier: ISC
 
 from prjxray import util
+import os
+import json
 '''
 Local utils script to hold shared code of the 005-tilegrid fuzzer scripts
 '''
+
+
+class TileFrames:
+    """
+    Class for getting the number of frames used for configuring a tile
+    with the specified baseaddress using the information from the part's json file
+    """
+
+    def __init__(self):
+        self.tile_address_to_frames = dict()
+
+    def get_baseaddress(self, region, bus, row, column):
+        assert bus == 'BLOCK_RAM' or bus == 'CLB_IO_CLK', 'Incorrect block type'
+        address = (row << 17) + (column << 7) + (
+            (1 << 22) if region == 'bottom' else 0) + (
+                (1 << 23) if bus == 'BLOCK_RAM' else 0)
+        return address
+
+    def initialize_address_to_frames(self):
+        with open(os.path.join(os.getenv('XRAY_FAMILY_DIR'),
+                               os.getenv('XRAY_PART'), 'part.json')) as pf:
+            part_json = json.load(pf)
+        for clock_region, rows in part_json['global_clock_regions'].items():
+            for row, buses in rows['rows'].items():
+                for bus, columns in buses['configuration_buses'].items():
+                    for column, frames in columns[
+                            'configuration_columns'].items():
+                        address = self.get_baseaddress(
+                            clock_region, bus, int(row), int(column))
+                        assert address not in self.tile_address_to_frames
+                        self.tile_address_to_frames[address] = frames[
+                            'frame_count']
+
+    def get_tile_frames(self, baseaddress):
+        if len(self.tile_address_to_frames) == 0:
+            self.initialize_address_to_frames()
+        assert baseaddress in self.tile_address_to_frames, "Base address not found in the part's json file"
+        return self.tile_address_to_frames[baseaddress]
 
 
 def get_entry(tile_type, block_type):
@@ -35,7 +75,14 @@ def get_int_params():
 
 
 def add_tile_bits(
-        tile_name, tile_db, baseaddr, offset, frames, words, verbose=False):
+        tile_name,
+        tile_db,
+        baseaddr,
+        offset,
+        frames,
+        words,
+        tile_frames,
+        verbose=False):
     '''
     Record data structure geometry for the given tile baseaddr
     For most tiles there is only one baseaddr, but some like BRAM have multiple
@@ -44,6 +91,17 @@ def add_tile_bits(
     '''
     bits = tile_db['bits']
     block_type = util.addr2btype(baseaddr)
+
+    # Extract the information about the maximal number of frames from the part's json
+    max_frames = tile_frames.get_tile_frames(baseaddr)
+    if frames > max_frames:
+        print(
+            "Warning: The number of frames specified for the tile {} ({}) exceeds the maximum allowed value ({}). Falling back to the maximum value."
+            .format(tile_name, frames, max_frames))
+        frames = max_frames
+    # If frames count is None then use the maximum
+    if frames is None:
+        frames = max_frames
 
     assert offset <= 100, (tile_name, offset)
     # Few rare cases at X=0 for double width tiles split in half => small negative offset

@@ -49,7 +49,8 @@ def make_tiles_by_grid(database):
     return tiles_by_grid
 
 
-def propagate_INT_lr_bits(database, tiles_by_grid, verbose=False):
+def propagate_INT_lr_bits(
+        database, tiles_by_grid, tile_frames_map, verbose=False):
     '''Populate segment base addresses: L/R along INT column'''
 
     int_frames, int_words, _ = localutil.get_entry('INT', 'CLB_IO_CLK')
@@ -92,10 +93,10 @@ def propagate_INT_lr_bits(database, tiles_by_grid, verbose=False):
 
         localutil.add_tile_bits(
             other_tile, database[other_tile], baseaddr, offset, int_frames,
-            int_words)
+            int_words, tile_frames_map)
 
 
-def propagate_INT_bits_in_column(database, tiles_by_grid):
+def propagate_INT_bits_in_column(database, tiles_by_grid, tile_frames_map):
     """ Propigate INT offsets up and down INT columns.
 
     INT columns appear to be fairly regular, where starting from offset 0,
@@ -146,7 +147,7 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                 offset -= int_words
                 localutil.add_tile_bits(
                     next_tile, database[next_tile], baseaddr, offset,
-                    int_frames, int_words)
+                    int_frames, int_words, tile_frames_map)
             elif tile['type'].startswith('INT_'):
                 # INT above HCLK
                 assert next_tile_type.startswith(
@@ -155,7 +156,7 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                 offset -= hclk_words
                 localutil.add_tile_bits(
                     next_tile, database[next_tile], baseaddr, offset,
-                    hclk_frames, hclk_words)
+                    hclk_frames, hclk_words, tile_frames_map)
             else:
                 # HCLK above INT
                 assert tile['type'].startswith(
@@ -164,7 +165,7 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                     offset -= int_words
                     localutil.add_tile_bits(
                         next_tile, database[next_tile], baseaddr, offset,
-                        int_frames, int_words)
+                        int_frames, int_words, tile_frames_map)
                 else:
                     # Handle special case column where the PCIE tile is present.
                     assert next_tile_type in ['PCIE_NULL'], next_tile_type
@@ -195,7 +196,7 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                 offset += int_words
                 localutil.add_tile_bits(
                     next_tile, database[next_tile], baseaddr, offset,
-                    int_frames, int_words)
+                    int_frames, int_words, tile_frames_map)
             elif tile['type'].startswith('INT_'):
                 # INT below HCLK
                 assert next_tile_type.startswith(
@@ -204,7 +205,7 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                 offset += int_words
                 localutil.add_tile_bits(
                     next_tile, database[next_tile], baseaddr, offset,
-                    hclk_frames, hclk_words)
+                    hclk_frames, hclk_words, tile_frames_map)
             else:
                 # HCLK below INT
                 assert tile['type'].startswith(
@@ -215,14 +216,14 @@ def propagate_INT_bits_in_column(database, tiles_by_grid):
                 offset += hclk_words
                 localutil.add_tile_bits(
                     next_tile, database[next_tile], baseaddr, offset,
-                    int_frames, int_words)
+                    int_frames, int_words, tile_frames_map)
 
             tile_name = next_tile
             tile = database[tile_name]
 
 
 def propagate_INT_INTERFACE_bits_in_column(
-        database, tiles_by_grid, int_interface_name):
+        database, tiles_by_grid, int_interface_name, tile_frames_map):
     """ Propagate INT_INTERFACE column for a given INT_INTERFACE tile name.
 
     INT_INTERFACE tiles do not usually have any PIPs or baseaddresses,
@@ -280,7 +281,7 @@ def propagate_INT_INTERFACE_bits_in_column(
                 offset -= (int_words + extra_offset)
                 localutil.add_tile_bits(
                     next_tile, database[next_tile], baseaddr, offset,
-                    int_frames, int_words)
+                    int_frames, int_words, tile_frames_map)
 
             down_tile_name = next_tile
             down_tile = database[down_tile_name]
@@ -312,7 +313,7 @@ def propagate_INT_INTERFACE_bits_in_column(
                 offset += (int_words + extra_offset)
                 localutil.add_tile_bits(
                     next_tile, database[next_tile], baseaddr, offset,
-                    int_frames, int_words)
+                    int_frames, int_words, tile_frames_map)
 
             up_tile_name = next_tile
             up_tile = database[up_tile_name]
@@ -549,12 +550,14 @@ def run(json_in_fn, json_out_fn, verbose=False):
     database = json.load(open(json_in_fn, "r"))
     tiles_by_grid = make_tiles_by_grid(database)
 
-    propagate_INT_lr_bits(database, tiles_by_grid, verbose=verbose)
-    propagate_INT_bits_in_column(database, tiles_by_grid)
+    tile_frames_map = localutil.TileFrames()
+    propagate_INT_lr_bits(
+        database, tiles_by_grid, tile_frames_map, verbose=verbose)
+    propagate_INT_bits_in_column(database, tiles_by_grid, tile_frames_map)
     propagate_INT_INTERFACE_bits_in_column(
-        database, tiles_by_grid, "GTP_INT_INTERFACE")
+        database, tiles_by_grid, "GTP_INT_INTERFACE", tile_frames_map)
     propagate_INT_INTERFACE_bits_in_column(
-        database, tiles_by_grid, "PCIE_INT_INTERFACE")
+        database, tiles_by_grid, "PCIE_INT_INTERFACE", tile_frames_map)
     propagate_rebuf(database, tiles_by_grid)
     propagate_IOB_SING(database, tiles_by_grid)
     propagate_IOI_SING(database, tiles_by_grid)
