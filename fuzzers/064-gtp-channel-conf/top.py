@@ -17,6 +17,7 @@ from collections import namedtuple
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
+from prjxray.lut_maker import LutMaker
 from prjxray.db import Database
 
 INT = "INT"
@@ -76,6 +77,8 @@ module top(
 assign out = in;
 ''')
 
+    luts = LutMaker()
+
     primitives_list = list()
 
     for tile_name, tile_type, site_name, site_type in gen_sites(
@@ -122,6 +125,7 @@ assign out = in;
                 verilog_attr += """
             .{}({}),""".format(param, value_str)
 
+            verilog_ports = ""
             for param in ["TXUSRCLK", "TXUSRCLK2", "TXPHDLYTSTCLK",
                           "SIGVALIDCLK", "RXUSRCLK", "RXUSRCLK2", "DRPCLK",
                           "DMONITORCLK", "CLKRSVD0", "CLKRSVD1"]:
@@ -131,18 +135,28 @@ assign out = in;
 
                 verilog_attr += """
             .IS_{}_INVERTED({}),""".format(param, is_inverted)
+                verilog_ports += """
+            .{}({}),""".format(param, luts.get_next_output_net())
 
             verilog_attr = verilog_attr.rstrip(",")
             verilog_attr += "\n)"
 
             print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
             print(
-                """GTPE2_CHANNEL {} {} ();
-            """.format(verilog_attr, tile_type.lower()))
+                """GTPE2_CHANNEL {attrs} {site} (
+    {ports}
+);
+            """.format(
+                    attrs=verilog_attr,
+                    site=tile_type.lower(),
+                    ports=verilog_ports.rstrip(",")))
 
         params_list.append(params)
         params_dict["params"] = params_list
         primitives_list.append(params_dict)
+
+    for l in luts.create_wires_and_luts():
+        print(l)
 
     print("endmodule")
 

@@ -113,8 +113,7 @@ def main():
                 for param in ["TXUSRCLK", "TXUSRCLK2", "TXPHDLYTSTCLK",
                               "SIGVALIDCLK", "RXUSRCLK", "RXUSRCLK2", "DRPCLK",
                               "DMONITORCLK", "CLKRSVD0", "CLKRSVD1"]:
-                    segmk.add_site_tag(
-                        site, "ZINV_" + param, 1 ^ params[param])
+                    segmk.add_site_tag(site, "INV_" + param, params[param])
 
     gtp_channel_x = [
         "GTP_CHANNEL_0",
