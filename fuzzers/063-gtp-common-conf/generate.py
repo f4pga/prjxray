@@ -134,7 +134,7 @@ def main():
 
             for i in range(2):
                 segmk.add_tile_tag(
-                    tile, "IBUFDS_GTE2.%s[%u]" % (param, i), bitstr[i])
+                    tile, "IBUFDS_GTE2.CLKSWING_CFG[%u]" % (i), bitstr[i])
 
     if tile_type.startswith("GTP_COMMON_MID"):
         bitfilter = bitfilter_gtp_common_mid

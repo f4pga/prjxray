@@ -151,7 +151,7 @@ def passthrough_non_register_segbits(seg_in):
     Other features generated in fuzzing are passed through.
 
     """
-    base_offset_register = 'CMT_UPPER_T.PLLE2.CLKOUT5_DIVIDE[1]'
+    base_offset_register = 'CMT_UPPER_T.PLLE2_ADV.CLKOUT5_DIVIDE[1]'
 
     bit_offset = None
     in_use = None
@@ -244,7 +244,7 @@ def output_registers(bit_offset, in_use):
                             continue
 
                         print(
-                            'CMT_UPPER_T.PLLE2.{}_{}_{}[{}] {}'.format(
+                            'CMT_UPPER_T.PLLE2_ADV.{}_{}_{}[{}] {}'.format(
                                 register_name, layout, field, bit,
                                 reg.next_bit()))
             else:
@@ -257,7 +257,7 @@ def output_registers(bit_offset, in_use):
                             continue
 
                         print(
-                            'CMT_UPPER_T.PLLE2.{}[{}] {}'.format(
+                            'CMT_UPPER_T.PLLE2_ADV.{}[{}] {}'.format(
                                 field, start_bit + bit, reg.next_bit()))
 
             assert bit_count == 16
@@ -265,11 +265,11 @@ def output_registers(bit_offset, in_use):
             for bit in range(16):
                 if register_name != layout or layout in ['CLKOUT1', 'CLKOUT2']:
                     print(
-                        'CMT_UPPER_T.PLLE2.{}_{}[{}] {}'.format(
+                        'CMT_UPPER_T.PLLE2_ADV.{}_{}[{}] {}'.format(
                             register_name, layout, bit, reg.next_bit()))
                 else:
                     print(
-                        'CMT_UPPER_T.PLLE2.{}[{}] {}'.format(
+                        'CMT_UPPER_T.PLLE2_ADV.{}[{}] {}'.format(
                             register_name, bit, reg.next_bit()))
 
     parts = in_use.split()
