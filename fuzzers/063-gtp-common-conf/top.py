@@ -159,6 +159,8 @@ IBUFDS_GTE2 #(
                 verilog_attr += """
             .{}({}),""".format(param, value_str)
 
+            verilog_ports = ""
+
             for param in ["PLL0LOCKDETCLK", "PLL1LOCKDETCLK", "DRPCLK"]:
                 is_inverted = random.randint(0, 1)
 
@@ -166,11 +168,11 @@ IBUFDS_GTE2 #(
 
                 verilog_attr += """
             .IS_{}_INVERTED({}),""".format(param, is_inverted)
+                verilog_ports += """
+            .{}({}),""".format(param, luts.get_next_output_net())
 
             verilog_attr = verilog_attr.rstrip(",")
             verilog_attr += "\n)"
-
-            verilog_ports = ""
 
             for param in ["GTREFCLK0_USED", "GTREFCLK1_USED",
                           "BOTH_GTREFCLK_USED"]:
