@@ -24,15 +24,12 @@ from distributed_bsc import BipartiteAdjacencyMatrix, find_bsc_par, \
         greed_set_cover_par
 import gc
 import multiprocessing
-<<<<<<< HEAD
-=======
 from reference_model import CompactArray, StructOfArray
 import os.path
 from bokeh_plotting import create_plot_from_graph
 from bitarray import bitarray
->>>>>>> 7bf2be5c... All changed for max shared algorithm. The code is not yet complete, but this is just a work in progress.
 
-from prjxray.node_lookup import NodeLookup
+from node_lookup import NodeLookup
 
 Tile = namedtuple('Tile', 'tile_pkey')
 WireToNode = namedtuple(
@@ -123,7 +120,7 @@ WHERE node.pkey = ?;
     return graph
 
 
-def get_node_to_wires_graph(database, tile_type):
+def get_node_to_wires_graph(database, tile_type, only_pips):
     lookup = NodeLookup(database=database)
     cur = lookup.conn.cursor()
     cur2 = lookup.conn.cursor()
@@ -137,16 +134,12 @@ def get_node_to_wires_graph(database, tile_type):
     cur.execute("SELECT pkey FROM tile_type WHERE name = ?;", (tile_type, ))
     tile_type_pkey = cur.fetchone()[0]
 
-<<<<<<< HEAD
-    for tile_pkey, tile_type_pkey, tile_name, tile_x, tile_y in progressbar.progressbar(
-=======
     if only_pips:
         extra_conditions = " AND wire_in_tile.has_pip_from"  # Only including wire if it is the ending of a set of wires
     else:
         extra_conditions = ""
     global use_progressbar
     iterator = progressbar.progressbar(  # add tiles to the graph as u's
->>>>>>> 7bf2be5c... All changed for max shared algorithm. The code is not yet complete, but this is just a work in progress.
             cur.execute(
                 "SELECT pkey, tile_type_pkey, name, x, y FROM tile WHERE tile_type_pkey = ?;",
                 (tile_type_pkey, ))) if use_progressbar else cur.execute(
@@ -175,8 +168,8 @@ SELECT wire.wire_in_tile_pkey, tile.x, tile.y, wire_in_tile.has_pip_from
 FROM wire
 INNER JOIN tile ON wire.tile_pkey = tile.pkey
 INNER JOIN wire_in_tile ON wire.wire_in_tile_pkey = wire_in_tile.pkey
-WHERE wire.node_pkey = ? and wire_in_tile.has_pip_from;
-                """, (node_pkey, )):
+WHERE wire.node_pkey = ? {};
+                """.format(extra_conditions), (node_pkey, )):
 
                 delta_x = wire_tile_x - tile_x  # compute the difference from start to end of a node
                 delta_y = wire_tile_y - tile_y
@@ -208,10 +201,6 @@ WHERE wire.node_pkey = ? and wire_in_tile.has_pip_from;
     return graph
 
 
-<<<<<<< HEAD
-def main():
-    multiprocessing.set_start_method('spawn')
-=======
 def write_wire_to_node(
         graph, required_solutions, tile_patterns, tile_to_tile_patterns,
         output_dir, tile_type, cover_method):
@@ -271,33 +260,21 @@ def write_wire_to_node(
         tile_pattern_data.set_items(
             sorted(tile_pattern, key=lambda x: subgraphs_null_count[x]))
         tile_patterns_data.append(tile_pattern_data)
->>>>>>> 7bf2be5c... All changed for max shared algorithm. The code is not yet complete, but this is just a work in progress.
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--database', required=True)
-    parser.add_argument('--tile', required=True)
-    parser.add_argument('--wire_to_node', action='store_true')
-    parser.add_argument('--node_to_wires', action='store_true')
+    tile_to_tile_patterns_data = []
+    for tile, tile_pattern in tile_to_tile_patterns.items():
+        tile_pattern_index = tile_pattern_to_index[tile_pattern]
+        tile_to_tile_patterns_data.append((tile.tile_pkey, tile_pattern_index))
 
-    args = parser.parse_args()
+        for subgraph_idx in tile_patterns[tile_pattern_index]:
+            assert tile in subgraph_idx_to_tiles[subgraph_idx]
 
-    if args.wire_to_node and args.node_to_wires:
-        parser.error('Cannot supply both --wire_to_node and --node_to_wires')
-    elif not args.wire_to_node and not args.node_to_wires:
-        parser.error('Must supply --wire_to_node or --node_to_wires')
+            subgraph = subgraphs[subgraph_idx]
 
-    if args.wire_to_node:
-        graph = get_wire_to_node_graph(args.database, args.tile)
-    elif args.node_to_wires:
-        graph = get_node_to_wires_graph(args.database, args.tile)
-    else:
-        assert False
+            for wire_idx, node_pattern_idx in enumerate(subgraph.items):
+                if node_pattern_idx is None:
+                    continue
 
-<<<<<<< HEAD
-    all_edges = set(graph.frozen_edges)
-    gc.collect()
-
-=======
                 wire_in_tile_pkey = wire_in_tile_pkeys_data.items[wire_idx]
                 pattern = node_patterns.get(node_pattern_idx)
 
@@ -1002,7 +979,6 @@ def reduce_graph(args, all_edges, graph, tile_type):
     global use_ms
     global use_gs
     global use_prints
->>>>>>> 7bf2be5c... All changed for max shared algorithm. The code is not yet complete, but this is just a work in progress.
     density = graph.density()
     beta = .5
     P = (0.6 - 0.8 * beta) * math.exp((4 + 3 * beta) * density)
@@ -1041,7 +1017,8 @@ def reduce_graph(args, all_edges, graph, tile_type):
             if node_to_wires not in node_to_wires_to_count:
                 node_to_wires_to_count[node_to_wires] = len(node_to_wires)
 
-            max_patterns_to_node = max(max_patterns_to_node, len(node_to_wires))
+            max_patterns_to_node = max(
+                max_patterns_to_node, len(node_to_wires))
             for pattern in node_to_wires:
                 patterns.add(pattern)
                 tile_wire_ids.add(pattern.wire_in_tile_pkey)
@@ -1161,13 +1138,6 @@ def reduce_graph(args, all_edges, graph, tile_type):
     for tile_pattern in tile_patterns:
         number_of_tile_pattern_elements += len(tile_pattern)
 
-<<<<<<< HEAD
-    print('Have {} tile patterns'.format(len(tile_patterns)))
-    print(
-        'Max {} patterns'.format(
-            max(len(patterns) for patterns in tile_to_tile_patterns.values())))
-    print('Number of tile pattern elements: {}'.format(number_of_tile_pattern_elements))
-=======
     # print('Have {} tile patterns'.format(len(tile_patterns)))
     # print(
     #     'Max {} patterns'.format(
@@ -1378,7 +1348,6 @@ def main():
 
 """
 
->>>>>>> 7bf2be5c... All changed for max shared algorithm. The code is not yet complete, but this is just a work in progress.
 
 
 if __name__ == "__main__":
