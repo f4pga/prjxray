@@ -14,7 +14,6 @@ ${DATABASE}: build_node_lookup.py node_lookup.py | build_${PART}
 		--part ${PART} \
 		${DATABASE}
 
-<<<<<<< HEAD
 ${WIRE_PATTERNS}: test_reduction.py ${DATABASE}
 	python3 test_reduction.py \
 		--database ${DATABASE} \
@@ -23,7 +22,6 @@ ${WIRE_PATTERNS}: test_reduction.py ${DATABASE}
 .PHONY: clean database wire_patterns
 
 database: ${DATABASE}
-=======
 .PHONY: clean database build_patterns check_patterns print_size
  
 database: ${DATABASE}
@@ -62,7 +60,6 @@ check_patterns:
 	/usr/bin/time -v python3 check_patterns.py \
 		--database ${DATABASE} \
 		--output_dir build_${PART}/
->>>>>>> 7bf2be5c... All changed for max shared algorithm. The code is not yet complete, but this is just a work in progress.
 
 wire_patterns: ${WIRE_PATTERNS}
 
