@@ -214,6 +214,64 @@ proc write_gtp_int_interface_ppips_db {filename tile tile_suffix wire_suffix} {
     close $fp
 }
 
+proc write_pcie_ppips_db {filename tile tile_suffix} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+
+            if {![regexp "PCIE" $src_wire]} {
+                continue
+            }
+
+            puts $fp "${tile_type}${tile_suffix}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
+
+    close $fp
+}
+
+proc write_pcie_int_interface_ppips_db {filename tile allows forbids} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        set src_wire [get_wires -uphill -of_objects $pip]
+        set skip_wire false
+
+        foreach wire $forbids {
+            if {[regexp $wire $dst_wire]} {
+                set skip_wire true
+                break
+            }
+        }
+        if {$skip_wire == true} {
+            continue
+        }
+
+        set skip_wire true
+        foreach wire $allows {
+            if {[regexp $wire $dst_wire]} {
+                set skip_wire false
+                break
+            }
+        }
+        if {$skip_wire == true} {
+            continue
+        }
+
+        puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+    }
+
+    close $fp
+}
+
 foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
@@ -288,5 +346,23 @@ foreach tile_type {GTP_INT_INTERFACE} {
         write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile "" ""
         write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type]_r.db" $tile "_R" "_R"
         write_gtp_int_interface_ppips_db "ppips_[string tolower $tile_type]_l.db" $tile "_L" "_LEFT"
+    }
+}
+
+foreach tile_type {PCIE_BOT PCIE_TOP} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_pcie_ppips_db "ppips_[string tolower $tile_type].db" $tile ""
+    }
+}
+
+foreach tile_type {PCIE_INT_INTERFACE_L PCIE_INT_INTERFACE_R} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        set allow_wires {"IMUX_OUT" "IMUX_L" "LOGIC_OUTS"}
+        set forbid_wires {"DELAY"}
+        write_pcie_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile $allow_wires $forbid_wires
     }
 }
