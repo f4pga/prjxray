@@ -155,32 +155,20 @@ proc write_gtp_channel_ppips_db {filename tile tile_suffix} {
         set dst_wire [get_wires -downhill -of_objects $pip]
         set src_wire [get_wires -uphill -of_objects $pip]
 
-        # GTP-related wires
-        set logic_outs [regexp "LOGIC_OUTS" $dst_wire]
-        set imux [regexp "IMUX" $src_wire]
-        set ctrl [regexp "GTPE2_CTRL" $src_wire]
-        set clk [regexp "GTPE2_CLK" $src_wire]
+        set num_uphill_nodes [llength [get_nodes -uphill -of_objects [get_nodes -of_objects $dst_wire]]]
 
-        # IBUFDS wires
-        set ibufds [regexp "IBUFDS_GTPE2" $src_wire]
+        # All the "MID" GTP tiles (e.g. in the artix 200T devices) have configuration bits
+        # even for nodes with only one uphill nodes connections.
+        # E.g.: IBUFDS_GTPE2_1_MGTCLKOUT_MUX.IBUFDS_GTPE2_1_MGTCLKOUT
+        # The above is a real PIP and should not be added to the PPIPs list.
         set mux [regexp "MUX" $dst_wire]
 
-        set refclk [regexp "COMMON_REFCLK" $src_wire]
-        set tx_pads [regexp "TX\[NP\]_PAD" $dst_wire]
-        set rx_pads [regexp "RX\[NP\]_PAD" $src_wire]
+        set mgt_clk [regexp "MGT_CLK\[0-9\]+" $dst_wire]
+        set mgtclkout [regexp "MGTCLKOUT" $dst_wire]
 
-        # GTP_CHANNEL OUTCLK wires
-        set gtxoutclk [regexp "GT\[RT\]XOUTCLK" $src_wire]
-
-        if {!$logic_outs    &&
-            !$tx_pads       &&
-            !$rx_pads       &&
-            !$imux          &&
-            !$ctrl          &&
-            !$clk           &&
-            !$refclk        &&
-            !$gtxoutclk     &&
-            !($ibufds && !$mux)} {
+        if {($num_uphill_nodes != 1 && !$mgtclkout) ||
+            $mux ||
+            ($mgt_clk && $tile_suffix != "")} {
             continue
         }
 
