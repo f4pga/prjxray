@@ -196,19 +196,43 @@ def process_features_sets(iostandard_lines):
                 if enum is not None:
                     common_groups[site][(bits, group)]['enums'].add(enum)
 
+    visited_iostandards = list()
     for site, groups in common_groups.items():
         for (bits, group), v in groups.items():
-            if v['enums']:
+            iostandards = v['IOSTANDARDS']
+            enums = v['enums']
+
+            # It happens that some features appear only in one of the IOB sites and not
+            # in the other. This makes it hard to assign the correct features to the correct
+            # site in the P&R toolchain.
+            #
+            # The following code makes sure that the same set of iostandards
+            # (even if not really present at a site location) appears for each site
+            for visited_iostandard, visited_group, visited_enums in visited_iostandards:
+                same_enum = enums == visited_enums
+                same_group = group == visited_group
+                compatible_iostd = any(
+                    x in iostandards for x in visited_iostandard)
+                take_visited_iostd = len(visited_iostandard) > len(iostandards)
+                if same_enum and same_group and compatible_iostd and take_visited_iostd:
+                    iostandards = visited_iostandard
+                    break
+
+            visited_iostandards.append((iostandards, group, enums))
+
+            iostandards_string = '_'.join(sorted(iostandards))
+
+            if enums:
                 feature = 'IOB33.{site}.{iostandards}.{group}.{enums}'.format(
                     site=site,
-                    iostandards='_'.join(sorted(v['IOSTANDARDS'])),
+                    iostandards=iostandards_string,
                     group=group,
-                    enums='_'.join(sorted(v['enums'])),
+                    enums='_'.join(sorted(enums)),
                 )
             else:
                 feature = 'IOB33.{site}.{iostandards}.{group}'.format(
                     site=site,
-                    iostandards='_'.join(sorted(v['IOSTANDARDS'])),
+                    iostandards=iostandards_string,
                     group=group,
                 )
 
