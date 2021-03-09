@@ -65,6 +65,12 @@ echo "----------------------------------------"
 		echo "A failure occurred during Database build."
 		echo "----------------------------------------"
 		rm $tmp
+
+		echo "========================================"
+		echo " Disk space in failure path"
+		echo "----------------------------------------"
+		du -sh
+
 		exit $DATABASE_RET
 	fi
 )
@@ -188,3 +194,8 @@ echo "----------------------------------------"
 	make clean_piplists
 )
 echo "----------------------------------------"
+
+echo "========================================"
+echo " Final disk space after cleanup"
+echo "----------------------------------------"
+du -sh
