@@ -16,6 +16,7 @@ SPECIMENS := $(addprefix ${BUILD_DIR}/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 FUZDIR ?= ${PWD}
 
+CELLS_DATA_DIR = ${XRAY_FAMILY_DIR}/cells_data
 
 all: database
 
@@ -58,8 +59,9 @@ ${BUILD_DIR}/segbits_gtp_common.db: ${BUILD_DIR}/segbits_gtp_common.rdb
 	${XRAY_MASKMERGE} ${BUILD_DIR}/mask_gtp_common.db $$(find $(SPECIMENS) -name "segdata_gtp_common*")
 
 pushdb:
-	cp attrs.json ${XRAY_FAMILY_DIR}/gtpe2_common_attrs.json
-	cp $(BUILD_DIR)/gtpe2_common_ports.json ${XRAY_FAMILY_DIR}/gtpe2_common_ports.json
+	mkdir -p $(CELLS_DATA_DIR)
+	cp attrs.json $(CELLS_DATA_DIR)/gtpe2_common_attrs.json
+	cp $(BUILD_DIR)/gtpe2_common_ports.json $(CELLS_DATA_DIR)/gtpe2_common_ports.json
 	BUILD_DIR=$(BUILD_DIR) source pushdb.sh
 
 .PHONY: database pushdb
