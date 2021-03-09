@@ -16,7 +16,9 @@ random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray import verilog
 from prjxray.db import Database
-from params import boolean_params, hex_params, int_params
+
+BIN = "BIN"
+BOOL = "BOOL"
 
 
 def gen_sites():
@@ -50,35 +52,33 @@ module top();
 
     verilog_attr = "#("
 
-    # Add boolean parameters
-    for param, _ in boolean_params:
-        value = random.randint(0, 1)
-        value_string = "TRUE" if value else "FALSE"
+    fuz_dir = os.getenv("FUZDIR", None)
+    assert fuz_dir
+    with open(os.path.join(fuz_dir, "attrs.json"), "r") as attrs_file:
+        attrs = json.load(attrs_file)
 
+    for param, param_info in attrs.items():
+        param_type = param_info["type"]
+        param_values = param_info["values"]
+        param_digits = param_info["digits"]
+
+        if param_type == BOOL:
+            value = random.choice(param_values)
+            value_str = verilog.quote(value)
+        elif param_type == BIN:
+            if type(param_values) is int:
+                value = param_values
+            elif type(param_values) is list:
+                if len(param_values) > 1:
+                    value = random.choice(param_values)
+                else:
+                    value = random.randint(0, param_values[0])
+            value_str = "{digits}'b{value:0{digits}b}".format(
+                value=value, digits=param_digits)
         params[param] = value
 
         verilog_attr += """
-    .{}({}),""".format(param, verilog.quote(value_string))
-
-    # Add hexadecimal parameters
-    for param, digits in hex_params:
-        value = random.randint(0, 2**digits)
-
-        params[param] = value
-
-        verilog_attr += """
-    .{}({}),""".format(
-            param, "{digits}'h{value:08x}".format(value=value, digits=digits))
-
-    # Add integer parameters
-    for param, digits in int_params:
-        value = random.randint(0, 2**digits)
-
-        params[param] = value
-
-        verilog_attr += """
-    .{}({}),""".format(
-            param, "{digits}'d{value:04d}".format(value=value, digits=digits))
+            .{}({}),""".format(param, value_str)
 
     verilog_attr = verilog_attr.rstrip(",")
     verilog_attr += "\n)"
