@@ -62,12 +62,16 @@ def main():
         tile_type = params_dict["tile_type"]
         params_list = params_dict["params"]
 
+    sites_in_tile = dict()
+
     for params in params_list:
         site = params["site"]
         tile = params["tile"]
 
         if "GTPE2_COMMON" not in site:
             continue
+
+        sites_in_tile[tile] = site
 
         in_use = params["IN_USE"]
 
@@ -109,7 +113,7 @@ def main():
                           "BOTH_GTREFCLK_USED"]:
                 segmk.add_site_tag(site, param, params[param])
 
-            segmk.add_tile_tag(tile, "ENABLE_DRP", params["ENABLE_DRP"])
+            segmk.add_site_tag(site, "ENABLE_DRP", params["ENABLE_DRP"])
 
     for params in params_list:
         site = params["site"]
@@ -132,9 +136,11 @@ def main():
                     value=params["CLKSWING_CFG"], digits=2)[::-1]
             ]
 
+            gtp_common_site = sites_in_tile[tile]
             for i in range(2):
-                segmk.add_tile_tag(
-                    tile, "IBUFDS_GTE2.CLKSWING_CFG[%u]" % (i), bitstr[i])
+                segmk.add_site_tag(
+                    gtp_common_site, "IBUFDS_GTE2.CLKSWING_CFG[%u]" % (i),
+                    bitstr[i])
 
     if tile_type.startswith("GTP_COMMON_MID"):
         bitfilter = bitfilter_gtp_common_mid

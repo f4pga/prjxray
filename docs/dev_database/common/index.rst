@@ -13,3 +13,4 @@ that are common for all Xilinx series 7 chip architectures.
    tile_type
    ppips
    mask
+   cell_data

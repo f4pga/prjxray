@@ -16,6 +16,7 @@ SPECIMENS := $(addprefix ${BUILD_DIR}/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 FUZDIR ?= ${PWD}
 
+CELLS_DATA_DIR = ${XRAY_FAMILY_DIR}/cells_data
 
 all: database
 
@@ -34,7 +35,17 @@ clean:
 
 .PHONY: all run clean
 
-database: ${BUILD_DIR}/segbits_gtp_channelx.db
+# These are pins that are hard to parse as a regexp given that the port name ends with a number, which is misinterpreted
+# as the index in the port bus
+SPECIAL_PINS = CLKRSVD0,CLKRSVD1,GTREFCLK0,GTREFCLK1,GTNORTHREFCLK0,GTNORTHREFCLK1,GTSOUTHREFCLK0,GTSOUTHREFCLK1,RXUSRCLK,RXUSRCLK2,TXUSRCLK,TXUSRCLK2,RXOSINTID0,PMARSVDIN0,PMARSVDIN1,PMARSVDIN2,PMARSVDIN3,PMARSVDIN4,PMARSVDOUT0,PMARSVDOUT1
+
+$(BUILD_DIR)/gtpe2_channel_ports.csv:
+	env FILE_NAME=$(BUILD_DIR)/gtpe2_channel_pins.csv ${XRAY_VIVADO} -mode batch -source generate_ports.tcl
+
+$(BUILD_DIR)/gtpe2_channel_ports.json: $(BUILD_DIR)/gtpe2_channel_ports.csv
+	python3 ${XRAY_UTILS_DIR}/make_ports.py $(BUILD_DIR)/gtpe2_channel_pins.csv $(BUILD_DIR)/gtpe2_channel_ports.json --special-pins $(SPECIAL_PINS)
+
+database: ${BUILD_DIR}/segbits_gtp_channelx.db $(BUILD_DIR)/gtpe2_channel_ports.json
 
 ${BUILD_DIR}/segbits_gtp_channelx.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -c 9 -o ${BUILD_DIR}/segbits_gtp_channelx.rdb $$(find $(SPECIMENS) -name "segdata_gtp_channel_[0123]*")
@@ -46,6 +57,9 @@ ${BUILD_DIR}/segbits_gtp_channelx.db: ${BUILD_DIR}/segbits_gtp_channelx.rdb
 	${XRAY_MASKMERGE} ${BUILD_DIR}/mask_gtp_channelx.db $$(find $(SPECIMENS) -name "segdata_gtp_channel_[0123]*")
 
 pushdb:
+	mkdir -p $(CELLS_DATA_DIR)
+	cp attrs.json $(CELLS_DATA_DIR)/gtpe2_channel_attrs.json
+	cp $(BUILD_DIR)/gtpe2_channel_ports.json $(CELLS_DATA_DIR)/gtpe2_channel_ports.json
 	BUILD_DIR=$(BUILD_DIR) source pushdb.sh
 
 .PHONY: database pushdb
