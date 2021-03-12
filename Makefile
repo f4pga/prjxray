@@ -168,8 +168,9 @@ db-format-$(1):
 
 db-extras-$(1): db-extras-$(1)-parts db-extras-$(1)-roi db-extras-$(1)-harness
 
-db-$(1)-all: db-$(1) db-extras-$(1)-parts db-extras-$(1)-roi
+db-$(1)-all: db-$(1) db-extras-$(1)-parts
 	# Build harnesses after database is complete
+	$$(MAKE) db-extras-$(1)-roi
 	$$(MAKE) db-extras-$(1)-harness
 
 db-check: db-check-$(1)
