@@ -107,7 +107,6 @@ class NodeLookup(object):
             for pip in tile_type.get_pips():
                 c.execute(
                     "INSERT INTO pip_in_tile(tile_type_pkey, wire0_in_tile_pkey, wire1_in_tile_pkey, is_directional) VALUES (?, ?, ?, ?);",
-                    (tile_type_pkey, wire_in_tile_pkeys[tile_type_name, pip.net_from], wire_in_tile_pkeys[tile_type_name, pip.net_to], pip.is_directional))
                     (
                         tile_type_pkey,
                         wire_in_tile_pkeys[tile_type_name, pip.net_from],

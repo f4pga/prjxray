@@ -192,7 +192,7 @@ WHERE wire.node_pkey = ?;
 
             dxs = []
             dys = []
-            wires = []
+            wires = [] # This is the place where the N=27 lookup is
             wire_pattern = []
             for wire_in_tile_pkey, dx, dy in sorted(node_to_wires):
                 if dx == 0 and dy == 0 and wire_in_tile_pkey == node_wire_in_tile_pkey:

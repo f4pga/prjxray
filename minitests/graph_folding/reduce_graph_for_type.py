@@ -26,7 +26,7 @@ import gc
 import multiprocessing
 from reference_model import CompactArray, StructOfArray
 import os.path
-from bokeh_plotting import create_plot_from_graph
+#from bokeh_plotting import create_plot_from_graph
 from bitarray import bitarray
 
 from node_lookup import NodeLookup
@@ -41,7 +41,7 @@ all_info = {}
 use_ms = True # Determines whether or not you are using the max_shared algorithm
 use_gs = False # Determines whether or not you are using greedy_set cover
 use_prints = {"size_on_disk": False,
-              "printCapnp"  : False,
+              "printCapnp"  : True,
               "printSubgraphNones": False,
               "needed_combinations": False,
               "density": False,
@@ -800,6 +800,7 @@ def write_nodes_and_wires(
             tile_to_tile_patterns_data.append(
                 (tile.tile_pkey, tile_pattern_to_index[tile_pattern]))
 
+        ms_tileToTilePatterns = tile_to_tile_patterns
         tile_to_tile_patterns = StructOfArray(
             'TileToTilePatterns', ('tile_pkey', 'tile_pattern_index'))
         tile_to_tile_patterns.set_items(sorted(tile_to_tile_patterns_data))
@@ -883,6 +884,57 @@ def write_nodes_and_wires(
 
         with open(os.path.join(output_dir, fname), 'wb') as f:
             f.write(serialized)
+
+    # create csv file to understand the representation
+    # tilePatterns, tilePkeys, tileToTilePatterns, node_pkey_idx, nodeWireInTilePkeys, subgraphs, wirePatternDx, wirePatternDy, wirePatternToWire, hasPip
+    offset = 5
+    num_sets = 5
+    len_max_subset = 0
+    csv_lists = [['tilePatterns'], ['tilePkeys'], ['tileToTilePatterns'],['nodePkeyIdx'], 
+        ['nodeWireInTilePkeys']]
+    for tilePattern in ms_tilePatterns:
+        csv_lists[0].append('"'+str(tilePattern)+'"')
+    for tilePkey in ms_tilePkeys:
+        csv_lists[1].append(str(tilePkey))
+    for tile in tile_to_tile_patterns_data:
+        input_value = tile[1]
+        csv_lists[2].append(str(input_value))
+    for idx, pkey in enumerate(ms_nodeWireInTilePkeys):
+        csv_lists[3].append(idx)
+        csv_lists[4].append(pkey)
+    for idx, subgraph in enumerate(ms_subgraphs):
+        len_max_subset = max(len_max_subset, len(subgraph))
+        csv_lists.append([f'subgraphs[{idx}]'])
+        csv_lists.append([f'wirePatternDx[{idx}]'])
+        csv_lists.append([f'wirePatternDy[{idx}]'])
+        csv_lists.append([f'wirePatternToWire[{idx}]'])
+        csv_lists.append([f'hasPip[{idx}]'])
+        for sub_idx, nodePkey in enumerate(subgraph):
+            csv_lists[offset+num_sets*idx].append(ms_subgraphs[idx][sub_idx])
+            csv_lists[offset+num_sets*idx+1].append(ms_wirePatternDx[idx][sub_idx])
+            csv_lists[offset+num_sets*idx+2].append(ms_wirePatternDy[idx][sub_idx])
+            csv_lists[offset+num_sets*idx+3].append(ms_wirePatternToWire[idx][sub_idx])
+            csv_lists[offset+num_sets*idx+4].append(ms_hasPip[idx][sub_idx])
+
+
+
+    print(csv_lists)
+
+    max_list_len = len(max(csv_lists, key = lambda i: len(i)))
+
+    for cur_list in csv_lists: # make every list the max length
+        while len(cur_list) < max_list_len:
+            cur_list.append("")
+    csv_string = ""
+    for row in range(len(csv_lists[0])):
+        for col in range(len(csv_lists)):
+            csv_string += str(csv_lists[col][row]) + ","
+        csv_string += os.linesep
+
+
+    with open("HCLK_CMT_pips.csv", 'w') as file:
+        file.write(csv_string)
+
 
     return len(serialized), final_node_to_wires
 
@@ -975,7 +1027,7 @@ def generate_max_shared_subgraphs(graph):
 
 
 
-def reduce_graph(args, all_edges, graph, tile_type):
+def reduce_graph(args, all_edges, graph, tile_type, ms_graphs):
     global use_ms
     global use_gs
     global use_prints
@@ -983,6 +1035,7 @@ def reduce_graph(args, all_edges, graph, tile_type):
     beta = .5
     P = (0.6 - 0.8 * beta) * math.exp((4 + 3 * beta) * density)
     N = 0.01 * len(graph.u) * len(graph.v)
+
 
     if args.wire_to_node:
         tile_wire_ids = set()
@@ -1075,11 +1128,12 @@ def reduce_graph(args, all_edges, graph, tile_type):
         for idx, solution in enumerate(required_solutions):
             solution_to_idx[solution] = idx
 
-    ms_required_solutions = {}
+    ms_required_solutions = {'wire_to_node': {}, 'node_to_wires':{}}
 
     if use_ms:
         start_time = time.time()
-        ms_required_solutions, tile_and_tile_solutions = generate_max_shared_subgraphs(graph) # ESR added this for the max_shared_subgraphs
+        ms_required_solutions['wire_to_node'], tile_and_tile_solutions = generate_max_shared_subgraphs(ms_graphs['wire_to_node']) # ESR added this for the max_shared_subgraphs
+        ms_required_solutions['node_to_wires'], tile_and_tile_solutions = generate_max_shared_subgraphs(ms_graphs['node_to_wires']) # ESR added this for the max_shared_subgraphs
         if use_prints["ms_runtime"]:
             print(f"Max Shared took {time.time() - start_time} seconds to run")
         #ms_required_solutions.sort()
@@ -1218,7 +1272,7 @@ def main():
     global use_gs
     global use_prints
     multiprocessing.set_start_method('spawn')
-
+    print("this is the file")
     
 
     parser = argparse.ArgumentParser()
@@ -1270,6 +1324,8 @@ def main():
     else:
         assert False
 
+    ms_graphs = {'wire_to_node':get_wire_to_node_graph(args.database, args.tile) , 'node_to_wires':get_node_to_wires_graph(args.database, args.tile, args.only_pips) }
+
     if use_prints["processing_build"]:
         print('Processing {} : {}'.format(args.database, args.tile))
 
@@ -1278,7 +1334,29 @@ def main():
 
     if len(all_edges) != 0:
         required_solutions, tile_patterns, tile_to_tile_patterns, ms_required_solutions, ms_tile_patterns, ms_tile_to_tile_patterns = reduce_graph(
-            args, all_edges, graph, args.tile)
+            args, all_edges, graph, args.tile, ms_graphs)
+        all_solutions_csv = ''
+        for solution in ms_required_solutions['wire_to_node']:
+            all_solutions_csv += str(solution[0]) + '\n'
+            for idx in range(3):
+                for wire_pattern in solution[1]:
+                    all_solutions_csv += str(wire_pattern[idx]) + ','
+                all_solutions_csv += '\n'
+            all_solutions_csv += '\n'
+        with open("HCLK_CMT_wire_to_node.csv", 'w') as file:
+            file.write(all_solutions_csv)
+
+        all_solutions_csv = ''
+        for solution in ms_required_solutions['node_to_wires']:
+            all_solutions_csv += str(solution[0]) + '\n'
+            for wire_pattern in solution[1]:
+                all_solutions_csv += str(wire_pattern) + ','
+            all_solutions_csv += '\n'
+        with open("HCLK_CMT_node_to_wires.csv", 'w') as file:
+            file.write(all_solutions_csv)
+        print("here")
+
+
     else:
         required_solutions = set()
         tile_patterns = set()
@@ -1312,6 +1390,10 @@ def main():
             ms_size, ms_nodes_and_wires = write_nodes_and_wires( 
                 graph, ms_required_solutions, ms_tile_patterns, ms_tile_to_tile_patterns, args.output_dir, args.tile, args.only_pips, 'max_shared')
     
+
+    print("here")
+
+
     if use_ms:
         print(f"ms_size: {ms_size}")
     if use_gs:
