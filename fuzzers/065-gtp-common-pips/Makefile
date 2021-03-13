@@ -53,7 +53,7 @@ $(BUILD_DIR)/cmt_regions.csv: output_cmt.tcl
 	mkdir -p $(BUILD_DIR)
 	cd $(BUILD_DIR)/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
 
-clean_all:
+clean:
 	rm -rf build_* run.*.ok
 
 pushdb: database
