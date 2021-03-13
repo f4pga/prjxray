@@ -165,13 +165,13 @@ $(BUILD_FOLDER)/tilegrid.json: generate_full.py $(BUILD_FOLDER)/tilegrid_tdb.jso
 	cd $(BUILD_FOLDER) && python3 ${FUZDIR}/generate_full.py \
         --json-in tilegrid_tdb.json --json-out ${BUILD_DIR}/tilegrid.json
 run:
-	$(MAKE) clean
+	$(MAKE) clean_part
 	$(MAKE) database
 	$(MAKE) pushdb
 	touch run.${XRAY_PART}.ok
 
 clean:
-	rm -rf $(BUILD_FOLDER) run.${XRAY_PART}.ok
+	rm -rf build_* run.*.ok
 	cd clb && $(MAKE) clean
 	cd clb_int && $(MAKE) clean
 	cd cfg && $(MAKE) clean
@@ -201,36 +201,36 @@ clean:
 	cd gtp_channel && $(MAKE) clean
 	cd gtp_int_interface && $(MAKE) clean
 
-clean_all:
-	rm -rf build_* run.*.ok
-	cd clb && $(MAKE) clean_all
-	cd clb_int && $(MAKE) clean_all
-	cd cfg && $(MAKE) clean_all
-	cd iob && $(MAKE) clean_all
-	cd iob_int && $(MAKE) clean_all
-	cd ioi && $(MAKE) clean_all
-	cd mmcm && $(MAKE) clean_all
-	cd pll && $(MAKE) clean_all
-	cd ps7_int && $(MAKE) clean_all
-	cd bram && $(MAKE) clean_all
-	cd bram_block && $(MAKE) clean_all
-	cd bram_int && $(MAKE) clean_all
-	cd dsp && $(MAKE) clean_all
-	cd dsp_int && $(MAKE) clean_all
-	cd fifo_int && $(MAKE) clean_all
-	cd monitor && $(MAKE) clean_all
-	cd monitor_int && $(MAKE) clean_all
-	cd cfg_int && $(MAKE) clean_all
-	cd orphan_int_column && $(MAKE) clean_all
-	cd clk_hrow && $(MAKE) clean_all
-	cd clk_bufg && $(MAKE) clean_all
-	cd hclk_cmt && $(MAKE) clean_all
-	cd hclk_ioi && $(MAKE) clean_all
-	cd pcie && $(MAKE) clean_all
-	cd pcie_int_interface && $(MAKE) clean_all
-	cd gtp_common && $(MAKE) clean_all
-	cd gtp_channel && $(MAKE) clean_all
-	cd gtp_int_interface && $(MAKE) clean_all
+clean_part:
+	rm -rf $(BUILD_FOLDER) run.${XRAY_PART}.ok
+	cd clb && $(MAKE) clean_part
+	cd clb_int && $(MAKE) clean_part
+	cd cfg && $(MAKE) clean_part
+	cd iob && $(MAKE) clean_part
+	cd iob_int && $(MAKE) clean_part
+	cd ioi && $(MAKE) clean_part
+	cd mmcm && $(MAKE) clean_part
+	cd pll && $(MAKE) clean_part
+	cd ps7_int && $(MAKE) clean_part
+	cd bram && $(MAKE) clean_part
+	cd bram_block && $(MAKE) clean_part
+	cd bram_int && $(MAKE) clean_part
+	cd dsp && $(MAKE) clean_part
+	cd dsp_int && $(MAKE) clean_part
+	cd fifo_int && $(MAKE) clean_part
+	cd monitor && $(MAKE) clean_part
+	cd monitor_int && $(MAKE) clean_part
+	cd cfg_int && $(MAKE) clean_part
+	cd orphan_int_column && $(MAKE) clean_part
+	cd clk_hrow && $(MAKE) clean_part
+	cd clk_bufg && $(MAKE) clean_part
+	cd hclk_cmt && $(MAKE) clean_part
+	cd hclk_ioi && $(MAKE) clean_part
+	cd pcie && $(MAKE) clean_part
+	cd pcie_int_interface && $(MAKE) clean_part
+	cd gtp_common && $(MAKE) clean_part
+	cd gtp_channel && $(MAKE) clean_part
+	cd gtp_int_interface && $(MAKE) clean_part
 
-.PHONY: database pushdb clean clean_all run
+.PHONY: database pushdb clean clean_part run
 
