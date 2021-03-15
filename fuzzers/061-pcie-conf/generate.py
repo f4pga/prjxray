@@ -10,9 +10,12 @@
 # SPDX-License-Identifier: ISC
 
 import json
+import os
 
 from prjxray.segmaker import Segmaker
-from params import boolean_params, hex_params, int_params
+
+BIN = "BIN"
+BOOL = "BOOL"
 
 
 def bitfilter(frame, bit):
@@ -26,26 +29,34 @@ def bitfilter(frame, bit):
 def main():
     segmk = Segmaker("design.bits")
 
+    fuz_dir = os.getenv("FUZDIR", None)
+    assert fuz_dir
+    with open(os.path.join(fuz_dir, "attrs.json"), "r") as attr_file:
+        attrs = json.load(attr_file)
+
     print("Loading tags")
     with open('params.json') as f:
         params = json.load(f)
 
         site = params['site']
 
-        for param, _ in boolean_params:
+        for param, param_info in attrs.items():
             value = params[param]
+            param_type = param_info["type"]
+            param_digits = param_info["digits"]
+            param_values = param_info["values"]
 
-            segmk.add_site_tag(site, param, value)
+            if param_type == BIN:
+                bitstr = [
+                    int(x) for x in "{value:0{digits}b}".format(
+                        value=value, digits=param_digits)[::-1]
+                ]
 
-        for param, digits in hex_params + int_params:
-            value = int(params[param])
-            bitstr = [
-                int(x) for x in "{value:0{digits}b}".format(
-                    value=value, digits=digits)[::-1]
-            ]
-
-            for i in range(digits):
-                segmk.add_site_tag(site, '%s[%u]' % (param, i), bitstr[i])
+                for i in range(param_digits):
+                    segmk.add_site_tag(site, "%s[%u]" % (param, i), bitstr[i])
+            else:
+                assert param_type == BOOL
+                segmk.add_site_tag(site, param, value == "TRUE")
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()

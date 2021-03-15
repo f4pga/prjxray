@@ -9,6 +9,10 @@
 #
 # SPDX-License-Identifier: ISC
 
+import argparse
+import json
+from collections import OrderedDict
+
 boolean_params = [
     ("AER_CAP_ECRC_CHECK_CAPABLE", 1),
     ("AER_CAP_ECRC_GEN_CAPABLE", 1),
@@ -300,3 +304,37 @@ int_params = [
     ("SPARE_BIT7", 1),
     ("SPARE_BIT8", 1),
 ]
+
+
+def dump_json():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--attrs-file", help="JSON output path", required=True)
+    args = parser.parse_args()
+
+    data = OrderedDict()
+
+    # Prepare BOOL type attributes
+    for param in boolean_params:
+        data[param[0]] = {
+            "type": "BOOL",
+            "values": ["FALSE", "TRUE"],
+            "digits": param[1]
+        }
+
+    # Prepare BIN type attributes
+    for param in (hex_params + int_params):
+        data[param[0]] = {
+            "type": "BIN",
+            "values": [(1 << param[1]) - 1],
+            "digits": param[1]
+        }
+
+    data = dict(sorted(data.items()))
+
+    # Emit JSON
+    with open(args.attrs_file, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+if __name__ == "__main__":
+    dump_json()
