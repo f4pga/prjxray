@@ -169,7 +169,10 @@ echo "----------------------------------------"
 echo "----------------------------------------"
 
 # Check the database and fail if it is broken.
+set -x +e
 make db-check-${XRAY_SETTINGS}
+CHECK_RET=$?
+set +x -e
 
 echo
 echo "========================================"
@@ -200,3 +203,5 @@ echo "========================================"
 echo " Final disk space after cleanup"
 echo "----------------------------------------"
 du -sh
+
+exit $CHECK_RET
