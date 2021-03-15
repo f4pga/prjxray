@@ -14,10 +14,10 @@ $(SPECIMENS_OK):
 	touch $@
 
 clean:
-	rm -rf $(BUILD_DIR)
-
-clean_all:
 	rm -rf build_*
+
+clean_part:
+	rm -rf $(BUILD_DIR)
 
 .PHONY: database clean
 
