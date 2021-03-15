@@ -28,6 +28,8 @@ setuptools.setup(
         'fasm',
         'intervaltree',
         'numpy',
+        # FIXME: remove dependency once https://github.com/SymbiFlow/prjxray/issues/1624
+        #        is fixed
         'pyjson5',
         'pyyaml',
         'simplejson',
