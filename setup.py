@@ -24,6 +24,16 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/SymbiFlow/prjxray",
     packages=['prjxray'],
+    install_requires=[
+        'fasm',
+        'intervaltree',
+        'numpy',
+        # FIXME: remove dependency once https://github.com/SymbiFlow/prjxray/issues/1624
+        #        is fixed
+        'pyjson5',
+        'pyyaml',
+        'simplejson',
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: ISC License",
