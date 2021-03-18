@@ -168,7 +168,7 @@ def run():
 
     def bitfilter(frame, bit):
         # rw_width_tags() aliasing interconnect on large widths
-        return frame not in (20, 21)
+        return frame not in (0, 20, 21)
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write()

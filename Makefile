@@ -138,8 +138,18 @@ define database
 
 # $(1) - Database name
 
+db-prepare-$(1):
+	@echo
+	@echo "Preparing $(1) files"
+	@echo "============================"
+	@mkdir -p database/$(1)/mapping
+	@cp settings/$(1)/devices.yaml database/$(1)/mapping/
+	@+source settings/$(1).sh && $(IN_ENV) ./utils/update_parts.py $(1)
+	@+source settings/$(1).sh && $(IN_ENV) ./utils/update_resources.py $(1)
+
 db-$(1):
 	+source settings/$(1).sh && $$(MAKE) -C fuzzers
+	+source settings/$(1).sh && $(IN_ENV) ./utils/roi_all.py
 
 db-check-$(1):
 	@echo
@@ -154,12 +164,13 @@ db-format-$(1):
 	@$(IN_ENV) cd database/$(1); python3 ../../utils/sort_db.py
 	@if [ -e database/Info.md ]; then $(IN_ENV) ./utils/info_md.py --keep; fi
 
-.PHONY: db-$(1) db-check-$(1) db-format-$(1) db-extras-$(1) db-extras-$(1)-parts db-extras-$(1)-harness
+.PHONY: db-prepare-$(1) db-$(1) db-check-$(1) db-format-$(1) db-extras-$(1) db-extras-$(1)-parts db-extra-$(1)-roi db-extras-$(1)-harness
 
-db-extras-$(1): db-extras-$(1)-parts db-extras-$(1)-harness
+db-extras-$(1): db-extras-$(1)-parts db-extras-$(1)-roi db-extras-$(1)-harness
 
 db-$(1)-all: db-$(1) db-extras-$(1)-parts
 	# Build harnesses after database is complete
+	$$(MAKE) db-extras-$(1)-roi
 	$$(MAKE) db-extras-$(1)-harness
 
 db-check: db-check-$(1)
@@ -174,7 +185,7 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 
 ARTIX_PARTS=artix7_50t artix7_200t
 ZYNQ_PARTS=zynq7010
-KINTEX_PARTS=kintex70t
+KINTEX_PARTS=
 
 XRAY_PARTS=${ARTIX_PARTS} ${ZYNQ_PARTS} ${KINTEX_PARTS}
 
@@ -185,6 +196,9 @@ define multiple-parts
 db-part-only-$(1):
 	+source settings/$(1).sh && $$(MAKE) -C fuzzers part_only
 
+db-roi-only-$(1):
+	+source settings/$(1).sh && $(IN_ENV) ./utils/roi_all.py
+
 endef
 
 $(foreach PART,$(XRAY_PARTS),$(eval $(call multiple-parts,$(PART))))
@@ -192,20 +206,14 @@ $(foreach PART,$(XRAY_PARTS),$(eval $(call multiple-parts,$(PART))))
 
 db-extras-artix7-parts: $(addprefix db-part-only-,$(ARTIX_PARTS))
 
+db-extras-artix7-roi: $(addprefix db-roi-only-,$(ARTIX_PARTS))
+
 # This explicitly sources each settings script as needed so that
 #   you don't need to worry about manually sourcing the right script before making.
 # Some of these commands handle additional parts/packages that are *not* fully bonded.
 # For any pin defined in settings/*.sh that is *not* bonded in this part/package,
 #    override the XRAY_PIN_0X setting below to pick a pin that *is* bonded.
 db-extras-artix7-harness:
-	+source settings/artix7.sh && \
-		XRAY_PART=xc7a100tcsg324-1 $(MAKE) -C fuzzers roi_only
-	+source settings/artix7.sh && \
-		XRAY_PART=xc7a100tfgg484-2 $(MAKE) -C fuzzers roi_only
-	+source settings/artix7_50t.sh && \
-		XRAY_PART=xc7a35tftg256-1 $(MAKE) -C fuzzers roi_only
-	+source settings/artix7_200t.sh && \
-		XRAY_PART=xc7a200tsbg484-1 $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/arty-uart.sh && $(MAKE) -C fuzzers roi_only
 	+source minitests/roi_harness/basys3-swbut.sh && \
@@ -225,17 +233,20 @@ db-extras-artix7-harness:
 		$(MAKE) -C minitests/roi_harness \
 			HARNESS_DIR=$(XRAY_DATABASE_DIR)/artix7/harness/arty-a7/swbut copy
 
-db-extras-kintex7-parts:
-	@true
+db-extras-kintex7-parts: $(addprefix db-part-only-,$(KINTEX_PARTS))
+
+db-extras-kintex7-roi: $(addprefix db-roi-only-,$(KINTEX_PARTS))
 
 db-extras-kintex7-harness:
 	@true
 
 db-extras-zynq7-parts: $(addprefix db-part-only-,$(ZYNQ_PARTS))
 
+db-extras-zynq7-roi: $(addprefix db-roi-only-,$(ZYNQ_PARTS))
+
 db-extras-zynq7-harness:
-	+source settings/zynq7.sh && \
-		XRAY_PART=xc7z020clg400-1 $(MAKE) -C fuzzers roi_only
+	@true
+
 db-check:
 	@true
 
@@ -244,6 +255,8 @@ db-format:
 
 db-info:
 	$(IN_ENV) ./utils/info_md.py
+
+db-prepare-parts: $(addprefix db-prepare-,$(DATABASES))
 
 .PHONY: db-check db-format
 

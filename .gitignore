@@ -2,19 +2,8 @@ env
 build
 build_*
 logs_*
-database/*
-!database/artix7
-database/artix7/*
-!database/artix7/mapping
-!database/kintex7
-database/kintex7/*
-!database/kintex7/mapping
-!database/zynq7
-database/zynq7/*
-!database/zynq7/mapping
-!database/spartan7
-database/spartan7/*
-!database/spartan7/mapping
+database
+settings/*/resources.yaml
 .Xil
 **/specimen_*
 **/output
@@ -24,3 +13,5 @@ __pycache__
 *.pyc
 *.swp
 *.egg-info
+*vivado*.jou
+*vivado*.log
