@@ -23,4 +23,9 @@ export XRAY_IOI3_TILES="RIOI3_X105Y9 LIOI3_X0Y9"
 
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
 
-eval $(python3 ${XRAY_UTILS_DIR}/create_environment.py)
+env=`python3 ${XRAY_UTILS_DIR}/create_environment.py`
+ENV_RET=$?
+if [[ $ENV_RET != 0 ]] ; then
+	return $ENV_RET
+fi
+eval $env
