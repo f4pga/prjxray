@@ -65,7 +65,8 @@ Ports files
 
 This is a JSON file containing a dictionary of ports, each one with two attributes:
 
-    - Direction: Corresponds to the port directiona and can have the ``input`` or ``output`` values.
+    - Direction: Corresponds to the port directiona and can have the ``input``, ``output``, ``clock`` values.
+                 Note that the ``clock`` value is implicitly considered also as an ``input``.
     - Width: Indicates the width of the port bus.
 
 As an example of parameter please, refer to the following::

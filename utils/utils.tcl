@@ -168,3 +168,37 @@ proc generate_top {} {
     write_checkpoint -force design.dcp
     write_bitstream -force design.bit
 }
+
+# Dumps all pins of a site, with the direction info (clock, input, output)
+proc dump_pins {file_name site_prefix} {
+    set fp [open $file_name w]
+
+    puts $fp "name,is_input,is_output,is_clock"
+    set site [lindex [get_sites $site_prefix*] 0]
+    set bel [get_bels -of_objects $site]
+    set bel_pins [get_bel_pins -of_objects $bel]
+
+    set bel_pins_dict [dict create]
+    foreach pin $bel_pins {
+        set pin_name [lindex [split $pin "/"] 2]
+        set is_clock [get_property IS_CLOCK $pin]
+        dict set bel_pins_dict $pin_name $is_clock
+    }
+
+    set site_pins [get_site_pins -of_objects $site]
+    foreach pin $site_pins {
+        set connected_pip [get_pips -of_objects [get_nodes -of_objects $pin]]
+
+        if { $connected_pip == "" } {
+            continue
+        }
+
+        set pin_name [lindex [split $pin "/"] 1]
+        set is_input [get_property IS_INPUT $pin]
+        set is_output [get_property IS_OUTPUT $pin]
+        set is_clock [dict get $bel_pins_dict $pin_name]
+
+        puts $fp "$pin_name,$is_input,$is_output,$is_clock"
+    }
+    close $fp
+}
