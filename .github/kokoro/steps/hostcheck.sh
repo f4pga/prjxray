@@ -29,5 +29,41 @@ if [[ $MOUNT_RET != 0 ]] ; then
 	echo "----------------------------------------"
 	dmesg
 
+	echo "========================================"
+	echo "Partition information"
+	echo "----------------------------------------"
+	echo ""
+	echo "partprobe"
+	echo "----------------------------------------"
+	partprobe -s
+	echo ""
+	echo "cat /proc/partitions"
+	echo "----------------------------------------"
+	cat /proc/partitions
+	echo ""
+	echo "cat /etc/fstab"
+	echo "----------------------------------------"
+	cat /etc/fstab
+	echo ""
+	echo "cat /etc/mtab"
+	echo "----------------------------------------"
+	cat /etc/mtab
+	echo ""
+	echo "lsblk"
+	echo "----------------------------------------"
+	lsblk --list --output 'NAME,KNAME,FSTYPE,MOUNTPOINT,LABEL,UUID,PARTTYPE,PARTLABEL,PARTUUID'
+	echo ""
+	echo "sfdisk"
+	echo "----------------------------------------"
+	sudo sfdisk --list
+	echo ""
+	echo "systemctl | grep mount"
+	echo "----------------------------------------"
+	systemctl | grep mount
+	echo ""
+	echo "systemctl | grep dev"
+	echo "----------------------------------------"
+	systemctl | grep dev
+
 	exit $MOUNT_RET
 fi
