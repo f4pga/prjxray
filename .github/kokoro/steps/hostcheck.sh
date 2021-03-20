@@ -13,6 +13,8 @@ echo
 echo "========================================"
 echo "Check storage"
 echo "----------------------------------------"
+# Wait 30 seconds to not check the storage too early.
+sleep 30
 set -x +e
 mount | grep /tmpfs
 MOUNT_RET=$?
