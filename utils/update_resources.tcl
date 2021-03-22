@@ -24,6 +24,6 @@ foreach bank [split $banks " "] {
 set fp [open $::env(TMP_FILE) w]
 
 puts $fp "{"
-puts $fp "\t\"clk_pins\": \"$clk_pins\","
-puts $fp "\t\"data_pins\": \"$data_pins\""
+    puts $fp "\t\"clk_pins\": \"$clk_pins\","
+    puts $fp "\t\"data_pins\": \"$data_pins\""
 puts $fp "}"
