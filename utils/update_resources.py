@@ -67,6 +67,8 @@ def main():
         with open(tmp_file, "r") as fp:
             pins_json = json.load(fp)
 
+        os.remove(tmp_file)
+
         clk_pins = pins_json["clk_pins"].split()
         data_pins = pins_json["data_pins"].split()
         pins = {
