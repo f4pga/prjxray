@@ -31,6 +31,11 @@ while true; do
 
        # Dump debugging information.
        echo "========================================"
+       echo "Mount output"
+       echo "----------------------------------------"
+       mount
+
+       echo "========================================"
        echo "Dmesg dump"
        echo "----------------------------------------"
        dmesg
