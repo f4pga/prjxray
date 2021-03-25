@@ -21,12 +21,12 @@ while true; do
        MOUNT_RET=$?
        set +x -e
        if [[ $MOUNT_RET == 0 ]] ; then
-               break;
+              break;
        else
-               echo "----------------------------------------"
-               echo "Error: No storage is mounted on /tmpfs."
-               echo "----------------------------------------"
-               echo ""
+              echo "----------------------------------------"
+              echo "Error: No storage is mounted on /tmpfs."
+              echo "----------------------------------------"
+              echo ""
        fi
 
        # Dump debugging information.
@@ -72,10 +72,13 @@ while true; do
        systemctl | grep dev
 
        # Fail if we have waited to long.
-       if [[ $STORAGE_CHECK_ATTEMPTS -gt 5 ]]; then
-               exit $MOUNT_RET
+       if [[ $STORAGE_CHECK_ATTEMPTS -gt 10 ]]; then
+              echo "=============================="
+              echo " ERROR: Storage check timeout"
+              echo "=============================="
+              exit $MOUNT_RET
        else
-               STORAGE_CHECK_ATTEMPTS=$(( $STORAGE_CHECK_ATTEMPTS + 1 ))
+              STORAGE_CHECK_ATTEMPTS=$(( $STORAGE_CHECK_ATTEMPTS + 1 ))
        fi
 
        # Wait for a bit before rechecking.
