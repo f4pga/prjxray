@@ -246,7 +246,7 @@ proc write_pcie_int_interface_ppips_db {filename tile allows forbids} {
         set skip_wire false
 
         foreach wire $forbids {
-            if {[regexp $wire $dst_wire]} {
+            if {[regexp $wire $src_wire]} {
                 set skip_wire true
                 break
             }
@@ -257,7 +257,7 @@ proc write_pcie_int_interface_ppips_db {filename tile allows forbids} {
 
         set skip_wire true
         foreach wire $allows {
-            if {[regexp $wire $dst_wire]} {
+            if {[regexp $wire $src_wire]} {
                 set skip_wire false
                 break
             }
@@ -361,8 +361,8 @@ foreach tile_type {PCIE_INT_INTERFACE_L PCIE_INT_INTERFACE_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
-        set allow_wires {"IMUX_OUT" "IMUX_L" "LOGIC_OUTS"}
-        set forbid_wires {"DELAY"}
+        set allow_wires {"IMUX_L\[0-9\]+" "IMUX\[0-9\]+" "LOGIC_OUTS"}
+        set forbid_wires {"DELAY\[0-9\]+"}
         write_pcie_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile $allow_wires $forbid_wires
     }
 }
