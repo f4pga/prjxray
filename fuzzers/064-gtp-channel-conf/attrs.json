@@ -904,13 +904,13 @@
         "type": "INT",
         "values": [1, 2, 4, 8],
         "encoding": [0, 1, 2, 3],
-        "digits": 3
+        "digits": 2
     },
     "RXOUT_DIV": {
         "type": "INT",
         "values": [1, 2, 4, 8],
         "encoding": [0, 1, 2, 3],
-        "digits": 3
+        "digits": 2
     },
     "CFOK_CFG": {
         "type": "BIN",

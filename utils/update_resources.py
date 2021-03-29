@@ -13,6 +13,8 @@ import yaml
 import subprocess
 import os
 import re
+import tempfile
+import json
 from prjxray import util
 
 
@@ -39,23 +41,36 @@ def main():
     information = {}
 
     parts = util.get_parts(args.db_root)
+    processed_parts = dict()
     for part in parts.keys():
+        # Skip parts which differ only in the speedgrade, as they have the same pins
+        fields = part.split("-")
+        common_part = fields[0]
+        if common_part in processed_parts:
+            information[part] = processed_parts[common_part]
+            continue
+
         print("Find pins for {}".format(part))
         env['XRAY_PART'] = part
+        _, tmp_file = tempfile.mkstemp()
         # Asks with get_package_pins and different filters for pins with
         # specific properties.
-        command = "{} -mode batch -source update_resources.tcl".format(
-            env['XRAY_VIVADO'])
+        command = "env TMP_FILE={} {} -mode batch -source update_resources.tcl".format(
+            tmp_file, env['XRAY_VIVADO'])
         result = subprocess.run(
             command.split(' '),
             check=True,
             env=env,
             cwd=cwd,
             stdout=subprocess.PIPE)
-        # Formats the output and stores the pins
-        output = result.stdout.decode('utf-8').splitlines()
-        clk_pins = output[-4].split(' ')
-        data_pins = output[-2].strip().split(' ')
+
+        with open(tmp_file, "r") as fp:
+            pins_json = json.load(fp)
+
+        os.remove(tmp_file)
+
+        clk_pins = pins_json["clk_pins"].split()
+        data_pins = pins_json["data_pins"].split()
         pins = {
             0: clk_pins[0],
             1: data_pins[0],
@@ -63,6 +78,7 @@ def main():
             3: data_pins[-1]
         }
         information[part] = {'pins': pins}
+        processed_parts[common_part] = {'pins': pins}
 
     # Overwrites the <family>/resources.yaml file completly with new data
     util.set_part_resources(resource_path, information)

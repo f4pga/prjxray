@@ -81,9 +81,12 @@ def main():
         # Get direction
         is_input = int(pin["is_input"])
         is_output = int(pin["is_output"])
+        is_clock = int(pin["is_clock"])
 
         if is_input:
             direction = "input"
+            if is_clock:
+                direction = "clock"
         elif is_output:
             direction = "output"
         else:
