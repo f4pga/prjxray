@@ -89,6 +89,8 @@ assign out = in;
             verilog.quote("TRUE" if random.randint(0, 1) else "FALSE"),
             "CLKSWING_CFG":
             clkswing_cfg,
+            "GTREFCLK_USED":
+            random.randint(0, 1)
         }
 
         if in_use:
@@ -98,7 +100,9 @@ assign out = in;
                 ibufds_out_wires[tile_name] = list()
 
             ibufds_out_wires[tile_name].append(
-                (ibufds_out_wire, int(site_name[-1]) % 2))
+                (
+                    ibufds_out_wire, int(site_name[-1]) % 2,
+                    params["GTREFCLK_USED"]))
 
             print("wire {};".format(ibufds_out_wire))
             print("(* KEEP, DONT_TOUCH, LOC=\"{}\" *)".format(site_name))
@@ -174,22 +178,20 @@ IBUFDS_GTE2 #(
             verilog_attr = verilog_attr.rstrip(",")
             verilog_attr += "\n)"
 
-            for param in ["GTREFCLK0_USED", "GTREFCLK1_USED",
-                          "BOTH_GTREFCLK_USED"]:
-                params[param] = 0
+            params["BOTH_GTREFCLK_USED"] = 0
 
             if tile_name in ibufds_out_wires:
                 gtrefclk_ports_used = 0
 
-                for wire, location in ibufds_out_wires[tile_name]:
-                    if random.random() < 0.5:
+                for wire, location, use_gtrefclk in ibufds_out_wires[
+                        tile_name]:
+                    if not use_gtrefclk:
                         continue
 
                     verilog_ports += """
             .GTREFCLK{}({}),""".format(location, wire)
 
                     gtrefclk_ports_used += 1
-                    params["GTREFCLK{}_USED".format(location)] = 1
 
                 if gtrefclk_ports_used == 2:
                     params["BOTH_GTREFCLK_USED"] = 1

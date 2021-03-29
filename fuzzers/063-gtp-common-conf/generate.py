@@ -71,9 +71,9 @@ def main():
         if "GTPE2_COMMON" not in site:
             continue
 
-        sites_in_tile[tile] = site
-
         in_use = params["IN_USE"]
+
+        sites_in_tile[tile] = (site, in_use)
 
         segmk.add_site_tag(site, "IN_USE", in_use)
 
@@ -109,10 +109,8 @@ def main():
             for param in ["PLL0LOCKDETCLK", "PLL1LOCKDETCLK", "DRPCLK"]:
                 segmk.add_site_tag(site, "INV_" + param, params[param])
 
-            for param in ["GTREFCLK0_USED", "GTREFCLK1_USED",
-                          "BOTH_GTREFCLK_USED"]:
-                segmk.add_site_tag(site, param, params[param])
-
+            segmk.add_site_tag(
+                site, "BOTH_GTREFCLK_USED", params["BOTH_GTREFCLK_USED"])
             segmk.add_site_tag(site, "ENABLE_DRP", params["ENABLE_DRP"])
 
     for params in params_list:
@@ -136,7 +134,12 @@ def main():
                     value=params["CLKSWING_CFG"], digits=2)[::-1]
             ]
 
-            gtp_common_site = sites_in_tile[tile]
+            gtp_common_site, gtp_in_use = sites_in_tile[tile]
+
+            if gtp_in_use:
+                segmk.add_site_tag(
+                    site, "GTREFCLK_USED", params["GTREFCLK_USED"])
+
             for i in range(2):
                 segmk.add_site_tag(
                     gtp_common_site, "IBUFDS_GTE2.CLKSWING_CFG[%u]" % (i),
