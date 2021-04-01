@@ -49,6 +49,13 @@ def get_environment_variables():
 
 
 def main():
+    # Only dump the environment when the resource.yaml file for the family
+    # exists to prevent errors during the creation on the stdout.
+    # SKIP_ENV in the environment turns off the environment dump for updating
+    # all parts and resources, which will create the resource.yaml file.
+    if 'SKIP_ENV' in os.environ:
+        return
+
     environment = get_environment_variables()
 
     for key, value in environment.items():

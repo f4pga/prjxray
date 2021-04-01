@@ -144,8 +144,8 @@ db-prepare-$(1):
 	@echo "============================"
 	@mkdir -p database/$(1)/mapping
 	@cp settings/$(1)/devices.yaml database/$(1)/mapping/
-	@+source settings/$(1).sh && $(IN_ENV) ./utils/update_parts.py $(1)
-	@+source settings/$(1).sh && $(IN_ENV) ./utils/update_resources.py $(1)
+	@+SKIP_ENV=true source settings/$(1).sh && $(IN_ENV) ./utils/update_parts.py $(1)
+	@+SKIP_ENV=true source settings/$(1).sh && $(IN_ENV) ./utils/update_resources.py $(1)
 
 db-$(1):
 	+source settings/$(1).sh && $$(MAKE) -C fuzzers
