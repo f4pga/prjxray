@@ -99,7 +99,7 @@ Step 3
 
 The project needs to know which device is now available and which fabric it
 uses. Because some devices share the same fabric, this mapping needs to be
-done manuelly. Edit the device.yaml file for the used family under
+done manually. Edit the device.yaml file for the used family under
 settings/<familiy>/device.yaml be adding the device-fabric mapping:
 
 ::
