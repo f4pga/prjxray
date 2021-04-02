@@ -5,7 +5,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-N := 20
+N := 40
 SPECIMENS_DEPS := build/iobanks.txt
 include ../fuzzer.mk
 
