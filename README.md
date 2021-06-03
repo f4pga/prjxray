@@ -83,12 +83,6 @@ This might give you an error about `sphinx_autodoc_typehints` but it should
 correctly build and install pyjson5. After this, run either option 1 or 2 again.
 
 ### Step 6: ###
-Always make sure to set the environment for the device you are working on before
-running any other commands:
-
-    source settings/artix7.sh
-
-### Step 7: ###
 Prepare the database with static part information, which are needed by the
 fuzzers, either for all device families
 
@@ -98,7 +92,7 @@ or only for a selected one
 
     make db-prepare-artix7
 
-### Step 8: ###
+### Step 7: ###
 (Option 1, recommended) - Download a current stable version (you can use the
 Python API with a pre-generated database)
 
@@ -108,6 +102,12 @@ Python API with a pre-generated database)
 
     cd fuzzers
     make -j$(nproc)
+
+### Step 8: ###
+Always make sure to set the environment for the device you are working on before
+running any other commands:
+
+    source settings/artix7.sh
 
 ### Step 9: ###
 Pick a fuzzer (or write your own) and run:
