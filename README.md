@@ -42,99 +42,135 @@ shell that is then only used to run Vivado to avoid these problems.
 ### Step 2: ###
 Clone the ``prjxray`` repository and its submodules:
 
-    git clone git@github.com:SymbiFlow/prjxray.git
-    cd prjxray
-    git submodule update --init --recursive
+```bash
+git clone git@github.com:SymbiFlow/prjxray.git
+cd prjxray
+git submodule update --init --recursive
+```
 
 ### Step 3: ###
 Install CMake:
 
-    sudo apt-get install cmake # version 3.5.0 or later required,
-                               # for Ubuntu Trusty pkg is called cmake3
+```bash
+sudo apt-get install cmake # version 3.5.0 or later required,
+                           # for Ubuntu Trusty pkg is called cmake3
+```
 
 ### Step 4: ###
-Build the C++ tools:
+Build the C++ tools, in the prjxray root directory run:
 
-    make build
+```bash
+make build
+```
 
 ### Step 5: ###
 Choose one of the following options:
 
 (Option 1) - Install the Python environment locally
 
-    sudo apt-get install virtualenv python3 python3-pip python3-virtualenv python3-yaml
-    make env
+```bash
+sudo apt-get install virtualenv python3 python3-pip python3-virtualenv python3-yaml
+make env
+```
 
 (Option 2) - Install the Python environment globally
 
-    sudo apt-get install python3 python3-pip python3-yaml
-    sudo -H pip3 install -r requirements.txt
+```bash
+sudo apt-get install python3 python3-pip python3-yaml
+sudo -H pip3 install -r requirements.txt
+```
 
 This step is known to fail with a compiler error while building the `pyjson5`
 library when using Arch Linux and Fedora. If this occurs, `pyjson5` needs one
 change to build correctly:
 
-    git clone https://github.com/Kijewski/pyjson5.git
-    cd pyjson5
-    sed -i 's/char \*PyUnicode/const char \*PyUnicode/' src/_imports.pyx
-    sudo make
+```bash
+git clone https://github.com/Kijewski/pyjson5.git
+cd pyjson5
+sed -i 's/char \*PyUnicode/const char \*PyUnicode/' src/_imports.pyx
+sudo make
+```
 
 This might give you an error about `sphinx_autodoc_typehints` but it should
 correctly build and install pyjson5. After this, run either option 1 or 2 again.
 
 ### Step 6: ###
-Always make sure to set the environment for the device you are working on before
-running any other commands:
 
-    source settings/artix7.sh
-
-### Step 7: ###
 Prepare the database with static part information, which are needed by the
 fuzzers, either for all device families
 
-    make db-prepare-parts
+```bash
+make db-prepare-parts
+```
 
 or only for a selected one
 
-    make db-prepare-artix7
+```bash
+make db-prepare-artix7
+```
+
+### Step 7: ###
+Always make sure to set the environment for the device you are working on before
+running any other commands:
+
+```bash
+source settings/artix7.sh
+```
 
 ### Step 8: ###
+
 (Option 1, recommended) - Download a current stable version (you can use the
 Python API with a pre-generated database)
 
-    ./download-latest-db.sh
+```bash
+./download-latest-db.sh
+```
 
 (Option 2) - (Re-)create the entire database (this will take a very long time!)
 
-    cd fuzzers
-    make -j$(nproc)
+```bash
+cd fuzzers
+make -j$(nproc)
+```
 
 ### Step 9: ###
-Pick a fuzzer (or write your own) and run:
+Pick a fuzzer (or write your own), from the ``prjxray`` root dir, run:
 
-    cd fuzzers/010-clb-lutinit
-    make -j$(nproc) run
+```bash
+cd fuzzers/010-clb-lutinit
+make -j$(nproc) run
+```
 
 ### Step 10: ###
-Create HTML documentation:
+Create HTML documentation, from the ``prjxray`` root dir, run:
 
-    cd htmlgen
-    python3 htmlgen.py
+```
+cd htmlgen
+python3 htmlgen.py
+```
 
 # C++ Development
 
 Tests are not built by default.  Setting the PRJXRAY\_BUILD\_TESTING option to
-ON when running cmake will include them:
+ON when running cmake will include them. From the ``prjxray`` root dir, run:
 
-    cmake -DPRJXRAY_BUILD_TESTING=ON ..
-    make
+```bash
+mkdir -p build
+cd build
+cmake -DPRJXRAY_BUILD_TESTING=ON ..
+make
+```
 
 The default C++ build configuration is for releases (optimizations enabled, no
 debug info). A build configuration for debugging (no optimizations, debug info)
-can be chosen via the CMAKE\_BUILD\_TYPE option:
+can be chosen via the CMAKE\_BUILD\_TYPE option. From the ``prjxray`` root dir, run:
 
-    cmake -DCMAKE_BUILD_TYPE=Debug ..
-    make
+```bash
+mkdir -p build
+cd build
+cmake -DCMAKE_BUILD_TYPE=ON ..
+make
+```
 
 The options to build tests and use a debug build configuration are independent
 to allow testing that optimizations do not cause bugs.  The build configuration
