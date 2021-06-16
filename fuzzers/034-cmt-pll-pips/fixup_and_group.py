@@ -229,9 +229,14 @@ def main():
     for tag in segbits.keys():
         if tag.endswith("_ACTIVE") and 'FREQ_BB' in tag:
             m = re.search('FREQ_BB([0-9])', tag)
-            prefix = '.CMT_TOP_L_UPPER_T_FREQ_BB{}'.format(m.group(1))
-            tags_to_mask = [t for t in segbits.keys() if t.endswith(prefix)]
-            mask_out_bits(segbits, segbits[tag], tags_to_mask)
+            l_prefix = '.CMT_TOP_L_UPPER_T_FREQ_BB{}'.format(m.group(1))
+            r_prefix = '.CMT_TOP_R_UPPER_T_FREQ_BB{}'.format(m.group(1))
+
+            l_tags_to_mask = [t for t in segbits.keys() if t.endswith(l_prefix)]
+            r_tags_to_mask = [t for t in segbits.keys() if t.endswith(r_prefix)]
+
+            mask_out_bits(segbits, segbits[tag], l_tags_to_mask)
+            mask_out_bits(segbits, segbits[tag], r_tags_to_mask)
 
     # Find common bits
     bit_groups = find_common_bits_for_tag_groups(segbits, tag_groups)
