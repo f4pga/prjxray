@@ -27,7 +27,7 @@ route_design
 write_checkpoint -force design.dcp
 # write_bitstream -force design.bit
 
-proc write_clb_ppips_db {filename tile} {
+proc write_common_ppips_db {filename tile} {
     set fp [open $filename "w"]
     set tile [get_tiles $tile]
     set tile_type [get_property TILE_TYPE $tile]
@@ -292,7 +292,7 @@ foreach tile_type {CLBLM_L CLBLM_R CLBLL_L CLBLL_R} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
-        write_clb_ppips_db "ppips_[string tolower $tile_type].db" $tile
+        write_common_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
 
@@ -389,5 +389,13 @@ foreach tile_type {PCIE_INT_INTERFACE_L PCIE_INT_INTERFACE_R} {
         set allow_wires {"IMUX_L\[0-9\]+" "IMUX\[0-9\]+" "LOGIC_OUTS"}
         set forbid_wires {"DELAY\[0-9\]+"}
         write_pcie_int_interface_ppips_db "ppips_[string tolower $tile_type].db" $tile $allow_wires $forbid_wires
+    }
+}
+
+foreach tile_type {RIOB33 LIOB33 RIOB33_SING LIOB33_SING} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_common_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
