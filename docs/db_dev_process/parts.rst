@@ -41,8 +41,8 @@ code::
     bit 38_15
     bit 38_26
 
-where `seg <base_frame_address> <tile_offset>` indicates how to address the tile,
-and `bit <frame_address_offset> <bit_position>` indicates the position of the bit
+where `seg <base_frame_address>_<tile_offset>` indicates how to address the tile,
+and `bit <frame_address_offset>_<bit_position>` indicates the position of the bit
 within the tile.
 
 base_frame_address:
