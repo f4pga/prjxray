@@ -18,6 +18,29 @@ echo "----------------------------------------"
 
 echo
 echo "========================================"
+echo "Update the CA certificates"
+echo "----------------------------------------"
+sudo apt-get install -y ca-certificates
+echo "----------------------------------------"
+sudo update-ca-certificates
+echo "----------------------------------------"
+
+echo
+echo "========================================"
+echo "Remove the expire letsencrypt.org cert "
+echo "----------------------------------------"
+wget https://helloworld.letsencrypt.org/ || true
+echo "----------------------------------------"
+sudo rm /usr/share/ca-certificates/mozilla/DST_Root_CA_X3.crt
+echo "----------------------------------------"
+sudo update-ca-certificates
+echo "----------------------------------------"
+wget https://helloworld.letsencrypt.org/ || true
+echo "----------------------------------------"
+
+
+echo
+echo "========================================"
 echo "Host adding PPAs"
 echo "----------------------------------------"
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
