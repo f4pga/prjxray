@@ -11,7 +11,6 @@ export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
 
 # All CLB's in part, all BRAM's in part, all DSP's in part.
 # tcl queries IOB => don't bother adding
-#FIXME: need to update to include entire part
 export XRAY_ROI_TILEGRID="SLICE_X0Y0:SLICE_X153Y349 DSP48_X0Y0:DSP48_X5Y139 RAMB18_X0Y0:RAMB18_X5Y139 RAMB36_X0Y0:RAMB36_X4Y69"
 
 export XRAY_EXCLUDE_ROI_TILEGRID=""
@@ -20,9 +19,8 @@ export XRAY_EXCLUDE_ROI_TILEGRID=""
 # (special handling for frame addresses of certain IOIs -- see the script for details).
 # This needs to be changed for any new device!
 # If you have a FASM mismatch or unknown bits in IOIs, CHECK THIS FIRST.
-export XRAY_IOI3_TILES=""
+export XRAY_IOI3_TILES="LIOI3_X0Y0"
 
-#FIXME: need to update accordingly
 # These settings must remain in sync
 export XRAY_ROI="SLICE_X0Y0:SLICE_X153Y349 DSP48_X0Y0:DSP48_X5Y139 RAMB18_X0Y0:RAMB18_X5Y139 RAMB36_X0Y0:RAMB36_X4Y69"
 #export XRAY_ROI="SLICE_X0Y0:SLICE_X153Y349 DSP48_X0Y20:DSP48_X0Y39 RAMB18_X0Y20:RAMB18_X0Y39 RAMB36_X0Y10:RAMB36_X0Y19 IOB_X0Y50:IOB_X0Y99"
