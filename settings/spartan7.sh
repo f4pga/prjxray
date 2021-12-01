@@ -6,4 +6,4 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-source $(dirname ${BASH_SOURCE[0]})/spartan7_50t.sh
+source $(dirname ${BASH_SOURCE[0]})/spartan7_50.sh
