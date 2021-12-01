@@ -31,6 +31,16 @@ export XRAY_ROI_GRID_X2="58"
 export XRAY_ROI_GRID_Y1="0"
 export XRAY_ROI_GRID_Y2="51"
 
+# clock pin
+export XRAY_PIN_00="F14"
+# data pins
+export XRAY_PIN_01="F13"
+export XRAY_PIN_02="F12"
+export XRAY_PIN_03="F11"
+export XRAY_PIN_04="G11"
+export XRAY_PIN_05="G10"
+export XRAY_PIN_06="G13"
+
 source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
 
 eval $(python3 ${XRAY_UTILS_DIR}/create_environment.py)
