@@ -242,13 +242,13 @@ db-extras-kintex7-harness:
 	@true
 
 db-extras-spartan7-parts:
-    @true
+	@true
 
 db-extras-spartan7-roi:
-    @true
+	@true
 
 db-extras-spartan7-harness:
-    @true
+	@true
 
 db-extras-zynq7-parts: $(addprefix db-part-only-,$(ZYNQ_PARTS))
 
