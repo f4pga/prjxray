@@ -132,7 +132,7 @@ check-license:
 # Targets related to Project X-Ray databases
 # ------------------------
 
-DATABASES=artix7 kintex7 zynq7
+DATABASES=artix7 kintex7 zynq7 spartan7
 
 define database
 
@@ -186,8 +186,9 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 ARTIX_PARTS=artix7_50t artix7_200t
 ZYNQ_PARTS=zynq7010
 KINTEX_PARTS=
+SPARTAN_PARTS=
 
-XRAY_PARTS=${ARTIX_PARTS} ${ZYNQ_PARTS} ${KINTEX_PARTS}
+XRAY_PARTS=${ARTIX_PARTS} ${ZYNQ_PARTS} ${KINTEX_PARTS} ${SPARTAN_PARTS}
 
 define multiple-parts
 
@@ -238,6 +239,15 @@ db-extras-kintex7-parts: $(addprefix db-part-only-,$(KINTEX_PARTS))
 db-extras-kintex7-roi: $(addprefix db-roi-only-,$(KINTEX_PARTS))
 
 db-extras-kintex7-harness:
+	@true
+
+db-extras-spartan7-parts:
+	@true
+
+db-extras-spartan7-roi:
+	@true
+
+db-extras-spartan7-harness:
 	@true
 
 db-extras-zynq7-parts: $(addprefix db-part-only-,$(ZYNQ_PARTS))

@@ -30,7 +30,7 @@ def main():
     parser.add_argument(
         'family',
         help="Name of the device family.",
-        choices=['artix7', 'kintex7', 'zynq7'])
+        choices=['artix7', 'kintex7', 'zynq7', 'spartan7'])
     util.db_root_arg(parser)
 
     args = parser.parse_args()
