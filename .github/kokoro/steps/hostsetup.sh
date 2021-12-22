@@ -84,6 +84,7 @@ sudo apt-get install -y \
         fontconfig \
         git \
         jq \
+        lsb \
         nodejs \
         psmisc \
         python3.8 \
