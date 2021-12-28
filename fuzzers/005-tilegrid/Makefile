@@ -29,10 +29,11 @@ TILEGRID_TDB_DEPENDENCIES += clk_bufg/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += hclk_cmt/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += pll/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += hclk_ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += mmcm/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
+# Artix7 only fuzzers
 ifeq (${XRAY_DATABASE}, artix7)
-# Artix7 only
 TILEGRID_TDB_DEPENDENCIES += pcie/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += pcie_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += gtp_common/$(BUILD_FOLDER)/segbits_tilegrid.tdb
@@ -40,17 +41,18 @@ TILEGRID_TDB_DEPENDENCIES += gtp_channel/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += gtp_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
+# Zynq7 only fuzzers
 ifeq (${XRAY_DATABASE}, zynq7)
-# Zynq7 only
 TILEGRID_TDB_DEPENDENCIES += ps7_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
-TILEGRID_TDB_DEPENDENCIES += mmcm/$(BUILD_FOLDER)/segbits_tilegrid.tdb
-
+# Kintex7 only fuzzers
 ifeq (${XRAY_DATABASE}, kintex7)
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb
-else
+endif
+
 # Disable DSP INT fuzzer on kintex7.  It doesn't work, and isn't required.
+ifneq (${XRAY_DATABASE}, kintex7)
 TILEGRID_TDB_DEPENDENCIES += dsp_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
