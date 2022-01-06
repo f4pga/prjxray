@@ -30,6 +30,7 @@ TILEGRID_TDB_DEPENDENCIES += hclk_cmt/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += pll/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += hclk_ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += mmcm/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += dsp_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 GENERATE_FULL_ARGS=
 
 # Artix7 only fuzzers
@@ -49,11 +50,6 @@ endif
 # Kintex7 only fuzzers
 ifeq (${XRAY_DATABASE}, kintex7)
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb
-endif
-
-# Disable DSP INT fuzzer on kintex7.  It doesn't work, and isn't required.
-ifneq (${XRAY_DATABASE}, kintex7)
-TILEGRID_TDB_DEPENDENCIES += dsp_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
 BASICDB_TILEGRID=$(BUILD_FOLDER)/basicdb/${XRAY_FABRIC}/tilegrid.json
