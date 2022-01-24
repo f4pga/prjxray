@@ -172,6 +172,10 @@ module top (
   input  wire clk1,
   (* CLOCK_BUFFER_TYPE = "NONE" *)
   input  wire clk2,
+  (* CLOCK_BUFFER_TYPE = "NONE" *)
+  input  wire clk3,
+  (* CLOCK_BUFFER_TYPE = "NONE" *)
+  input  wire clk4,
   input  wire ce,
   input  wire rst,
   input  wire [{N}:0] di,
@@ -225,11 +229,13 @@ IDELAYCTRL idelayctrl();
             print('OBUF obuf_%03d (.I(do_buf[%3d]), .O(do[%3d]));' % (i, i, i))
 
             clk1_conn = random.choice(["clk1", ""])
+            clk3_conn = random.choice(["clk3", ""])
+            clk4_conn = random.choice(["clk4", ""])
 
             param_str = ",".join(".%s(%s)" % (k, v) for k, v in params.items())
             print(
-                'ilogic_single #(%s) ilogic_%03d (.clk1(%s), .clk2(clk2), .ce(ce), .rst(rst), .I(di_buf[%3d]), .O(do_buf[%3d]));'
-                % (param_str, i, clk1_conn, i, i))
+                'ilogic_single #(%s) ilogic_%03d (.clk1(%s), .clk2(clk2), .clk3(%s), .clk4(%s), .ce(ce), .rst(rst), .I(di_buf[%3d]), .O(do_buf[%3d]));'
+                % (param_str, i, clk1_conn, clk3_conn, clk4_conn, i, i))
 
             params["CHAINED"] = 0
             params["TILE_NAME"] = tile_name
@@ -277,6 +283,8 @@ endmodule
 module ilogic_single(
   input  wire clk1,
   input  wire clk2,
+  input  wire clk3,
+  input  wire clk4,
   input  wire ce,
   input  wire rst,
   input  wire I,
@@ -384,7 +392,7 @@ generate if (IS_USED && BEL_TYPE == "ISERDESE2") begin
   .IOBDELAY(IOBDELAY),
   .OFB_USED(OFB_USED)
   )
-  isedres
+  iserdes
   (
   .D(I),
   .DDLY(),
@@ -395,8 +403,8 @@ generate if (IS_USED && BEL_TYPE == "ISERDESE2") begin
   .DYNCLKSEL(),
   .CLK(clk1),
   .CLKB(clk2),
-  .OCLK(),
-  .OCLKB(),
+  .OCLK(clk3),
+  .OCLKB(clk4),
   .DYNCLKDIVSEL(),
   .CLKDIV(),
   .CLKDIVP(),
