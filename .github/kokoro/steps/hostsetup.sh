@@ -44,7 +44,7 @@ echo "========================================"
 echo "Host adding PPAs"
 echo "----------------------------------------"
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main'
+sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
 sudo add-apt-repository ppa:deadsnakes/ppa
 echo "----------------------------------------"
 
@@ -87,14 +87,14 @@ sudo apt-get install -y \
         lsb \
         nodejs \
         psmisc \
-        python3.8 \
-        python3.8-dev \
-        python3.8-venv
+        python3.9 \
+        python3.9-dev \
+        python3.9-venv
 
 echo "========================================"
-echo "Enter virtual env for python 3.8"
+echo "Enter virtual env for python 3.9"
 echo "----------------------------------------"
-python3.8 -mvenv startup_python
+python3.9 -mvenv startup_python
 source startup_python/bin/activate
 which python
 python --version
