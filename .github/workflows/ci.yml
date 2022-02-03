@@ -89,3 +89,13 @@ jobs:
           path: |
             **/results*.gz
             **/plot_*.svg
+            **/diff.html
+            **/diff.json
+            **/diff.patch
+            **/*result*.xml
+            **/*sponge_log.xml
+            **/fuzzers/*.tgz
+            **/build/*.log
+            **/logs_*/**
+            **/database/${{ matrix.family }}/**"
+            
