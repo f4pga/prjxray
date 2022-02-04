@@ -95,7 +95,7 @@ jobs:
             **/*result*.xml
             **/*sponge_log.xml
             **/fuzzers/*.tgz
-            **/build/*.log
+            **/build/stderr*.log
             **/logs_*/**
             **/database/${{ matrix.family }}/**"
-            
+
