@@ -58,6 +58,7 @@ jobs:
     env:
       ALLOW_ROOT: true
       GHA_EXTERNAL_DISK: "tools"
+      XILINX_LOCAL_USER_DATA: "no"
 
     steps:
 
