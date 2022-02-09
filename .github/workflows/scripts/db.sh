@@ -62,7 +62,7 @@ echo "----------------------------------------"
 
 	# Run the fuzzers
 	set -x +e
-	tmp=`mktemp`
+	tmp=$(mktemp)
 	script --return --flush --command "make -j $CORES MAX_VIVADO_PROCESS=$MAX_VIVADO_PROCESS db-${XRAY_SETTINGS}-all" $tmp
 	DATABASE_RET=$?
 	set +x -e
@@ -70,7 +70,10 @@ echo "----------------------------------------"
 	if [[ $DATABASE_RET != 0 ]] ; then
 		# Collect the Vivado logs into one tgz archive
 		echo "Packing failing test cases"
-		grep "recipe for target" $tmp | awk 'match($0,/recipe for target.*'\''(.*)\/run\..*ok'\''/,res) {print "fuzzers/" res[1]}' | xargs tar -zcf fuzzers/fails.tgz
+		# Looking for the failing directories and packing them
+		# example of line from which the failing fuzzer directory gets extracted:
+		#   - Makefile:87: recipe for target '000-db-init/000-init-db/run.xc7a100tfgg676-1.ok' failed --> fuzzers/000-db-init
+		grep -Po "recipe for target '\K(.*)(?=\/run\..*\.ok')" $tmp | sed -e 's/^/fuzzers\//' | xargs tar -zcf fuzzers/fails-${XRAY_SETTINGS}.tgz
 		echo "----------------------------------------"
 		echo "A failure occurred during Database build."
 		echo "----------------------------------------"

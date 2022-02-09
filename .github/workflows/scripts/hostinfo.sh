@@ -34,12 +34,3 @@ echo "Total Memory (GB): $MEM_GB"
 export MEM_PER_RUN=8
 export MAX_GRID_CPU=$(($MEM_GB/$MEM_PER_RUN))
 export MAX_VIVADO_PROCESS=$(($MEM_GB/$MEM_PER_RUN))
-
-echo
-echo "========================================"
-echo "Host files"
-echo "----------------------------------------"
-echo $PWD
-echo "----------------------------------------"
-find . | sort
-echo "----------------------------------------"
