@@ -45,13 +45,8 @@ proc loc_pins {} {
         set line [lindex $pin_lines $idx]
         puts "$line"
 
-        set site_str [lindex $line 1]
-        set pin_str [lindex $line 2]
-        set iostandard [lindex $line 3]
-        set drive [lindex $line 4]
-        set slew [lindex $line 5]
-        set pulltype [lindex $line 6]
-        set in_term [lindex $line 7]
+        set site_str [lindex $line 2]
+        set pin_str [lindex $line 3]
 
         # Have: site
         # Want: pin for site
@@ -63,38 +58,7 @@ proc loc_pins {} {
         set tile [get_tiles -of_objects $site]
 
         set pin [dict get $io_pin_sites $site]
-
-        set props {}
-        lappend props PACKAGE_PIN $pin
-        lappend props IOSTANDARD $iostandard
-        lappend props PULLTYPE $pulltype
-
-        if {$drive != "None"} {
-            lappend props DRIVE $drive
-        }
-
-        if {$slew != "None"} {
-            lappend props SLEW $slew
-        }
-
-        if {$in_term != "None"} {
-            lappend props IN_TERM $in_term
-        }
-
-        puts $props
-
-        set_property -dict "$props" $port
-    }
-}
-
-proc set_vref {} {
-    set fp [open "iobank_vref.csv" r]
-    for {gets $fp line} {$line != ""} {gets $fp line} {
-        set parts [split $line ","]
-        set iobank [lindex $parts 0]
-        set vref [lindex $parts 1]
-        puts "setting $iobank ([get_iobanks $iobank]) to INTERNAL_VREF $vref"
-        set_property INTERNAL_VREF $vref [get_iobanks $iobank]
+        set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS18" $port
     }
 }
 
@@ -104,19 +68,13 @@ proc run {} {
     synth_design -top top
 
     loc_pins
-    set_vref
-
 
     set_property CFGBVS GND [current_design]
     set_property CONFIG_VOLTAGE 1.8 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
     set_property IS_ENABLED 0 [get_drc_checks {NSTD-1}]
     set_property IS_ENABLED 0 [get_drc_checks {UCIO-1}]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-144}]
-    set_property IS_ENABLED 0 [get_drc_checks {AVAL-74}]
-
-    write_checkpoint -force design_pre_place.dcp
 
     place_design
     route_design

@@ -99,7 +99,7 @@ def create_sites_from_fasm(fasm_file):
                 assert 'DRIVES' in sites[key], sites[key]
 
                 if 'IN' in sites[key]:
-                    sites[key]['type'] = ['IOBUF', 'IOBUF_INTERMDISABLE']
+                    sites[key]['type'] = ['IOBUF', 'IOBUF_DCIEN']
                 else:
                     sites[key]['type'] = [
                         "OBUF",

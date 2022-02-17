@@ -18,8 +18,11 @@ import csv
 
 
 def bitfilter(frame, word):
-    if frame < 38:
-        return False
+    # TODO: do we need this here?
+    # this frame number limit does not seem 
+    # to apply to 1.8V high speed banks
+    # if frame < 38:
+    #     return False
 
     return True
 
@@ -31,14 +34,15 @@ def mk_drive_opt(iostandard, drive):
 
 
 def drives_for_iostandard(iostandard):
-    if iostandard in ['LVTTL', 'LVCMOS18']:
-        drives = [4, 8, 12, 16, 24]
+    if iostandard in ['LVCMOS18', 'LVCMOS15']:
+        drives = [2, 4, 6, 8, 12, 16]
     elif iostandard == 'LVCMOS12':
-        drives = [4, 8, 12]
+        drives = [2, 4, 6, 8]
     elif iostandard in ['SSTL135', 'SSTL15']:
         return ['_FIXED']
     else:
         drives = [4, 8, 12, 16]
+        assert False, "should be unreachable"
 
     return drives
 
@@ -46,9 +50,9 @@ def drives_for_iostandard(iostandard):
 STEPDOWN_IOSTANDARDS = [
     'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135', 'SSTL15'
 ]
-IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15', 'LVDS_25', 'TMDS_33']
+IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15', 'LVDS']
 
-ONLY_DIFF_IOSTANDARDS = ['LVDS_25', 'TMDS_33']
+ONLY_DIFF_IOSTANDARDS = ['LVDS']
 
 
 def main():
@@ -83,8 +87,8 @@ def main():
     segmk = Segmaker("design.bits")
     '''
     port,site,tile,pin,slew,drive,pulltype
-    di[0],IOB_X0Y107,LIOB18_X0Y107,A21,PULLDOWN
-    di[10],IOB_X0Y147,LIOB18_X0Y147,F14,PULLUP
+    di[0],IOB_X1Y107,RIOB18_X1Y107,AF4,PULLDOWN
+    di[10],IOB_X1Y147,RIOB18_X1Y147,U5,PULLUP
     '''
     with open('params.json', 'r') as f:
         design = json.load(f)
@@ -114,13 +118,6 @@ def main():
             segmk.add_site_tag(
                 site, '_'.join(STEPDOWN_IOSTANDARDS) + '.STEPDOWN',
                 iostandard in STEPDOWN_IOSTANDARDS)
-
-            if 'IN_TERM' in d:
-                segmaker.add_site_group_zero(
-                    segmk, site, 'IN_TERM.', [
-                        'NONE', 'UNTUNED_SPLIT_40', 'UNTUNED_SPLIT_50',
-                        'UNTUNED_SPLIT_60'
-                    ], 'NONE', d['IN_TERM'])
 
             only_diff_io = iostandard in ONLY_DIFF_IOSTANDARDS
 
@@ -182,7 +179,7 @@ def main():
                     d['tile'], 'OUT_DIFF', 1 and not only_diff_io)
                 segmk.add_tile_tag(
                     d['tile'], 'OUT_TDIFF', 1 and not only_diff_io)
-            elif d['type'] == 'IOBUF_INTERMDISABLE':
+            elif d['type'] == 'IOBUF_DCIEN':
                 segmk.add_site_tag(site, 'INOUT', 1)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
@@ -198,25 +195,16 @@ def main():
                 continue
 
             drive_opts = set()
-            for opt in ("LVCMOS25", "LVCMOS33", "LVCMOS18", "LVCMOS15",
-                        "LVCMOS12", 'LVTTL'):
-                for drive_opt in ("4", "8", "12", "16", "24"):
-                    if drive_opt == "16" and opt == "LVCMOS12":
-                        continue
-
-                    if drive_opt == "24" and opt not in ["LVCMOS18", 'LVTTL']:
+            for opt in ("LVCMOS18", "LVCMOS15", "LVCMOS12"):
+                for drive_opt in ("2", "4", "6", "8", "12", "16"):
+                    if drive_opt in ["12", "16"] and opt == "LVCMOS12":
                         continue
 
                     drive_opts.add(mk_drive_opt(opt, drive_opt))
 
             drive_opts.add(mk_drive_opt("SSTL135", None))
             drive_opts.add(mk_drive_opt("SSTL15", None))
-            drive_opts.add(mk_drive_opt("LVDS_25", None))
-            drive_opts.add(mk_drive_opt("TMDS_33", None))
-
-            segmaker.add_site_group_zero(
-                segmk, site, '', drive_opts, mk_drive_opt('LVCMOS25', '12'),
-                mk_drive_opt(iostandard, d['DRIVE']))
+            drive_opts.add(mk_drive_opt("LVDS", None))
 
             if d['SLEW']:
                 for opt in ["SLOW", "FAST"]:
@@ -228,9 +216,9 @@ def main():
                 segmk.add_site_tag(
                     site, 'IBUFDISABLE.I', d['ibufdisable_wire'] != '0')
 
-            if 'intermdisable_wire' in d:
+            if 'dcitermdisable_wire' in d:
                 segmk.add_site_tag(
-                    site, 'INTERMDISABLE.I', d['intermdisable_wire'] != '0')
+                    site, 'DCITERMDISABLE.I', d['dcitermdisable_wire'] != '0')
 
     site_to_cmt = {}
     site_to_tile = {}
