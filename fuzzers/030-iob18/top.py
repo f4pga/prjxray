@@ -50,17 +50,24 @@ def write_params(params):
 
 
 def run():
-    tile_types = ['IBUF', 'OBUF', 'IOBUF_INTERMDISABLE', None, None]
+    tile_types = ['IBUF', 'OBUF', 'IOBUF_DCIEN', None, None]
 
     i_idx = 0
     o_idx = 0
     io_idx = 0
 
     iostandards = [
+        'LVCMOS12',
+        'LVCMOS15',
+        'LVCMOS18',
+        'SSTL135',
+        'SSTL15',
         'LVDS',
     ]
 
     diff_map = {
+        "SSTL135": ["DIFF_SSTL135"],
+        "SSTL15": ["DIFF_SSTL15"],
     }
 
     only_diff_map = {
@@ -68,6 +75,16 @@ def run():
     }
 
     IN_TERM_ALLOWED = [
+        'SSTL15',
+        'SSTL15_R',
+        'SSTL18',
+        'SSTL18_R',
+        'SSTL135',
+        'SSTL135_R',
+        'HSTL_I'
+        'HSTL_I_18'
+        'HSTL_II',
+        'HSTL_II_18',
     ]
 
     slews = ['FAST', 'SLOW']
@@ -121,10 +138,10 @@ def run():
             iobank = iob_sites[site_name]
             iostandard = iostandard_map[iobank]
 
-            if iostandard in ['LVTTL', 'LVCMOS18']:
-                drives = [4, 8, 12, 16]
-            elif iostandard in ['LVCMOS12']:
-                drives = [4, 8, 12]
+            if iostandard in ['LVCMOS12']:
+                drives = [2, 4, 6, 8]
+            elif iostandard in ['LVCMOS15', 'LVCMOS18']:
+                drives = [2, 4, 6, 8, 12, 16]
             elif iostandard in ['SSTL135', 'SSTL15', 'LVDS']:
                 drives = None
             else:
@@ -239,7 +256,7 @@ def run():
                 else:
                     p['DRIVE'] = None
                 p['SLEW'] = verilog.quote(random.choice(slews))
-            elif p['type'] == 'IOBUF_INTERMDISABLE':
+            elif p['type'] == 'IOBUF_DCIEN':
                 p['pad_wire'] = 'dio[{}]'.format(io_idx)
                 p['iwire'] = luts.get_next_output_net()
                 p['owire'] = luts.get_next_input_net()
@@ -252,7 +269,7 @@ def run():
                     ('0', luts.get_next_output_net()))
                 p['ibufdisable_wire'] = random.choice(
                     ('0', luts.get_next_output_net()))
-                p['intermdisable_wire'] = random.choice(
+                p['dcitermdisable_wire'] = random.choice(
                     ('0', luts.get_next_output_net()))
                 io_idx += 1
 
@@ -295,13 +312,13 @@ def run():
 `define N_DO {n_do}
 `define N_DIO {n_dio}
 
-module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio);
+module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N_DIO-1:0] dio, input refclk);
     '''.format(n_di=i_idx, n_do=o_idx, n_dio=io_idx))
 
     if any_idelay:
         print('''
         (* KEEP, DONT_TOUCH *)
-        IDELAYCTRL();''')
+        IDELAYCTRL(.REFCLK(refclk));''')
 
     # Always output a LUT6 to make placer happy.
     print('''
@@ -401,11 +418,11 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
             .I({iwire})
             );'''.format(**p),
                 file=connects)
-        elif p['type'] == 'IOBUF_INTERMDISABLE':
+        elif p['type'] == 'IOBUF_DCIEN':
             print(
                 '''
         (* KEEP, DONT_TOUCH *)
-        IOBUF_INTERMDISABLE #(
+        IOBUF_DCIEN #(
             {DRIVE_STR}
             {SLEW_STR}
             .IOSTANDARD({IOSTANDARD})
@@ -415,7 +432,7 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
             .O({owire}),
             .T({tristate_wire}),
             .IBUFDISABLE({ibufdisable_wire}),
-            .INTERMDISABLE({intermdisable_wire})
+            .DCITERMDISABLE({dcitermdisable_wire})
             );'''.format(**p),
                 file=connects)
 
