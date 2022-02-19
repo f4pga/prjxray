@@ -96,6 +96,7 @@ def run(fn_in, fn_out, verbose=False):
         ("iob", 42, 4),
         ("iob18", 42, 4),
         ("ioi", 42, 4),
+        ("ioi18", 42, 4),
         ("mmcm", 30, 49),
         ("pll", 30, 27),
         ("monitor", 30, 101),
