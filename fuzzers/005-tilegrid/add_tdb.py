@@ -114,6 +114,7 @@ def run(fn_in, fn_out, verbose=False):
         ("gtp_channel", 32, 22),
         ("clb_int", int_frames, int_words),
         ("iob_int", int_frames, int_words),
+        ("iob18_int", int_frames, int_words),
         ("bram_int", int_frames, int_words),
         ("dsp_int", int_frames, int_words),
         ("fifo_int", int_frames, int_words),
