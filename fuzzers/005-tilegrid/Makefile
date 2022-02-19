@@ -50,6 +50,7 @@ endif
 # Kintex7 only fuzzers
 ifeq (${XRAY_DATABASE}, kintex7)
 TILEGRID_TDB_DEPENDENCIES += iob18/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += iob18_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
@@ -88,6 +89,9 @@ iob18/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 
 iob_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd iob_int && $(MAKE)
+
+iob18_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd iob18_int && $(MAKE)
 
 ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd ioi && $(MAKE)
@@ -183,6 +187,7 @@ clean:
 	cd iob && $(MAKE) clean
 	cd iob18 && $(MAKE) clean
 	cd iob_int && $(MAKE) clean
+	cd iob18_int && $(MAKE) clean
 	cd ioi && $(MAKE) clean
 	cd ioi18 && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
@@ -216,6 +221,7 @@ clean_part:
 	cd iob && $(MAKE) clean_part
 	cd iob18 && $(MAKE) clean_part
 	cd iob_int && $(MAKE) clean_part
+	cd iob18_int && $(MAKE) clean_part
 	cd ioi && $(MAKE) clean_part
 	cd ioi18 && $(MAKE) clean_part
 	cd mmcm && $(MAKE) clean_part
