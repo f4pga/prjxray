@@ -369,7 +369,7 @@ def propagate_IOB_SING(database, tiles_by_grid):
         if tile in seen_iobs:
             continue
 
-        if database[tile]["type"] not in ["LIOB33", "RIOB33"]:
+        if database[tile]["type"] not in ["LIOB33", "RIOB33", "RIOB18"]:
             continue
 
         while True:
@@ -439,7 +439,7 @@ def propagate_IOI_SING(database, tiles_by_grid):
         if tile in seen_iois:
             continue
 
-        if database[tile]["type"] not in ["LIOI3", "RIOI3"]:
+        if database[tile]["type"] not in ["LIOI3", "RIOI3", "RIOI"]:
             continue
 
         while True:
