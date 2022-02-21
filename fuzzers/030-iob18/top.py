@@ -74,19 +74,6 @@ def run():
         "LVDS": ["LVDS"],
     }
 
-    IN_TERM_ALLOWED = [
-        'SSTL15',
-        'SSTL15_R',
-        'SSTL18',
-        'SSTL18_R',
-        'SSTL135',
-        'SSTL135_R',
-        'HSTL_I'
-        'HSTL_I_18'
-        'HSTL_II',
-        'HSTL_II_18',
-    ]
-
     slews = ['FAST', 'SLOW']
     pulls = ["NONE", "KEEPER", "PULLDOWN", "PULLUP"]
 
@@ -196,13 +183,6 @@ def run():
                 p['DRIVE'] = None
                 p['SLEW'] = None
                 p['IBUF_LOW_PWR'] = random.randint(0, 1)
-
-                if iostandard in IN_TERM_ALLOWED:
-                    p['IN_TERM'] = random.choice(
-                        (
-                            'NONE',
-                        ))
-
                 i_idx += 1
             elif p['type'] == 'IBUFDS':
                 p['pad_wire'] = 'di[{}]'.format(i_idx)
