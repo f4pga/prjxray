@@ -41,8 +41,7 @@ def drives_for_iostandard(iostandard):
     elif iostandard in ['SSTL135', 'SSTL15']:
         return ['_FIXED']
     else:
-        drives = [4, 8, 12, 16]
-        assert False, "should be unreachable"
+        assert False, "this line should be unreachable"
 
     return drives
 
