@@ -399,3 +399,11 @@ foreach tile_type {RIOB33 LIOB33 RIOB33_SING LIOB33_SING} {
         write_common_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
+
+foreach tile_type {CFG_CENTER_BOT CFG_CENTER_MID CFG_CENTER_TOP} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_common_ppips_db "ppips_[string tolower $tile_type].db" $tile
+    }
+}
