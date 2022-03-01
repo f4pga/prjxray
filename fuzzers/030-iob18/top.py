@@ -42,7 +42,7 @@ def gen_sites():
 
 
 def write_params(params):
-    pinstr = 'tile,site,pin,iostandard,drive,slew\n'
+    pinstr = 'tile,site,pin,iostandard,drive,slew,pulltype\n'
     for vals in params:
         pinstr += ','.join(map(str, vals)) + '\n'
 
@@ -276,7 +276,6 @@ def run():
                         p['DRIVE'],
                         verilog.unquote(p['SLEW']) if p['SLEW'] else None,
                         verilog.unquote(p['PULLTYPE']),
-                        p['IN_TERM'] if 'IN_TERM' in p else None,
                     ))
             params['tiles'].append(p)
 
