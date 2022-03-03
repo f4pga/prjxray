@@ -129,13 +129,14 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 	echo " Saving diff output"
 	echo "----------------------------------------"
+	PATCH_FILE=diff.${XRAY_SETTINGS}.patch
 	# Patch file
 	git diff \
 		--patch-with-stat --no-color --irreversible-delete --find-renames --find-copies origin/master \
-		> diff.patch
+		> $PATCH_FILE
 
 	MAX_DIFF_LINES=50000
-	DIFF_LINES="$(wc -l diff.patch | sed -e's/ .*$//')"
+	DIFF_LINES="$(wc -l $PATCH_FILE | sed -e's/ .*$//')"
 	if [ $DIFF_LINES -gt $MAX_DIFF_LINES ]; then
 		echo
 		echo "----------------------------------------"
