@@ -87,6 +87,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
+          name: ${{ matrix.family }}
           path: |
             **/results*.gz
             **/plot_*.svg
