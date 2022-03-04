@@ -9,11 +9,24 @@
 #
 # SPDX-License-Identifier: ISC
 import argparse
-import yaml
-import subprocess
+import multiprocessing as mp
 import os
 import re
+import subprocess
+import yaml
+
 from prjxray import util
+
+
+def worker(arglist):
+    part, cwd = arglist
+    cmd = "make roi_only"
+
+    env = os.environ.copy()
+    env['XRAY_PART'] = part
+
+    print("running subprocess")
+    subprocess.run(cmd.split(' '), check=True, env=env, cwd=cwd)
 
 
 def main():
@@ -36,12 +49,17 @@ def main():
         if device['fabric'] == information['device']:
             valid_devices.append(name)
 
+    tasks = []
+
     for part, data in util.get_parts(db_root).items():
         if data['device'] in valid_devices:
-            command = "make roi_only"
-            env['XRAY_PART'] = part
             cwd = os.getenv('XRAY_FUZZERS_DIR')
-            subprocess.run(command.split(' '), check=True, env=env, cwd=cwd)
+
+            tasks.append((part, cwd))
+
+    with mp.Pool() as pool:
+        for _ in pool.imap_unordered(worker, tasks):
+            pass
 
 
 if __name__ == '__main__':
