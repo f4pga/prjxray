@@ -8,10 +8,12 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+import fcntl
 import math
 import os
 import random
 import re
+import signal
 import yaml
 from .roi import Roi
 
@@ -254,8 +256,10 @@ def parse_db_line(line):
 
 def parse_db_lines(fn):
     with open(fn, "r") as f:
+        lock_file(f, 10)
         for line in f:
             yield line, parse_db_line(line)
+        unlock_file(f)
 
 
 def write_db_lines(fn, entries, track_origin=False):
@@ -269,8 +273,10 @@ def write_db_lines(fn, entries, track_origin=False):
         new_lines.append(new_line)
 
     with open(fn, "w") as f:
+        lock_file(f, 10)
         for line in sorted(new_lines):
             print(line, file=f)
+        unlock_file(f)
 
 
 def parse_tagbit(x):
@@ -402,3 +408,22 @@ def add_bool_arg(parser, yes_arg, default=False, **kwargs):
         yes_arg, dest=dest, action='store_true', default=default, **kwargs)
     parser.add_argument(
         '--no-' + dashed, dest=dest, action='store_false', **kwargs)
+
+
+def timeout_handler(signum, frame):
+    raise Exception("ERROR: could not lock file!")
+
+
+def lock_file(fd, timeout):
+    try:
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout)
+        fcntl.flock(fd.fileno(), fcntl.LOCK_EX)
+        signal.alarm(0)
+    except Exception as e:
+        print(e)
+        exit(1)
+
+
+def unlock_file(fd):
+    fcntl.flock(fd.fileno(), fcntl.LOCK_UN)

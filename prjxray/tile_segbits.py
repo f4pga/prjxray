@@ -10,6 +10,7 @@
 # SPDX-License-Identifier: ISC
 from collections import namedtuple
 from prjxray import bitstream
+from prjxray import util
 from prjxray.grid_types import BlockType
 import enum
 
@@ -84,15 +85,21 @@ class TileSegbits(object):
 
         if tile_db.ppips is not None:
             with open(tile_db.ppips) as f:
+                util.lock_file(f, 10)
                 self.ppips = read_ppips(f)
+                util.unlock_file(f)
 
         if tile_db.segbits is not None:
             with open(tile_db.segbits) as f:
+                util.lock_file(f, 10)
                 self.segbits[BlockType.CLB_IO_CLK] = read_segbits(f)
+                util.unlock_file(f)
 
         if tile_db.block_ram_segbits is not None:
             with open(tile_db.block_ram_segbits) as f:
+                util.lock_file(f, 10)
                 self.segbits[BlockType.BLOCK_RAM] = read_segbits(f)
+                util.unlock_file(f)
 
         for block_type in self.segbits:
             for feature in self.segbits[block_type]:
