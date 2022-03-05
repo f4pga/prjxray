@@ -47,21 +47,29 @@ class NodeLookup(object):
     def build_database(self, nodes, tiles):
         create_tables(self.conn)
 
+        separate = '-------------------------------------------------------------------------------------------------------------------------'
+
         c = self.conn.cursor()
         tile_names = []
+        print('before tile_type for loop' + separate)
         for tile_type in tiles:
             for tile in tiles[tile_type]:
                 tile_names.append(tile)
-
+        print('after tile_type for loop' + separate)
         tile_pkeys = {}
+
+        print('before tile_file for loop' + separate)
         for tile_file in progressbar.progressbar(tile_names):
             # build/specimen_001/tile_DSP_L_X34Y145.json5
             root, _ = os.path.splitext(os.path.basename(tile_file))
             tile = root[5:]
             c.execute("INSERT INTO tile(name) VALUES (?);", (tile, ))
             tile_pkeys[tile] = c.lastrowid
+        print('after tile_file for loop' + separate)
 
         nodes_processed = set()
+
+        print('before node for loop' + separate)
         for node in progressbar.progressbar(nodes):
             with open(node) as f:
                 node_wires = json5.load(f)
@@ -81,6 +89,7 @@ class NodeLookup(object):
                         """
 INSERT INTO wire(name, tile_pkey, node_pkey) VALUES (?, ?, ?);""",
                         (wire['wire'], tile_pkey, node_pkey))
+        print('after node for loop' + separate)
 
         self.conn.commit()
 
@@ -100,7 +109,7 @@ INSERT INTO wire(name, tile_pkey, node_pkey) VALUES (?, ?, ?);""",
             """
 WITH
     the_tile(tile_pkey) AS (SELECT pkey AS tile_pkey FROM tile WHERE name = ?),
-    the_node(node_pkey) AS (SELECT pkey AS node_pkey FROM node WHERE name = ?)
+    the_node(node_pkey) AS (SELECT pkey AS node_pkey FROM node WHERE name = ?) b
 SELECT wire.name FROM wire
     INNER JOIN the_tile ON the_tile.tile_pkey = wire.tile_pkey
     INNER JOIN the_node ON the_node.node_pkey = wire.node_pkey;
@@ -120,3 +129,4 @@ SELECT wire.name FROM wire
 """, (tile, ))
         for row in c:
             yield row[0][len(tile) + 1:]
+THIS IS A MODIFICATION

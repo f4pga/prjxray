@@ -10,6 +10,7 @@ parse
 progressbar2
 pyjson5
 pytest
+pycapnp
 pyyaml
 scipy>=1.2.1
 simplejson

@@ -18,7 +18,8 @@ endif
 # Tools + Environment
 IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi; source utils/environment.python.sh;
 env:
-	python3 -mvenv env
+	python3.8 -mvenv env --without-pip
+	$(IN_ENV) curl https://bootstrap.pypa.io/get-pip.py | python
 	# Install project dependencies
 	$(IN_ENV) python -mpip install -r requirements.txt
 	# Install project's documentation dependencies
