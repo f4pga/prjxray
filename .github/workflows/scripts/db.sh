@@ -73,7 +73,7 @@ echo "----------------------------------------"
 		# Looking for the failing directories and packing them
 		# example of line from which the failing fuzzer directory gets extracted:
 		#   - Makefile:87: recipe for target '000-db-init/000-init-db/run.xc7a100tfgg676-1.ok' failed --> fuzzers/000-db-init
-		grep -Po "recipe for target '\K(.*)(?=\/run\..*\.ok')" $tmp | sed -e 's/^/fuzzers\//' | xargs tar -zcf fuzzers/fails-${XRAY_SETTINGS}.tgz
+		grep -Po "recipe for target '\K(.*)(?=\/run\..*\.ok')" $tmp | sed -e 's/^/fuzzers\//' | xargs tar -zcf fuzzers/fails.tgz
 		echo "----------------------------------------"
 		echo "A failure occurred during Database build."
 		echo "----------------------------------------"
@@ -129,14 +129,13 @@ echo "----------------------------------------"
 	echo "----------------------------------------"
 	echo " Saving diff output"
 	echo "----------------------------------------"
-	PATCH_FILE=diff.${XRAY_SETTINGS}.patch
 	# Patch file
 	git diff \
 		--patch-with-stat --no-color --irreversible-delete --find-renames --find-copies origin/master \
-		> $PATCH_FILE
+		> diff.patch
 
 	MAX_DIFF_LINES=50000
-	DIFF_LINES="$(wc -l $PATCH_FILE | sed -e's/ .*$//')"
+	DIFF_LINES="$(wc -l diff.patch | sed -e's/ .*$//')"
 	if [ $DIFF_LINES -gt $MAX_DIFF_LINES ]; then
 		echo
 		echo "----------------------------------------"
