@@ -87,14 +87,14 @@ sudo apt-get install -y \
         lsb \
         nodejs \
         psmisc \
-        python3.8 \
-        python3.8-dev \
-        python3.8-venv
+        python3 \
+        python3-dev \
+        python3-venv
 
 echo "========================================"
 echo "Enter virtual env for python 3.8"
 echo "----------------------------------------"
-python3.8 -mvenv startup_python
+python3 -mvenv startup_python
 source startup_python/bin/activate
 which python
 python --version

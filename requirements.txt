@@ -1,6 +1,3 @@
--e third_party/fasm
--e third_party/python-sdf-timing
--e .
 intervaltree
 junit-xml
 numpy
@@ -10,9 +7,15 @@ parse
 progressbar2
 pyjson5
 pytest
+pytest-runner
 pyyaml
 scipy>=1.2.1
 simplejson
 sympy
 textx
 yapf==0.24.0
+
+# Third party
+-e third_party/fasm
+-e third_party/python-sdf-timing
+-e .
