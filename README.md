@@ -1,14 +1,10 @@
 # Project X-Ray
 
 [![Documentation Status](https://readthedocs.org/projects/pyxray/badge/?version=latest)](http://prjxray.readthedocs.org/)
-[![License](https://img.shields.io/github/license/SymbiFlow/prjxray.svg)](https://github.com/SymbiFlow/prjxray/blob/master/LICENSE)
-[![Build Status](https://travis-ci.org/SymbiFlow/prjxray.svg?branch=master)](https://travis-ci.com/github/SymbiFlow/prjxray)
-[![Tests](http://storage.googleapis.com/symbiflow-badges/prjxray/tests.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/tests.html)
+[![License](https://img.shields.io/github/license/f4pga/prjxray.svg)](https://github.com/f4pga/prjxray/blob/master/LICENSE)
 
-[![Database Generation](http://storage.googleapis.com/symbiflow-badges/prjxray/database.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/database.html)
-[![Artix 7 Database](http://storage.googleapis.com/symbiflow-badges/prjxray/artix7.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/artix7.html)
-[![Kintex 7 Database](http://storage.googleapis.com/symbiflow-badges/prjxray/kintex7.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/kintex7.html)
-[![Zynq 7 Database](http://storage.googleapis.com/symbiflow-badges/prjxray/zynq7.svg)](http://storage.googleapis.com/symbiflow-badges/prjxray/zynq7.html)
+![Tests](https://github.com/f4pga/prjxray/actions/workflows/tests.yml/badge.svg)
+![Database Generation](https://github.com/f4pga/prjxray/actions/workflows/database.yml/badge.svg)
 
 Documenting the Xilinx 7-series bit-stream format.
 
@@ -35,7 +31,7 @@ that shell. The Vivado wrapper utils/vivado.sh makes sure that the environment
 variables from XRAY_VIVADO_SETTINGS are automatically sourced in a separate
 shell that is then only used to run Vivado to avoid these problems.
 
-**Why 2017.2?** Currently the fuzzers only work on `2017.2`, see [Issue #14 on prjxray](https://github.com/SymbiFlow/prjxray/issues/14).
+**Why 2017.2?** Currently the fuzzers only work on `2017.2`, see [Issue #14 on prjxray](https://github.com/f4pga/prjxray/issues/14).
 
 **Is 2017.2 really required?** Yes, only `2017.2` works. Until Issue #14 is solved, **only** `2017.2` works and will be supported.
 
@@ -43,7 +39,7 @@ shell that is then only used to run Vivado to avoid these problems.
 Clone the ``prjxray`` repository and its submodules:
 
 ```bash
-git clone git@github.com:SymbiFlow/prjxray.git
+git clone git@github.com:f4pga/prjxray.git
 cd prjxray
 git submodule update --init --recursive
 ```
@@ -233,7 +229,7 @@ bitstream format in the [database](database) directory.
 As running all these fuzzers can take significant time,
 [Tim 'mithro' Ansell <me@mith.ro>](https://github.com/mithro) has graciously
 agreed to maintain a copy of the database in the
-[prjxray-db](https://github.com/SymbiFlow/prjxray-db) repository.
+[prjxray-db](https://github.com/f4pga/prjxray-db) repository.
 
 Please direct enquires to [Tim](mailto:me@mith.ro) if there are any issues with
 it.
