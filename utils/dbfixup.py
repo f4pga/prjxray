@@ -536,8 +536,10 @@ def update_seg_fns(
         changes += new_changes
 
         with open(fn_out, "w") as f:
+            util.lock_file(f, 10)
             for line in sorted(lines):
                 print(line, file=f)
+            util.unlock_file(f)
 
         if changes is not None:
             seg_files += 1
