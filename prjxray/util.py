@@ -86,8 +86,8 @@ def get_fabric():
 def get_part_information(db_root, part):
     filename = os.path.join(db_root, "mapping", "parts.yaml")
     assert os.path.isfile(filename), \
-        "Mapping file {} does not exists".format(filename)
-    with OpenSafeFile(filename, 'r') as stream:
+        "Mapping file {} does not exist".format(filename)
+    with open(filename, 'r') as stream:
         part_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     part = part_mapping.get(part, None)
     assert part, "Part {} not found in {}".format(part, part_mapping)
@@ -99,14 +99,14 @@ def set_part_information(db_root, information):
     with OpenSafeFile(filename, 'w+') as stream:
         yaml.dump(information, stream)
     assert os.path.isfile(filename), \
-        "Mapping file {} does not exists".format(filename)
+        "Mapping file {} does not exist".format(filename)
 
 
 def get_part_resources(file_path, part):
     filename = os.path.join(file_path, "resources.yaml")
     assert os.path.isfile(filename), \
-        "Mapping file {} does not exists".format(filename)
-    with OpenSafeFile(filename, 'r') as stream:
+        "Mapping file {} does not exist".format(filename)
+    with open(filename, 'r') as stream:
         res_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     res = res_mapping.get(part, None)
     assert res, "Part {} not found in {}".format(part, part_mapping)
@@ -118,13 +118,13 @@ def set_part_resources(file_path, information):
     with OpenSafeFile(filename, 'w+') as stream:
         yaml.dump(information, stream)
     assert os.path.isfile(filename), \
-        "Mapping file {} does not exists".format(filename)
+        "Mapping file {} does not exist".format(filename)
 
 
 def get_fabric_for_part(db_root, part):
     filename = os.path.join(db_root, "mapping", "devices.yaml")
     assert os.path.isfile(filename), \
-        "Mapping file {} does not exists".format(filename)
+        "Mapping file {} does not exist".format(filename)
     part = get_part_information(db_root, part)
     with OpenSafeFile(filename, 'r') as stream:
         device_mapping = yaml.load(stream, Loader=yaml.FullLoader)
@@ -137,8 +137,8 @@ def get_fabric_for_part(db_root, part):
 def get_devices(db_root):
     filename = os.path.join(db_root, "mapping", "devices.yaml")
     assert os.path.isfile(filename), \
-        "Mapping file {} does not exists".format(filename)
-    with OpenSafeFile(filename, 'r') as stream:
+        "Mapping file {} does not exist".format(filename)
+    with open(filename, 'r') as stream:
         device_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     return device_mapping
 
@@ -146,8 +146,8 @@ def get_devices(db_root):
 def get_parts(db_root):
     filename = os.path.join(db_root, "mapping", "parts.yaml")
     assert os.path.isfile(filename), \
-        "Mapping file {} does not exists".format(filename)
-    with OpenSafeFile(filename, 'r') as stream:
+        "Mapping file {} does not exist".format(filename)
+    with open(filename, 'r') as stream:
         part_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     return part_mapping
 
