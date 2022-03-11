@@ -65,6 +65,7 @@ import sys
 import json
 import utils.xjson as xjson
 import utils.cmp as cmp
+from prjxray.util import lock_file, unlock_file
 
 
 def split_all(s, chars):
@@ -344,9 +345,11 @@ def sort_db(pathname):
     #            copy[i], tosort[i])
 
     with open(pathname, 'w') as f:
+        lock_file(f, 10)
         for _, l in tosort:
             f.write(l)
             f.write('\n')
+        unlock_file(f)
 
     return True
 
@@ -405,8 +408,10 @@ def sort_db_text(n):
     rows.sort(key=lambda i: i[0])
 
     with open(n, 'w') as f:
+        lock_file(f, 10)
         for l in rows:
             f.write(l[-1])
+        unlock_file(f)
 
     return True
 
