@@ -12,6 +12,7 @@
 import json
 import argparse
 
+from prjxray.util import OpenSafeFile
 
 def get_elems_count(timings, slice, site, bel_type):
     combinational = 0
@@ -113,7 +114,7 @@ def produce_sdf(timings, outdir):
 """
 )"""
 
-        with open(outdir + '/' + slice + '.sdf', "w") as fp:
+        with OpenSafeFile(outdir + '/' + slice + '.sdf', "w") as fp:
             fp.write(sdf)
 
 
@@ -125,7 +126,7 @@ def main():
 
     args = parser.parse_args()
 
-    with open(args.json, 'r') as fp:
+    with OpenSafeFile(args.json, 'r') as fp:
         timings = json.load(fp)
 
     produce_sdf(timings, args.sdf)

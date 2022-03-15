@@ -21,6 +21,8 @@ import sys
 
 import itertools
 
+from prjxray.util import OpenSafeFile
+
 # =============================================================================
 
 
@@ -69,7 +71,7 @@ def load_and_sort_segbits(file_name, tagmap=lambda tag: tag):
 
     # Load segbits
     segbits = {}
-    with open(file_name, "r") as fp:
+    with OpenSafeFile(file_name, "r") as fp:
         lines = fp.readlines()
 
         # Parse lines

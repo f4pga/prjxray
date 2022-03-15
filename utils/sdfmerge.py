@@ -11,7 +11,9 @@
 
 import argparse
 import json
+
 from sdf_timing import sdfparse
+from prjxray.util import OpenSafeFile
 
 
 def merge(timings_list, site):
@@ -59,15 +61,16 @@ def main():
     timings_list = list()
 
     for sdf in args.sdfs:
-        with open(sdf, 'r') as fp:
+        with OpenSafeFile(sdf, 'r') as fp:
             timing = sdfparse.parse(fp.read())
             timings_list.append(timing)
 
     merged_sdf = merge(timings_list, args.site)
-    open(args.out, 'w').write(sdfparse.emit(merged_sdf, timescale='1ns'))
+    with OpenSafeFile(args.out, 'w') as fp:
+        fp.write(sdfparse.emit(merged_sdf, timescale='1ns'))
 
     if args.json is not None:
-        with open(args.json, 'w') as fp:
+        with OpenSafeFile(args.json, 'w') as fp:
             json.dump(merged_sdf, fp, indent=4, sort_keys=True)
 
 

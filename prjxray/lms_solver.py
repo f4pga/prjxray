@@ -54,6 +54,8 @@ import json
 import numpy as np
 import numpy.linalg as linalg
 
+from prjxray.util import OpenSafeFile
+
 # =============================================================================
 
 
@@ -83,7 +85,7 @@ def load_data(file_name, tagfilter=lambda tag: True, address_map=None):
     segdata = None
     all_segdata = []
 
-    with open(file_name, "r") as fp:
+    with OpenSafeFile(file_name, "r") as fp:
         for line in fp.readlines():
             line = line.strip()
 
@@ -174,7 +176,7 @@ def write_segbits(file_name, all_tags, all_bits, W):
 
         lines.append(all_tags[r] + " " + " ".join(bits) + "\n")
 
-    with open(file_name, "w") as fp:
+    with OpenSafeFile(file_name, "w") as fp:
         for line in lines:
             fp.write(line)
 
@@ -702,7 +704,7 @@ def build_address_map(tilegrid_file):
     address_map = {}
 
     # Load tilegrid
-    with open(tilegrid_file, "r") as fp:
+    with OpenSafeFile(tilegrid_file, "r") as fp:
         tilegrid = json.load(fp)
 
     # Loop over tiles
@@ -982,7 +984,7 @@ def main():
 
     # Dump to CSV
     if args.x is not None:
-        with open(args.x, "w") as fp:
+        with OpenSafeFile(args.x, "w") as fp:
             dump_solution_to_csv(fp, tags_to_solve, bits_to_solve, X)
 
     # Dump results

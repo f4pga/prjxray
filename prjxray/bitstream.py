@@ -10,7 +10,7 @@
 # SPDX-License-Identifier: ISC
 import json
 import os
-from prjxray import util
+from prjxray.util import block_type_s2i
 
 # Break frames into WORD_SIZE bit words.
 WORD_SIZE_BITS = 32
@@ -119,7 +119,7 @@ def addr_bits2word(block_type, top_bottom, cfg_row, cfg_col, minor_addr):
     """Convert a deconstructed address to a 32 bit word"""
     # https://www.xilinx.com/support/documentation/user_guides/ug470_7Series_Config.pdf
     ret = 0
-    ret |= util.block_type_s2i[block_type] << 23
+    ret |= block_type_s2i[block_type] << 23
     ret |= {"top": 0, "bottom": 1}[top_bottom] << 22
     ret |= cfg_row << 17
     ret |= cfg_col << 7

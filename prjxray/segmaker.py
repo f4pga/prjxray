@@ -24,7 +24,7 @@ tilegrid.json provides tile addresses
 '''
 
 import os, json, re
-from prjxray import util
+from prjxray.util import OpenSafeFile, get_db_root, get_fabric
 
 BLOCK_TYPES = set(('CLB_IO_CLK', 'BLOCK_RAM', 'CFG_CLB'))
 
@@ -85,12 +85,12 @@ class Segmaker:
     def __init__(self, bitsfile, verbose=None, db_root=None, fabric=None):
         self.db_root = db_root
         if self.db_root is None:
-            self.db_root = util.get_db_root()
+            self.db_root = get_db_root()
             assert self.db_root, "No db root specified."
 
         self.fabric = fabric
         if self.fabric is None:
-            self.fabric = util.get_fabric()
+            self.fabric = get_fabric()
             assert self.fabric, "No fabric specified."
 
         self.verbose = verbose if verbose is not None else os.getenv(
@@ -129,7 +129,7 @@ class Segmaker:
 
     def load_grid(self):
         '''Load self.grid holding tile addresses'''
-        with open(os.path.join(self.db_root, self.fabric, "tilegrid.json"),
+        with OpenSafeFile(os.path.join(self.db_root, self.fabric, "tilegrid.json"),
                   "r") as f:
             self.grid = json.load(f)
         assert "segments" not in self.grid, "Old format tilegrid.json"
@@ -152,7 +152,7 @@ class Segmaker:
         '''
         self.bits = dict()
         print("Loading bits from %s." % bitsfile)
-        with open(bitsfile, "r") as f:
+        with OpenSafeFile(bitsfile, "r") as f:
             for line in f:
                 # ex: bit_00020500_000_17
                 line = line.split("_")
@@ -446,7 +446,7 @@ class Segmaker:
             segments = self.segments_by_type[segtype]
             if segments:
                 print("Writing %s." % filename)
-                with open(filename, "w") as f:
+                with OpenSafeFile(filename, "w") as f:
                     for segname, segdata in sorted(segments.items()):
                         # seg 00020300_010
                         print("seg %s" % segname, file=f)

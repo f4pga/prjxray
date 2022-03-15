@@ -16,9 +16,10 @@ import contextlib
 import os
 import fasm
 import fasm.output
-from prjxray.db import Database
 from prjxray import fasm_disassembler
 from prjxray import bitstream
+from prjxray.db import Database
+from prjxray.util import OpenSafeFile
 import subprocess
 import tempfile
 
@@ -41,7 +42,7 @@ def bits_to_fasm(db_root, part, bits_file, verbose, canonical):
     grid = db.grid()
     disassembler = fasm_disassembler.FasmDisassembler(db)
 
-    with open(bits_file) as f:
+    with OpenSafeFile(bits_file) as f:
         bitdata = bitstream.load_bitdata(f)
 
     model = fasm.output.merge_and_sort(

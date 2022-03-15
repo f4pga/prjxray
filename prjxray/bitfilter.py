@@ -8,6 +8,9 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+
+from prjxray.util import OpenSafeFile
+
 class Bitfilter(object):
     def __init__(
             self, frames_to_include=None, frames_to_exclude=[],

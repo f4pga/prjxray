@@ -23,6 +23,7 @@ from collections import defaultdict
 from prjxray import fasm_assembler, util
 from prjxray.db import Database
 from prjxray.roi import Roi
+from prjxray.util import OpenSafeFile
 
 import sys
 
@@ -133,11 +134,11 @@ def run(
     bank_to_tile = defaultdict(lambda: set())
 
     if part is not None:
-        with open(os.path.join(db_root, part, "package_pins.csv"), "r") as fp:
+        with OpenSafeFile(os.path.join(db_root, part, "package_pins.csv"), "r") as fp:
             reader = csv.DictReader(fp)
             package_pins = [l for l in reader]
 
-        with open(os.path.join(db_root, part, "part.json"), "r") as fp:
+        with OpenSafeFile(os.path.join(db_root, part, "part.json"), "r") as fp:
             part_data = json.load(fp)
 
         for bank, loc in part_data["iobanks"].items():
@@ -167,7 +168,7 @@ def run(
 
     extra_features = []
     if roi:
-        with open(roi) as f:
+        with OpenSafeFile(roi) as f:
             roi_j = json.load(f)
         x1 = roi_j['info']['GRID_X_MIN']
         x2 = roi_j['info']['GRID_X_MAX']

@@ -23,6 +23,8 @@ import re
 
 from collections import defaultdict
 
+from prjxray.util import OpenSafeFile
+
 
 def main():
 
@@ -49,7 +51,7 @@ def main():
     args = parser.parse_args()
 
     # Load pin dump
-    with open(args.csv, "r") as fp:
+    with OpenSafeFile(args.csv, "r") as fp:
         pin_dump = list(csv.DictReader(fp))
 
     # Group pins into ports
@@ -103,7 +105,7 @@ def main():
         port["width"] += 1
 
     # Write pin ports to a JSON file
-    with open(args.json, "w") as fp:
+    with OpenSafeFile(args.json, "w") as fp:
         json.dump(ports, fp, indent=1, sort_keys=True)
 
 

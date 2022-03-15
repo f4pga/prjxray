@@ -14,13 +14,14 @@
 
 import os, sys, json
 
+from prjxray.util import OpenSafeFile
 
 def main():
-    with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
+    with OpenSafeFile("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         tilegrid = json.load(f)
 
-    with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
+    with OpenSafeFile("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         tileconn = json.load(f)
 
