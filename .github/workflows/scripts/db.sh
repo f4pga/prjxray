@@ -73,7 +73,7 @@ echo "----------------------------------------"
 		# Looking for the failing directories and packing them
 		# example of line from which the failing fuzzer directory gets extracted:
 		#   - Makefile:87: recipe for target '000-db-init/000-init-db/run.xc7a100tfgg676-1.ok' failed --> fuzzers/000-db-init
-		grep -Po "recipe for target '\K(.*)(?=\/run\..*\.ok')" $tmp | sed -e 's/^/fuzzers\//' | xargs tar -zcf fuzzers/fails.tgz
+		grep -Po "recipe for target '\K(.*)(?=\/run.*\.ok')" $tmp | sed -e 's/^/fuzzers\//' | xargs tar -zcf fuzzers/fails.tgz
 		echo "----------------------------------------"
 		echo "A failure occurred during Database build."
 		echo "----------------------------------------"
