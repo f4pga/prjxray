@@ -413,17 +413,40 @@ def add_bool_arg(parser, yes_arg, default=False, **kwargs):
 def timeout_handler(signum, frame):
     raise Exception("ERROR: could not lock file!")
 
+class OpenSafeFile:
+    """
+    Opens a file in a thread-safe mode, allowing for safe read and writes
+    to a file that can potentially be modified by multiple processes at
+    the same time.
+    """
 
-def lock_file(fd, timeout):
-    try:
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(timeout)
-        fcntl.flock(fd.fileno(), fcntl.LOCK_EX)
-        signal.alarm(0)
-    except Exception as e:
-        print(e)
-        exit(1)
+    def __init__(self, name, mode, timeout=10):
+        self.name = name
+        self.mode = mode
+        self.timeout = timeout
 
+        self.fd = None
 
-def unlock_file(fd):
-    fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
+    def __enter__(self):
+        self.fd = open(self.name, self.mode)
+        self.lock_file()
+        return self.fd
+
+    def __exit__(self):
+        self.unlock_file()
+        self.fd.close()
+
+    def lock_file(self):
+        assert self.fd is not None
+        try:
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(timeout)
+            fcntl.flock(self.fd.fileno(), fcntl.LOCK_EX)
+            signal.alarm(0)
+        except Exception as e:
+            print(e)
+            exit(1)
+
+    def unlock_file(self):
+        assert self.fd is not None
+        fcntl.flock(self.fd.fileno(), fcntl.LOCK_UN)
