@@ -132,7 +132,7 @@ def run():
             elif iostandard in ['SSTL135', 'SSTL15', 'LVDS']:
                 drives = None
             else:
-                drives = [4, 8, 12, 16]
+                assert False, "This should be unreachable"
 
             if site_type.endswith('M'):
                 if iostandard in diff_map:
