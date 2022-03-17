@@ -205,6 +205,10 @@ def main():
             drive_opts.add(mk_drive_opt("SSTL15", None))
             drive_opts.add(mk_drive_opt("LVDS", None))
 
+            segmaker.add_site_group_zero(
+                segmk, site, '', drive_opts, mk_drive_opt('LVCMOS25', '12'),
+                mk_drive_opt(iostandard, d['DRIVE']))
+
             if d['SLEW']:
                 for opt in ["SLOW", "FAST"]:
                     segmk.add_site_tag(
