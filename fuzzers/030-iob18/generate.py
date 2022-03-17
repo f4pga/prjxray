@@ -38,7 +38,7 @@ def drives_for_iostandard(iostandard):
         drives = [2, 4, 6, 8, 12, 16]
     elif iostandard == 'LVCMOS12':
         drives = [2, 4, 6, 8]
-    elif iostandard in ['SSTL135', 'SSTL15']:
+    elif iostandard in ['SSTL135', 'SSTL15', 'SSTL12']:
         return ['_FIXED']
     else:
         assert False, "this line should be unreachable"
@@ -47,9 +47,9 @@ def drives_for_iostandard(iostandard):
 
 
 STEPDOWN_IOSTANDARDS = [
-    'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135', 'SSTL15'
+    'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135', 'SSTL15', 'SSTL12',
 ]
-IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15', 'LVDS']
+IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15', 'SSTL12', 'LVDS']
 
 ONLY_DIFF_IOSTANDARDS = ['LVDS']
 
@@ -203,6 +203,7 @@ def main():
 
             drive_opts.add(mk_drive_opt("SSTL135", None))
             drive_opts.add(mk_drive_opt("SSTL15", None))
+            drive_opts.add(mk_drive_opt("SSTL12", None))
             drive_opts.add(mk_drive_opt("LVDS", None))
 
             segmaker.add_site_group_zero(
