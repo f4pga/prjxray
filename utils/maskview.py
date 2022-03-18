@@ -24,6 +24,8 @@ import sys
 import argparse
 import re
 
+from prjxray.util import OpenSafeFile
+
 # =============================================================================
 
 
@@ -32,7 +34,7 @@ def load_just_bits(file_name):
     Read bits from a .db or .rdb file. Ignores tags and bit values.
     """
 
-    with open(file_name, "r") as fp:
+    with OpenSafeFile(file_name, "r") as fp:
         lines = fp.readlines()
 
     bits = set()

@@ -19,7 +19,7 @@ import sys, os, json, re
 import copy
 from prjxray import bitstream
 from prjxray import db as prjxraydb
-from prjxray import util
+from prjxray.util import OpenSafeFile, parse_tagbit, db_root_arg, part_arg
 
 
 class NoDB(Exception):
@@ -39,7 +39,7 @@ def process_db(db, tile_type, process, verbose):
     verbose and print("process_db(%s): %s" % (tile_type, fns))
     for fn in fns:
         if fn:
-            with open(fn, "r") as f:
+            with OpenSafeFile(fn, "r") as f:
                 for line in f:
                     process(line)
 
@@ -61,7 +61,7 @@ def get_database(db, tile_type, bit_only=False, verbose=False):
                 return
             tagbits = []
         else:
-            tagbits = [util.parse_tagbit(x) for x in parts[1:]]
+            tagbits = [parse_tagbit(x) for x in parts[1:]]
 
         tags.append(list([name] + tagbits))
 
@@ -430,7 +430,7 @@ def tile_segnames(tiles):
 
 def load_tiles(db_root, part):
     # TODO: Migrate to new tilegrid format via library.
-    with open("%s/%s/tilegrid.json" % (db_root, part), "r") as f:
+    with OpenSafeFile("%s/%s/tilegrid.json" % (db_root, part), "r") as f:
         tiles = json.load(f)
     return tiles
 
@@ -449,7 +449,8 @@ def run(
     db = prjxraydb.Database(db_root, part)
     tiles = load_tiles(db_root, part)
     segments = mk_segments(tiles)
-    bitdata = bitstream.load_bitdata2(open(bits_file, "r"))
+    with OpenSafeFile(bits_file) as f:
+        bitdata = bitstream.load_bitdata2(f)
 
     if flag_unknown_bits:
         print_unknown_bits(tiles, bitdata)
@@ -486,8 +487,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Decode bits within a tile's address space")
 
-    util.db_root_arg(parser)
-    util.part_arg(parser)
+    db_root_arg(parser)
+    part_arg(parser)
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument(
         '-z',

@@ -10,11 +10,12 @@
 # SPDX-License-Identifier: ISC
 
 import sys, re
-from prjxray import util
+from prjxray.util import OpenSafeFile, db_root_arg, parse_db_line
 
 
 def run(fnin, fnout=None, strict=False, verbose=False):
-    lines = open(fnin, 'r').read().split('\n')
+    with OpenSafeFile(fnin) as f:
+        lines = f.read().split('\n')
     tags = dict()
     bitss = dict()
     for line in lines:
@@ -24,7 +25,7 @@ def run(fnin, fnout=None, strict=False, verbose=False):
         # TODO: figure out what to do with masks
         if line.startswith("bit "):
             continue
-        tag, bits, mode, _ = util.parse_db_line(line)
+        tag, bits, mode, _ = parse_db_line(line)
         if strict:
             if mode != "always":
                 assert not mode, "strict: got ill defined line: %s" % (line, )
@@ -39,7 +40,7 @@ def run(fnin, fnout=None, strict=False, verbose=False):
             bitss[bits] = tag
 
     if fnout:
-        with open(fnout, "w") as fout:
+        with OpenSafeFile(fnout, "w") as fout:
             for line in sorted(lines):
                 line = line.strip()
                 if line == '':
@@ -53,7 +54,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Parse a db file, checking for consistency")
 
-    util.db_root_arg(parser)
+    db_root_arg(parser)
     parser.add_argument('--verbose', action='store_true', help='')
     parser.add_argument(
         '--strict',

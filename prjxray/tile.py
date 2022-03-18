@@ -13,6 +13,7 @@ from collections import namedtuple
 import json
 from prjxray import lib
 from prjxray.timing import fast_slow_tuple_to_corners, RcElement
+from prjxray.util import OpenSafeFile
 
 TileDbs = namedtuple(
     'TileDbs', 'segbits block_ram_segbits ppips mask tile_type')
@@ -313,7 +314,7 @@ class Tile(object):
                     backward_timing=get_pip_timing(pip.get('dst_to_src')),
                 )
 
-        with open(self.tile_dbs.tile_type) as f:
+        with OpenSafeFile(self.tile_dbs.tile_type) as f:
             tile_type = json.load(f)
             assert self.tilename_upper == tile_type['tile_type']
             self.wires = get_wires(tile_type['wires'])

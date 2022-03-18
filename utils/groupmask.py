@@ -10,7 +10,7 @@
 # SPDX-License-Identifier: ISC
 
 import sys, os, re
-from prjxray import util
+from prjxray.util import OpenSafeFile, parse_db_lines, write_db_lines
 
 
 def index_masks(fn_in, groups_in):
@@ -21,7 +21,7 @@ def index_masks(fn_in, groups_in):
         groups[group] = set()
 
     # Index bits
-    for line, (tag, bits, mode) in util.parse_db_lines(fn_in):
+    for line, (tag, bits, mode) in parse_db_lines(fn_in):
         assert not mode, "Unresolved tag: %s" % (line, )
         prefix = tag[0:tag.rfind(".")]
         group = groups.get(prefix, None)
@@ -42,7 +42,7 @@ def index_masks(fn_in, groups_in):
 def apply_masks(fn_in, groups):
     """Add 0 entries ("!") to .db entries based on groups definition"""
     new_db = {}
-    for line, (tag, bits, mode) in util.parse_db_lines(fn_in):
+    for line, (tag, bits, mode) in parse_db_lines(fn_in):
         assert not mode, "Unresolved tag: %s" % (line, )
         prefix = tag[0:tag.rfind(".")]
         group = groups.get(prefix, None)
@@ -58,8 +58,9 @@ def apply_masks(fn_in, groups):
 
 def load_groups(fn):
     ret = []
-    for l in open(fn, "r"):
-        ret.append(l.strip())
+    with OpenSafeFile(fn, "r") as f:
+        for l in f:
+            ret.append(l.strip())
     return ret
 
 
@@ -67,7 +68,7 @@ def run(fn_in, fn_out, groups_fn, verbose=False):
     groups_in = load_groups(groups_fn)
     groups = index_masks(fn_in, groups_in)
     new_db = apply_masks(fn_in, groups)
-    util.write_db_lines(fn_out, new_db)
+    write_db_lines(fn_out, new_db)
 
 
 def main():

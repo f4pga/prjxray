@@ -19,6 +19,7 @@ import tempfile
 
 import prjxray
 import utils.fasm2frames as fasm2frames
+from prjxray.util import OpenSafeFile
 
 from textx.exceptions import TextXSyntaxError
 
@@ -69,7 +70,7 @@ class TestStringMethods(unittest.TestCase):
         return os.path.join(os.path.dirname(__file__), 'test_data', fname)
 
     def get_test_data(self, fname):
-        with open(self.filename_test_data(fname)) as f:
+        with OpenSafeFile(self.filename_test_data(fname)) as f:
             return f.read()
 
     def fasm2frames(self, fin_data, **kw):

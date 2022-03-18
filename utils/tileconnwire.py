@@ -11,13 +11,14 @@
 
 import os, sys, json
 
+from prjxray.util import OpenSafeFile
 
 def main(argv):
     if len(argv) != 3:
         print("Usage example: python3 %s HCLK_R HCLK_SW6E3" % sys.argv[0])
         sys.exit(1)
 
-    with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
+    with OpenSafeFile("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         tileconn = json.load(f)
 

@@ -15,7 +15,7 @@ import os
 import re
 import tempfile
 import json
-from prjxray import util
+from prjxray.util import OpenSafeFile, db_root_arg, get_parts, set_part_resources
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
         'family',
         help="Name of the device family.",
         choices=['artix7', 'kintex7', 'zynq7', 'spartan7'])
-    util.db_root_arg(parser)
+    db_root_arg(parser)
 
     args = parser.parse_args()
     env = os.environ.copy()
@@ -40,7 +40,7 @@ def main():
         os.getenv('XRAY_DIR'), 'settings', args.family)
     information = {}
 
-    parts = util.get_parts(args.db_root)
+    parts = get_parts(args.db_root)
     processed_parts = dict()
     for part in parts.keys():
         # Skip parts which differ only in the speedgrade, as they have the same pins
@@ -64,7 +64,7 @@ def main():
             cwd=cwd,
             stdout=subprocess.PIPE)
 
-        with open(tmp_file, "r") as fp:
+        with OpenSafeFile(tmp_file, "r") as fp:
             pins_json = json.load(fp)
 
         os.remove(tmp_file)
@@ -81,7 +81,7 @@ def main():
         processed_parts[common_part] = {'pins': pins}
 
     # Overwrites the <family>/resources.yaml file completly with new data
-    util.set_part_resources(resource_path, information)
+    set_part_resources(resource_path, information)
 
 
 if __name__ == '__main__':

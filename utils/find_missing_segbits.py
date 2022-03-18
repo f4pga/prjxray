@@ -24,6 +24,8 @@ import argparse
 import os
 import re
 
+from prjxray.util import OpenSafeFile
+
 # =============================================================================
 
 
@@ -33,7 +35,7 @@ def read_pips_from_tile(tile_file):
     PIP name strings. Names are formatted as <dst_wire>.<src_wire>
     """
 
-    with open(tile_file, "r") as fp:
+    with OpenSafeFile(tile_file, "r") as fp:
         root = json.load(fp)
         pips = root["pips"]
 
@@ -53,7 +55,7 @@ def read_ppips(ppips_file):
     """
     ppips = {}
 
-    with open(ppips_file, "r") as fp:
+    with OpenSafeFile(ppips_file, "r") as fp:
         for line in fp.readlines():
             line = line.split()
             if len(line) == 2:
@@ -70,7 +72,7 @@ def read_segbits(segbits_file):
     """
     segbits = []
 
-    with open(segbits_file, "r") as fp:
+    with OpenSafeFile(segbits_file, "r") as fp:
         for line in fp.readlines():
             line = line.split()
             if len(line) > 1:

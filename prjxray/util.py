@@ -18,6 +18,49 @@ import yaml
 from .roi import Roi
 
 
+def timeout_handler(signum, frame):
+    raise Exception("ERROR TIMEOUT: could not lock file")
+
+
+class OpenSafeFile:
+    """
+    Opens a file in a thread-safe mode, allowing for safe read and writes
+    to a file that can potentially be modified by multiple processes at
+    the same time.
+    """
+
+    def __init__(self, name, mode="r", timeout=10):
+        self.name = name
+        self.mode = mode
+        self.timeout = timeout
+
+        self.fd = None
+
+    def __enter__(self):
+        self.fd = open(self.name, self.mode)
+        self.lock_file()
+        return self.fd
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.unlock_file()
+        self.fd.close()
+
+    def lock_file(self):
+        assert self.fd is not None
+        try:
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(self.timeout)
+            fcntl.flock(self.fd.fileno(), fcntl.LOCK_EX)
+            signal.alarm(0)
+        except Exception as e:
+            print(f"{e}: {self.name}")
+            exit(1)
+
+    def unlock_file(self):
+        assert self.fd is not None
+        fcntl.flock(self.fd.fileno(), fcntl.LOCK_UN)
+
+
 def get_db_root():
     # Used during tilegrid db bootstrap
     ret = os.getenv("XRAY_DATABASE_ROOT", None)
@@ -44,7 +87,7 @@ def get_part_information(db_root, part):
     filename = os.path.join(db_root, "mapping", "parts.yaml")
     assert os.path.isfile(filename), \
         "Mapping file {} does not exists".format(filename)
-    with open(filename, 'r') as stream:
+    with OpenSafeFile(filename, 'r') as stream:
         part_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     part = part_mapping.get(part, None)
     assert part, "Part {} not found in {}".format(part, part_mapping)
@@ -53,7 +96,7 @@ def get_part_information(db_root, part):
 
 def set_part_information(db_root, information):
     filename = os.path.join(db_root, "mapping", "parts.yaml")
-    with open(filename, 'w+') as stream:
+    with OpenSafeFile(filename, 'w+') as stream:
         yaml.dump(information, stream)
     assert os.path.isfile(filename), \
         "Mapping file {} does not exists".format(filename)
@@ -63,7 +106,7 @@ def get_part_resources(file_path, part):
     filename = os.path.join(file_path, "resources.yaml")
     assert os.path.isfile(filename), \
         "Mapping file {} does not exists".format(filename)
-    with open(filename, 'r') as stream:
+    with OpenSafeFile(filename, 'r') as stream:
         res_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     res = res_mapping.get(part, None)
     assert res, "Part {} not found in {}".format(part, part_mapping)
@@ -72,7 +115,7 @@ def get_part_resources(file_path, part):
 
 def set_part_resources(file_path, information):
     filename = os.path.join(file_path, "resources.yaml")
-    with open(filename, 'w+') as stream:
+    with OpenSafeFile(filename, 'w+') as stream:
         yaml.dump(information, stream)
     assert os.path.isfile(filename), \
         "Mapping file {} does not exists".format(filename)
@@ -83,7 +126,7 @@ def get_fabric_for_part(db_root, part):
     assert os.path.isfile(filename), \
         "Mapping file {} does not exists".format(filename)
     part = get_part_information(db_root, part)
-    with open(filename, 'r') as stream:
+    with OpenSafeFile(filename, 'r') as stream:
         device_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     device = device_mapping.get(part['device'], None)
     assert device, "Device {} not found in {}".format(
@@ -95,7 +138,7 @@ def get_devices(db_root):
     filename = os.path.join(db_root, "mapping", "devices.yaml")
     assert os.path.isfile(filename), \
         "Mapping file {} does not exists".format(filename)
-    with open(filename, 'r') as stream:
+    with OpenSafeFile(filename, 'r') as stream:
         device_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     return device_mapping
 
@@ -104,7 +147,7 @@ def get_parts(db_root):
     filename = os.path.join(db_root, "mapping", "parts.yaml")
     assert os.path.isfile(filename), \
         "Mapping file {} does not exists".format(filename)
-    with open(filename, 'r') as stream:
+    with OpenSafeFile(filename, 'r') as stream:
         part_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     return part_mapping
 
@@ -255,11 +298,9 @@ def parse_db_line(line):
 
 
 def parse_db_lines(fn):
-    with open(fn, "r") as f:
-        lock_file(f, 10)
+    with OpenSafeFile(fn, "r") as f:
         for line in f:
             yield line, parse_db_line(line)
-        unlock_file(f)
 
 
 def write_db_lines(fn, entries, track_origin=False):
@@ -272,11 +313,9 @@ def write_db_lines(fn, entries, track_origin=False):
             new_line = " ".join([tag] + sorted(bits))
         new_lines.append(new_line)
 
-    with open(fn, "w") as f:
-        lock_file(f, 10)
+    with OpenSafeFile(fn, "w") as f:
         for line in sorted(new_lines):
             print(line, file=f)
-        unlock_file(f)
 
 
 def parse_tagbit(x):
@@ -409,21 +448,3 @@ def add_bool_arg(parser, yes_arg, default=False, **kwargs):
     parser.add_argument(
         '--no-' + dashed, dest=dest, action='store_false', **kwargs)
 
-
-def timeout_handler(signum, frame):
-    raise Exception("ERROR: could not lock file!")
-
-
-def lock_file(fd, timeout):
-    try:
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(timeout)
-        fcntl.flock(fd.fileno(), fcntl.LOCK_EX)
-        signal.alarm(0)
-    except Exception as e:
-        print(e)
-        exit(1)
-
-
-def unlock_file(fd):
-    fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
