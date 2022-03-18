@@ -5,7 +5,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
-N := 40
+N := 80
 SPECIMENS_DEPS := build/iobanks.txt
 include ../fuzzer.mk
 
@@ -16,7 +16,7 @@ build/iobanks.txt: write_io_banks.tcl
 	cd build/ && ${XRAY_VIVADO} -mode batch -source ../write_io_banks.tcl
 
 build/segbits_riob18.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 12 -o build/segbits_riob18.rdb $$(find -name segdata_riob18.txt)
+	${XRAY_SEGMATCH} -c 23 -o build/segbits_riob18.rdb $$(find -name segdata_riob18.txt)
 
 build/segbits_riob18.db: build/segbits_riob18.rdb process_rdb.py bits.dbf
 	python3 process_rdb.py build/segbits_riob18.rdb > build/segbits_riob18_processed.rdb
