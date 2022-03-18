@@ -62,7 +62,7 @@ def run():
         'LVCMOS18',
         'SSTL135',
         'SSTL15',
-#        'LVDS',
+        'LVDS',
     ]
 
     diff_map = {
@@ -71,7 +71,7 @@ def run():
     }
 
     only_diff_map = {
-        #"LVDS": ["LVDS"],
+        "LVDS": ["LVDS"],
     }
 
     slews = ['FAST', 'SLOW']
@@ -129,7 +129,7 @@ def run():
                 drives = [2, 4, 6, 8]
             elif iostandard in ['LVCMOS15', 'LVCMOS18']:
                 drives = [2, 4, 6, 8, 12, 16]
-            elif iostandard in ['SSTL135', 'SSTL15']:#, 'LVDS']:
+            elif iostandard in ['SSTL135', 'SSTL15', 'LVDS']:
                 drives = None
             else:
                 assert False, "This should be unreachable"
