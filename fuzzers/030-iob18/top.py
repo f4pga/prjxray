@@ -18,6 +18,7 @@ from prjxray import lut_maker
 from prjxray import verilog
 from prjxray.db import Database
 
+from iostandards import *
 
 def gen_sites():
     '''
@@ -56,18 +57,12 @@ def run():
     o_idx = 0
     io_idx = 0
 
-    iostandards = [
-        'LVCMOS12',
-        'LVCMOS15',
-        'LVCMOS18',
-        'SSTL135',
-        'SSTL15',
-        'LVDS',
-    ]
+    iostandards = LVCMOS + SSTL + DIFF_SSTL + LVDS
 
     diff_map = {
-        "SSTL135": ["DIFF_SSTL135"],
-        "SSTL15": ["DIFF_SSTL15"],
+        "SSTL15":  DIFF_SSTL15,
+        "SSTL135": DIFF_SSTL135,
+        "SSTL12":  DIFF_SSTL12,
     }
 
     only_diff_map = {
@@ -103,7 +98,7 @@ def run():
     iostandard_map = dict()
     for iobank in iobanks:
         iostandard = random.choice(iostandards)
-        if iostandard in ['SSTL135', 'SSTL15']:
+        if iostandard in SSTL:
             params['INTERNAL_VREF'][iobank] = random.choice(
                 (
                     .600,
@@ -129,7 +124,7 @@ def run():
                 drives = [2, 4, 6, 8]
             elif iostandard in ['LVCMOS15', 'LVCMOS18']:
                 drives = [2, 4, 6, 8, 12, 16]
-            elif iostandard in ['SSTL135', 'SSTL15', 'LVDS']:
+            elif iostandard in DIFF + SSTL:
                 drives = None
             else:
                 assert False, "This should be unreachable"
