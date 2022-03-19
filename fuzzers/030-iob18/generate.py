@@ -16,42 +16,36 @@ import os
 import json
 import csv
 
+from iostandards import *
 
 def bitfilter(frame, word):
     # TODO: do we need this here?
-    # this frame number limit does not seem 
+    # this frame number limit does not seem
     # to apply to 1.8V high speed banks
     # if frame < 38:
     #     return False
-
     return True
-
 
 def mk_drive_opt(iostandard, drive):
     if drive is None:
         drive = '_FIXED'
     return '{}.DRIVE.I{}'.format(iostandard, drive)
 
-
 def drives_for_iostandard(iostandard):
     if iostandard in ['LVCMOS18', 'LVCMOS15']:
         drives = [2, 4, 6, 8, 12, 16]
     elif iostandard == 'LVCMOS12':
         drives = [2, 4, 6, 8]
-    elif iostandard in ['SSTL135', 'SSTL15', 'SSTL12']:
+    elif iostandard in SSTL + DIFF_SSTL:
         return ['_FIXED']
     else:
         assert False, "this line should be unreachable"
 
     return drives
 
-
-STEPDOWN_IOSTANDARDS = [
-    'LVCMOS12', 'LVCMOS15', 'LVCMOS18', 'SSTL135', 'SSTL15', 'SSTL12',
-]
-IBUF_LOW_PWR_SUPPORTED = ['SSTL135', 'SSTL15', 'SSTL12', 'LVDS']
-
-ONLY_DIFF_IOSTANDARDS = ['LVDS']
+STEPDOWN_IOSTANDARDS   = LVCMOS + SSTL
+IBUF_LOW_PWR_SUPPORTED = LVDS + DIFF_SSTL
+ONLY_DIFF_IOSTANDARDS  = LVDS
 
 
 def main():
@@ -194,16 +188,16 @@ def main():
                 continue
 
             drive_opts = set()
-            for opt in ("LVCMOS18", "LVCMOS15", "LVCMOS12"):
+            for opt in LVCMOS:
                 for drive_opt in ("2", "4", "6", "8", "12", "16"):
                     if drive_opt in ["12", "16"] and opt == "LVCMOS12":
                         continue
 
                     drive_opts.add(mk_drive_opt(opt, drive_opt))
 
-            drive_opts.add(mk_drive_opt("SSTL135", None))
-            drive_opts.add(mk_drive_opt("SSTL15", None))
-            drive_opts.add(mk_drive_opt("SSTL12", None))
+            for sstl in SSTL:
+                drive_opts.add(mk_drive_opt(sstl, None))
+
             drive_opts.add(mk_drive_opt("LVDS", None))
 
             segmaker.add_site_group_zero(
