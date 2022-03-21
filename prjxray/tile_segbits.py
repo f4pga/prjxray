@@ -9,6 +9,8 @@
 #
 # SPDX-License-Identifier: ISC
 from collections import namedtuple
+import sys
+
 from prjxray import bitstream
 from prjxray.grid_types import BlockType
 from prjxray.util import OpenSafeFile
@@ -85,15 +87,28 @@ class TileSegbits(object):
 
         if tile_db.ppips is not None:
             with OpenSafeFile(tile_db.ppips) as f:
-                self.ppips = read_ppips(f)
+                try:
+                    self.ppips = read_ppips(f)
+                except Exception as e:
+                    print(f"Error reading ppips from {tile_db.ppips}: {e}", file=sys.stderr)
+                    exit(1)
 
         if tile_db.segbits is not None:
             with OpenSafeFile(tile_db.segbits) as f:
-                self.segbits[BlockType.CLB_IO_CLK] = read_segbits(f)
+                try:
+                    self.segbits[BlockType.CLB_IO_CLK] = read_segbits(f)
+                except Exception as e:
+                    print(f"Error reading segbits from {tile_db.segbits}: {e}", file=sys.stderr)
+                    exit(1)
+
 
         if tile_db.block_ram_segbits is not None:
             with OpenSafeFile(tile_db.block_ram_segbits) as f:
-                self.segbits[BlockType.BLOCK_RAM] = read_segbits(f)
+                try:
+                    self.segbits[BlockType.BLOCK_RAM] = read_segbits(f)
+                except Exception as e:
+                    print(f"Error reading ram segbits from {tile_db.block_ram_segbits}: {e}", file=sys.stderr)
+                    exit(1)
 
         for block_type in self.segbits:
             for feature in self.segbits[block_type]:
