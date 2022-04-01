@@ -186,7 +186,7 @@ def run():
                 i_idx += 1
 
                 p['IDELAY_ONLY'] = random.randint(0, 1)
-                p['DIFF_TERM'] = random.randint(0, 1)
+                p['DIFF_TERM'] = random.randint(0, 1) if iostandard in LVDS else 0
                 if not p['IDELAY_ONLY']:
                     p['owire'] = luts.get_next_input_net()
                 else:
