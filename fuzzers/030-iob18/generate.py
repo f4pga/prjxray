@@ -107,10 +107,6 @@ def main():
 
             iobank_iostandards[site_to_iobank[site]].add(iostandard)
 
-            segmk.add_site_tag(
-                site, '_'.join(STEPDOWN_IOSTANDARDS) + '.STEPDOWN',
-                iostandard in STEPDOWN_IOSTANDARDS)
-
             only_diff_io = iostandard in ONLY_DIFF_IOSTANDARDS
 
             if d['type'] is None:
@@ -277,9 +273,6 @@ def main():
         assert len(iobank_iostandards[iobank]) == 1, iobank_iostandards[iobank]
 
         iostandard = list(iobank_iostandards[iobank])[0]
-        segmk.add_tile_tag(
-            hclk_cmt_tile, 'STEPDOWN', iostandard in STEPDOWN_IOSTANDARDS)
-
         for only_diff_io in ONLY_DIFF_IOSTANDARDS:
             segmk.add_tile_tag(
                 hclk_cmt_tile, '{}_IN_USE'.format(only_diff_io),

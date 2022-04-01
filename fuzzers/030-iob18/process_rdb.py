@@ -118,14 +118,11 @@ def process_features_sets(iostandard_lines):
         common_bits[(site, 'IN')] |= common_bits[(site, 'IN_DIFF')]
         common_bits[(site, 'IN_DIFF')] |= common_bits[(site, 'IN')]
 
-        # Only DIFF IOSTANDARDS such as LVDS or TMDS do not have DRIVE,
-        # STEPDOWN or SLEW features
+        # Only DIFF IOSTANDARDS such as LVDS or TMDS do not have DRIVE or SLEW features
         if iostd_type == "NORMAL":
             key = (site, iostd_type)
             common_bits[(site, 'DRIVE')] -= common_bits[(site, 'SLEW')]
-            common_bits[(site, 'DRIVE')] -= common_bits[(site, 'STEPDOWN')]
             common_bits[(site, 'IN_ONLY')] |= common_bits[(site, 'DRIVE')]
-            common_bits[(site, 'IN_ONLY')] -= common_bits[(site, 'STEPDOWN')]
 
             for iostandard, enum in sites[key]['DRIVE']:
                 slew_in_drive = common_bits[
@@ -136,9 +133,6 @@ def process_features_sets(iostandard_lines):
 
                     slew_in_drives[(key, iostandard)] |= slew_in_drive
                     sites[key]['DRIVE'][(iostandard, enum)] -= slew_in_drive
-
-                sites[key]['DRIVE'][(iostandard,
-                                     enum)] -= common_bits[(site, 'STEPDOWN')]
 
     for site, iostandard in slew_in_drives:
         for _, enum in sites[site]['SLEW']:
