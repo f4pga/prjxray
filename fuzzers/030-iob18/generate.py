@@ -19,11 +19,10 @@ import csv
 from iostandards import *
 
 def bitfilter(frame, word):
-    # TODO: do we need this here?
-    # this frame number limit does not seem
-    # to apply to 1.8V high speed banks
-    # if frame < 38:
-    #     return False
+    # the fuzzers seem to find bits in frame 24 which seems
+    # to be used by other tile types
+    if frame < 30:
+         return False
     return True
 
 def mk_drive_opt(iostandard, drive):
