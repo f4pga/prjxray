@@ -230,8 +230,8 @@ def main():
             site_to_cmt[site] = cmt
             tile_to_cmt[tile] = cmt
 
-            # Given IDELAYCTRL's are only located in HCLK_IOI3 tiles, and
-            # there is only on HCLK_IOI3 tile per CMT, update
+            # Given IDELAYCTRL's are only located in HCLK_IOI tiles, and
+            # there is only on HCLK_IOI tile per CMT, update
             # CMT -> IDELAYCTRL / tile map.
             if 'IDELAYCTRL' in site:
                 assert cmt not in cmt_to_idelay
