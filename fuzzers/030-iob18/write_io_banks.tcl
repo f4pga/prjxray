@@ -20,7 +20,9 @@ set fp [open "cmt_regions.csv" "w"]
 foreach site_type { IOB18M IOB18S IDELAYCTRL} {
     foreach site [get_sites -filter "SITE_TYPE == $site_type"] {
         set tile [get_tiles -of $site]
-        puts $fp "$site,$tile,[get_property CLOCK_REGION $site]"
+        if {![string match "*IOI3*" $tile]} {
+            puts $fp "$site,$tile,[get_property CLOCK_REGION $site]"
+        }
     }
 }
 close $fp
