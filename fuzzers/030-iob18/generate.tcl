@@ -101,7 +101,6 @@ proc run {} {
     loc_pins
     set_vref
 
-
     set_property CFGBVS GND [current_design]
     set_property CONFIG_VOLTAGE 1.8 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]

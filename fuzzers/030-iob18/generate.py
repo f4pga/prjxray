@@ -122,56 +122,56 @@ def main():
                 segmk.add_site_tag(site, '{}.IN_DIFF'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
-                segmk.add_tile_tag(d['tile'], 'IN_DIFF', 0)
+                segmk.add_tile_tag(tile, 'IN_DIFF', 0)
 
                 if iostandard in IBUF_LOW_PWR_SUPPORTED:
                     segmk.add_site_tag(site, 'IBUF_LOW_PWR', d['IBUF_LOW_PWR'])
-                    segmk.add_site_tag(
-                        site, 'ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
+                    segmk.add_site_tag(site, 'ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
+
             elif d['type'] == 'IBUFDS':
-                segmk.add_site_tag(site, 'INOUT', 0)
-                segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
-                segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
-                segmk.add_site_tag(site, '{}.IN_DIFF'.format(iostandard), 1)
-                segmk.add_site_tag(
-                    d['pair_site'], '{}.IN_DIFF'.format(iostandard), 1)
-                segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
-                segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
-                segmk.add_tile_tag(d['tile'], 'IN_DIFF', 1)
+                psite = d['pair_site']
+                segmk.add_site_tag(site,  'INOUT', 0)
+                segmk.add_site_tag(site,  '{}.IN_USE'.format(iostandard), 1)
+                segmk.add_site_tag(site,  '{}.IN'.format(iostandard), 1)
+                segmk.add_site_tag(site,  '{}.IN_DIFF'.format(iostandard), 1)
+                segmk.add_site_tag(psite, '{}.IN_DIFF'.format(iostandard), 1)
+                segmk.add_site_tag(site,  '{}.OUT'.format(iostandard), 0)
+                segmk.add_site_tag(site,  '{}.IN_ONLY'.format(iostandard), 1)
+                segmk.add_tile_tag(tile,  'IN_DIFF', 1)
 
                 if iostandard in IBUF_LOW_PWR_SUPPORTED:
-                    segmk.add_tile_tag(
-                        tile, 'DIFF.IBUF_LOW_PWR', d['IBUF_LOW_PWR'])
-                    segmk.add_tile_tag(
-                        tile, 'DIFF.ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
+                    segmk.add_tile_tag(tile, 'DIFF.IBUF_LOW_PWR', d['IBUF_LOW_PWR'])
+                    segmk.add_tile_tag(tile, 'DIFF.ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
+
             elif d['type'] == 'OBUF':
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 0)
+                segmk.add_tile_tag(tile, 'OUT_DIFF', 0)
+
             elif d['type'] == 'OBUFDS':
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                segmk.add_tile_tag(
-                    d['tile'], 'OUT_DIFF', 1 and not only_diff_io)
-                segmk.add_tile_tag(d['tile'], 'OUT_TDIFF', 0)
+                segmk.add_tile_tag(tile, 'OUT_DIFF', 1 and not only_diff_io)
+                segmk.add_tile_tag(tile, 'OUT_TDIFF', 0)
+
             elif d['type'] == 'OBUFTDS':
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                segmk.add_tile_tag(
-                    d['tile'], 'OUT_DIFF', 1 and not only_diff_io)
-                segmk.add_tile_tag(
-                    d['tile'], 'OUT_TDIFF', 1 and not only_diff_io)
+                segmk.add_tile_tag(tile, 'OUT_DIFF', 1 and not only_diff_io)
+                segmk.add_tile_tag(tile, 'OUT_TDIFF', 1 and not only_diff_io)
+
             elif d['type'] == 'IOBUF_DCIEN':
                 segmk.add_site_tag(site, 'INOUT', 1)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
+
 
             if d['type'] is not None:
                 segmaker.add_site_group_zero(
@@ -217,8 +217,7 @@ def main():
     site_to_tile = {}
     tile_to_cmt = {}
     cmt_to_idelay = {}
-    with open(os.path.join(os.getenv('FUZDIR'), 'build',
-                           'cmt_regions.csv')) as f:
+    with open(os.path.join(os.getenv('FUZDIR'), 'build', 'cmt_regions.csv')) as f:
         for l in f:
             site, tile, cmt = l.strip().split(',')
             site_to_tile[site] = tile
@@ -298,7 +297,6 @@ def main():
 
     segmk.compile(bitfilter=bitfilter)
     segmk.write(allow_empty=True)
-
 
 if __name__ == "__main__":
     main()
