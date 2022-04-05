@@ -10,7 +10,7 @@
 # SPDX-License-Identifier: ISC
 """ Sanity checks FASM output from IOB fuzzer.
 The IOB fuzzer is fairly complicated, and it's output is hard to verify by
-inspected.  For this reason, check_results.py was written to compare the
+inspection.  For this reason, check_results.py was written to compare the
 specimen's generated and their FASM output.  The FASM output does pose a
 chicken and egg issue.  The test procedure is a follows:
 
@@ -185,7 +185,7 @@ def process_specimen(fasm_file, params_json):
                 if p['DRIVE'] is None:
                     assert None in site_from_fasm['DRIVES'], (
                         tile, site_key, p['DRIVE'], site_from_fasm['DRIVES'])
-                elif p['DRIVE'] is '':
+                elif p['DRIVE'] == '':
                     if None in site_from_fasm['DRIVES']:
                         # IOSTANDARD has not DRIVE setting, ignore
                         pass
