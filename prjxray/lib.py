@@ -14,6 +14,8 @@ import pickle
 import re
 from collections import namedtuple
 
+from prjxray.util import OpenSafeFile
+
 
 def read_root_csv(root_dir):
     """ Reads root.csv from raw db directory.
@@ -24,7 +26,7 @@ def read_root_csv(root_dir):
     tiles = {}
     nodes = []
 
-    with open(os.path.join(root_dir, 'root.csv')) as f:
+    with OpenSafeFile(os.path.join(root_dir, 'root.csv')) as f:
         for d in csv.DictReader(f):
             if d['filetype'] == 'tile':
                 if d['subtype'] not in tiles:
@@ -123,17 +125,17 @@ class NodeLookup(object):
         import pyjson5 as json5
         import progressbar
         for node in progressbar.progressbar(nodes):
-            with open(node) as f:
+            with OpenSafeFile(node) as f:
                 node_wires = json5.load(f)
                 assert node_wires['node'] not in self.nodes
                 self.nodes[node_wires['node']] = node_wires['wires']
 
     def load_from_file(self, fname):
-        with open(fname, 'rb') as f:
+        with OpenSafeFile(fname, 'rb') as f:
             self.nodes = pickle.load(f)
 
     def save_to_file(self, fname):
-        with open(fname, 'wb') as f:
+        with OpenSafeFile(fname, 'wb') as f:
             pickle.dump(self.nodes, f)
 
     def site_pin_node_to_wires(self, tile, node):

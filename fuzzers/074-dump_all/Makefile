@@ -7,7 +7,10 @@
 # SPDX-License-Identifier: ISC
 
 N := 1
+
 BUILD_DIR = build_${XRAY_PART}
+RUN_OK = run.${XRAY_PART}.ok
+
 SPECIMENS := $(addprefix $(BUILD_DIR)/specimen_,$(shell seq -f '%03.0f' $(N)))
 SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
 MAX_VIVADO_PROCESS ?= 4
@@ -34,10 +37,10 @@ run:
 	$(MAKE) pushdb
 	# Clean up intermediate files after successful pushdb.
 	find $(BUILD_DIR) -name "*.json5" -delete
-	touch run.${XRAY_PART}.ok
+	touch ${RUN_OK}
 
 clean:
-	rm -rf build_* run.*.ok
+	rm -rf ${BUILD_DIR} ${RUN_OK}
 
 .PHONY: database pushdb run clean
 

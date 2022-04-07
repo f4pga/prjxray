@@ -1,0 +1,46 @@
+on:
+  pull_request:
+  push:
+  schedule:
+    - cron: '0 0 * * *'
+
+name: Tests
+
+jobs:
+
+  Tests:
+    container: ubuntu:bionic
+
+    runs-on: [self-hosted, Linux, X64]
+
+    env:
+      ALLOW_ROOT: true
+
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Install
+        run: |
+          apt update
+          apt install -y \
+            bash bison build-essential ca-certificates clang-format cmake psmisc \
+            colordiff coreutils git flex python3 python3-dev python3-venv xsltproc
+
+      - name: Build
+        run: make build --output-sync=target --warn-undefined-variables -j$(nproc)
+
+      - name: Environment
+        run: make env --output-sync=target --warn-undefined-variables
+
+      - name: Run Test
+        run: make test --output-sync=target --warn-undefined-variables
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          path: |
+            **/results*.gz
+            **/plot_*.svg

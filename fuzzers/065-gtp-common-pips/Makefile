@@ -54,7 +54,7 @@ $(BUILD_DIR)/cmt_regions.csv: output_cmt.tcl
 	cd $(BUILD_DIR)/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
 
 clean:
-	rm -rf build_* run.*.ok
+	rm -rf ${BUILD_DIR} ${RUN_OK}
 
 pushdb: database
 	${XRAY_MERGEDB} gtp_common_mid_left $(BUILD_DIR)/segbits_gtp_common.db

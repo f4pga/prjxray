@@ -10,9 +10,13 @@ ALL_EXCLUDE = third_party .git env build docs/env
 
 INSTALL_DIR ?=
 
+# Skip this check if the ALLOW_ROOT var is defined
+# E.g. when running in GH action custom runners CI
+ifndef ALLOW_ROOT
 # Check if root
 ifeq ($(shell id -u),0)
         $(error ERROR: Running as ID 0)
+endif
 endif
 
 # Tools + Environment

@@ -21,6 +21,7 @@ from prjxray.timing import Outpin, Inpin, Wire, Buffer, \
         PassTransistor, IntristicDelay, RcElement, PvtCorner
 from prjxray.math_models import ExcelMathModel
 from prjxray.db import Database
+from prjxray.util import OpenSafeFile
 from prjxray import util
 
 FAST = PvtCorner.FAST
@@ -481,7 +482,7 @@ def add_net(wb, net, timing_lookup):
 def build_wire_filter(wire_filter):
     wires_to_include = set()
 
-    with open(wire_filter) as f:
+    with OpenSafeFile(wire_filter) as f:
         for l in f:
             wire = l.strip()
             if not wire:
@@ -514,7 +515,7 @@ def main():
 
     args = parser.parse_args()
 
-    with open(args.timing_json) as f:
+    with OpenSafeFile(args.timing_json) as f:
         timing = json.load(f)
 
     db = Database(args.db_root, args.part)

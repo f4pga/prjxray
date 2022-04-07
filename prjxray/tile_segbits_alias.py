@@ -21,6 +21,7 @@ TileSegbitsAlias performs severals functions to achieve the alias:
 from prjxray import bitstream
 from prjxray.grid_types import Bits
 from prjxray.tile_segbits import read_ppips
+from prjxray.util import OpenSafeFile
 
 
 class TileSegbitsAlias(object):
@@ -67,7 +68,7 @@ class TileSegbitsAlias(object):
         self.ppips = {}
 
         if tile_db.ppips is not None:
-            with open(tile_db.ppips) as f:
+            with OpenSafeFile(tile_db.ppips) as f:
                 self.ppips = read_ppips(f)
         self.tile_segbits = db.get_tile_segbits(self.alias_tile_type)
 

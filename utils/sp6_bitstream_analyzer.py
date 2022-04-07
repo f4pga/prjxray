@@ -25,6 +25,8 @@ a valid bitstream.
 import argparse
 from io import StringIO
 
+from prjxray.util import OpenSafeFile
+
 conf_regs = {
     0: "CRC",
     1: "FAR_MAJ",
@@ -124,7 +126,7 @@ class Bitstream:
         self.curr_fdri_write_len = 0
         self.curr_crc_check = 0
         self.fdri_in_progress = False
-        with open(file_name, "rb") as f:
+        with OpenSafeFile(file_name, "rb") as f:
             self.bytes = f.read()
         pos, self.header = self.get_header()
         self.body = [
@@ -395,7 +397,7 @@ class Bitstream:
             else:
                 frame_stream.write(
                     "#{:3}:{:6},".format(i % 65, hex(self.frame_data[i])))
-        with open(file_name, "w") as f:
+        with OpenSafeFile(file_name, "w") as f:
             print(frame_stream.getvalue(), file=f)
 
     def write_frames(self, file_name):
@@ -409,7 +411,7 @@ class Bitstream:
                 frame_stream.write("\n")
             elif i < len(self.frame_data) - 1:
                 frame_stream.write(",")
-        with open(file_name, "w") as f:
+        with OpenSafeFile(file_name, "w") as f:
             print(frame_stream.getvalue(), file=f)
 
 

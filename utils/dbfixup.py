@@ -218,7 +218,7 @@ def read_segbits(fn_in):
     lines = []
     llast = None
 
-    with open(fn_in, "r") as f:
+    with util.OpenSafeFile(fn_in, "r") as f:
         for line in f:
             # Hack: skip duplicate lines
             # This happens while merging a new multibit entry
@@ -327,7 +327,7 @@ def update_mask(db_root, mask_db, src_dbs, offset=0):
     mask_db_file = "%s/mask_%s.db" % (db_root, mask_db)
 
     if os.path.exists(mask_db_file):
-        with open(mask_db_file, "r") as f:
+        with util.OpenSafeFile(mask_db_file, "r") as f:
             for line in f:
                 line = line.split()
                 assert len(line) == 2
@@ -340,7 +340,7 @@ def update_mask(db_root, mask_db, src_dbs, offset=0):
         if not os.path.exists(seg_db_file):
             continue
 
-        with open(seg_db_file, "r") as f:
+        with util.OpenSafeFile(seg_db_file, "r") as f:
             for line in f:
                 line = line.split()
                 for bit in line[1:]:
@@ -353,7 +353,7 @@ def update_mask(db_root, mask_db, src_dbs, offset=0):
                     bits.add(bit)
 
     if len(bits) > 0:
-        with open(mask_db_file, "w") as f:
+        with util.OpenSafeFile(mask_db_file, "w") as f:
             for bit in sorted(bits):
                 print("bit %s" % bit, file=f)
 
@@ -361,14 +361,15 @@ def update_mask(db_root, mask_db, src_dbs, offset=0):
 def load_zero_db(fn):
     # Remove comments and convert to list of lines
     ret = []
-    for l in open(fn, "r"):
-        pos = l.find("#")
-        if pos >= 0:
-            l = l[0:pos]
-        l = l.strip()
-        if not l:
-            continue
-        ret.append(l)
+    with util.OpenSafeFile(fn, "r") as f:
+        for l in f:
+            pos = l.find("#")
+            if pos >= 0:
+                l = l[0:pos]
+            l = l.strip()
+            if not l:
+                continue
+            ret.append(l)
     return ret
 
 
@@ -535,7 +536,7 @@ def update_seg_fns(
         )
         changes += new_changes
 
-        with open(fn_out, "w") as f:
+        with util.OpenSafeFile(fn_out, "w") as f:
             for line in sorted(lines):
                 print(line, file=f)
 
@@ -652,7 +653,7 @@ def load_tag_groups(file_name):
     tag_groups = []
 
     # Load tag group specifications
-    with open(file_name, "r") as fp:
+    with util.OpenSafeFile(file_name, "r") as fp:
         for line in fp:
             line = line.strip()
 

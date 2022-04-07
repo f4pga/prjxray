@@ -12,6 +12,7 @@
 import sys, os, json
 import pickle
 
+from prjxray.util import OpenSafeFile
 
 class MergeFind:
     def __init__(self):
@@ -34,11 +35,11 @@ class MergeFind:
 def db_gen():
     print("Reading database..")
 
-    with open("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
+    with OpenSafeFile("%s/%s/tilegrid.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         tilegrid = json.load(f)
 
-    with open("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
+    with OpenSafeFile("%s/%s/tileconn.json" % (os.getenv("XRAY_DATABASE_DIR"),
                                        os.getenv("XRAY_DATABASE")), "r") as f:
         tileconn = json.load(f)
 
@@ -81,7 +82,7 @@ def db_gen():
     reverse_node_node = dict()
 
     for tile_type in ["int_l", "int_r"]:
-        with open("%s/%s/segbits_%s.db" %
+        with OpenSafeFile("%s/%s/segbits_%s.db" %
                   (os.getenv("XRAY_DATABASE_DIR"), os.getenv("XRAY_DATABASE"),
                    tile_type), "r") as f:
             for line in f:

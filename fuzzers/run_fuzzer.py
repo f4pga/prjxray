@@ -512,7 +512,7 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
     )
     log(running_msg)
 
-    log_suffix = ".{}.log".format(time_start.isoformat())
+    log_suffix = ".{}.log".format(time_start.isoformat()).replace(":", "-")
     fuzzer_stdout = os.path.join(fuzzer_logdir, "stdout" + log_suffix)
     fuzzer_stderr = os.path.join(fuzzer_logdir, "stderr" + log_suffix)
 

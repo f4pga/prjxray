@@ -13,6 +13,7 @@ import progressbar
 import pyjson5 as json5
 import os.path
 
+from prjxray.util import OpenSafeFile
 
 def create_tables(conn):
     c = conn.cursor()
@@ -63,7 +64,7 @@ class NodeLookup(object):
 
         nodes_processed = set()
         for node in progressbar.progressbar(nodes):
-            with open(node) as f:
+            with OpenSafeFile(node) as f:
                 node_wires = json5.load(f)
                 assert node_wires['node'] not in nodes_processed
                 nodes_processed.add(node_wires['node'])

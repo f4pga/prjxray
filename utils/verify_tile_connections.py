@@ -18,7 +18,7 @@ import multiprocessing
 import pyjson5 as json5
 import json
 import sys
-from prjxray import util
+from prjxray.util import OpenSafeFile, db_root_arg, part_arg
 
 
 def full_wire_name(wire_in_grid):
@@ -64,7 +64,7 @@ def make_connections(db_root, part):
 
 
 def read_json5(fname):
-    with open(fname, 'r') as f:
+    with OpenSafeFile(fname, 'r') as f:
         return json5.load(f)
 
 
@@ -72,8 +72,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Tests database against raw node list.")
 
-    util.db_root_arg(parser)
-    util.part_arg(parser)
+    db_root_arg(parser)
+    part_arg(parser)
     parser.add_argument('--raw_node_root', required=True)
     parser.add_argument('--error_nodes', default="error_nodes.json")
     parser.add_argument('--ignored_wires')
@@ -109,7 +109,7 @@ def main():
 
     if len(error_nodes) > 0:
         if args.ignored_wires:
-            with open(args.ignored_wires, 'r') as f:
+            with OpenSafeFile(args.ignored_wires, 'r') as f:
                 ignored_wires = [l.strip() for l in f.readlines()]
 
         print(
@@ -119,7 +119,7 @@ def main():
                 args.error_nodes,
             ))
 
-        with open(args.error_nodes, 'w') as f:
+        with OpenSafeFile(args.error_nodes, 'w') as f:
             json.dump(error_nodes, f, indent=2)
 
         if not args.ignored_wires:

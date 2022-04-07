@@ -21,6 +21,8 @@ import argparse
 import re
 import itertools
 
+from prjxray.util import OpenSafeFile
+
 # =============================================================================
 
 
@@ -34,7 +36,7 @@ def load_tag_groups(file_name):
     tag_groups = []
 
     # Load tag group specifications
-    with open(file_name, "r") as fp:
+    with OpenSafeFile(file_name, "r") as fp:
         for line in fp:
             line = line.strip()
 
@@ -89,7 +91,7 @@ def load_segbits(file_name):
 
     segbits = {}
 
-    with open(file_name, "r") as fp:
+    with OpenSafeFile(file_name, "r") as fp:
         for line in fp:
             line = line.strip()
             fields = line.split()
@@ -114,7 +116,7 @@ def save_segbits(file_name, segbits):
     Save segbits to a .db or .rdb file
     """
 
-    with open(file_name, "w") as fp:
+    with OpenSafeFile(file_name, "w") as fp:
         for tag, bits in segbits.items():
 
             if isinstance(bits, str):

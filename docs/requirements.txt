@@ -1,7 +1,7 @@
-sphinx_materialdesign_theme
+http://github.com/SymbiFlow/sphinx_symbiflow_theme/archive/chips.zip#sphinx-symbiflow-theme
 
 docutils
-sphinx>=3.0
+sphinx
 sphinx-autobuild
 
 breathe
@@ -10,4 +10,4 @@ sphinx-markdown-tables
 sphinxcontrib-napoleon
 
 # Markdown cross-reference solver library
-git+https://github.com/SymbiFlow/sphinxcontrib-markdown-symlinks
+http://github.com/SymbiFlow/sphinxcontrib-markdown-symlinks/archive/master.zip#sphinxcontrib-markdown-symlinks

@@ -116,7 +116,11 @@ $(eval $(call fuzzer,030-iob,005-tilegrid,all))
 $(eval $(call fuzzer,031-cmt-mmcm,005-tilegrid,all))
 $(eval $(call fuzzer,032-cmt-pll,005-tilegrid,all))
 $(eval $(call fuzzer,034-cmt-pll-pips,005-tilegrid 071-ppips,all))
+ifneq ($(XRAY_DATABASE),kintex7)
+# FIXME: 034b fuzzer is generating conflicting bits around the FREQ_BB[N] bits.
+# The fuzzer can be re-enabled once the conflicting bits are not generated anymore
 $(eval $(call fuzzer,034b-cmt-mmcm-pips,005-tilegrid 071-ppips,all))
+endif
 $(eval $(call fuzzer,035-iob-ilogic,005-tilegrid,all))
 $(eval $(call fuzzer,035a-iob-idelay,005-tilegrid,all))
 $(eval $(call fuzzer,035b-iob-iserdes,005-tilegrid,all))

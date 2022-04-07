@@ -5,6 +5,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+
 export FUZDIR=$(shell pwd)
 PIP_TYPE?=gtp_common_mid_${XRAY_PART}
 PIP_FILE?=gtp_common_mid_ck_mux
@@ -24,7 +25,7 @@ SEGMATCH_FLAGS=-c 3
 SPECIMENS_DEPS=$(BUILD_DIR)/cmt_regions.csv
 A_PIPLIST=gtp_common_mid_ck_mux.txt
 
-CHECK_ARGS= --zero-entries --timeout-iters 5 --todo-dir $(BUILD_DIR)/todo
+CHECK_ARGS= --zero-entries --timeout-iters 10 --todo-dir $(BUILD_DIR)/todo
 
 include ../pip_loop.mk
 
@@ -53,7 +54,7 @@ $(BUILD_DIR)/cmt_regions.csv: output_cmt.tcl
 	cd $(BUILD_DIR)/ && ${XRAY_VIVADO} -mode batch -source ${FUZDIR}/output_cmt.tcl
 
 clean:
-	rm -rf build_* run.*.ok
+	rm -rf ${BUILD_DIR} ${RUN_OK}
 
 pushdb: database
 	${XRAY_MERGEDB} gtp_common_mid_left $(BUILD_DIR)/segbits_gtp_common.db

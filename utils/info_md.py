@@ -15,6 +15,7 @@ import os
 import parse as format_parser
 import subprocess
 import sys
+
 """Module for generating the Info.md file found in the database directory."""
 
 info_md_header = """

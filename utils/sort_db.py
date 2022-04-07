@@ -66,6 +66,7 @@ import json
 import utils.xjson as xjson
 import utils.cmp as cmp
 
+from prjxray.util import OpenSafeFile
 
 def split_all(s, chars):
     """Split on multiple character values.
@@ -322,7 +323,8 @@ def sort_db(pathname):
     else:
         return False
 
-    lines = open(pathname).readlines()
+    with OpenSafeFile(pathname) as f:
+        lines = f.readlines()
 
     tosort = []
     for l in lines:
@@ -332,16 +334,6 @@ def sort_db(pathname):
         tosort.append(sortable_line_from_dbfile(l))
 
     tosort.sort(key=cmp.cmp_key)
-
-    # Make sure the sort is stable
-    #for i in range(0, 4):
-    #    copy = tosort.copy()
-    #    random.shuffle(copy)
-    #    copy.sort(key=cmp.cmp_key)
-    #    assert len(copy) == len(tosort)
-    #    for i in range(0, len(copy)):
-    #        assert copy[i] == tosort[i], "\n%r\n != \n%r\n" % (
-    #            copy[i], tosort[i])
 
     with open(pathname, 'w') as f:
         for _, l in tosort:
@@ -384,13 +376,15 @@ def sort_csv(pathname):
 
 def sort_json(filename):
     """Sort a XXX.json file."""
+
     try:
-        d = json.load(open(filename))
+        with OpenSafeFile(filename) as f:
+            d = json.load(f)
     except json.JSONDecodeError as e:
         print(e)
         return False
 
-    with open(filename, 'w') as f:
+    with OpenSafeFile(filename, 'w') as f:
         xjson.pprint(f, d)
 
     return True
@@ -398,13 +392,13 @@ def sort_json(filename):
 
 def sort_db_text(n):
     rows = []
-    with open(n) as f:
+    with OpenSafeFile(n) as f:
         for l in f:
             rows.append(([extract_num(s) for s in l.split()], l))
 
     rows.sort(key=lambda i: i[0])
 
-    with open(n, 'w') as f:
+    with OpenSafeFile(n, 'w') as f:
         for l in rows:
             f.write(l[-1])
 
