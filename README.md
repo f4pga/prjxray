@@ -1,10 +1,8 @@
 # Project X-Ray
 
-[![Documentation Status](https://readthedocs.org/projects/pyxray/badge/?version=latest)](http://prjxray.readthedocs.org/)
-[![License](https://img.shields.io/github/license/f4pga/prjxray.svg)](https://github.com/f4pga/prjxray/blob/master/LICENSE)
-
-![Tests](https://github.com/f4pga/prjxray/actions/workflows/tests.yml/badge.svg)
-![Database Generation](https://github.com/f4pga/prjxray/actions/workflows/database.yml/badge.svg)
+[![Documentation Status](https://img.shields.io/readthedocs/prjxray?longCache=true&style=flat-square&logo=ReadTheDocs&logoColor=fff)](http://prjxray.readthedocs.org/)
+[![License](https://img.shields.io/github/license/f4pga/prjxray.svg?longCache=true&style=flat-square&label=License)](https://github.com/f4pga/prjxray/blob/master/LICENSE)
+![GitHub Actions](https://img.shields.io/github/workflow/status/f4pga/prjxray/Automerge/master?longCache=true&style=flat-square&label=GHA&logo=Github%20Actions&logoColor=fff)
 
 Documenting the Xilinx 7-series bit-stream format.
 
