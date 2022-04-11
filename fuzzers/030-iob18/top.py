@@ -57,7 +57,7 @@ def run():
     o_idx = 0
     io_idx = 0
 
-    iostandards = LVCMOS + SSTL + DIFF_SSTL + LVDS
+    iostandards = LVCMOS + SSTL + LVDS
 
     diff_map = {
         "SSTL15":  DIFF_SSTL15,
@@ -124,10 +124,10 @@ def run():
                 drives = [2, 4, 6, 8]
             elif iostandard in ['LVCMOS15', 'LVCMOS18']:
                 drives = [2, 4, 6, 8, 12, 16]
-            elif iostandard in DIFF + SSTL:
+            elif iostandard in LVDS + SSTL:
                 drives = None
             else:
-                assert False, "This should be unreachable"
+                assert False, f"Unhandled iostandard: {iostandard}"
 
             if site_type.endswith('M'):
                 if iostandard in diff_map:
