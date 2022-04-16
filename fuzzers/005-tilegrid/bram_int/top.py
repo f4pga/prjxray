@@ -14,6 +14,7 @@ import itertools
 random.seed(int(os.getenv("SEED"), 16))
 from prjxray import util
 from prjxray.db import Database
+import re
 
 
 def gen_brams():
@@ -73,9 +74,20 @@ module top();
 
     params = {}
 
+    is_kintex_420t="xc7k420t" in os.environ["XRAY_PART"]
+
     sites = list(gen_brams())
     fuzz_iter = iter(util.gen_fuzz_states(len(sites) * 5))
     for tile_name, bram_sites, int_tiles in sites:
+        # this is a workaround for what looks like a bug
+        # in Vivado 2017: as soon as I try to instantiate
+        # more than the 140 rows below then Vivado terminates,
+        # complaining that it is asked to instantiate more block
+        # RAM than is available.
+        bram_y = int(re.sub(".*Y", "", bram_sites[0]))
+        if is_kintex_420t and bram_y > 139:
+            continue
+
         # Each BRAM tile has 5 INT tiles.
         # The following feature is used to toggle a one PIP in each INT tile
         #
