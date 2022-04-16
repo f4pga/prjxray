@@ -49,7 +49,9 @@ endif
 
 # Kintex7 only fuzzers
 ifeq (${XRAY_DATABASE}, kintex7)
+ifneq (${XRAY_PART}, xc7k420tffg1156-2)
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+endif
 endif
 
 BASICDB_TILEGRID=$(BUILD_FOLDER)/basicdb/${XRAY_FABRIC}/tilegrid.json
