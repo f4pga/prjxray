@@ -9,6 +9,11 @@ export XRAY_DATABASE="kintex7"
 export XRAY_PART="xc7k420tffg1156-2"
 export XRAY_ROI_FRAMES="0x00000000:0xffffffff"
 
+export XRAY_PIN_00=AL18
+export XRAY_PIN_01=AL19
+export XRAY_PIN_02=AK18
+export XRAY_PIN_03=AK19
+
 # All CLB's in part, all BRAM's in part, all DSP's in part.
 # tcl queries IOB => don't bother adding
 export XRAY_ROI_TILEGRID="SLICE_X0Y0:SLICE_X153Y349 DSP48_X0Y0:DSP48_X5Y139 RAMB18_X0Y0:RAMB18_X5Y139 RAMB36_X0Y0:RAMB36_X4Y69"
