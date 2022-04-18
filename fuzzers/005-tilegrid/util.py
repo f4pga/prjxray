@@ -111,6 +111,8 @@ def add_tile_bits(
     assert offset + words <= 101, (
         tile_name, offset + words, offset, words, block_type)
 
+    is_xc7k480t = 'xc7k480t' in os.environ['XRAY_PART']
+
     baseaddr_str = '0x%08X' % baseaddr
     block = bits.get(block_type, None)
     if block is not None:
@@ -119,11 +121,19 @@ def add_tile_bits(
             "%s: existing defintion for %s" % (tile_name, block_type))
         assert block["baseaddr"] == baseaddr_str
         assert block["frames"] == frames, (block, frames)
-        if not block["offset"] == offset:
-            print("XXX Hack: %s; orig offset %s, new %s" % (tile_name, block["offset"], offset))
-            offset = max(block['offset'], offset)
-            print("XXX Hack: using offset {offset}")
-            done = False
+        # TODO: HACK: some of the offsets of the K480T seem to be messed up
+        # using the maximum offset below seems to make most sense when looking
+        # at the preceding blocks
+        if is_xc7k480t:
+            if not block["offset"] == offset:
+                print("XXX Hack: %s; orig offset %s, new %s" % (tile_name, block["offset"], offset))
+                offset = max(block['offset'], offset)
+                print("XXX Hack: using offset {offset}")
+                done = False
+        else:
+            assert block["offset"] == offset, "%s; orig offset %s, new %s" % (
+-            tile_name, block["offset"], offset)
+
         assert block["words"] == words
         if done: return
 
