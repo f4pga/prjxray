@@ -114,14 +114,19 @@ def add_tile_bits(
     baseaddr_str = '0x%08X' % baseaddr
     block = bits.get(block_type, None)
     if block is not None:
+        done = True
         verbose and print(
             "%s: existing defintion for %s" % (tile_name, block_type))
         assert block["baseaddr"] == baseaddr_str
         assert block["frames"] == frames, (block, frames)
-        assert block["offset"] == offset, "%s; orig offset %s, new %s" % (
-            tile_name, block["offset"], offset)
+        if not block["offset"] == offset:
+            print("XXX Hack: %s; orig offset %s, new %s" % (tile_name, block["offset"], offset))
+            offset = max(block['offset'], offset)
+            print("XXX Hack: using offset {offset}")
+            done = False
         assert block["words"] == words
-        return
+        if done: return
+
     block = bits.setdefault(block_type, {})
 
     # FDRI address
