@@ -14,8 +14,7 @@ export XRAY_PIN_01=AL19
 export XRAY_PIN_02=AK18
 export XRAY_PIN_03=AK19
 
-# All CLB's in part, all BRAM's in part, all DSP's in part.
-# tcl queries IOB => don't bother adding
+# select the whole part
 export XRAY_ROI_TILEGRID="SLICE_X0Y0:SLICE_X153Y349 DSP48_X0Y0:DSP48_X5Y139 RAMB18_X0Y0:RAMB18_X5Y139 RAMB36_X0Y0:RAMB36_X4Y69"
 
 export XRAY_EXCLUDE_ROI_TILEGRID=""
@@ -40,6 +39,6 @@ source $(dirname ${BASH_SOURCE[0]})/../utils/environment.sh
 env=$(python3 ${XRAY_UTILS_DIR}/create_environment.py)
 ENV_RET=$?
 if [[ $ENV_RET != 0 ]] ; then
-        return $ENV_RET
+    return $ENV_RET
 fi
 eval $env
