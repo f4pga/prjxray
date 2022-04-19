@@ -137,7 +137,7 @@ def maketodo(
     verbose and print(
         "pipfile todo sample: %s" % list(todos)[0], file=sys.stderr)
 
-    if 0 and verbose:
+    if verbose:
         print("TODOs", file=sys.stderr)
         for todo in sorted(list(todos)):
             print('  %s' % todo)
