@@ -17,6 +17,8 @@ jobs:
   Pipeline:
     if: ${{ !(github.event_name != 'pull_request' && github.actor == 'dependabot[bot]') }}
     uses: ./.github/workflows/Pipeline.yml
+    secrets:
+      LICENSE_TUNNEL_KEY_DATA: ${{ secrets.LICENSE_TUNNEL_KEY_DATA }}
 
 
   Automerge:
