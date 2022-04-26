@@ -32,18 +32,11 @@ echo "----------------------------------------"
 	if [ x"$XRAY_SETTINGS" = x"kintex7" ]; then
 		echo "Using Xilinx Vivado Design Edition for $XRAY_SETTINGS build."
 		echo
-		echo "Making /opt mount rw"
-		sudo mount -o remount,rw /opt
-		echo
-		echo "Replacing /opt/Xilinx link."
-		sudo rm -f Xilinx
-		sudo ln -s Xilinx-design Xilinx
+		ln -s /mnt/aux/Xilinx-design /opt/Xilinx
 		ls -l Xilinx
 		echo
-		echo "Making /opt mount ro"
-		sudo mount -o remount,ro /opt
-		echo
 	else
+		ln -s /mnt/aux/Xilinx /opt/Xilinx
 		echo "Using Xilinx Vivado WebPack Edition for $XRAY_SETTINGS build."
 		ls -l Xilinx
 	fi
