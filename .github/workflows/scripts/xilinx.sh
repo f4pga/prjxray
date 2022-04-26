@@ -97,6 +97,7 @@ EOF
 
 	export GIT_SSH_COMMAND="ssh -F $(pwd)/ssh_config -f -N"
 	${GIT_SSH_COMMAND} xilinx-license &
+	disown $!
 
 	(
 		source /opt/Xilinx/Vivado/2017.2/settings64.sh
