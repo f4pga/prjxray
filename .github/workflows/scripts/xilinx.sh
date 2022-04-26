@@ -17,6 +17,7 @@ echo "Fix up the Xilinx configuration directory"
 echo "----------------------------------------"
 mkdir -p ~/.Xilinx
 ls -l ~/.Xilinx
+mkdir ~/.ssh
 #sudo chown -R $USER ~/.Xilinx
 
 export XILINX_LOCAL_USER_DATA=no
