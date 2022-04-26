@@ -19,6 +19,10 @@ mkdir -p ~/.Xilinx
 ls -l ~/.Xilinx
 mkdir ~/.ssh
 #sudo chown -R $USER ~/.Xilinx
+echo
+echo "Fixing loader to be able to run lmutils"
+echo "----------------------------------------"
+ln -s /lib64/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
 
 export XILINX_LOCAL_USER_DATA=no
 echo "----------------------------------------"
