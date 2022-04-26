@@ -63,7 +63,7 @@ echo "Setting up license server tunnel"
 echo "----------------------------------------"
 if [ ! -z "$LICENSE_TUNNEL_KEY_DATA" ]; then
 	LICENSE_TUNNEL_KEY=~/.Xilinx/xilinx-tunnel-key
-	LICENSE_TUNNEL_HOST=10.138.0.2
+	LICENSE_TUNNEL_HOST=10.138.0.3
 	echo $LICENSE_TUNNEL_KEY_DATA | base64 --decode > $LICENSE_TUNNEL_KEY
 
 	echo "SSH Key for license server tunnel should be found @ $LICENSE_TUNNEL_KEY"
