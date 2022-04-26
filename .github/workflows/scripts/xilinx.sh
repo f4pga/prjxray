@@ -96,7 +96,7 @@ EOF
 	echo "127.0.0.1 xlic.int" | sudo tee -a /etc/hosts
 
 	export GIT_SSH_COMMAND="ssh -F $(pwd)/ssh_config -f -N"
-	${GIT_SSH_COMMAND} xilinx-license
+	${GIT_SSH_COMMAND} xilinx-license &
 
 	(
 		source /opt/Xilinx/Vivado/2017.2/settings64.sh
