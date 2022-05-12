@@ -20,10 +20,11 @@ jobs:
         family: ['artix7', 'zynq7', 'kintex7', 'spartan7']
 
     env:
+      GHA_SSH_TUNNEL_KEY: "${{ secrets.LICENSE_TUNNEL_KEY_DATA }}"
+      GHA_SSH_TUNNEL_CONFIG: "${{ secrets.LICENSE_TUNNEL_SSH_CONFIG }}"
       ALLOW_ROOT: true
       GHA_EXTERNAL_DISK: "tools"
       XILINX_LOCAL_USER_DATA: "no"
-      LICENSE_TUNNEL_KEY_DATA: ${{ secrets.LICENSE_TUNNEL_KEY_DATA }}
 
     steps:
 
@@ -57,10 +58,6 @@ jobs:
             sudo \
 
       - name: Xilinx Setup
-        env:
-          GHA_SSH_TUNNEL_KEY: "${{ secrets.LICENSE_TUNNEL_KEY_DATA }}"
-          GHA_SSH_TUNNEL_CONFIG: "${{ secrets.LICENSE_TUNNEL_SSH_CONFIG }}"
-
         run: .github/workflows/scripts/xilinx.sh
 
       - name: Build
