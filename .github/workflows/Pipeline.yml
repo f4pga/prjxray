@@ -58,7 +58,9 @@ jobs:
 
       - name: Xilinx Setup
         env:
-          LICENSE_TUNNEL_KEY_DATA: ${{ secrets.LICENSE_TUNNEL_KEY_DATA }}
+          GHA_SSH_TUNNEL_KEY: "${{ secrets.LICENSE_TUNNEL_KEY_DATA }}"
+          GHA_SSH_TUNNEL_CONFIG: "${{ secrets.LICENSE_TUNNEL_SSH_CONFIG }}"
+
         run: .github/workflows/scripts/xilinx.sh
 
       - name: Build
