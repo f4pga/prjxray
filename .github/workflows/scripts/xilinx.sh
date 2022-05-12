@@ -56,56 +56,19 @@ echo "----------------------------------------"
 
 # Create a tunnel to the server which has the Xilinx licenses and port forward
 # them.
-echo
-echo "Setting up license server tunnel"
-echo "----------------------------------------"
 if [ ! -z "$LICENSE_TUNNEL_KEY_DATA" ]; then
-	LICENSE_TUNNEL_KEY=~/.Xilinx/xilinx-tunnel-key
-	LICENSE_TUNNEL_HOST=10.138.0.3
-	echo $LICENSE_TUNNEL_KEY_DATA | base64 --decode > $LICENSE_TUNNEL_KEY
-
-	echo "SSH Key for license server tunnel should be found @ $LICENSE_TUNNEL_KEY"
-	ls -l $LICENSE_TUNNEL_KEY || true
 
 	echo
-	echo "Xilinx license server ssh key found, setting up tunnel"
+	echo "Xilinx license server ssh key found, checking the license"
 	echo
 
-	echo
-	echo "Checking $LICENSE_TUNNEL_HOST is up"
-	ip addr show
-	echo "ping: ---------"
-	ping -c 5 $LICENSE_TUNNEL_HOST
-	echo "port: ---------"
-	nc -zv $LICENSE_TUNNEL_HOST 22
-	echo "---------"
-	echo
-
-	chmod 600 $LICENSE_TUNNEL_KEY
-	cat <<EOF > ssh_config
-Host xilinx-license
-  HostName $LICENSE_TUNNEL_HOST
-  User kokoro
-  IdentityFile $LICENSE_TUNNEL_KEY
-  StrictHostKeyChecking no
-  ExitOnForwardFailure yes
-  # SessionType none
-  LocalForward localhost:2100 172.18.0.3:2100
-  LocalForward localhost:2101 172.18.0.3:2101
-EOF
 	echo "127.0.0.1 xlic.int" | sudo tee -a /etc/hosts
 
-	export GIT_SSH_COMMAND="ssh -F $(pwd)/ssh_config -f -N"
-	${GIT_SSH_COMMAND} xilinx-license &
-	disown $!
-
-	(
-		source /opt/Xilinx/Vivado/2017.2/settings64.sh
-		export PATH=/opt/Xilinx/Vivado/2017.2/bin/unwrapped/lnx64.o:$PATH
-		echo "-----"
-		lmutil lmstat -a -c 2100@localhost -i || true
-		echo "-----"
-	)
+	source /opt/Xilinx/Vivado/2017.2/settings64.sh
+	export PATH=/opt/Xilinx/Vivado/2017.2/bin/unwrapped/lnx64.o:$PATH
+	echo "-----"
+	lmutil lmstat -a -c 2100@localhost -i || true
+	echo "-----"
 
 	export XILINXD_LICENSE_FILE=2100@localhost
 
