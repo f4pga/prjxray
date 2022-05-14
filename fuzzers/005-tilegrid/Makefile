@@ -49,7 +49,10 @@ endif
 
 # Kintex7 only fuzzers
 ifeq (${XRAY_DATABASE}, kintex7)
+# Enable orphan_int_column for kintex7, but not for xc7k325tffg900-2 where this fuzzer returns empty.
+ifneq (${XRAY_PART}, xc7k325tffg900-2)
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+endif
 endif
 
 BASICDB_TILEGRID=$(BUILD_FOLDER)/basicdb/${XRAY_FABRIC}/tilegrid.json
