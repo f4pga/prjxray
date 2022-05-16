@@ -49,7 +49,10 @@ endif
 
 # Kintex7 only fuzzers
 ifeq (${XRAY_DATABASE}, kintex7)
+# These kintex parts give an empty design
+ifneq (${XRAY_FABRIC}, $(filter ${XRAY_FABRIC}, xc7k160t xc7k325t xc7k480t))
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+endif
 endif
 
 BASICDB_TILEGRID=$(BUILD_FOLDER)/basicdb/${XRAY_FABRIC}/tilegrid.json
