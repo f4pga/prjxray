@@ -60,8 +60,9 @@ jobs:
             sudo \
 
       - name: Xilinx Setup
-        run: git config --global --add safe.directory /root/prjxray/prjxray
-        run: .github/workflows/scripts/xilinx.sh
+        run: |
+          git config --global --add safe.directory /root/prjxray/prjxray
+          .github/workflows/scripts/xilinx.sh
         env:
           USE_LICENSE_SERVER: "true"
 
