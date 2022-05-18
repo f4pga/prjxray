@@ -61,6 +61,8 @@ jobs:
 
       - name: Xilinx Setup
         run: .github/workflows/scripts/xilinx.sh
+        env:
+          USE_LICENSE_SERVER: "true"
 
       - name: Build
         run: make build --output-sync=target --warn-undefined-variables -j$(nproc)

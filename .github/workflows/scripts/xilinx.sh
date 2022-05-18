@@ -58,7 +58,7 @@ echo "----------------------------------------"
 # them.
 echo "xilinx secret"
 echo $GHA_SSH_TUNNEL_CONFIG_SECRET_NAME
-if [[ ! -z "$GHA_SSH_TUNNEL_CONFIG_SECRET_NAME" ]]; then
+if [[ ! -z "$USE_LICENSE_SERVER" ]]; then
 
 	echo
 	echo "Xilinx license server ssh key found, checking the license"
