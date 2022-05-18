@@ -22,6 +22,8 @@ jobs:
     env:
       GHA_SSH_TUNNEL_KEY: "${{ secrets.LICENSE_TUNNEL_KEY_DATA }}"
       GHA_SSH_TUNNEL_CONFIG: "${{ secrets.LICENSE_TUNNEL_SSH_CONFIG }}"
+      GHA_SSH_TUNNEL_CONFIG_SECRET_NAME: "xilinx_license_server_config"
+      GHA_SSH_TUNNEL_KEY_SECRET_NAME: "xilinx_license_server_key"
       ALLOW_ROOT: true
       GHA_EXTERNAL_DISK: "tools"
       XILINX_LOCAL_USER_DATA: "no"
