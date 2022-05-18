@@ -56,7 +56,7 @@ echo "----------------------------------------"
 
 # Create a tunnel to the server which has the Xilinx licenses and port forward
 # them.
-if [ ! -z "$GHA_SSH_TUNNEL_CONFIG_SECRET_NAME" ]; then
+if [[ ! -z "$GHA_SSH_TUNNEL_CONFIG_SECRET_NAME" ]]; then
 
 	echo
 	echo "Xilinx license server ssh key found, checking the license"
