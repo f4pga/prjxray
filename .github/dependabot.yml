@@ -1,8 +1,13 @@
 version: 2
 updates:
 - package-ecosystem: gitsubmodule
-  directory: "/"
+  directory: /
   schedule:
     interval: weekly
     day: saturday
   open-pull-requests-limit: 10
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 99
