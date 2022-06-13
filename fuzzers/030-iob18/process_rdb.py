@@ -36,32 +36,16 @@ def parse_bits(l):
         return frozenset(parts[1:])
 
 
-def filter_bits(site, bits):
-    """ Seperate top and bottom bits.
+def filter_negbits(site, feature, bits):
+    lvds_bits = frozenset(['!38_24', "!38_48", "!39_33", '!39_47', '!39_49'])
+    if "IOB_Y0" in feature and not "LVDS" in feature:
+        bits = bits.difference(lvds_bits)
+    if feature.endswith("IOB_Y0.LVCMOS12_LVCMOS15_LVCMOS18.IN"):
+        bits = bits.difference(frozenset(['!39_01']))
+    if feature.endswith("IOB_Y1.LVCMOS12_LVCMOS15_LVCMOS18.IN"):
+        bits = bits.difference(frozenset(['!38_126']))
 
-    Some IOSTANDARD bits are tile wide, but really only apply to a half.
-    It is hard to write a fuzzer for this, but it is easy to filter by site,
-    and all bits appear to have a nice hard halve seperatation in the bitidx.
-    """
-    if site == 'IOB_Y0':
-        min_bitidx = 64
-        max_bitidx = 127
-    elif site == 'IOB_Y1':
-        min_bitidx = 0
-        max_bitidx = 63
-    else:
-        assert False, site
-
-    def inner():
-        for bit in bits:
-            bitidx = int(bit.split('_')[1])
-
-            if bitidx < min_bitidx or bitidx > max_bitidx:
-                continue
-
-            yield bit
-
-    return frozenset(inner())
+    return bits
 
 
 def process_features_sets(iostandard_lines):
@@ -75,7 +59,6 @@ def process_features_sets(iostandard_lines):
             iostandard = feature_parts[2]
 
             bits = parse_bits(iostd_line)
-            bits = filter_bits(site, bits)
 
             key = (site, iostd_type)
             if key not in sites:
@@ -154,7 +137,6 @@ def process_features_sets(iostandard_lines):
                         sites[site]['IN'][(iostandard, enum)]
 
     for site, iostd_type in sites:
-        del sites[(site, iostd_type)]['IN_USE']
         if iostd_type == "NORMAL":
             del sites[(site, iostd_type)]['OUT']
 
@@ -235,6 +217,7 @@ def process_features_sets(iostandard_lines):
 
             neg_bits = frozenset(
                 '!{}'.format(b) for b in (common_bits[(site, group)] - bits))
+            neg_bits = filter_negbits(site, feature, neg_bits)
             print('{} {}'.format(feature, ' '.join(sorted(bits | neg_bits))))
 
 
