@@ -125,17 +125,11 @@ ifneq ($(XRAY_DATABASE),kintex7)
 $(eval $(call fuzzer,034b-cmt-mmcm-pips,005-tilegrid 071-ppips,all))
 endif
 $(eval $(call fuzzer,035-iob-ilogic,005-tilegrid,all))
-ifeq ($(XRAY_DATABASE),kintex7)
-$(eval $(call fuzzer,035-iob18-ilogic,005-tilegrid,all))
-endif
 $(eval $(call fuzzer,035a-iob-idelay,005-tilegrid,all))
 ifeq ($(XRAY_DATABASE),kintex7)
 $(eval $(call fuzzer,035a-iob18-idelay,005-tilegrid,all))
 endif
 $(eval $(call fuzzer,035b-iob-iserdes,005-tilegrid,all))
-ifeq ($(XRAY_DATABASE),kintex7)
-$(eval $(call fuzzer,035b-iob18-iserdes,005-tilegrid,all))
-endif
 $(eval $(call fuzzer,036-iob-ologic,005-tilegrid,all))
 ifeq ($(XRAY_DATABASE),kintex7)
 $(eval $(call fuzzer,036-iob18-ologic,005-tilegrid,all))
