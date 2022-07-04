@@ -46,7 +46,7 @@ proc make_manual_routes {filename} {
         set net_name [lindex $fields 0]
         set wire_name [lindex $fields 1]
 
-        # Check if that net exist
+        # Check if that net exists
         if {[get_nets $net_name] eq ""} {
             puts "MANROUTE: net $net_name does not exist"
             continue

@@ -12,7 +12,7 @@ PIPLIST_TCL=$(FUZDIR)/ioi_pip_list.tcl
 TODO_RE=".*"
 EXCLUDE_RE=".*((PHASER)|(CLKDIVF)|(CLKDIVP)|(CLKDIVB)|(IOI_ILOGIC[01]_O)|(IOI_OLOGIC[01]_CLKB?\.)|(IOI_IMUX_RC)|(IOI_OLOGIC[01]_[OT]FB)|(OCLKM.*IMUX31)).*"
 
-MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE) --sides "xr,xl" --exclude-re $(EXCLUDE_RE)
+MAKETODO_FLAGS=--pip-type ${PIP_TYPE} --seg-type $(PIP_TYPE) --re $(TODO_RE) --sides "xr" --exclude-re $(EXCLUDE_RE)
 N = 120
 
 SPECIMENS_DEPS=build/cmt_regions.csv

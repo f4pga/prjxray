@@ -15,9 +15,8 @@ import os.path
 
 
 def bitfilter(frame, word):
-    # TODO: what to use here for the high speed banks?
-    #if frame < 28:
-    #    return False
+    if frame < 28:
+        return False
     return True
 
 
@@ -41,7 +40,7 @@ def main():
     with open("design.txt", "r") as f:
         for line in f:
             tile, pip, src, dst, pnum, pdir = line.split()
-            if not tile.startswith('RIOI'):
+            if not tile.startswith('RIOI') or "X43Y9" in tile:
                 continue
 
             log = open("log.txt", "a")
