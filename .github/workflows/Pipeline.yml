@@ -7,7 +7,7 @@ jobs:
 
 
   BuildDatabase:
-    container: ubuntu:bionic
+    container: ubuntu:focal
 
     runs-on: [self-hosted, Linux, X64]
 
@@ -61,7 +61,7 @@ jobs:
 
 
   Tests:
-    container: ubuntu:bionic
+    container: ubuntu:focal
 
     runs-on: [self-hosted, Linux, X64]
 
