@@ -128,8 +128,8 @@ format: format-cpp format-docs format-py format-tcl format-trailing-ws
 .PHONY: format format-cpp format-py format-tcl format-trailing-ws
 
 check-license:
-	@./.github/check_license.sh
-	@./.github/check_python_scripts.sh
+	@./.github/scripts/check_license.sh
+	@./.github/scripts/check_python_scripts.sh
 
 .PHONY: check-license
 
