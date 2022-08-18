@@ -88,7 +88,7 @@ format-cpp:
 	find . -name \*.h $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
 
 format-docs:
-	./.github/update-contributing.py
+	./.github/scripts/update-contributing.py
 
 PYTHON_FORMAT ?= yapf
 format-py:
