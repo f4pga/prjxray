@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2017-2020  The Project X-Ray Authors.
+# Copyright (C) 2017-2022  The Project X-Ray Authors.
 #
 # Use of this source code is governed by a ISC-style
 # license that can be found in the LICENSE file or at
@@ -18,7 +18,6 @@ echo "----------------------------------------"
 mkdir -p ~/.Xilinx
 ls -l ~/.Xilinx
 mkdir ~/.ssh
-#sudo chown -R $USER ~/.Xilinx
 echo
 echo "Fixing loader to be able to run lmutils"
 echo "----------------------------------------"
@@ -54,9 +53,6 @@ echo "----------------------------------------"
 ls -l /opt
 echo "----------------------------------------"
 
-# Create a tunnel to the server which has the Xilinx licenses and port forward
-# them.
-echo "xilinx secret"
 echo $GHA_SSH_TUNNEL_CONFIG_SECRET_NAME
 if [[ ! -z "$USE_LICENSE_SERVER" ]]; then
 
