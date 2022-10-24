@@ -65,6 +65,7 @@ jobs:
           .github/workflows/scripts/xilinx.sh
         env:
           USE_LICENSE_SERVER: "true"
+          XRAY_SETTINGS: ${{ matrix.family }}
 
       - name: Build
         run: make build --output-sync=target --warn-undefined-variables -j$(nproc)
