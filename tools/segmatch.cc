@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
 			read_input(f, argv[optind]);
 		}
 	} else {
-		printf("Reading from stding.\n");
+		printf("Reading from stdin...\n");
 		read_input(std::cin, "stdin");
 	}
 

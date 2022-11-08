@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: ISC
 # Copyright (C) 2017-2020  The Project X-Ray Authors
 #
 # Use of this source code is governed by a ISC-style
@@ -15,7 +14,7 @@ proc make_io_pin_sites {} {
         if {[llength $site] == 0} {
             continue
         }
-        if [string match IOB33* [get_property SITE_TYPE $site]] {
+        if [string match IOB18* [get_property SITE_TYPE $site]] {
             dict append io_pin_sites $site $pad
         }
     }
@@ -90,12 +89,11 @@ proc run {} {
 
     loc_pins
 
-    set_property CFGBVS VCCO [current_design]
-    set_property CONFIG_VOLTAGE 3.3 [current_design]
+    set_property CFGBVS GND [current_design]
+    set_property CONFIG_VOLTAGE 1.8 [current_design]
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
-    set_property IS_ENABLED 0 [get_drc_checks {REQP-105}]
-    set_property IS_ENABLED 0 [get_drc_checks {PDRC-26}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-144}]
 
     write_checkpoint -force design_pre_place.dcp
 
