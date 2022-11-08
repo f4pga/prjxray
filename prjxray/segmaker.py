@@ -359,6 +359,8 @@ class Segmaker:
             -CLK_HROW_TOP_R => CLK_HROW
             -LIOB33 => IOB33
             -LIOI3 => IOI3
+            -RIOB18 => IOB18
+            -RIOI => IOI
             '''
             tile_type_norm = re.sub("(_TOP|_BOT|LL|LM)?_[LR]$", "", tile_type)
             tile_type_norm = re.sub(
@@ -366,13 +368,20 @@ class Segmaker:
 
             if tile_type_norm in ['LIOB33', 'RIOB33']:
                 tile_type_norm = 'IOB33'
-
+            if tile_type_norm in ['LIOB18', 'RIOB18']:
+                tile_type_norm = 'IOB18'
             if tile_type_norm in ['LIOI3', 'RIOI3']:
                 tile_type_norm = 'IOI3'
+            if tile_type_norm in ['LIOI', 'RIOI']:
+                tile_type_norm = 'IOI'
             if tile_type_norm in ['LIOI3_TBYTESRC', 'RIOI3_TBYTESRC']:
                 tile_type_norm = 'IOI3'
             if tile_type_norm in ['LIOI3_TBYTETERM', 'RIOI3_TBYTETERM']:
                 tile_type_norm = 'IOI3'
+            if tile_type_norm in ['LIOI_TBYTESRC', 'RIOI_TBYTESRC']:
+                tile_type_norm = 'IOI'
+            if tile_type_norm in ['LIOI_TBYTETERM', 'RIOI_TBYTETERM']:
+                tile_type_norm = 'IOI'
             if tile_type_norm in ['CMT_TOP_L_LOWER_B', 'CMT_TOP_R_LOWER_B']:
                 tile_type_norm = 'CMT_LOWER_B'
             if 'GTP_CHANNEL' in tile_type_norm:

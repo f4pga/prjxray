@@ -11,7 +11,7 @@ proc extract_iobanks {filename} {
         set sample_site [lindex [get_sites -of $iobank] 0]
         if {[llength $sample_site] == 0} continue
         set clock_region [get_property CLOCK_REGION $sample_site]
-        foreach tile [get_tiles -filter {TYPE=~HCLK_IOI3}] {
+        foreach tile [concat [get_tiles -filter {TYPE=~HCLK_IOI3}] [get_tiles -filter {TYPE=~HCLK_IOI}]] {
             set tile_sites [get_sites -of_object $tile]
             if {[llength $tile_sites] == 0} continue
             set hclk_tile_clock_region [get_property CLOCK_REGION [lindex [get_sites -of_object $tile] 0]]

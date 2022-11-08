@@ -322,7 +322,7 @@ foreach tile_type {HCLK_IOI3} {
 }
 
 foreach tile_type {RIOI3 LIOI3 LIOI3_TBYTETERM RIOI3_TBYTETERM \
-            LIOI3_TBYTESRC RIOI3_TBYTESRC LIOI3_SING RIOI3_SING} {
+            LIOI3_TBYTESRC RIOI3_TBYTESRC LIOI3_SING RIOI3_SING RIOI RIOI_SING RIOI_TBYTESRC RIOI_TBYTETERM} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
@@ -392,7 +392,7 @@ foreach tile_type {PCIE_INT_INTERFACE_L PCIE_INT_INTERFACE_R} {
     }
 }
 
-foreach tile_type {RIOB33 LIOB33 RIOB33_SING LIOB33_SING} {
+foreach tile_type {RIOB33 LIOB33 RIOB33_SING LIOB33_SING RIOB18 RIOB18_SING} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]

@@ -94,7 +94,9 @@ def run(fn_in, fn_out, verbose=False):
     int_frames, int_words = localutil.get_int_params()
     tdb_fns = [
         ("iob", 42, 4),
+        ("iob18", 42, 4),
         ("ioi", 42, 4),
+        ("ioi18", 42, 4),
         ("mmcm", 30, 49),
         ("pll", 30, 27),
         ("monitor", 30, 101),
@@ -112,6 +114,7 @@ def run(fn_in, fn_out, verbose=False):
         ("gtp_channel", 32, 22),
         ("clb_int", int_frames, int_words),
         ("iob_int", int_frames, int_words),
+        ("iob18_int", int_frames, int_words),
         ("bram_int", int_frames, int_words),
         ("dsp_int", int_frames, int_words),
         ("fifo_int", int_frames, int_words),

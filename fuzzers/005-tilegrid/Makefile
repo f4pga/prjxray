@@ -49,6 +49,13 @@ endif
 
 # Kintex7 only fuzzers
 ifeq (${XRAY_DATABASE}, kintex7)
+# xc7k420t/xc7k480t have no high performance banks
+ifneq (${XRAY_FABRIC}, $(filter ${XRAY_FABRIC}, xc7k480t))
+TILEGRID_TDB_DEPENDENCIES += iob18/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += iob18_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += ioi18/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+endif
+
 # These kintex parts give an empty design
 ifneq (${XRAY_FABRIC}, $(filter ${XRAY_FABRIC}, xc7k160t xc7k325t xc7k480t))
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/$(BUILD_FOLDER)/segbits_tilegrid.tdb
@@ -85,11 +92,20 @@ cfg/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 iob/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd iob && $(MAKE)
 
+iob18/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd iob18 && $(MAKE)
+
 iob_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd iob_int && $(MAKE)
 
+iob18_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd iob18_int && $(MAKE)
+
 ioi/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd ioi && $(MAKE)
+
+ioi18/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd ioi18 && $(MAKE)
 
 mmcm/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd mmcm && $(MAKE)
@@ -177,8 +193,11 @@ clean:
 	cd clb_int && $(MAKE) clean
 	cd cfg && $(MAKE) clean
 	cd iob && $(MAKE) clean
+	cd iob18 && $(MAKE) clean
 	cd iob_int && $(MAKE) clean
+	cd iob18_int && $(MAKE) clean
 	cd ioi && $(MAKE) clean
+	cd ioi18 && $(MAKE) clean
 	cd mmcm && $(MAKE) clean
 	cd pll && $(MAKE) clean
 	cd ps7_int && $(MAKE) clean
@@ -208,8 +227,11 @@ clean_part:
 	cd clb_int && $(MAKE) clean_part
 	cd cfg && $(MAKE) clean_part
 	cd iob && $(MAKE) clean_part
+	cd iob18 && $(MAKE) clean_part
 	cd iob_int && $(MAKE) clean_part
+	cd iob18_int && $(MAKE) clean_part
 	cd ioi && $(MAKE) clean_part
+	cd ioi18 && $(MAKE) clean_part
 	cd mmcm && $(MAKE) clean_part
 	cd pll && $(MAKE) clean_part
 	cd ps7_int && $(MAKE) clean_part
