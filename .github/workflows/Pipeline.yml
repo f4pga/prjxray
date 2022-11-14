@@ -13,6 +13,7 @@ jobs:
     container: ubuntu:focal
 
     runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 600
 
     strategy:
       fail-fast: false
