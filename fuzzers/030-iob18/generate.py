@@ -19,11 +19,7 @@ import csv
 from iostandards import *
 
 def bitfilter(frame, word):
-    # the fuzzers seem to find bits in frame 24 which seems
-    # to be used by other tile types
-    if frame < 30:
-         return False
-    return True
+    return 38 <= frame
 
 def mk_drive_opt(iostandard, drive):
     if drive is None:
