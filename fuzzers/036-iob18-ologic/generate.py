@@ -18,14 +18,7 @@ DEBUG_FUZZER = False
 
 
 def bitfilter(frame, word):
-    # TODO: do we need this here?
-    # this frame number limit does not seem 
-    # to apply to 1.8V high speed banks
-    #if frame < 30 or frame > 37:
-    #    return False
-
-    return True
-
+    return 30 <= frame and frame <= 33
 
 def handle_data_width(segmk, d):
     if 'DATA_WIDTH' not in d:
