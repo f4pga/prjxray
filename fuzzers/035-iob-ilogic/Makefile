@@ -33,18 +33,19 @@ pushdb: build/segbits_rioi.db
 	${XRAY_MERGEDB} rioi3 build/segbits_xioi3.db
 	${XRAY_MERGEDB} rioi3_tbytesrc build/segbits_xioi3.db
 	${XRAY_MERGEDB} rioi3_tbyteterm build/segbits_xioi3.db
-	${XRAY_MERGEDB} rioi build/segbits_rioi.db
-	${XRAY_MERGEDB} rioi_tbytesrc build/segbits_rioi.db
-	${XRAY_MERGEDB} rioi_tbyteterm build/segbits_rioi.db
 	${XRAY_MERGEDB} mask_lioi3 build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_lioi3_tbytesrc build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_lioi3_tbyteterm build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_rioi3 build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_rioi3_tbytesrc build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_rioi3_tbyteterm build/mask_xioi3.db
+ifeq ($(XRAY_DATABASE),kintex7)
+	${XRAY_MERGEDB} rioi build/segbits_rioi.db
+	${XRAY_MERGEDB} rioi_tbytesrc build/segbits_rioi.db
+	${XRAY_MERGEDB} rioi_tbyteterm build/segbits_rioi.db
 	${XRAY_MERGEDB} mask_rioi build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_rioi_tbytesrc build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_rioi_tbyteterm build/mask_xioi3.db
+endif
 
 .PHONY: database pushdb
-
