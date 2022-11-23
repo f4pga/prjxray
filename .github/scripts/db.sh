@@ -30,7 +30,7 @@ export MEM_PER_RUN=8
 export MAX_GRID_CPU=$(($MEM_GB/$MEM_PER_RUN))
 export MAX_VIVADO_PROCESS=$(($MEM_GB/$MEM_PER_RUN))
 
-echo '::group::Creating Vivado Symbolic Link'
+echo '::group::Source Vivado settings'
 ls /opt/Xilinx/Vivado
 source /opt/Xilinx/Vivado/2017.2/settings64.sh
 vivado -version
