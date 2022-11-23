@@ -36,8 +36,8 @@ Scope: entire site (not individual FFs)
 
 | FFSYNC | Reset        | Applicable prims          |
 |--------|--------------|---------------------------|
-|0       | Synchronous  | FDPE, FDCE, LDCE, LDPE    |
-|1       | Asynchronous | FDSE, FDRE                |
+|0       | Asynchronous | FDPE, FDCE, LDCE, LDPE    |
+|1       | Synchronous  | FDSE, FDRE                |
 
 
 ### LATCH
