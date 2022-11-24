@@ -20,7 +20,10 @@ set fp [open "cmt_regions.csv" "w"]
 foreach site_type { IOB33M IOB33S IDELAYCTRL} {
     foreach site [get_sites -filter "SITE_TYPE == $site_type"] {
         set tile [get_tiles -of $site]
-        puts $fp "$site,$tile,[get_property CLOCK_REGION $site]"
+        # exclude IDELAYCTRL from high speed banks
+        if {![string match "*_IOI_*" $tile]} {
+            puts $fp "$site,$tile,[get_property CLOCK_REGION $site]"
+        }
     }
 }
 close $fp

@@ -22,7 +22,12 @@ build/segbits_xioi3.db: build/segbits_xioi3.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --groups tag_groups.txt --seg-fn-in $^ --seg-fn-out $@
 	${XRAY_MASKMERGE} build/mask_xioi3.db $$(find -name segdata_*.txt)
 
-pushdb:
+# running the fuzzers for RIOI tiles yields mostly identical
+# results, so reuse the results of IOI3 tiles
+build/segbits_rioi.db: build/segbits_xioi3.db
+	sed 's/IOI3/IOI/g' < $< > $@
+
+pushdb: build/segbits_rioi.db
 	${XRAY_MERGEDB} lioi3 build/segbits_xioi3.db
 	${XRAY_MERGEDB} lioi3_tbytesrc build/segbits_xioi3.db
 	${XRAY_MERGEDB} lioi3_tbyteterm build/segbits_xioi3.db
@@ -35,6 +40,14 @@ pushdb:
 	${XRAY_MERGEDB} mask_rioi3 build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_rioi3_tbytesrc build/mask_xioi3.db
 	${XRAY_MERGEDB} mask_rioi3_tbyteterm build/mask_xioi3.db
+ifeq ($(XRAY_DATABASE),kintex7)
+	${XRAY_MERGEDB} rioi build/segbits_rioi.db
+	${XRAY_MERGEDB} rioi_tbytesrc build/segbits_rioi.db
+	${XRAY_MERGEDB} rioi_tbyteterm build/segbits_rioi.db
+	${XRAY_MERGEDB} mask_rioi build/mask_xioi3.db
+	${XRAY_MERGEDB} mask_rioi_tbytesrc build/mask_xioi3.db
+	${XRAY_MERGEDB} mask_rioi_tbyteterm build/mask_xioi3.db
+endif
 
 .PHONY: database pushdb
 

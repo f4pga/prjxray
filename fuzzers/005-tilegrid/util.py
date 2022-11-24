@@ -96,8 +96,8 @@ def add_tile_bits(
     max_frames = tile_frames.get_tile_frames(baseaddr)
     if frames > max_frames:
         print(
-            "Warning: The number of frames specified for the tile {} ({}) exceeds the maximum allowed value ({}). Falling back to the maximum value."
-            .format(tile_name, frames, max_frames))
+            "Warning: The number of frames for base address {} specified for the tile {} ({}) exceeds the maximum allowed value ({}). Falling back to the maximum value."
+            .format(hex(baseaddr), tile_name, frames, max_frames))
         frames = max_frames
     # If frames count is None then use the maximum
     if frames is None:

@@ -121,6 +121,9 @@ case "$1" in
 	riob33)
 		sed < "$2" > "$tmp1" -e 's/^IOB33\./RIOB33./' ;;
 
+	riob18)
+		sed < "$2" > "$tmp1" -e 's/^IOB18\./RIOB18./' ;;
+
 	lioi3)
 		sed < "$2" > "$tmp1" -e 's/^IOI3\./LIOI3./' ;;
 
@@ -133,11 +136,20 @@ case "$1" in
 	rioi3)
 		sed < "$2" > "$tmp1" -e 's/^IOI3\./RIOI3./' ;;
 
+	rioi)
+		sed < "$2" > "$tmp1" -e 's/^IOI\./RIOI./' ;;
+
 	rioi3_tbytesrc)
 		sed < "$2" > "$tmp1" -e 's/^IOI3\./RIOI3_TBYTESRC./' ;;
 
+	rioi_tbytesrc)
+		sed < "$2" > "$tmp1" -e 's/^IOI\./RIOI_TBYTESRC./' ;;
+
 	rioi3_tbyteterm)
 		sed < "$2" > "$tmp1" -e 's/^IOI3\./RIOI3_TBYTETERM./' ;;
+
+	rioi_tbyteterm)
+		sed < "$2" > "$tmp1" -e 's/^IOI\./RIOI_TBYTETERM./' ;;
 
 	cmt_top_r_upper_t)
 		sed < "$2" > "$tmp1" -e 's/^CMT_UPPER_T\./CMT_TOP_R_UPPER_T./' ;;
@@ -155,6 +167,9 @@ case "$1" in
 		cp "$2" "$tmp1" ;;
 
 	hclk_ioi3)
+		cp "$2" "$tmp1" ;;
+
+	hclk_ioi)
 		cp "$2" "$tmp1" ;;
 
 	pcie_bot)
