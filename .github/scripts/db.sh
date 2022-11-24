@@ -9,50 +9,51 @@
 
 set -e
 
-source $(dirname "$0")/hostinfo.sh
+echo '::group::Host Environment'
+export
+echo '::endgroup::'
 
+echo '::group::Host CPU'
+export CORES=$(nproc --all)
+echo "Cores: $CORES"
 echo
-echo "======================================="
-echo "Creating Vivado Symbolic Link"
-echo "---------------------------------------"
+echo "Memory"
+echo "----------------------------------------"
+cat /proc/meminfo
+echo "----------------------------------------"
+export MEM_GB=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)/(1024*1024)))
+echo "Total Memory (GB): $MEM_GB"
+echo '::endgroup::'
+
+# Approx memory per grid process
+export MEM_PER_RUN=8
+export MAX_GRID_CPU=$(($MEM_GB/$MEM_PER_RUN))
+export MAX_VIVADO_PROCESS=$(($MEM_GB/$MEM_PER_RUN))
+
+echo '::group::Source Vivado settings'
 ls /opt/Xilinx/Vivado
 source /opt/Xilinx/Vivado/2017.2/settings64.sh
 vivado -version
+echo '::endgroup::'
 
-echo
-echo "========================================"
-echo "Downloading current database"
-echo "----------------------------------------"
-(
-	script --return --flush --command "./download-latest-db.sh" -
-)
-echo "----------------------------------------"
+echo '::group::Downloading current database'
+script --return --flush --command "./download-latest-db.sh" -
+echo '::endgroup::'
 
-echo
-echo "========================================"
-echo "Preparing database"
-echo "----------------------------------------"
-(
-	make db-prepare-${XRAY_SETTINGS}
-)
-echo "----------------------------------------"
+echo '::group::Preparing database'
+make db-prepare-${XRAY_SETTINGS}
+echo '::endgroup::'
 
 source settings/$XRAY_SETTINGS.sh
 
-echo
-echo "========================================"
-echo "Cleaning out current database"
-echo "----------------------------------------"
+echo '::group::Cleaning out current database'
 (
 	cd database
 	make clean-${XRAY_SETTINGS}-db
 )
-echo "----------------------------------------"
+echo '::endgroup::'
 
-echo
-echo "========================================"
-echo "Running Database build"
-echo "----------------------------------------"
+echo '::group::Running Database build'
 (
 	# Output which fuzzers we are going to run
 	echo "make --dry-run"
@@ -86,7 +87,7 @@ echo "----------------------------------------"
 		exit $DATABASE_RET
 	fi
 )
-echo "----------------------------------------"
+echo '::endgroup::'
 
 # Format the database
 make db-format-${XRAY_SETTINGS}
@@ -94,10 +95,7 @@ make db-format-${XRAY_SETTINGS}
 make db-info
 
 # Output if the database has differences
-echo
-echo "========================================"
-echo " Database Differences"
-echo "----------------------------------------"
+echo '::group::Database Differences'
 (
 	cd database
 	# Update the index with any new files
@@ -109,7 +107,6 @@ echo "----------------------------------------"
 
 	# Output what git status
 	echo
-	echo "----------------------------------------"
 	echo " Database Status"
 	echo "----------------------------------------"
 	git status
@@ -118,14 +115,12 @@ echo "----------------------------------------"
 
 	# Output a summary of how the files have changed
 	echo
-	echo "----------------------------------------"
 	echo " Database Diff Summary"
 	echo "----------------------------------------"
 	git diff --stat --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
 
 	# Save the diff to be uploaded as an artifact
 	echo
-	echo "----------------------------------------"
 	echo " Saving diff output"
 	echo "----------------------------------------"
 	# Patch file
@@ -137,26 +132,22 @@ echo "----------------------------------------"
 	DIFF_LINES="$(wc -l diff.patch | sed -e's/ .*$//')"
 	if [ $DIFF_LINES -gt $MAX_DIFF_LINES ]; then
 		echo
-		echo "----------------------------------------"
 		echo " Database Diff"
 		echo "----------------------------------------"
 		echo "diff has $DIFF_LINES lines which is too large to display!"
 
 		echo
-		echo "----------------------------------------"
 		echo " Generating pretty diff output"
 		echo "----------------------------------------"
 		echo "diff has $DIFF_LINES lines which is too large for HTML output!"
 	else
 		# Output the actually diff
 		echo
-		echo "----------------------------------------"
 		echo " Database Diff"
 		echo "----------------------------------------"
 		git diff --color --irreversible-delete --find-renames --find-copies --ignore-all-space origin/master
 
 		echo
-		echo "----------------------------------------"
 		echo " Generating pretty diff output"
 		echo "----------------------------------------"
 		(
@@ -177,7 +168,7 @@ echo "----------------------------------------"
 		) || true
 	fi
 )
-echo "----------------------------------------"
+echo '::endgroup::'
 
 # Check the database and fail if it is broken.
 set -x +e
@@ -185,22 +176,17 @@ make db-check-${XRAY_SETTINGS}
 CHECK_RET=$?
 set +x -e
 
-echo
-echo "========================================"
-echo " Testing HTML generation"
-echo "----------------------------------------"
+echo '::group::Testing HTML generation'
 (
 	cd htmlgen
 	source htmlgen.sh $XRAY_SETTINGS
 )
+echo '::endgroup::'
 
 # If we get here, then all the fuzzers completed fine. Hence we are
 # going to assume we don't want to keep all the build / logs / etc (as
 # they are quite large). Thus do a clean to get rid of them.
-echo
-echo "========================================"
-echo " Cleaning up after success"
-echo "----------------------------------------"
+echo '::group::Cleaning up after success'
 (
 	cd fuzzers
 	echo
@@ -208,11 +194,10 @@ echo "----------------------------------------"
 	make clean_fuzzers
 	make clean_piplists
 )
-echo "----------------------------------------"
+echo '::endgroup::'
 
-echo "========================================"
-echo " Final disk space after cleanup"
-echo "----------------------------------------"
+echo '::group::Final disk space after cleanup'
 du -sh
+echo '::endgroup::'
 
 exit $CHECK_RET

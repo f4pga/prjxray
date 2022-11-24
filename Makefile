@@ -88,7 +88,7 @@ format-cpp:
 	find . -name \*.h $(FORMAT_EXCLUDE) -print0 | xargs -0 -P $$(nproc) ${CLANG_FORMAT} -style=file -i
 
 format-docs:
-	./.github/update-contributing.py
+	./.github/scripts/update-contributing.py
 
 PYTHON_FORMAT ?= yapf
 format-py:
@@ -128,8 +128,8 @@ format: format-cpp format-docs format-py format-tcl format-trailing-ws
 .PHONY: format format-cpp format-py format-tcl format-trailing-ws
 
 check-license:
-	@./.github/check_license.sh
-	@./.github/check_python_scripts.sh
+	@./.github/scripts/check_license.sh
+	@./.github/scripts/check_python_scripts.sh
 
 .PHONY: check-license
 
