@@ -31,9 +31,12 @@ template <>
 Configuration<Spartan6>::PacketData
 Configuration<Spartan6>::createType2ConfigurationPacketData(
     const Frames<Spartan6>::Frames2Data& frames,
-    absl::optional<Spartan6::Part>& part) {
+    absl::optional<Spartan6::Part>& part,
+    bool compressed) {
 	// Generate a single type 2 packet that writes everything at once.
-	PacketData packet_data;
+	PacketData result;
+	result.frames.push_back(typename PacketData::Frame{0U, {}, {}});
+	std::vector<uint32_t>& packet_data = result.frames.back().data;
 	for (auto& frame : frames) {
 		std::copy(frame.second.begin(), frame.second.end(),
 		          std::back_inserter(packet_data));
@@ -44,7 +47,7 @@ Configuration<Spartan6>::createType2ConfigurationPacketData(
 	packet_data.insert(packet_data.begin(), packet_data_size & 0xFFFF);
 	packet_data.insert(packet_data.begin(),
 	                   (packet_data_size >> 16) & 0xFFFF);
-	return packet_data;
+	return result;
 }
 
 template <>
@@ -219,7 +222,7 @@ void Configuration<Spartan6>::createConfigurationPackage(
 	// Frame data write
 	out_packets.emplace_back(new ConfigurationPacket<ConfigurationRegister>(
 	    TYPE2, ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
-	    ConfigurationRegister::FDRI, {packet_data}));
+	    ConfigurationRegister::FDRI, {packet_data.frames.back().data}));
 
 	// NOP packets
 	for (int i = 0; i < 24; i++) {
@@ -391,24 +394,85 @@ void Configuration<Series7>::createConfigurationPackage(
 	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
 	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
 	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
-	out_packets.emplace_back(
-	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
-	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
-	        ConfigurationRegister::FAR, {0x0}));
-	out_packets.emplace_back(
-	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
-	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
-	        ConfigurationRegister::CMD,
-	        {static_cast<uint32_t>(xc7series::Command::WCFG)}));
-	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
 
 	// Frame data write
-	out_packets.emplace_back(new ConfigurationPacket<ConfigurationRegister>(
-	    TYPE1, ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
-	    ConfigurationRegister::FDRI, {}));
-	out_packets.emplace_back(new ConfigurationPacket<ConfigurationRegister>(
-	    TYPE2, ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
-	    ConfigurationRegister::FDRI, packet_data));
+	for (const auto& frame : packet_data.frames) {
+		out_packets.emplace_back(new ConfigurationPacketWithPayload<
+		                         1, ConfigurationRegister>(
+		    ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+		    ConfigurationRegister::CMD,
+		    {static_cast<uint32_t>(xc7series::Command::WCFG)}));
+		out_packets.emplace_back(new ConfigurationPacketWithPayload<
+		                         1, ConfigurationRegister>(
+		    ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+		    ConfigurationRegister::FAR, {frame.address}));
+
+		out_packets.emplace_back(
+		    new NopPacket<ConfigurationRegister>());
+
+		if (frame.data.size() < 0b111'1111'1111) {
+			out_packets.emplace_back(
+			    new ConfigurationPacket<ConfigurationRegister>(
+			        TYPE1,
+			        ConfigurationPacket<
+			            ConfigurationRegister>::Opcode::Write,
+			        ConfigurationRegister::FDRI, frame.data));
+		} else {
+			out_packets.emplace_back(
+			    new ConfigurationPacket<ConfigurationRegister>(
+			        TYPE1,
+			        ConfigurationPacket<
+			            ConfigurationRegister>::Opcode::Write,
+			        ConfigurationRegister::FDRI, {}));
+			out_packets.emplace_back(
+			    new ConfigurationPacket<ConfigurationRegister>(
+			        TYPE2,
+			        ConfigurationPacket<
+			            ConfigurationRegister>::Opcode::Write,
+			        ConfigurationRegister::FDRI, frame.data));
+		}
+
+		if (!frame.repeats.empty()) {
+			out_packets.emplace_back(
+			    new ConfigurationPacketWithPayload<
+			        1, ConfigurationRegister>(
+			        ConfigurationPacket<
+			            ConfigurationRegister>::Opcode::Write,
+			        ConfigurationRegister::CMD,
+			        {static_cast<uint32_t>(
+			            xc7series::Command::MFW)}));
+
+			for (size_t i = 0; i < 12; ++i)
+				out_packets.emplace_back(
+				    new NopPacket<ConfigurationRegister>());
+
+			out_packets.emplace_back(
+			    new ConfigurationPacketWithPayload<
+			        8, ConfigurationRegister>(
+			        ConfigurationPacket<
+			            ConfigurationRegister>::Opcode::Write,
+			        ConfigurationRegister::MFWR,
+			        {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U}));
+
+			for (const auto& addr : frame.repeats) {
+				out_packets.emplace_back(
+				    new ConfigurationPacketWithPayload<
+				        1, ConfigurationRegister>(
+				        ConfigurationPacket<
+				            ConfigurationRegister>::Opcode::
+				            Write,
+				        ConfigurationRegister::FAR, {addr}));
+				out_packets.emplace_back(
+				    new ConfigurationPacketWithPayload<
+				        4, ConfigurationRegister>(
+				        ConfigurationPacket<
+				            ConfigurationRegister>::Opcode::
+				            Write,
+				        ConfigurationRegister::MFWR,
+				        {0U, 0U, 0U, 0U}));
+			}
+		}
+	}
 
 	// Finalization sequence
 	out_packets.emplace_back(
@@ -569,7 +633,7 @@ void Configuration<UltraScale>::createConfigurationPackage(
 	    ConfigurationRegister::FDRI, {}));
 	out_packets.emplace_back(new ConfigurationPacket<ConfigurationRegister>(
 	    TYPE2, ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
-	    ConfigurationRegister::FDRI, packet_data));
+	    ConfigurationRegister::FDRI, packet_data.frames.back().data));
 
 	// Finalization sequence
 	out_packets.emplace_back(
@@ -730,7 +794,7 @@ void Configuration<UltraScalePlus>::createConfigurationPackage(
 	    ConfigurationRegister::FDRI, {}));
 	out_packets.emplace_back(new ConfigurationPacket<ConfigurationRegister>(
 	    TYPE2, ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
-	    ConfigurationRegister::FDRI, packet_data));
+	    ConfigurationRegister::FDRI, packet_data.frames.back().data));
 
 	// Finalization sequence
 	out_packets.emplace_back(

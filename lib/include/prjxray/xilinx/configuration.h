@@ -27,7 +27,16 @@ class Configuration {
        public:
 	using FrameMap = std::map<typename ArchType::FrameAddress,
 	                          absl::Span<const uint32_t>>;
-	using PacketData = std::vector<uint32_t>;
+
+	struct PacketData {
+		struct Frame {
+			typename ArchType::FrameAddress address;
+			std::vector<typename ArchType::FrameAddress> repeats;
+			std::vector<uint32_t> data;
+		};
+
+		std::vector<Frame> frames;
+	};
 
 	// Returns a configuration, i.e. collection of frame addresses
 	// and corresponding data from a collection of configuration packets.
@@ -50,7 +59,8 @@ class Configuration {
 	// which allows for bigger payload compared to type 1.
 	static PacketData createType2ConfigurationPacketData(
 	    const typename Frames<ArchType>::Frames2Data& frames,
-	    absl::optional<typename ArchType::Part>& part);
+	    absl::optional<typename ArchType::Part>& part,
+	    bool compressed = false);
 
 	Configuration(const typename ArchType::Part& part,
 	              std::map<typename ArchType::FrameAddress,
@@ -79,29 +89,176 @@ template <typename ArchType>
 typename Configuration<ArchType>::PacketData
 Configuration<ArchType>::createType2ConfigurationPacketData(
     const typename Frames<ArchType>::Frames2Data& frames,
-    absl::optional<typename ArchType::Part>& part) {
-	PacketData packet_data;
-	// Certain configuration frames blocks are separated by Zero Frames,
-	// i.e. frames with words with all zeroes. For Series-7, US and US+
-	// there zero frames separator consists of two frames.
-	static const int kZeroFramesSeparatorWords =
-	    ArchType::words_per_frame * 2;
-	for (auto& frame : frames) {
-		std::copy(frame.second.begin(), frame.second.end(),
-		          std::back_inserter(packet_data));
+    absl::optional<typename ArchType::Part>& part,
+    bool compressed) {
+	PacketData result;
+	if (!compressed) {
+		result.frames.push_back(typename PacketData::Frame{0U, {}, {}});
+		std::vector<uint32_t>& packet_data = result.frames.back().data;
+		// Certain configuration frames blocks are separated by Zero
+		// Frames, i.e. frames with words with all zeroes. For Series-7,
+		// US and US+ there zero frames separator consists of two
+		// frames.
+		static const int kZeroFramesSeparatorWords =
+		    ArchType::words_per_frame * 2;
+		for (auto& frame : frames) {
+			std::copy(frame.second.begin(), frame.second.end(),
+			          std::back_inserter(packet_data));
 
-		auto next_address = part->GetNextFrameAddress(frame.first);
-		if (next_address &&
-		    (next_address->block_type() != frame.first.block_type() ||
-		     next_address->is_bottom_half_rows() !=
-		         frame.first.is_bottom_half_rows() ||
-		     next_address->row() != frame.first.row())) {
-			packet_data.insert(packet_data.end(),
-			                   kZeroFramesSeparatorWords, 0);
+			auto next_address =
+			    part->GetNextFrameAddress(frame.first);
+			if (next_address &&
+			    (next_address->block_type() !=
+			         frame.first.block_type() ||
+			     next_address->is_bottom_half_rows() !=
+			         frame.first.is_bottom_half_rows() ||
+			     next_address->row() != frame.first.row())) {
+				packet_data.insert(packet_data.end(),
+				                   kZeroFramesSeparatorWords,
+				                   0);
+			}
+		}
+		packet_data.insert(packet_data.end(), kZeroFramesSeparatorWords,
+		                   0);
+	} else {
+		// First write takes priority.
+		// FDRI writes must be padded with a trailing zero-frame.
+		// FDRI writes followed by MFWRs must only write to a single
+		//   frame.
+		// Frame writes can be joined, so long as the frame written
+		//   to with the trailing zero-frame has already been written
+		//   to, or is meant to be a zero-frame.
+
+		using Frame = typename PacketData::Frame;
+
+		auto similar_address =
+		    [](const typename ArchType::FrameAddress& a,
+		       const typename ArchType::FrameAddress& b) -> bool {
+			return a.block_type() == b.block_type() &&
+			       a.is_bottom_half_rows() ==
+			           b.is_bottom_half_rows() &&
+			       a.row() == b.row();
+		};
+
+		for (const auto& frame : frames) {
+			result.frames.push_back(
+			    Frame{frame.first, {}, frame.second});
+		}
+
+		auto dedup = [](auto begin, auto end, auto compare,
+		                auto merge) {
+			while (begin != end) {
+				auto mid = std::stable_partition(
+				    begin + 1, end, [&](const Frame& f) {
+					    return !compare(*begin, f);
+				    });
+				for (auto it = mid; it != end; ++it)
+					merge(*begin, *it);
+				end = mid;
+				if (begin != end)
+					++begin;
+			}
+			return begin;
+		};
+
+		auto can_merge = [&](const Frame& a, const Frame& b) -> bool {
+			return b.repeats.empty() &&
+			       similar_address(a.address, b.address) &&
+			       a.data == b.data;
+		};
+
+		auto merge = [](Frame& dst, Frame& src) {
+			dst.repeats.push_back(src.address);
+		};
+
+		result.frames.erase(
+		    dedup(result.frames.begin(), result.frames.end(), can_merge,
+		          merge),
+		    result.frames.end());
+
+		std::set<typename ArchType::FrameAddress> deduped_frames;
+
+		auto zero_frames_between =
+		    [&](const typename ArchType::FrameAddress& a,
+		        const typename ArchType::FrameAddress& b,
+		        size_t max) -> size_t {
+			if (a >= b)
+				return 0;
+			auto next = part->GetNextFrameAddress(a);
+			for (size_t result = 1;
+			     result <= max && next && *next <= b &&
+			     deduped_frames.count(*next) > 0U;
+			     ++result,
+			            next = part->GetNextFrameAddress(*next)) {
+				if (*next == b)
+					return result;
+			}
+			return 0;
+		};
+
+		// Merge contiguous frames
+		Frame* previous = nullptr;
+		absl::optional<typename ArchType::FrameAddress>
+		    previous_next_address;
+		for (auto& frame : result.frames) {
+			if (!frame.repeats.empty()) {
+				if (previous)
+					deduped_frames.insert(
+					    previous->repeats.begin(),
+					    previous->repeats.end());
+				previous = &frame;
+			} else {
+				if (previous_next_address) {
+					const size_t between =
+					    zero_frames_between(
+					        *previous_next_address,
+					        frame.address, 2U);
+					if (between > 0U) {
+						previous->data.resize(
+						    previous->data.size() +
+						        (ArchType::
+						             words_per_frame *
+						         between),
+						    0U);
+						previous_next_address =
+						    frame.address;
+					}
+				}
+				if (previous_next_address &&
+				    *previous_next_address == frame.address) {
+					previous->data.insert(
+					    previous->data.end(),
+					    frame.data.begin(),
+					    frame.data.end());
+					frame.data.clear();
+				} else {
+					if (previous)
+						deduped_frames.insert(
+						    previous->repeats.begin(),
+						    previous->repeats.end());
+					previous = &frame;
+				}
+			}
+			if (previous)
+				previous_next_address =
+				    part->GetNextFrameAddress(frame.address);
+		}
+
+		result.frames.erase(
+		    std::remove_if(
+		        result.frames.begin(), result.frames.end(),
+		        [](const Frame& frame) { return frame.data.empty(); }),
+		    result.frames.end());
+
+		for (auto& frame : result.frames) {
+			if (frame.repeats.empty()) {
+				frame.data.resize(frame.data.size() +
+				                      ArchType::words_per_frame,
+				                  0U);
+			}
 		}
 	}
-	packet_data.insert(packet_data.end(), kZeroFramesSeparatorWords, 0);
-	return packet_data;
+	return result;
 }
 
 template <>
@@ -241,6 +398,8 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 
 	// Internal state machine for writes.
 	bool start_new_write = false;
+	bool start_dup_write = false;
+	typename ArchType::FrameAddress last_write_frame_address = 0;
 	typename ArchType::FrameAddress current_frame_address = 0;
 
 	Configuration<ArchType>::FrameMap frames;
@@ -272,6 +431,8 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 				// for the next FDIR.
 				if (command_register == 0x1) {
 					start_new_write = true;
+				} else if (command_register == 0x2) {
+					start_dup_write = true;
 				}
 				break;
 			case ArchType::ConfRegType::IDCODE:
@@ -293,38 +454,44 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 
 				// Per UG470, the command present in the CMD
 				// register is executed each time the FAR
-				// register is laoded with a new value.  As we
-				// only care about WCFG commands, just check
-				// that here.  CTRL1 is completely undocumented
-				// but looking at generated bitstreams, bit 21
-				// is used when per-frame CRC is enabled.
-				// Setting this bit seems to inhibit the
-				// re-execution of CMD during a FAR write.  In
-				// practice, this is used so FAR writes can be
-				// added in the bitstream to show progress
+				// register is loaded with a new value.  As we
+				// only care about WCFG and MFWR commands, just
+				// check that here.  CTRL1 is completely
+				// undocumented but looking at generated
+				// bitstreams, bit 21 is used when per-frame CRC
+				// is enabled. Setting this bit seems to inhibit
+				// the re-execution of CMD during a FAR write.
+				// In practice, this is used so FAR writes can
+				// be added in the bitstream to show progress
 				// markers without impacting the actual write
 				// operation.
-				if (bit_field_get(ctl1_register, 21, 21) == 0 &&
-				    command_register == 0x1) {
-					start_new_write = true;
+				if (bit_field_get(ctl1_register, 21, 21) == 0) {
+					if (command_register == 0x1) {
+						start_new_write = true;
+					} else if (command_register == 0x2) {
+						start_dup_write = true;
+					}
 				}
 				break;
 			case ArchType::ConfRegType::FDRI: {
 				if (start_new_write) {
-					current_frame_address =
-					    frame_address_register;
+					last_write_frame_address =
+					    current_frame_address =
+					        frame_address_register;
 					start_new_write = false;
 				}
 
 				// Number of words in configuration frames
-				// depend on tje architecture.  Writes to this
+				// depend on the architecture.  Writes to this
 				// register can be multiples of that number to
 				// do auto-incrementing block writes.
 				for (size_t ii = 0; ii < packet.data().size();
 				     ii += ArchType::words_per_frame) {
-					frames[current_frame_address] =
-					    packet.data().subspan(
-					        ii, ArchType::words_per_frame);
+					frames.insert(
+					    {current_frame_address,
+					     packet.data().subspan(
+					         ii,
+					         ArchType::words_per_frame)});
 
 					auto next_address =
 					    part.GetNextFrameAddress(
@@ -351,6 +518,16 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 				}
 				break;
 			}
+			case ArchType::ConfRegType::MFWR: {
+				if (start_dup_write) {
+					current_frame_address =
+					    frame_address_register;
+					start_dup_write = false;
+					frames.insert(
+					    {current_frame_address,
+					     frames[last_write_frame_address]});
+				}
+			} break;
 			default:
 				break;
 		}
