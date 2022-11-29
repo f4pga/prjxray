@@ -278,7 +278,8 @@ TEST(ConfigurationTest, CheckForPaddingFrames) {
 	// extra padding frames are added at the end of the creation of the data
 	// overall this gives us: 5(real frames) + 4*2 + 2 = 15 frames, which is
 	// 15 * 101 = 1515 words
-	EXPECT_EQ(packet_data.size(), 15 * 101);
+	EXPECT_EQ(packet_data.frames.size(), 1);
+	EXPECT_EQ(packet_data.frames[0].data.size(), 15 * 101);
 
 	std::vector<uint32_t> idcode{0x1234};
 	std::vector<uint32_t> cmd{0x0001};
@@ -307,7 +308,7 @@ TEST(ConfigurationTest, CheckForPaddingFrames) {
 	        static_cast<unsigned int>(0x1),
 	        ConfigurationPacket<Series7::ConfRegType>::Opcode::Write,
 	        Series7::ConfRegType::FDRI,
-	        absl::MakeSpan(packet_data),
+	        absl::MakeSpan(packet_data.frames[0].data),
 	    },
 	};
 
