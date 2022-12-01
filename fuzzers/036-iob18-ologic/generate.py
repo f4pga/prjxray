@@ -18,7 +18,7 @@ DEBUG_FUZZER = False
 
 
 def bitfilter(frame, word):
-    return 30 <= frame and frame <= 33
+    return (30 <= frame and frame <= 33) or frame == 38 or frame == 39
 
 def handle_data_width(segmk, d):
     if 'DATA_WIDTH' not in d:
