@@ -6,19 +6,12 @@
 #
 # SPDX-License-Identifier: ISC
 
-N := 1
-SPECIMENS := $(addprefix build/specimen_,$(shell seq -f '%03.0f' $(N)))
-SPECIMENS_OK := $(addsuffix /OK,$(SPECIMENS))
-
-database: $(SPECIMENS_OK)
-	cp build/specimen_001/ppips_*.db build/
-
-pushdb:
+pushdb: build
 	cp build/ppips_*.db ${XRAY_DATABASE_DIR}/$(XRAY_DATABASE)/
 
-$(SPECIMENS_OK):
-	bash generate.sh $(subst /OK,,$@)
-	touch $@
+database:
+	mkdir build
+	./generate.py
 
 run:
 	$(MAKE) clean
