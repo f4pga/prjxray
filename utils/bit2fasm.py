@@ -91,7 +91,7 @@ def main():
         '--part', help="Name of part being targetted.", **part_kwargs)
     parser.add_argument(
         '--bitread',
-        help="Name of part being targetted.",
+        help="bitread tool to to use",
         default=default_bitread)
     parser.add_argument(
         '--frame_range', help="Frame range to use with bitread.")
