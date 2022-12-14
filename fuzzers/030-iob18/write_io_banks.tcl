@@ -11,7 +11,11 @@ open_io_design -name io_1
 set fp [open "iobanks.txt" "w"]
 foreach iobank [get_iobanks] {
     foreach site [get_sites -of $iobank] {
-        puts $fp "$site,$iobank"
+        # we only care about the high performance banks here
+        # and those are numbered 32, 33, 34...
+        if {[string match "3*" $iobank]} {
+            puts $fp "$site,$iobank"
+        }
     }
 }
 close $fp
