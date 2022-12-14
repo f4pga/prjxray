@@ -65,6 +65,15 @@ def run():
         "SSTL12":  DIFF_SSTL12,
     }
 
+    vref_map = {
+        "SSTL12":        .600,
+        "SSTL135":       .675,
+        "SSTL15":        .75,
+        "DIFF_SSTL12":   .600,
+        "DIFF_SSTL135":  .675,
+        "DIFF_SSTL15":   .75,
+    }
+
     only_diff_map = {
         "LVDS": ["LVDS"],
     }
@@ -99,13 +108,7 @@ def run():
     for iobank in iobanks:
         iostandard = random.choice(iostandards)
         if iostandard in SSTL:
-            params['INTERNAL_VREF'][iobank] = random.choice(
-                (
-                    .600,
-                    .675,
-                    .75,
-                    .90,
-                ))
+            params['INTERNAL_VREF'][iobank] = vref_map[iostandard]
 
         iostandard_map[iobank] = iostandard
 
