@@ -23,6 +23,7 @@ build/segbits_riob18.db: build/segbits_riob18.rdb process_rdb.py bits.dbf
 	sed '/IOB18.IOB_Y1.LVDS/d' -i build/segbits_riob18.rdb
 	python3 process_rdb.py build/segbits_riob18.rdb > build/segbits_riob18_processed.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --groups tag_groups.txt --seg-fn-in build/segbits_riob18_processed.rdb --seg-fn-out $@
+	# TODO: This is a hack. See https://github.com/f4pga/prjxray/issues/2073
 	echo 'RIOB18.IOB_Y0.SSTL12_SSTL135_SSTL15.IN !38_126 39_127' >> $@
 	sort -o $@ $@
 	${XRAY_MASKMERGE} build/mask_riob18.db $$(find -name segdata_riob18.txt)
