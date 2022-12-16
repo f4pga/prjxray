@@ -12,8 +12,7 @@ set fp [open "iobanks.txt" "w"]
 foreach iobank [get_iobanks] {
     foreach site [get_sites -of $iobank] {
         # we only care about the high performance banks here
-        # and those are numbered 32, 33, 34...
-        if {[string match "3*" $iobank]} {
+        if {[string match "BT_HIGH_PERFORMANCE" [get_property BANK_TYPE $iobank]]} {
             puts $fp "$site,$iobank"
         }
     }
