@@ -39,7 +39,7 @@ def drives_for_iostandard(iostandard):
     return drives
 
 STEPDOWN_IOSTANDARDS   = LVCMOS + SSTL
-IBUF_LOW_PWR_SUPPORTED = LVDS + DIFF_SSTL
+IBUF_LOW_PWR_SUPPORTED = LVDS + SSTL
 ONLY_DIFF_IOSTANDARDS  = LVDS
 
 
