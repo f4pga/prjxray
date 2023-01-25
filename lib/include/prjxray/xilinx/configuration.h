@@ -487,11 +487,9 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 				// do auto-incrementing block writes.
 				for (size_t ii = 0; ii < packet.data().size();
 				     ii += ArchType::words_per_frame) {
-					frames.insert(
-					    {current_frame_address,
-					     packet.data().subspan(
-					         ii,
-					         ArchType::words_per_frame)});
+					frames[current_frame_address] =
+					    packet.data().subspan(
+					        ii, ArchType::words_per_frame);
 
 					auto next_address =
 					    part.GetNextFrameAddress(
@@ -523,9 +521,8 @@ Configuration<ArchType>::InitWithPackets(const typename ArchType::Part& part,
 					current_frame_address =
 					    frame_address_register;
 					start_dup_write = false;
-					frames.insert(
-					    {current_frame_address,
-					     frames[last_write_frame_address]});
+					frames[current_frame_address] =
+					    frames[last_write_frame_address];
 				}
 			} break;
 			default:
