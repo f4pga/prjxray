@@ -84,6 +84,11 @@ fuzzer_$(1): fuzzer_ok/fuzzer_$(1)_$(XRAY_PART).ok
 
 endef
 
+ifeq ($(XRAY_DATABASE),kintex7)
+HAS_HIGH_PERFORMANCE_BANKS=1
+else
+HAS_HIGH_PERFORMANCE_BANKS=0
+endif
 $(eval $(call fuzzer,000-init-db,,part))
 
 ifneq ($(FUZZONLY),Y)
@@ -113,7 +118,7 @@ $(eval $(call fuzzer,027-bram36-config,005-tilegrid,all))
 $(eval $(call fuzzer,028-fifo-config,005-tilegrid,all))
 $(eval $(call fuzzer,029-bram-fifo-config,005-tilegrid,all))
 $(eval $(call fuzzer,030-iob,005-tilegrid,all))
-ifeq ($(XRAY_DATABASE),kintex7)
+ifeq ($(HAS_HIGH_PERFORMANCE_BANKS),1)
 $(eval $(call fuzzer,030-iob18,005-tilegrid,all))
 endif
 $(eval $(call fuzzer,031-cmt-mmcm,005-tilegrid,all))
@@ -126,16 +131,17 @@ $(eval $(call fuzzer,034b-cmt-mmcm-pips,005-tilegrid 071-ppips,all))
 endif
 $(eval $(call fuzzer,035-iob-ilogic,005-tilegrid,all))
 $(eval $(call fuzzer,035a-iob-idelay,005-tilegrid,all))
-ifeq ($(XRAY_DATABASE),kintex7)
+ifeq ($(HAS_HIGH_PERFORMANCE_BANKS),1)
 $(eval $(call fuzzer,035a-iob18-idelay,005-tilegrid,all))
+$(eval $(call fuzzer,035a-iob18-odelay,005-tilegrid,all))
 endif
 $(eval $(call fuzzer,035b-iob-iserdes,005-tilegrid,all))
 $(eval $(call fuzzer,036-iob-ologic,005-tilegrid,all))
-ifeq ($(XRAY_DATABASE),kintex7)
+ifeq ($(HAS_HIGH_PERFORMANCE_BANKS),1)
 $(eval $(call fuzzer,036-iob18-ologic,005-tilegrid,all))
 endif
 $(eval $(call fuzzer,037-iob-pips,005-tilegrid 035b-iob-iserdes,all))
-ifeq ($(XRAY_DATABASE),kintex7)
+ifeq ($(HAS_HIGH_PERFORMANCE_BANKS),1)
 $(eval $(call fuzzer,037-iob18-pips,005-tilegrid 035b-iob-iserdes,all))
 endif
 $(eval $(call fuzzer,038-cfg,005-tilegrid,all))
@@ -148,7 +154,7 @@ $(eval $(call fuzzer,044-clk-bufg-pips,046-clk-bufg-muxed-pips,all))
 $(eval $(call fuzzer,045-hclk-cmt-pips,005-tilegrid,all))
 $(eval $(call fuzzer,046-clk-bufg-muxed-pips,005-tilegrid,all))
 $(eval $(call fuzzer,047-hclk-ioi-pips,005-tilegrid,all))
-ifeq ($(XRAY_DATABASE),kintex7)
+ifeq ($(HAS_HIGH_PERFORMANCE_BANKS),1)
 $(eval $(call fuzzer,047-hclk-ioi18-pips,005-tilegrid,all))
 endif
 $(eval $(call fuzzer,047a-hclk-idelayctrl-pips,047-hclk-ioi-pips,all))
