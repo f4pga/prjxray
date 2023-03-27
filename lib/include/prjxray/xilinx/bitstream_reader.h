@@ -33,9 +33,14 @@ class BitstreamReader {
 
 	// Implements an iterator over the words grouped in configuration
 	// packets.
-	class iterator
-	    : public std::iterator<std::input_iterator_tag, value_type> {
-	       public:
+	class iterator {
+	       public:	        
+	        using iterator_category = std::input_iterator_tag;
+        	using value_type = BitstreamReader::value_type;
+        	using difference_type = std::ptrdiff_t;
+        	using pointer = value_type*;
+        	using reference = value_type&;
+        	
 		iterator& operator++();
 
 		bool operator==(const iterator& other) const;
