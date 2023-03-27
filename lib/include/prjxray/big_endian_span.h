@@ -56,9 +56,15 @@ class BigEndianSpan {
 		absl::Span<ByteType> bytes_;
 	};
 
-	class iterator
-	    : public std::iterator<std::input_iterator_tag, value_type> {
+	class iterator {
 	       public:
+	       
+	        using iterator_category = std::input_iterator_tag;
+        	using value_type = BigEndianSpan::value_type;
+        	using difference_type = std::ptrdiff_t;
+        	using pointer = value_type*;
+        	using reference = value_type&;
+        	
 		value_type operator*() const { return value_type(bytes_); }
 
 		bool operator==(const iterator& other) const {

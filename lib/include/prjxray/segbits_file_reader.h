@@ -34,9 +34,14 @@ class SegbitsFileReader {
 		absl::string_view bit_;
 	};
 
-	class iterator
-	    : public std::iterator<std::input_iterator_tag, value_type> {
-	       public:
+	class iterator {
+	     public:		
+        	using iterator_category = std::input_iterator_tag;
+        	using value_type = SegbitsFileReader::value_type;
+        	using difference_type = std::ptrdiff_t;
+        	using pointer = value_type*;
+        	using reference = value_type&;
+        	
 		iterator& operator++();
 
 		bool operator==(iterator other) const {
