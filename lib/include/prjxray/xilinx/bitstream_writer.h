@@ -51,9 +51,14 @@ class BitstreamWriter {
 	typedef absl::Span<const uint32_t>::iterator data_iterator_t;
 	using itr_value_type = uint32_t;
 
-	class packet_iterator
-	    : public std::iterator<std::input_iterator_tag, itr_value_type> {
-	       public:
+	class packet_iterator {
+	       public:	       
+	        using iterator_category = std::input_iterator_tag;
+        	using value_type = BitstreamWriter::itr_value_type;
+        	using difference_type = std::ptrdiff_t;
+        	using pointer = value_type*;
+        	using reference = value_type&;
+        	
 		packet_iterator& operator++();
 
 		bool operator==(const packet_iterator& other) const;
@@ -76,7 +81,7 @@ class BitstreamWriter {
 		    data_iterator_t itr_data);
 
 	       private:
-		friend iterator;
+		friend class iterator;
 		friend BitstreamWriter;
 
 		// Data iterators
@@ -89,9 +94,14 @@ class BitstreamWriter {
 		    packet_;
 	};
 
-	class iterator
-	    : public std::iterator<std::input_iterator_tag, itr_value_type> {
-	       public:
+	class iterator {
+	       public:	       
+	        using iterator_category = std::input_iterator_tag;
+        	using value_type = BitstreamWriter::itr_value_type;
+        	using difference_type = std::ptrdiff_t;
+        	using pointer = value_type*;
+        	using reference = value_type&;
+        	
 		iterator& operator++();
 
 		bool operator==(const iterator& other) const;
