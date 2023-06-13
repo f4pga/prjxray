@@ -109,7 +109,7 @@ def get_part_resources(file_path, part):
     with open(filename, 'r') as stream:
         res_mapping = yaml.load(stream, Loader=yaml.FullLoader)
     res = res_mapping.get(part, None)
-    assert res, "Part {} not found in {}".format(part, part_mapping)
+    assert res, "Part {} not found in {}".format(part, res_mapping)
     return res
 
 
