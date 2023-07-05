@@ -187,7 +187,7 @@ $(foreach DB,$(DATABASES),$(eval $(call database,$(DB))))
 # Targets related to Project X-Ray parts
 # --------------------------------------
 
-ARTIX_PARTS=artix7_50t artix7_200t
+ARTIX_PARTS=artix7_100t artix7_50t artix7_200t
 ZYNQ_PARTS=zynq7010
 KINTEX_PARTS=kintex7_160t
 SPARTAN_PARTS=
