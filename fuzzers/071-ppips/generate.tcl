@@ -90,6 +90,23 @@ proc write_bram_ppips_db {filename tile} {
     close $fp
 }
 
+proc write_cfg_ppips_db {filename tile} {
+    set fp [open $filename "w"]
+    set tile [get_tiles $tile]
+    set tile_type [get_property TILE_TYPE $tile]
+
+    foreach pip [get_pips -of_objects $tile] {
+        set dst_wire [get_wires -downhill -of_objects $pip]
+        if {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+            set src_wire [get_wires -uphill -of_objects $pip]
+            puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        }
+    }
+
+    close $fp
+}
+
+
 proc write_dsp_ppips_db {filename tile} {
     set fp [open $filename "w"]
     set tile [get_tiles $tile]
@@ -335,6 +352,14 @@ foreach tile_type {BRAM_L BRAM_R} {
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
         write_bram_ppips_db "ppips_[string tolower $tile_type].db" $tile
+    }
+}
+
+foreach tile_type {CFG_CENTER_MID} {
+    set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
+    if {[llength $tiles] != 0} {
+        set tile [lindex $tiles 0]
+        write_cfg_ppips_db "ppips_[string tolower $tile_type].db" $tile
     }
 }
 
