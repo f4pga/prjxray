@@ -355,7 +355,7 @@ foreach tile_type {BRAM_L BRAM_R} {
     }
 }
 
-foreach tile_type {CFG_CENTER_MID} {
+foreach tile_type {CFG_CENTER_TOP CFG_CENTER_MID CFG_CENTER_BOT} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
