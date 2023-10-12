@@ -145,6 +145,7 @@ ifeq ($(HAS_HIGH_PERFORMANCE_BANKS),1)
 $(eval $(call fuzzer,037-iob18-pips,005-tilegrid 035b-iob-iserdes,all))
 endif
 $(eval $(call fuzzer,038-cfg,005-tilegrid,all))
+$(eval $(call fuzzer,038-cfg-startup,005-tilegrid,all))
 $(eval $(call fuzzer,039-hclk-config,005-tilegrid,all))
 $(eval $(call fuzzer,040-clk-hrow-config,005-tilegrid,all))
 $(eval $(call fuzzer,041-clk-hrow-pips,005-tilegrid,all))
