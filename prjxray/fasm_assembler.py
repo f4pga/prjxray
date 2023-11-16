@@ -9,6 +9,8 @@
 #
 # SPDX-License-Identifier: ISC
 import fasm
+import sys
+
 from prjxray import bitstream
 
 
@@ -56,6 +58,10 @@ class FasmAssembler(object):
         for (frame_addr, word_addr, bit_index), is_set in self.frames.items():
             init_frame_at_address(frames, frame_addr)
 
+            if word_addr >= 101:
+                print(f"get_frames: invalid word address {word_addr} in line: {self.frames_line[(frame_addr, word_addr, bit_index)]}", file=sys.stderr)
+            if frame_addr not in frames:
+                print(f"get_frames: invalid frame address {frame_addr:x8}", file=sys.stderr)
             if is_set:
                 frames[frame_addr][word_addr] |= 1 << bit_index
 
@@ -77,6 +83,9 @@ class FasmAssembler(object):
         assert bit_index is not None
 
         key = (frame_addr, word_addr, bit_index)
+        if word_addr >= 101:
+            print(f"frame_set: invalid word address {word_addr} in line: {line}", file=sys.stderr)
+            return
         if key in self.frames:
             if self.frames[key] != 1:
                 raise FasmInconsistentBits(
@@ -96,6 +105,9 @@ class FasmAssembler(object):
         assert bit_index is not None
 
         key = (frame_addr, word_addr, bit_index)
+        if word_addr >= 101:
+            print(f"frame_clear: invalid word address {word_addr} in line: {line}", file=sys.stderr)
+            return
         if key in self.frames:
             if self.frames[key] != 0:
                 raise FasmInconsistentBits(
@@ -119,6 +131,7 @@ class FasmAssembler(object):
             frame_addr = bit.word_column
             word_addr = bit.word_bit // bitstream.WORD_SIZE_BITS
             bit_index = bit.word_bit % bitstream.WORD_SIZE_BITS
+
             if bit.isset:
                 self.frame_set(frame_addr, word_addr, bit_index, line)
             else:
