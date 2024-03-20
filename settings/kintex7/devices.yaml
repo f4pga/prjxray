@@ -3,4 +3,7 @@
   fabric: "xc7k70t"
 "xc7k160t":
   fabric: "xc7k160t"
-
+"xc7k420t":
+  fabric: "xc7k480t"
+"xc7k480t":
+  fabric: "xc7k480t"
