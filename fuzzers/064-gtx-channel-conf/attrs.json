@@ -1,0 +1,1000 @@
+{
+    "UCODEER_CLR": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RXBUFRESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RXCDRPHRESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RXCDRFREQRESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RXDFELPMRESET_TIME": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RXPMARESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RXPCSRESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RXISCANRESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "TXPCSRESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "TXPMARESET_TIME": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RX_XCLK_SEL": {
+        "type": "STR",
+        "values": ["RXREC", "RXUSR"],
+        "digits": 1
+    },
+    "CPLL_INIT_CFG": {
+        "type": "BIN",
+        "values": [16777215],
+        "digits": 24
+    },
+    "CPLL_CFG": {
+        "type": "BIN",
+        "values": [16777215],
+        "digits": 24
+    },
+    "SATA_CPLL_CFG": {
+        "type": "STR",
+        "values": ["VCO_3000MHZ", "VCO_1500MHZ", "VCO_750MHZ"],
+        "digits": 2
+    },
+    "CPLL_REFCLK_DIV": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20],
+        "encoding": [16, 0, 1, 2, 3, 5, 6, 7, 13, 14, 15],
+        "digits": 5
+    },
+    "CPLL_FBDIV_45": {
+        "type": "INT",
+        "values": [4, 5],
+        "encoding": [0, 1],
+        "digits": 1
+    },
+    "CPLL_FBDIV": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20],
+        "encoding": [16, 0, 1, 2, 3, 5, 6, 7, 13, 14, 15],
+        "digits": 5
+    },
+    "CPLL_LOCK_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "RX_DATA_WIDTH": {
+        "type": "INT",
+        "values": [16, 20, 32, 40, 64, 80],
+        "encoding": [2, 3, 4, 5, 6, 7],
+        "digits": 3
+    },
+    "RX_INT_DATAWIDTH": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RX_CLK25_DIV": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32],
+        "encoding": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+        "digits": 5
+    },
+    "RX_CM_SEL": {
+        "type": "BIN",
+        "values": [3],
+        "digits": 2
+    },
+    "RXPRBS_ERR_LOOPBACK": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "SATA_BURST_SEQ_LEN": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "OUTREFCLK_SEL_INV": {
+        "type": "BIN",
+        "values": [3],
+        "digits": 2
+    },
+    "SATA_BURST_VAL": {
+        "type": "BIN",
+        "values": [7],
+        "digits": 3
+    },
+    "RXOOB_CFG": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "SAS_MIN_COM": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "SATA_MIN_BURST": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61],
+        "digits": 6
+    },
+    "SATA_EIDLE_VAL": {
+        "type": "BIN",
+        "values": [7],
+        "digits": 3
+    },
+    "SATA_MIN_WAKE": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "SATA_MIN_INIT": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "SAS_MAX_COM": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127],
+        "digits": 7
+    },
+    "SATA_MAX_BURST": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "SATA_MAX_WAKE": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "SATA_MAX_INIT": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "TRANS_TIME_RATE": {
+        "type": "BIN",
+        "values": [255],
+        "digits": 8
+    },
+    "TX_PREDRIVER_MODE": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "TX_LOOPBACK_DRIVE_HIZ": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "TX_DRIVE_MODE": {
+        "type": "STR",
+        "values": ["DIRECT", "PIPE", "PIPEGEN3"],
+        "digits": 5
+    },
+    "PD_TRANS_TIME_TO_P2": {
+        "type": "BIN",
+        "values": [255],
+        "digits": 8
+    },
+    "PD_TRANS_TIME_NONE_P2": {
+        "type": "BIN",
+        "values": [255],
+        "digits": 8
+    },
+    "PD_TRANS_TIME_FROM_P2": {
+        "type": "BIN",
+        "values": [4095],
+        "digits": 12
+    },
+    "PCS_PCIE_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "TXBUF_RESET_ON_RATE_CHANGE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "TXBUF_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "TXGEARBOX_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "GEARBOX_MODE": {
+        "type": "BIN",
+        "values": [7],
+        "digits": 3
+    },
+    "RX_DFE_GAIN_CFG": {
+        "type": "BIN",
+        "values": [8388607],
+        "digits": 23
+    },
+    "RX_DFE_LPM_HOLD_DURING_EIDLE": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RX_DFE_H2_CFG": {
+        "type": "BIN",
+        "values": [4095],
+        "digits": 12
+    },
+    "RX_DFE_H3_CFG": {
+        "type": "BIN",
+        "values": [4095],
+        "digits": 12
+    },
+    "RX_DFE_H4_CFG": {
+        "type": "BIN",
+        "values": [2047],
+        "digits": 11
+    },
+    "RX_DFE_H5_CFG": {
+        "type": "BIN",
+        "values": [2047],
+        "digits": 11
+    },
+    "RX_DFE_KL_CFG": {
+        "type": "BIN",
+        "values": [8191],
+        "digits": 13
+    },
+    "RX_DFE_UT_CFG": {
+        "type": "BIN",
+        "values": [131071],
+        "digits": 17
+    },
+    "RX_OS_CFG": {
+        "type": "BIN",
+        "values": [8191],
+        "digits": 13
+    },
+    "RX_DFE_VP_CFG": {
+        "type": "BIN",
+        "values": [131071],
+        "digits": 17
+    },
+    "RX_DFE_XYD_CFG": {
+        "type": "BIN",
+        "values": [8191],
+        "digits": 13
+    },
+    "RX_DFE_LPM_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "RXLPM_LF_CFG": {
+        "type": "BIN",
+        "values": [262144],
+        "digits": 18
+    },
+    "RXLPM_HF_CFG": {
+        "type": "BIN",
+        "values": [16383],
+        "digits": 14
+    },
+    "ES_QUALIFIER": {
+        "type": "BIN",
+        "values": [1208833588708967444709375],
+        "digits": 80
+    },
+    "ES_QUAL_MASK": {
+        "type": "BIN",
+        "values": [1208833588708967444709375],
+        "digits": 80
+    },
+    "ES_SDATA_MASK": {
+        "type": "BIN",
+        "values": [1208833588708967444709375],
+        "digits": 80
+    },
+    "ES_PRESCALE": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "ES_VERT_OFFSET": {
+        "type": "BIN",
+        "values": [511],
+        "digits": 9
+    },
+    "ES_HORZ_OFFSET": {
+        "type": "BIN",
+        "values": [4095],
+        "digits": 12
+    },
+    "RX_DISPERR_SEQ_MATCH": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "DEC_PCOMMA_DETECT": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "DEC_MCOMMA_DETECT": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "DEC_VALID_COMMA_ONLY": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "ES_ERRDET_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "ES_EYE_SCAN_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "ES_CONTROL": {
+        "type": "BIN",
+        "values": [63],
+        "digits": 6
+    },
+    "ALIGN_COMMA_ENABLE": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "ALIGN_MCOMMA_VALUE": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "RXSLIDE_MODE": {
+        "type": "STR",
+        "values": ["OFF", "AUTO", "PCS", "PMA"],
+        "digits": 2
+    },
+    "ALIGN_PCOMMA_VALUE": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "ALIGN_COMMA_WORD": {
+        "type": "INT",
+        "values": [1, 2, 4],
+        "encoding": [1, 2, 4],
+        "digits": 3
+    },
+    "RX_SIG_VALID_DLY": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32],
+        "encoding": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+        "digits": 5
+    },
+    "ALIGN_PCOMMA_DET": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "ALIGN_MCOMMA_DET": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "SHOW_REALIGN_COMMA": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "ALIGN_COMMA_DOUBLE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "RXSLIDE_AUTO_WAIT": {
+        "type": "INT",
+        "values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        "encoding": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        "digits": 4
+    },
+    "CLK_CORRECT_USE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CLK_COR_SEQ_1_ENABLE": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "CLK_COR_SEQ_1_1": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CLK_COR_MAX_LAT": {
+        "type": "INT",
+        "values": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+        "encoding": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+        "digits": 6
+    },
+    "CLK_COR_SEQ_1_2": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CLK_COR_MIN_LAT": {
+        "type": "INT",
+        "values": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+        "encoding": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+        "digits": 6
+    },
+    "CLK_COR_SEQ_1_3": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CLK_COR_REPEAT_WAIT": {
+        "type": "INT",
+        "values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+        "encoding": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+        "digits": 5
+    },
+    "CLK_COR_SEQ_1_4": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CLK_COR_SEQ_2_USE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CLK_COR_SEQ_2_ENABLE": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "CLK_COR_SEQ_2_1": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CLK_COR_KEEP_IDLE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CLK_COR_PRECEDENCE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CLK_COR_SEQ_LEN": {
+        "type": "INT",
+        "values": [1, 2, 3, 4],
+        "encoding": [0, 1, 2, 3],
+        "digits": 2
+    },
+    "CLK_COR_SEQ_2_2": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CLK_COR_SEQ_2_3": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "RXGEARBOX_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CLK_COR_SEQ_2_4": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CHAN_BOND_SEQ_1_ENABLE": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "CHAN_BOND_SEQ_1_1": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CHAN_BOND_SEQ_LEN": {
+        "type": "INT",
+        "values": [1, 2, 3, 4],
+        "encoding": [0, 1, 2, 3],
+        "digits": 2
+    },
+    "CHAN_BOND_SEQ_1_2": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CHAN_BOND_KEEP_ALIGN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CHAN_BOND_SEQ_1_3": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CHAN_BOND_SEQ_1_4": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CHAN_BOND_SEQ_2_ENABLE": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "CHAN_BOND_SEQ_2_USE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CHAN_BOND_SEQ_2_1": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "FTS_LANE_DESKEW_CFG": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "FTS_LANE_DESKEW_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "CHAN_BOND_SEQ_2_2": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "FTS_DESKEW_SEQ_ENABLE": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "CBCC_DATA_SOURCE_SEL": {
+        "type": "STR",
+        "values": ["ENCODED", "DECODED"],
+        "digits": 1
+    },
+    "CHAN_BOND_SEQ_2_3": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "CHAN_BOND_MAX_SKEW": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+        "encoding": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+        "digits": 4
+    },
+    "CHAN_BOND_SEQ_2_4": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "RXDLY_TAP_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "RXDLY_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "RXPH_MONITOR_SEL": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RX_DDI_SEL": {
+        "type": "BIN",
+        "values": [63],
+        "digits": 6
+    },
+    "TX_XCLK_SEL": {
+        "type": "STR",
+        "values": ["TXOUT", "TXUSR"],
+        "digits": 1
+    },
+    "RXBUF_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "TXPHDLY_CFG": {
+        "type": "BIN",
+        "values": [16711425],
+        "digits": 24
+    },
+    "TXDLY_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "TXDLY_TAP_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "TXPH_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "TXPH_MONITOR_SEL": {
+        "type": "BIN",
+        "values": [31],
+        "digits": 5
+    },
+    "RX_BIAS_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "TX_CLKMUX_PD": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RX_CLKMUX_PD": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "TERM_RCAL_CFG": {
+        "type": "BIN",
+        "values": [32767],
+        "digits": 15
+    },
+    "TERM_RCAL_OVRD": {
+        "type": "BIN",
+        "values": [7],
+        "digits": 3
+    },
+    "TX_CLK25_DIV": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32],
+        "encoding": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+        "digits": 5
+    },
+    "TX_QPI_STATUS_EN": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "TX_INT_DATAWIDTH": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "PMA_RSV4": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "TX_DATA_WIDTH": {
+        "type": "INT",
+        "values": [16, 20, 32, 40, 64, 80],
+        "encoding": [2, 3, 4, 5, 6, 7],
+        "digits": 3
+    },
+    "TX_EIDLE_ASSERT_DELAY": {
+        "type": "BIN",
+        "values": [7],
+        "digits": 3
+    },
+    "TX_EIDLE_DEASSERT_DELAY": {
+        "type": "BIN",
+        "values": [7],
+        "digits": 3
+    },
+    "PCS_RSVD_ATTR": {
+        "type": "BIN",
+        "values": [281462092005375],
+        "digits": 48
+    },
+    "RX_DFE_KL_CFG2": {
+        "type": "BIN",
+        "values": [511],
+        "digits": 9
+    },
+    "TX_MARGIN_FULL_1": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_FULL_0": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_FULL_3": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_FULL_2": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_LOW_0": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_FULL_4": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_LOW_2": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_LOW_1": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_LOW_4": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_MARGIN_LOW_3": {
+        "type": "BIN",
+        "values": [127],
+        "digits": 7
+    },
+    "TX_DEEMPH1": {
+        "type": "BIN",
+        "values": [63],
+        "digits": 6
+    },
+    "TX_DEEMPH0": {
+        "type": "BIN",
+        "values": [63],
+        "digits": 6
+    },
+    "TX_RXDETECT_REF": {
+        "type": "BIN",
+        "values": [7],
+        "digits": 3
+    },
+    "TX_MAINCURSOR_SEL": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "PMA_RSV3": {
+        "type": "BIN",
+        "values": [3],
+        "digits": 2
+    },
+    "TX_RXDETECT_CFG": {
+        "type": "BIN",
+        "values": [16383],
+        "digits": 14
+    },
+    "RX_CM_TRIM": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "PMA_RSV2": {
+        "type": "BIN",
+        "values": [4294836225],
+        "digits": 32
+    },
+    "DMONITOR_CFG": {
+        "type": "BIN",
+        "values": [16711425],
+        "digits": 24
+    },
+    "TXOUT_DIV": {
+        "type": "INT",
+        "values": [1, 2, 4, 8, 16],
+        "encoding": [0, 1, 2, 3, 4],
+        "digits": 2
+    },
+    "RXOUT_DIV": {
+        "type": "INT",
+        "values": [1, 2, 4, 8, 16],
+        "encoding": [0, 1, 2, 3, 4],
+        "digits": 2
+    },
+    "TST_RSV": {
+        "type": "BIN",
+        "values": [4294836225],
+        "digits": 32
+    },
+    "PMA_RSV": {
+        "type": "BIN",
+        "values": [4294836225],
+        "digits": 32
+    },
+    "RX_BUFFER_CFG": {
+        "type": "BIN",
+        "values": [63],
+        "digits": 6
+    },
+    "RXBUF_THRESH_OVRD": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "RXBUF_RESET_ON_EIDLE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "RXBUF_RESET_ON_CB_CHANGE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "RXBUF_RESET_ON_RATE_CHANGE": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "RXBUF_RESET_ON_COMMAALIGN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "RXBUF_THRESH_UNDFLW": {
+        "type": "INT",
+        "values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "RXBUF_EIDLE_HI_CNT": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "RXBUF_EIDLE_LO_CNT": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "RXBUF_ADDR_MODE": {
+        "type": "STR",
+        "values": ["FULL", "FAST"],
+        "digits": 1
+    },
+    "RXBUF_THRESH_OVFLW": {
+        "type": "INT",
+        "values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "encoding": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63],
+        "digits": 6
+    },
+    "RX_DEFER_RESET_BUF_EN": {
+        "type": "BOOL",
+        "values": ["FALSE", "TRUE"],
+        "digits": 1
+    },
+    "TXDLY_LCFG": {
+        "type": "BIN",
+        "values": [511],
+        "digits": 9
+    },
+    "RXDLY_LCFG": {
+        "type": "BIN",
+        "values": [511],
+        "digits": 9
+    },
+    "RXPH_CFG": {
+        "type": "BIN",
+        "values": [16711425],
+        "digits": 24
+    },
+    "RXPHDLY_CFG": {
+        "type": "BIN",
+        "values": [16711425],
+        "digits": 24
+    },
+    "RX_DEBUG_CFG": {
+        "type": "BIN",
+        "values": [16383],
+        "digits": 14
+    },
+    "ES_PMA_CFG": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "RXCDR_PH_RESET_ON_EIDLE": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RXCDR_FR_RESET_ON_EIDLE": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RXCDR_HOLD_DURING_EIDLE": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "RXCDR_LOCK_CFG": {
+        "type": "BIN",
+        "values": [63],
+        "digits": 6
+    },
+    "RXCDR_CFG": {
+        "type": "BIN",
+        "values": [8461835120962772112965625],
+        "digits": 83
+    }
+}
