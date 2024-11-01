@@ -6,5 +6,5 @@
 #
 # SPDX-License-Identifier: ISC
 N ?= 12
-GENERATE_ARGS?="--oneval 1 --design params.csv --dword 4 --auto-frame"
+GENERATE_ARGS?="--oneval 1 --design params.csv --dword 16 --dframe 1C"
 include ../fuzzaddr/common.mk
