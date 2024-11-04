@@ -23,16 +23,16 @@ STR = "STR"
 
 def bitfilter_gtx_channel_x(frame, bit):
     # Filter out interconnect bits.
-    # if frame not in [28, 29, 30, 31]:
-    #    return False
+    if frame not in [28, 29, 30, 31]:
+       return False
 
     return True
 
 
 def bitfilter_gtx_channel_x_mid(frame, bit):
     # Filter out interconnect bits.
-    #if frame not in [0, 1, 2, 3]:
-    #    return False
+    if frame not in [0, 1, 2, 3]:
+        return False
 
     return True
 
