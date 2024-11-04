@@ -48,7 +48,8 @@ $(BUILD_DIR)/gtxe2_channel_ports.json: $(BUILD_DIR)/gtxe2_channel_ports.csv
 database: ${BUILD_DIR}/segbits_gtx_channelx.db $(BUILD_DIR)/gtxe2_channel_ports.json
 
 ${BUILD_DIR}/segbits_gtx_channelx.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 9 -o ${BUILD_DIR}/segbits_gtx_channelx.rdb $$(find $(SPECIMENS) -name "segdata_gtx_channel_[0123]*")
+	find ${BUILD_DIR} -name segdata_gtx_channel_\*.txt | xargs sed -i -e 's/CHANNEL_[0-3]/CHANNEL/g'
+	${XRAY_SEGMATCH} -c 10 -o ${BUILD_DIR}/segbits_gtx_channelx.rdb $$(find $(SPECIMENS) -name "segdata_gtx_channel_[0123]*")
 
 ${BUILD_DIR}/segbits_gtx_channelx.db: ${BUILD_DIR}/segbits_gtx_channelx.rdb
 	${XRAY_DBFIXUP} --db-root ${BUILD_DIR} --zero-db bits.dbf \
