@@ -8,7 +8,7 @@
 
 SHELL = bash
 
-N ?= 20
+N ?= 40
 
 BUILD_DIR = build_${XRAY_PART}
 
