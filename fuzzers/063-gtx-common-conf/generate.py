@@ -27,6 +27,9 @@ def bitfilter_gtx_common_mid(frame, bit):
     if word < 44 or word > 56:
         return False
 
+    if frame not in [0, 1]:
+        return False
+
     return True
 
 

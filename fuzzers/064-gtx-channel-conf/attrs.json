@@ -314,8 +314,8 @@
     },
     "RXLPM_LF_CFG": {
         "type": "BIN",
-        "values": [262144],
-        "digits": 18
+        "values": [8191],
+        "digits": 13
     },
     "RXLPM_HF_CFG": {
         "type": "BIN",
@@ -693,8 +693,8 @@
     },
     "RX_BIAS_CFG": {
         "type": "BIN",
-        "values": [65535],
-        "digits": 16
+        "values": [4095],
+        "digits": 12
     },
     "TX_CLKMUX_PD": {
         "type": "BIN",
@@ -708,13 +708,13 @@
     },
     "TERM_RCAL_CFG": {
         "type": "BIN",
-        "values": [32767],
-        "digits": 15
+        "values": [31],
+        "digits": 5
     },
     "TERM_RCAL_OVRD": {
         "type": "BIN",
-        "values": [7],
-        "digits": 3
+        "values": [1],
+        "digits": 1
     },
     "TX_CLK25_DIV": {
         "type": "INT",
@@ -815,13 +815,13 @@
     },
     "TX_DEEMPH1": {
         "type": "BIN",
-        "values": [63],
-        "digits": 6
+        "values": [31],
+        "digits": 5
     },
     "TX_DEEMPH0": {
         "type": "BIN",
-        "values": [63],
-        "digits": 6
+        "values": [31],
+        "digits": 5
     },
     "TX_RXDETECT_REF": {
         "type": "BIN",
@@ -845,13 +845,13 @@
     },
     "RX_CM_TRIM": {
         "type": "BIN",
-        "values": [15],
-        "digits": 4
+        "values": [7],
+        "digits": 3
     },
     "PMA_RSV2": {
         "type": "BIN",
-        "values": [4294836225],
-        "digits": 32
+        "values": [32767],
+        "digits": 15
     },
     "DMONITOR_CFG": {
         "type": "BIN",
@@ -964,8 +964,8 @@
     },
     "RX_DEBUG_CFG": {
         "type": "BIN",
-        "values": [16383],
-        "digits": 14
+        "values": [2047],
+        "digits": 11
     },
     "ES_PMA_CFG": {
         "type": "BIN",
@@ -994,7 +994,7 @@
     },
     "RXCDR_CFG": {
         "type": "BIN",
-        "values": [8461835120962772112965625],
-        "digits": 83
+        "values": [2361183241434822606847],
+        "digits": 71
     }
 }
