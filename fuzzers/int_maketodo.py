@@ -9,7 +9,7 @@
 #
 # SPDX-License-Identifier: ISC
 
-import os, re
+import os, sys, re
 from prjxray import util
 
 
@@ -65,7 +65,7 @@ def balance_todo_list(
     orig_todos, tile_type = load_pipfile(pipfile, verbose=verbose)
     if balance_wire_re is not None:
         todo_wires = {}
-        verbose and print("Start balancing the TODO list")
+        verbose and print("Start balancing the TODO list", file=sys.stderr)
         for todo in todos:
             tile_type, dst, src = todo.split(".")
             wire = src
@@ -97,16 +97,17 @@ def balance_todo_list(
             if len(other_wires) < balance_wire_cnt:
                 verbose and print(
                     "Warning: failed to balance the todo list for wire {}, there are only {} PIPs which meet the requirement: {}"
-                    .format(wire, len(other_wires), other_wires))
+                    .format(wire, len(other_wires), other_wires),
+                    file=sys.stderr)
             for other_wire in other_wires:
                 line = tile_type + "."
                 if balance_wire_direction in "src":
                     line += other_wire + "." + wire
                 else:
                     line += wire + "." + other_wire
-                verbose and print("Adding {}".format(line))
+                verbose and print("Adding {}".format(line), file=sys.stderr)
                 todos.add(line)
-        verbose and print("Finished balancing the TODO list")
+        verbose and print("Finished balancing the TODO list", file=sys.stderr)
 
 
 def maketodo(
@@ -126,22 +127,26 @@ def maketodo(
     '''
 
     todos, tile_type = load_pipfile(pipfile, verbose=verbose)
-    verbose and print('%s: %u entries' % (pipfile, len(todos)))
+    verbose and print(
+        '%s: %u entries' % (pipfile, len(todos)), file=sys.stderr)
     if not todos:
-        verbose and print('%s: %u entries, done!' % (pipfile, len(todos)))
+        verbose and print(
+            '%s: %u entries, done!' % (pipfile, len(todos)), file=sys.stderr)
         return
 
-    verbose and print("pipfile todo sample: %s" % list(todos)[0])
+    verbose and print(
+        "pipfile todo sample: %s" % list(todos)[0], file=sys.stderr)
 
-    if 0 and verbose:
-        print("TODOs")
+    if verbose:
+        print("TODOs", file=sys.stderr)
         for todo in sorted(list(todos)):
             print('  %s' % todo)
 
-    verbose and print('Pre db %s: %u entries' % (dbfile, len(todos)))
+    verbose and print(
+        'Pre db %s: %u entries' % (dbfile, len(todos)), file=sys.stderr)
     # Allow against empty db
     if os.path.exists(dbfile):
-        verbose and print("Loading %s" % dbfile)
+        verbose and print("Loading %s" % dbfile, file=sys.stderr)
         with open(dbfile, "r") as f:
             # INT.BYP_ALT0.BYP_BOUNCE_N3_3 !22_07 !23_07 !25_07 21_07 24_07
             for line in f:
@@ -158,10 +163,13 @@ def maketodo(
                 else:
                     verbose and print(
                         "WARNING: couldnt remove %s (line %s)" %
-                        (tag, line.strip()))
+                        (tag, line.strip()),
+                        file=sys.stderr)
     else:
-        verbose and print("WARNING: dbfile doesnt exist: %s" % dbfile)
-    verbose and print('Post db %s: %u entries' % (dbfile, len(todos)))
+        verbose and print(
+            "WARNING: dbfile doesnt exist: %s" % dbfile, file=sys.stderr)
+    verbose and print(
+        'Post db %s: %u entries' % (dbfile, len(todos)), file=sys.stderr)
 
     drops = 0
     lines = 0
@@ -180,7 +188,8 @@ def maketodo(
         else:
             drops += 1
         lines += 1
-    verbose and print('Print %u entries w/ %u drops' % (lines, drops))
+    verbose and print(
+        'Print %u entries w/ %u drops' % (lines, drops), file=sys.stderr)
 
     balance_todo_list(
         pipfile, filtered_todos, balance_wire_re, balance_wire_direction,
