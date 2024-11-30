@@ -48,6 +48,16 @@ Configuration<Spartan6>::createType2ConfigurationPacketData(
 }
 
 template <>
+void Configuration<Spartan6>::createPartialConfigurationPackage(
+    Spartan6::ConfigurationPackage& out_packets,
+    std::map<uint32_t, PacketData> cfg_packets,
+    absl::optional<Spartan6::Part>& part) {
+	throw std::runtime_error(
+	    "Partial bitstream generation for this architecture is not "
+	    "supported!");
+}
+
+template <>
 void Configuration<Spartan6>::createConfigurationPackage(
     Spartan6::ConfigurationPackage& out_packets,
     const PacketData& packet_data,
@@ -298,6 +308,108 @@ void Configuration<Spartan6>::createConfigurationPackage(
 }
 
 template <>
+void Configuration<Series7>::createPartialConfigurationPackage(
+    Series7::ConfigurationPackage& out_packets,
+    std::map<uint32_t, PacketData> cfg_packets,
+    absl::optional<Series7::Part>& part) {
+	using ArchType = Series7;
+	using ConfigurationRegister = ArchType::ConfRegType;
+	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::RCRC)}));
+	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::IDCODE, {part->idcode()}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::NOP)}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::MASK, {0x100}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CTL0, {0x100}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::MASK, {0x400}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CTL0, {0x400}));
+
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::WCFG)}));
+	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+
+	// Generate data packets for each address space
+	std::map<uint32_t, PacketData>::iterator it;
+	for (auto& it : cfg_packets) {
+		out_packets.emplace_back(new ConfigurationPacketWithPayload<
+		                         1, ConfigurationRegister>(
+		    ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+		    ConfigurationRegister::FAR, {it.first}));
+		out_packets.emplace_back(
+		    new NopPacket<ConfigurationRegister>());
+
+		out_packets.emplace_back(new ConfigurationPacket<
+		                         ConfigurationRegister>(
+		    TYPE1,
+		    ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+		    ConfigurationRegister::FDRI, {}));
+		out_packets.emplace_back(new ConfigurationPacket<
+		                         ConfigurationRegister>(
+		    TYPE2,
+		    ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+		    ConfigurationRegister::FDRI, it.second));
+	}
+
+	// Finalization sequence
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::MASK, {0x100}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CTL0, {0x0}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::FAR, {0x3be0000}));
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::RCRC)}));
+	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+	out_packets.emplace_back(new NopPacket<ConfigurationRegister>());
+	out_packets.emplace_back(
+	    new ConfigurationPacketWithPayload<1, ConfigurationRegister>(
+	        ConfigurationPacket<ConfigurationRegister>::Opcode::Write,
+	        ConfigurationRegister::CMD,
+	        {static_cast<uint32_t>(xc7series::Command::DESYNC)}));
+	for (int ii = 0; ii < 400; ++ii) {
+		out_packets.emplace_back(
+		    new NopPacket<ConfigurationRegister>());
+	}
+}
+
+template <>
 void Configuration<Series7>::createConfigurationPackage(
     Series7::ConfigurationPackage& out_packets,
     const PacketData& packet_data,
@@ -470,6 +582,16 @@ void Configuration<Series7>::createConfigurationPackage(
 }
 
 template <>
+void Configuration<UltraScale>::createPartialConfigurationPackage(
+    UltraScale::ConfigurationPackage& out_packets,
+    std::map<uint32_t, PacketData> cfg_packets,
+    absl::optional<UltraScale::Part>& part) {
+	throw std::runtime_error(
+	    "Partial bitstream generation for this architecture is not "
+	    "supported!");
+}
+
+template <>
 void Configuration<UltraScale>::createConfigurationPackage(
     UltraScale::ConfigurationPackage& out_packets,
     const PacketData& packet_data,
@@ -628,6 +750,16 @@ void Configuration<UltraScale>::createConfigurationPackage(
 		out_packets.emplace_back(
 		    new NopPacket<ConfigurationRegister>());
 	}
+}
+
+template <>
+void Configuration<UltraScalePlus>::createPartialConfigurationPackage(
+    UltraScalePlus::ConfigurationPackage& out_packets,
+    std::map<uint32_t, PacketData> cfg_packets,
+    absl::optional<UltraScalePlus::Part>& part) {
+	throw std::runtime_error(
+	    "Partial bitstream generation for this architecture is not "
+	    "supported!");
 }
 
 template <>
