@@ -153,7 +153,8 @@ TEST(ConfigurationTest, DISABLED_CheckForPaddingAfterIOBFrame) {
 	        frames.getFrames(), test_part);
 	// createType2ConfigurationPacketData should add a 16-bit pad word after
 	// after the IOB frame
-	EXPECT_EQ(packet_data.size(), 3 * 65 + 1);
+	EXPECT_EQ(packet_data.frames.size(), 1);
+	EXPECT_EQ(packet_data.frames[0].data.size(), 3 * 65 + 1);
 
 	std::vector<uint32_t> idcode{0x1234};
 	std::vector<uint32_t> cmd{0x0001};
@@ -182,7 +183,7 @@ TEST(ConfigurationTest, DISABLED_CheckForPaddingAfterIOBFrame) {
 	        static_cast<unsigned int>(0x1),
 	        ConfigurationPacket<Spartan6::ConfRegType>::Opcode::Write,
 	        Spartan6::ConfRegType::FDRI,
-	        absl::MakeSpan(packet_data),
+	        absl::MakeSpan(packet_data.frames[0].data),
 	    },
 	};
 
