@@ -235,6 +235,60 @@ case "$1" in
 	gtp_int_interface)
 		cp "$2" "$tmp1" ;;
 
+	gtx_common)
+		cp "$2" "$tmp1" ;;
+
+	gtx_common_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTX_COMMON\./GTX_COMMON_MID_LEFT./' ;;
+
+	gtx_common_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTX_COMMON\./GTX_COMMON_MID_RIGHT./' ;;
+
+	gtx_channel_0)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_0./' ;;
+
+	gtx_channel_1)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_1./' ;;
+
+	gtx_channel_2)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_2./' ;;
+
+	gtx_channel_3)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_3./' ;;
+
+	gtx_channel_0_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_0_MID_LEFT./' ;;
+
+	gtx_channel_1_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_1_MID_LEFT./' ;;
+
+	gtx_channel_2_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_2_MID_LEFT./' ;;
+
+	gtx_channel_3_mid_left)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_3_MID_LEFT./' ;;
+
+	gtx_channel_0_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_0_MID_RIGHT./' ;;
+
+	gtx_channel_1_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_1_MID_RIGHT./' ;;
+
+	gtx_channel_2_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_2_MID_RIGHT./' ;;
+
+	gtx_channel_3_mid_right)
+		sed < "$2" > "$tmp1" -e 's/^GTX_CHANNEL\./GTX_CHANNEL_3_MID_RIGHT./' ;;
+
+	gtx_int_interface_l)
+		sed < "$2" > "$tmp1" -e 's/^GTX_INT_INTERFACE\.GTXE2_INT/GTX_INT_INTERFACE_L\.GTXE2_INT_LEFT/' ;;
+
+	gtx_int_interface_r)
+		sed < "$2" > "$tmp1" -e 's/^GTX_INT_INTERFACE\.GTXE2_INT/GTX_INT_INTERFACE_R\.GTXE2_INT_R/' ;;
+
+	gtx_int_interface)
+		cp "$2" "$tmp1" ;;
+
 	mask_*)
 		db=$XRAY_DATABASE_DIR/$XRAY_DATABASE/$1.db
 		ismask=true
