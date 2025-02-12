@@ -40,6 +40,9 @@ def bitfilter_gtx_common(frame, bit):
     if word < 44 or word > 56:
         return False
 
+    if frame < 30 or frame > 31:
+        return False
+
     return True
 
 
