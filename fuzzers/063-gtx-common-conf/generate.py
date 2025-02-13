@@ -40,7 +40,11 @@ def bitfilter_gtx_common(frame, bit):
     if word < 44 or word > 56:
         return False
 
-    if frame < 24 or frame > 31:
+    # let ENABLE_DRP come through
+    if (frame == 24 or frame or frame == 25) and bit == 1613:
+        return True
+    
+    if frame < 30 or frame > 31:
         return False
 
     return True
