@@ -318,3 +318,23 @@ TEST(ConfigurationTest, CheckForPaddingFrames) {
 		EXPECT_EQ(frame.second, frames.getFrames().at(frame.first));
 	}
 }
+
+TEST(ConfigurationTest, CheckLastFrameOverwrite) {
+	auto part = xc7series::Part::FromFile("configuration_test.yaml");
+	ASSERT_TRUE(part);
+	auto normal_bitstream = prjxray::MemoryMappedFile::InitWithFile(
+	    "configuration_test_type_1.bit");
+	ASSERT_TRUE(normal_bitstream);
+
+	auto normal_reader = BitstreamReader<Series7>::InitWithBytes(
+	    normal_bitstream->as_bytes());
+	ASSERT_TRUE(normal_reader);
+
+	auto normal_configuration =
+	    Configuration<Series7>::InitWithPackets(*part, *normal_reader);
+	ASSERT_TRUE(normal_configuration);
+
+	auto& frames = normal_configuration->frames();
+	auto& last_frame = *frames.rbegin();
+	EXPECT_EQ(last_frame.second.at(4), 0x8000);
+}
