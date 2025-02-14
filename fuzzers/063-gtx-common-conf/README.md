@@ -27,7 +27,7 @@ In addition, there exist wires and PIPs that allow the connections of the `GTREF
 
 In fact, if the clock comes from the device fabric, the physical `GTGREFCLK[01]` port is used instead of the `GTREFCLK[01]` one (even though the design's primitive port is always `GTREFCLK`).
 
-In the [User Guide (pg 27)](https://www.xilinx.com/support/documentation/user_guides/ug482_7Series_GTX_Transceivers.pdf), it is stated that the `GTGREFCLK[01]` port is used for "internal testing purposes".
+In the [User Guide (pg 27)](https://docs.amd.com/v/u/en-US/ug476_7Series_Transceivers), it is stated that the `GTGREFCLK[01]` port is used for "internal testing purposes".
 Using this port is highly discouraged to get the reference clock from the fabric, as the recommended way is to get the clock from an external source using the `IBUFDS_GTE2` primitive.
 
 Therefore, in addition to the parameters, `IN_USE` and `ZINV\INV` features, this fuzzer documents also the `GTREFCLK[01]_USED` and `BOTH_GTREFCLK[01]_USED` features.
