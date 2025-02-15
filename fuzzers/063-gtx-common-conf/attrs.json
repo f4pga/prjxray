@@ -1,0 +1,83 @@
+{
+    "QPLL_CFG": {
+        "type": "BIN",
+        "values": [134150145],
+        "digits": 27
+    },
+    "QPLL_CP": {
+        "type": "BIN",
+        "values": [1023],
+        "digits": 10
+    },
+    "QPLL_CP_MONITOR_EN": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "QPLL_DMONITOR_SEL": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "QPLL_REFCLK_DIV": {
+        "type": "INT",
+        "values": [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20],
+        "encoding": [16, 0, 1, 2, 3, 5, 6, 7, 13, 14, 15],
+        "digits": 5
+    },
+    "QPLL_FBDIV": {
+        "type": "BIN",
+        "values": [496],
+        "digits": 10
+    },
+    "QPLL_FBDIV_MONITOR_EN": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "QPLL_FBDIV_RATIO": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+    "QPLL_LOCK_CFG": {
+        "type": "BIN",
+        "values": [65535],
+        "digits": 16
+    },
+    "QPLL_INIT_CFG": {
+        "type": "BIN",
+        "values": [16777215],
+        "digits": 24
+    },
+    "QPLL_LPF": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "COMMON_CFG": {
+        "type": "BIN",
+        "values": [4294836225],
+        "digits": 32
+    },
+    "QPLL_CLKOUT_CFG": {
+        "type": "BIN",
+        "values": [15],
+        "digits": 4
+    },
+    "QPLL_COARSE_FREQ_OVRD": {
+        "type": "BIN",
+        "values": [63],
+        "digits": 5
+    },
+    "QPLL_COARSE_FREQ_OVRD_EN": {
+        "type": "BIN",
+        "values": [1],
+        "digits": 1
+    },
+   "BIAS_CFG": {
+        "type": "BIN",
+        "values": [18445618199572250625],
+        "digits": 64
+    }
+}

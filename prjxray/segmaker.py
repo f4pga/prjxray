@@ -391,6 +391,12 @@ class Segmaker:
                 tile_type_norm = 'GTP_COMMON'
             if 'GTP_INT_INTERFACE' in tile_type_norm:
                 tile_type_norm = 'GTP_INT_INTERFACE'
+            if 'GTX_CHANNEL' in tile_type_norm:
+                tile_type_norm = 'GTX_CHANNEL'
+            if 'GTX_COMMON' in tile_type_norm:
+                tile_type_norm = 'GTX_COMMON'
+            if 'GTX_INT_INTERFACE' in tile_type_norm:
+                tile_type_norm = 'GTX_INT_INTERFACE'
 
             if tile_type_norm in ['LIOI', 'RIOI']:
                 tile_type_norm = 'IOI'

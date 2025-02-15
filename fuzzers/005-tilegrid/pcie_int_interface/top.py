@@ -16,7 +16,7 @@ from prjxray import util
 from prjxray.db import Database
 from prjxray.grid_types import GridLoc
 
-GTP_INT_Y_RE = re.compile("PCIE_INT_INTERFACE.*X[0-9]+Y([0-9]+)")
+PCIE_INT_Y_RE = re.compile("PCIE_INT_INTERFACE.*X[0-9]+Y([0-9]+)")
 
 
 def get_pcie_int_tiles(grid, pcie_loc):
@@ -36,7 +36,7 @@ def get_pcie_int_tiles(grid, pcie_loc):
         if not tile_name.startswith("PCIE_INT_INTERFACE"):
             continue
 
-        m = GTP_INT_Y_RE.match(tile_name)
+        m = PCIE_INT_Y_RE.match(tile_name)
 
         assert m
 

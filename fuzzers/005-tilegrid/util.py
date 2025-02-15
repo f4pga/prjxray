@@ -105,7 +105,7 @@ def add_tile_bits(
 
     assert offset <= 100, (tile_name, offset)
     # Few rare cases at X=0 for double width tiles split in half => small negative offset
-    assert offset >= 0 or "IOB" in tile_name, (
+    assert offset >= 0 or "IOB" in tile_name or "GTX_INT_INTERFACE" in tile_name, (
         tile_name, hex(baseaddr), offset)
     assert 1 <= words <= 101, words
     assert offset + words <= 101, (

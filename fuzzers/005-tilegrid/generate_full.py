@@ -557,6 +557,8 @@ def run(json_in_fn, json_out_fn, verbose=False):
     propagate_INT_INTERFACE_bits_in_column(
         database, tiles_by_grid, "GTP_INT_INTERFACE", tile_frames_map)
     propagate_INT_INTERFACE_bits_in_column(
+        database, tiles_by_grid, "GTX_INT_INTERFACE", tile_frames_map)
+    propagate_INT_INTERFACE_bits_in_column(
         database, tiles_by_grid, "PCIE_INT_INTERFACE", tile_frames_map)
     propagate_rebuf(database, tiles_by_grid)
     propagate_IOB_SING(database, tiles_by_grid)
