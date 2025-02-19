@@ -112,6 +112,8 @@ def run(fn_in, fn_out, verbose=False):
         ("pcie", 36, 101),
         ("gtp_common", 32, 101),
         ("gtp_channel", 32, 22),
+        ("gtx_common", 32, 101),
+        ("gtx_channel", 32, 22),
         ("clb_int", int_frames, int_words),
         ("iob_int", int_frames, int_words),
         ("iob18_int", int_frames, int_words),
@@ -123,6 +125,7 @@ def run(fn_in, fn_out, verbose=False):
         ("monitor_int", int_frames, int_words),
         ("orphan_int_column", int_frames, int_words),
         ("gtp_int_interface", int_frames, int_words),
+        ("gtx_int_interface", int_frames, int_words),
         ("pcie_int_interface", int_frames, int_words),
     ]
 

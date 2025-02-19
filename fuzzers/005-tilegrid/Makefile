@@ -54,6 +54,9 @@ ifneq (${XRAY_FABRIC}, $(filter ${XRAY_FABRIC}, xc7k480t))
 TILEGRID_TDB_DEPENDENCIES += iob18/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += iob18_int/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 TILEGRID_TDB_DEPENDENCIES += ioi18/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += gtx_common/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += gtx_channel/$(BUILD_FOLDER)/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += gtx_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb
 endif
 
 # These kintex parts give an empty design
@@ -173,6 +176,15 @@ gtp_channel/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 gtp_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd gtp_int_interface && $(MAKE)
 
+gtx_common/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd gtx_common && $(MAKE)
+
+gtx_channel/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd gtx_channel && $(MAKE)
+
+gtx_int_interface/$(BUILD_FOLDER)/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd gtx_int_interface && $(MAKE)
+
 $(BUILD_FOLDER)/tilegrid_tdb.json: add_tdb.py $(TILEGRID_TDB_DEPENDENCIES)
 	python3 add_tdb.py \
 		--fn-in ${BASICDB_TILEGRID} \
@@ -220,6 +232,9 @@ clean:
 	cd gtp_common && $(MAKE) clean
 	cd gtp_channel && $(MAKE) clean
 	cd gtp_int_interface && $(MAKE) clean
+	cd gtx_common && $(MAKE) clean
+	cd gtx_channel && $(MAKE) clean
+	cd gtx_int_interface && $(MAKE) clean
 
 clean_part:
 	rm -rf $(BUILD_FOLDER) run.${XRAY_PART}.ok
@@ -254,6 +269,9 @@ clean_part:
 	cd gtp_common && $(MAKE) clean_part
 	cd gtp_channel && $(MAKE) clean_part
 	cd gtp_int_interface && $(MAKE) clean_part
+	cd gtx_common && $(MAKE) clean_part
+	cd gtx_channel && $(MAKE) clean_part
+	cd gtx_int_interface && $(MAKE) clean_part
 
 .PHONY: database pushdb clean clean_part run
 
