@@ -1,7 +1,7 @@
 {
     "QPLL_CFG": {
         "type": "BIN",
-        "values": [134150145],
+        "values": [134217727],
         "digits": 27
     },
     "QPLL_CP": {
@@ -27,7 +27,7 @@
     },
     "QPLL_FBDIV": {
         "type": "BIN",
-        "values": [496],
+        "values": [1023],
         "digits": 10
     },
     "QPLL_FBDIV_MONITOR_EN": {
@@ -57,7 +57,7 @@
     },
     "COMMON_CFG": {
         "type": "BIN",
-        "values": [4294836225],
+        "values": [4294967295],
         "digits": 32
     },
     "QPLL_CLKOUT_CFG": {
@@ -68,7 +68,7 @@
     "QPLL_COARSE_FREQ_OVRD": {
         "type": "BIN",
         "values": [63],
-        "digits": 5
+        "digits": 6
     },
     "QPLL_COARSE_FREQ_OVRD_EN": {
         "type": "BIN",
@@ -77,7 +77,7 @@
     },
    "BIAS_CFG": {
         "type": "BIN",
-        "values": [18445618199572250625],
+        "values": [18446744073709551615],
         "digits": 64
     }
 }
