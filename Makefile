@@ -9,6 +9,7 @@ SHELL = bash
 ALL_EXCLUDE = third_party .git env build docs/env
 
 INSTALL_DIR ?=
+ENV_DIR ?= env
 
 # Skip this check if the ALLOW_ROOT var is defined
 # E.g. when running in GH action custom runners CI
@@ -20,9 +21,9 @@ endif
 endif
 
 # Tools + Environment
-IN_ENV = if [ -e env/bin/activate ]; then . env/bin/activate; fi; source utils/environment.python.sh;
+IN_ENV = if [ -e $(ENV_DIR)/bin/activate ]; then . $(ENV_DIR)/bin/activate; fi; source utils/environment.python.sh;
 env:
-	python3 -mvenv env
+	python3 -mvenv $(ENV_DIR)
 	# Install project dependencies
 	$(IN_ENV) python -mpip install -r requirements.txt
 	# Install project's documentation dependencies
