@@ -319,6 +319,27 @@ def mem_convert(s):
     return v
 
 
+def get_diskspace(diskstr=None):
+    """
+    Return the free and used space on the disk
+    associated with the current directory.
+
+    >>> import pprint
+    >>> pprint.pprint(get_diskspace())
+    {'free': '760G', 'used': '109G'}
+    """
+
+    if diskstr is None:
+        diskstr = subprocess.check_output(
+            'df -h .', shell=True).decode("utf-8")
+
+    lines = [x.split() for x in diskstr.strip().splitlines()]
+
+    disk = {'used': lines[1][2], 'free': lines[1][3]}
+
+    return disk
+
+
 def get_memory(memstr=None):
     r"""
     >>> import pprint
@@ -568,12 +589,15 @@ def run_fuzzer(fuzzer_name, fuzzer_dir, fuzzer_logdir, logger, will_retry):
             if retcode is not None:
                 break
             mem = get_memory()['mem']
+            disk = get_diskspace()
             log(
-                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}% Mem:{:0.1f}Gi used, {:0.1f}Gi free).\n{}",
+                "Still running (1m:{:0.2f}%, 5m:{:0.2f}%, 15m:{:0.2f}% Mem:{:0.1f}Gi used, {:0.1f}Gi free Disk:{}i used, {}i free).\n{}",
                 *get_load(),
                 mem['used'] / 1e9,
                 mem['available'] /
                 1e9,  # Using available so the numbers add up.
+                disk['used'],
+                disk['free'],
                 PsTree.get(p.pid),
             )
     except (Exception, KeyboardInterrupt, SystemExit):
