@@ -12,7 +12,7 @@ jobs:
   BuildDatabase:
     container: ubuntu:focal
 
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, gcp-custom-runners]
     timeout-minutes: 600
 
     strategy:
@@ -97,7 +97,7 @@ jobs:
   Tests:
     container: ubuntu:focal
 
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, gcp-custom-runners]
 
     env:
       ALLOW_ROOT: true
