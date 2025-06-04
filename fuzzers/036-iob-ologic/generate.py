@@ -42,7 +42,7 @@ def no_oserdes(segmk, site):
             widths = [2, 3, 4, 5, 6, 7, 8]
         else:
             assert mode == 'DDR'
-            widths = [4, 6, 8]
+            widths = [4, 6, 8, 10, 14]
 
         for opt in widths:
             segmk.add_site_tag(
