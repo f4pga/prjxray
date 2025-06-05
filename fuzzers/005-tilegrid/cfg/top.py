@@ -23,7 +23,7 @@ def gen_sites():
         gridinfo = grid.gridinfo_at_loc(loc)
         if gridinfo.tile_type in ['CFG_CENTER_MID']:
             for site_name in sorted(gridinfo.sites.keys()):
-                if site_name.startswith("BSCAN_X0Y0"):
+                if site_name.startswith("ICAP_X0Y0"):
                     yield tile_name, site_name
 
 
@@ -41,30 +41,24 @@ module top();
     params = {}
 
     sites = list(gen_sites())
-    jtag_chains = ("1", "2", "3", "4")
+    param = ("X8", "X16", "X32")
     for (tile_name, site_name), isone in zip(sites,
                                              util.gen_fuzz_states(len(sites))):
         params[tile_name] = (site_name, isone)
         print(
             '''
             (* KEEP, DONT_TOUCH, LOC = "{0}" *)
-            BSCANE2 #(
-            .JTAG_CHAIN("{1}")
+            ICAPE2 #(
+            .ICAP_WIDTH("{1}")
             )
-            BSCANE2_{0} (
-            .CAPTURE(),
-            .DRCK(),
-            .RESET(),
-            .RUNTEST(),
-            .SEL(),
-            .SHIFT(),
-            .TCK(),
-            .TDI(),
-            .TMS(),
-            .UPDATE(),
-            .TDO(1'b1)
+            ICAP_{0} (
+            .CSIB(),
+            .RDWRB(),
+            .I(),
+            .O(),
+            .CLK()
             );
-        '''.format(site_name, jtag_chains[isone]))
+        '''.format(site_name, param[isone]))
 
     print("endmodule")
     write_params(params)
