@@ -64,7 +64,7 @@ def use_oserdese2(p, luts, connects):
     if verilog.unquote(p['DATA_RATE_OQ']) == 'SDR':
         data_widths = [2, 3, 4, 5, 6, 7, 8]
     else:
-        data_widths = [4, 6, 8]
+        data_widths = [4, 6, 8, 10, 14]
 
     p['DATA_WIDTH'] = random.choice(data_widths)
 

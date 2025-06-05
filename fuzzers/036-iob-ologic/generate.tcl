@@ -94,6 +94,8 @@ proc run {} {
     set_property BITSTREAM.GENERAL.PERFRAMECRC YES [current_design]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-144}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-150}]
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-152}]
 
     write_checkpoint -force design_pre_place.dcp
 
