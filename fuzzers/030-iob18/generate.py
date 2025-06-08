@@ -268,11 +268,6 @@ def main():
         assert len(iobank_iostandards[iobank]) == 1, iobank_iostandards[iobank]
 
         iostandard = list(iobank_iostandards[iobank])[0]
-        for only_diff_io in ONLY_DIFF_IOSTANDARDS:
-            segmk.add_tile_tag(
-                hclk_cmt_tile, '{}_IN_USE'.format(only_diff_io),
-                iostandard == only_diff_io)
-
         segmk.add_tile_tag(
             hclk_cmt_tile, 'ONLY_DIFF_IN_USE',
             iostandard in ONLY_DIFF_IOSTANDARDS)
