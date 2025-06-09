@@ -148,11 +148,33 @@ proc write_ioi_ppips_db {filename tile} {
 
     foreach pip [get_pips -of_objects $tile] {
         set dst_wire [get_wires -downhill -of_objects $pip]
+        set nodes [get_nodes -of_objects $dst_wire]
+        set uphill_pips [get_pips -uphill -of_objects $nodes]
+
         if [string match "*DATAOUT*" $dst_wire] {
             continue
-        } elseif {[get_pips -uphill -of_objects [get_nodes -of_objects $dst_wire]] == $pip} {
+        } elseif {$uphill_pips == $pip} {
+            # if there is only one uphill pip, then output always
+            # TODO: This really does not get us the ppips,
+            # but those pips which only have a single uphill pip.
+            # There are both false positives and false negatives
+            # with this approach: This also captures switchbox pips which
+            # only have one uphill pip but still can be turned on or off.
+            # example: LIOI3.IOI_ILOGIC0_CE1.IOI_IMUX5_1
+            # It also does not capture ppips with two uphill pips,
+            # like RIOI.RIOI_OLOGIC0_OQ and RIOI.ODELAY0_DATAOUT in Kintex7,
+            # which both are connected to RIOIO_O0. In Artix7 this one
+            # is only connected to _OQ.
             set src_wire [get_wires -uphill -of_objects $pip]
             puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+        } elseif {[lsearch -exact $uphill_pips $pip]} {
+            # In Kintex7, two wires are permanently connected to RIOI_O[01]
+            if {[string match "*RIOI_O[01]" $dst_wire] && [llength $uphill_pips] == 2} {
+                foreach uphill_pip $uphill_pips {
+                    set src_wire [get_wires -uphill -of_objects $uphill_pip]
+                    puts $fp "${tile_type}.[regsub {.*/} $dst_wire ""].[regsub {.*/} $src_wire ""] always"
+                }
+            }
         }
     }
 
