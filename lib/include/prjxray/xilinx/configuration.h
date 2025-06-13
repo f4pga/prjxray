@@ -46,6 +46,14 @@ class Configuration {
 	    const PacketData& packet_data,
 	    absl::optional<typename ArchType::Part>& part);
 
+	// Creates the configuration package for partial configuration
+	// which is later on used by the bitstream writer to generate
+	// the partial bitstream file.
+	static void createPartialConfigurationPackage(
+	    typename ArchType::ConfigurationPackage& out_packets,
+	    std::map<uint32_t, PacketData> cfg_packets,
+	    absl::optional<typename ArchType::Part>& part);
+
 	// Returns the payload for a type 2 packet
 	// which allows for bigger payload compared to type 1.
 	static PacketData createType2ConfigurationPacketData(

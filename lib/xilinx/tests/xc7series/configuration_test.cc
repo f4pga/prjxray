@@ -318,3 +318,121 @@ TEST(ConfigurationTest, CheckForPaddingFrames) {
 		EXPECT_EQ(frame.second, frames.getFrames().at(frame.first));
 	}
 }
+
+TEST(ConfigurationTest, CreatePartialConfigurationPackage) {
+	namespace xilinx = prjxray::xilinx;
+	std::vector<xc7series::FrameAddress> test_part_addresses = {
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            0, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            1, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            2, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            3, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            4, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            5, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            6, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            7, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::CLB_IO_CLK, false, 0,
+	                            8, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM, false, 0,
+	                            0, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM, false, 0,
+	                            1, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM, false, 0,
+	                            2, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM, false, 0,
+	                            3, 0),
+	    xc7series::FrameAddress(xc7series::BlockType::BLOCK_RAM, false, 0,
+	                            4, 0)};
+
+	auto test_part = absl::optional<xc7series::Part>(
+	    xc7series::Part(0x1234, test_part_addresses));
+
+	// There are CLB_IO_CLK blocks in address space:
+	// <0x100,0x200> plus <0x380,0x400> and BRAM blocks at:
+	// <0x800000> plus <0x800180>. We create address gaps which should be
+	// filled with zero frames and the final configuration package should
+	// have two data packets separated with two different FAR addresses: one
+	// for CLB_IO_CLK=<0x100> and second for BRAM=<0x800000>
+	const uint32_t clb_start_address = 0x100;
+	const uint32_t clb_end_address = 0x400;
+	const uint32_t bram_start_address = 0x800000;
+	const uint32_t bram_end_address = 0x800180;
+	Frames<Series7> frames;
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(2), std::vector<uint32_t>(101, 0xAA)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(3), std::vector<uint32_t>(101, 0xBB)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(4), std::vector<uint32_t>(101, 0xCC)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(7), std::vector<uint32_t>(101, 0xDD)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(8), std::vector<uint32_t>(101, 0xEE)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(9), std::vector<uint32_t>(101, 0xAB)));
+	frames.getFrames().emplace(std::make_pair(
+	    test_part_addresses.at(12), std::vector<uint32_t>(101, 0xBC)));
+	ASSERT_EQ(frames.getFrames().size(), 7);
+
+	// Fill address gaps with zero frames
+	frames.addMissingFrames(test_part, clb_start_address, clb_end_address,
+	                        bram_start_address, bram_end_address);
+
+	// Split frames into separate CLB_IO_CLK and BRAM related
+	typename Frames<Series7>::Frames2Data clb_frames, bram_frames;
+	clb_frames.insert(frames.getFrames().find(clb_start_address),
+	                  frames.getFrames().find(clb_end_address));
+	bram_frames.insert(frames.getFrames().find(bram_start_address),
+	                   frames.getFrames().find(bram_end_address));
+	// Check if all columns are present. We expect to have <2,7> columns
+	// for CLB_IO_CLK blocks and <0,2> for BRAM blocks.
+	uint8_t clb_index = clb_frames.begin()->first.column();
+	for (auto frm : clb_frames) {
+		ASSERT_EQ(frm.first.column(), clb_index);
+		clb_index++;
+	}
+	uint8_t bram_index = bram_frames.begin()->first.column();
+	for (auto frm : bram_frames) {
+		ASSERT_EQ(frm.first.column(), bram_index);
+		bram_index++;
+	}
+
+	Configuration<Series7>::PacketData clb_packet_data =
+	    Configuration<Series7>::createType2ConfigurationPacketData(
+	        clb_frames, test_part);
+	Configuration<Series7>::PacketData bram_packet_data =
+	    Configuration<Series7>::createType2ConfigurationPacketData(
+	        bram_frames, test_part);
+
+	std::map<uint32_t, typename xilinx::Configuration<Series7>::PacketData>
+	    cfg_packets = {{clb_start_address, clb_packet_data},
+	                   {bram_start_address, bram_packet_data}};
+
+	Series7::ConfigurationPackage partial_configuration_package;
+	xilinx::Configuration<Series7>::createPartialConfigurationPackage(
+	    partial_configuration_package, cfg_packets, test_part);
+
+	// Partial bitstream should have a separate FAR address setup command
+	// for CLB_IO_CLK and BRAM.
+	bool clb_far_address = false;
+	for (auto& cfg : partial_configuration_package) {
+		if (cfg.get()->address() == Series7ConfigurationRegister::FAR) {
+			if (!clb_far_address) {
+				EXPECT_EQ(cfg.get()->data()[0],
+				          clb_start_address);
+				clb_far_address = true;
+			} else {
+				EXPECT_EQ(cfg.get()->data()[0],
+				          bram_start_address);
+				break;
+			}
+		}
+	}
+}
