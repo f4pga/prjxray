@@ -6,6 +6,7 @@
 # https://opensource.org/licenses/ISC
 #
 # SPDX-License-Identifier: ISC
+
 XRAY_ENV_PATH="${BASH_SOURCE[0]}"
 while [ -h "$XRAY_ENV_PATH" ]; do # resolve $XRAY_ENV_PATH until the file is no longer a symlink
   XRAY_UTILS_DIR="$( cd -P "$( dirname "$XRAY_ENV_PATH" )" && pwd )"
@@ -23,14 +24,14 @@ if [ -e "${XRAY_DIR}/env/bin/activate" ]; then
   source "${XRAY_DIR}/env/bin/activate"
 fi
 
-# misc
+pip3 install https://github.com/chipsalliance/f4pga-xc-fasm/archive/master.zip
+
 export XRAY_PART_YAML="${XRAY_DATABASE_DIR}/${XRAY_DATABASE}/${XRAY_PART}/part.yaml"
 source $XRAY_UTILS_DIR/environment.python.sh
 
 # Set environment to default output and overwrite localisation settings
 export LC_ALL=C
 
-# tools
 export XRAY_GENHEADER="${XRAY_UTILS_DIR}/genheader.sh"
 export XRAY_BITREAD="${XRAY_TOOLS_DIR}/bitread --part_file ${XRAY_PART_YAML}"
 export XRAY_MERGEDB="bash ${XRAY_UTILS_DIR}/mergedb.sh"
@@ -38,7 +39,7 @@ export XRAY_DBFIXUP="python3 ${XRAY_UTILS_DIR}/dbfixup.py"
 export XRAY_MASKMERGE="bash ${XRAY_UTILS_DIR}/maskmerge.sh"
 export XRAY_SEGMATCH="${XRAY_TOOLS_DIR}/segmatch"
 export XRAY_SEGPRINT="python3 ${XRAY_UTILS_DIR}/segprint.py"
-export XRAY_BIT2FASM="python3 ${XRAY_UTILS_DIR}/bit2fasm.py"
+export XRAY_BIT2FASM="python3 -m xc_fasm.bit2fasm"
 export XRAY_FASM2FRAMES="python3 ${XRAY_UTILS_DIR}/fasm2frames.py"
 export XRAY_BITTOOL="${XRAY_TOOLS_DIR}/bittool"
 export XRAY_BLOCKWIDTH="python3 ${XRAY_UTILS_DIR}/blockwidth.py"
