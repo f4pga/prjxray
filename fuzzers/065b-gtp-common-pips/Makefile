@@ -19,7 +19,7 @@ TODO_RE=".*HCLK_GTP_CK_MUX.*"
 PIP_DIR=${XRAY_FUZZERS_DIR}/piplist/build/$(PIP_TYPE)
 
 MAKETODO_FLAGS=--pip-type ${PIP_FILE} --seg-type $(SEG_TYPE) --re $(TODO_RE) --sides "" --pip-dir $(PIP_DIR)
-N = 20
+N = 40
 
 SEGMATCH_FLAGS=-c 3
 SPECIMENS_DEPS=$(BUILD_DIR)/cmt_regions.csv
