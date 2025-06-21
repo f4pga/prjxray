@@ -168,14 +168,18 @@ db-format-$(1):
 	@$(IN_ENV) cd database/$(1); python3 ../../utils/sort_db.py
 	@if [ -e database/Info.md ]; then $(IN_ENV) ./utils/info_md.py --keep; fi
 
-.PHONY: db-prepare-$(1) db-$(1) db-check-$(1) db-format-$(1) db-extras-$(1) db-extras-$(1)-parts db-extra-$(1)-roi db-extras-$(1)-harness
+db-extras-$(1)-links:
+	@source settings/$(1).sh && $(IN_ENV) ./utils/create_db_links.py
 
-db-extras-$(1): db-extras-$(1)-parts db-extras-$(1)-roi db-extras-$(1)-harness
+.PHONY: db-prepare-$(1) db-$(1) db-check-$(1) db-format-$(1) db-extras-$(1) db-extras-$(1)-parts db-extra-$(1)-roi db-extras-$(1)-harness db-extras-$(1)-links
+
+db-extras-$(1): db-extras-$(1)-parts db-extras-$(1)-roi db-extras-$(1)-harness db-extras-$(1)-links
 
 db-$(1)-all: db-$(1) db-extras-$(1)-parts
 	# Build harnesses after database is complete
 	$$(MAKE) db-extras-$(1)-roi
 	$$(MAKE) db-extras-$(1)-harness
+	$$(MAKE) db-extras-$(1)-links
 
 db-check: db-check-$(1)
 db-format: db-format-$(1)
