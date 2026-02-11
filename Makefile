@@ -41,7 +41,7 @@ env:
 build:
 	git submodule update --init --recursive
 	mkdir -p build
-	cd build; cmake ..; $(MAKE)
+	cd build; cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5; $(MAKE)
 
 install:
 	cd build; $(MAKE) DESTDIR=${INSTALL_DIR} install
