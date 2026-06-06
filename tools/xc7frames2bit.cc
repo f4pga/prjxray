@@ -14,6 +14,7 @@
 #include <prjxray/xilinx/bitstream_writer.h>
 #include <prjxray/xilinx/configuration.h>
 
+DEFINE_bool(compressed, false, "Attempt to deduplicate bitstream frames");
 DEFINE_string(part_name, "", "Name of the 7-series part");
 DEFINE_string(part_file, "", "Definition file for target 7-series part");
 DEFINE_string(
@@ -62,7 +63,7 @@ struct Frames2BitWriter {
 		    configuration_packet_data(
 		        xilinx::Configuration<ArchType>::
 		            createType2ConfigurationPacketData(
-		                frames.getFrames(), part));
+		                frames.getFrames(), part, FLAGS_compressed));
 
 		// Put together a configuration package
 		typename ArchType::ConfigurationPackage configuration_package;
