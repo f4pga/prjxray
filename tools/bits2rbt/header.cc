@@ -1,6 +1,7 @@
 #include "header.h"
 #include <algorithm>
 #include <ctime>
+#include <cassert>
 #include <sstream>
 
 Header::Header(const std::string& line,
