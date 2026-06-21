@@ -13,6 +13,8 @@
 #include <memory>
 #include <string>
 
+#include <cstdint>
+
 #include <absl/types/span.h>
 
 namespace prjxray {
