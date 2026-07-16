@@ -33,6 +33,15 @@ shell that is then only used to run Vivado to avoid these problems.
 
 **Is 2017.2 really required?** Yes, only `2017.2` works. Until Issue #14 is solved, **only** `2017.2` works and will be supported.
 
+Vivado 2017.2 can be installed from the [Vivado archive here](https://www.xilinx.com/support/download.html/content/xilinx/en/downloadNav/vivado-design-tools/archive.html).
+
+When installing vivado for Linux the installation has been known to hang at
+"Generating installed devices list". This is usually because the Vivado
+installer spawns a background thread to build the devices list, whcih then
+silently crashes or hangs due to missing libraries. The fix for this is
+installing these missing dependencies. For Ubuntu this tends to be `libtinfo5`
+and `libncurses5`.
+
 ### Step 2: ###
 Clone the ``prjxray`` repository and its submodules:
 
