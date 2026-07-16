@@ -76,6 +76,11 @@ sudo apt-get install virtualenv python3 python3-pip python3-virtualenv python3-y
 make env
 ```
 
+This step is known to fail when getting the requirements to build the python
+wheel, specifically when trying to build `sphinx_symbiflow_theme`. This is a
+requirement that is only used for the documentation, therefore it can usually be
+commented out of `requirements.txt`.
+
 (Option 2) - Install the Python environment globally
 
 ```bash
