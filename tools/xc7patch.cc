@@ -151,5 +151,5 @@ int main(int argc, char* argv[]) {
 	xilinx::Architecture::Container arch_container =
 	    xilinx::ArchitectureFactory::create_architecture(
 	        FLAGS_architecture);
-	return absl::visit(BitstreamPatcher(), arch_container);
+	return std::visit(BitstreamPatcher(), arch_container);
 }

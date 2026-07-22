@@ -88,5 +88,5 @@ int main(int argc, char* argv[]) {
 	xilinx::Architecture::Container arch_container =
 	    xilinx::ArchitectureFactory::create_architecture(
 	        FLAGS_architecture);
-	return absl::visit(Frames2BitWriter(), arch_container);
+	return std::visit(Frames2BitWriter(), arch_container);
 }

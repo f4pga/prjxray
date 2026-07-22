@@ -72,7 +72,7 @@ int ListConfigPackets(int argc, char* argv[]) {
 	    static_cast<uint8_t*>(in_file->data()), in_file->size());
 	xilinx::Architecture::Container arch_container =
 	    xilinx::ArchitectureFactory::create_architecture(architecture);
-	return absl::visit(ConfigPacketsLister(in_bytes), arch_container);
+	return std::visit(ConfigPacketsLister(in_bytes), arch_container);
 }
 
 struct DebugFrameAddressesDumper {
@@ -149,7 +149,7 @@ int DumpDebugbitstreamFrameAddresses(int argc, char* argv[]) {
 	    static_cast<uint8_t*>(in_file->data()), in_file->size());
 	xilinx::Architecture::Container arch_container =
 	    xilinx::ArchitectureFactory::create_architecture(architecture);
-	return absl::visit(DebugFrameAddressesDumper(in_bytes), arch_container);
+	return std::visit(DebugFrameAddressesDumper(in_bytes), arch_container);
 }
 
 struct DeviceIdGetter {
@@ -231,7 +231,7 @@ int GetDeviceId(int argc, char* argv[]) {
 
 	xilinx::Architecture::Container arch_container =
 	    xilinx::ArchitectureFactory::create_architecture(architecture);
-	return absl::visit(DeviceIdGetter(in_bytes), arch_container);
+	return std::visit(DeviceIdGetter(in_bytes), arch_container);
 }
 
 int main(int argc, char* argv[]) {

@@ -10,8 +10,8 @@
 #ifndef PRJXRAY_LIB_XILINX_ARCHITECTURES_H_
 #define PRJXRAY_LIB_XILINX_ARCHITECTURES_H_
 
-#include <absl/types/variant.h>
 #include <memory>
+#include <variant>
 #include <vector>
 
 #include <prjxray/xilinx/configuration_packet.h>
@@ -31,7 +31,7 @@ class UltraScalePlus;
 class Architecture {
        public:
 	using Container =
-	    absl::variant<Series7, UltraScale, UltraScalePlus, Spartan6>;
+	    std::variant<Series7, UltraScale, UltraScalePlus, Spartan6>;
 	Architecture(const std::string& name) : name_(name) {}
 	const std::string& name() const { return name_; }
 	virtual ~Architecture() {}
