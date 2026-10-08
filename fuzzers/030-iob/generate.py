@@ -144,6 +144,9 @@ def main():
                     segmk.add_site_tag(
                         site, 'ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
             elif d['type'] == 'IBUFDS':
+                # Do not infer other differential standards from LVDS_25.
+                if iostandard == 'LVDS_25':
+                    segmk.add_tile_tag(tile, 'DIFF.DIFF_TERM', d['DIFF_TERM'])
                 segmk.add_site_tag(site, 'INOUT', 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)

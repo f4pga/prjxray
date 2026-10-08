@@ -1,0 +1,743 @@
+{
+  "features": {
+    "RIOB33.DIFF.DIFF_TERM": [
+      "38_100",
+      "39_97"
+    ],
+    "LIOB33.DIFF.DIFF_TERM": [
+      "38_100",
+      "39_97"
+    ]
+  },
+  "pairs": [
+    {
+      "pair": 0,
+      "tile": "RIOB33_X73Y145",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 1,
+      "tile": "RIOB33_X73Y147",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 2,
+      "tile": "RIOB33_X73Y141",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 3,
+      "tile": "RIOB33_X73Y143",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 4,
+      "tile": "RIOB33_X73Y139",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 5,
+      "tile": "RIOB33_X73Y137",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 6,
+      "tile": "RIOB33_X73Y119",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 7,
+      "tile": "RIOB33_X73Y117",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 8,
+      "tile": "RIOB33_X73Y113",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 9,
+      "tile": "RIOB33_X73Y111",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 10,
+      "tile": "RIOB33_X73Y123",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 11,
+      "tile": "RIOB33_X73Y121",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 12,
+      "tile": "RIOB33_X73Y115",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 13,
+      "tile": "RIOB33_X73Y109",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 14,
+      "tile": "RIOB33_X73Y101",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 15,
+      "tile": "RIOB33_X73Y125",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 16,
+      "tile": "RIOB33_X73Y129",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 17,
+      "tile": "RIOB33_X73Y105",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 18,
+      "tile": "RIOB33_X73Y127",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 19,
+      "tile": "RIOB33_X73Y131",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 20,
+      "tile": "RIOB33_X73Y103",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 21,
+      "tile": "RIOB33_X73Y133",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 22,
+      "tile": "RIOB33_X73Y135",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 23,
+      "tile": "RIOB33_X73Y107",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 24,
+      "tile": "RIOB33_X73Y53",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 25,
+      "tile": "RIOB33_X73Y73",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 26,
+      "tile": "RIOB33_X73Y71",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 27,
+      "tile": "RIOB33_X73Y87",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 28,
+      "tile": "RIOB33_X73Y51",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 29,
+      "tile": "RIOB33_X73Y61",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 30,
+      "tile": "LIOB33_X0Y11",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 31,
+      "tile": "LIOB33_X0Y25",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 32,
+      "tile": "RIOB33_X73Y97",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 33,
+      "tile": "RIOB33_X73Y95",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 34,
+      "tile": "RIOB33_X73Y89",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 35,
+      "tile": "RIOB33_X73Y81",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 36,
+      "tile": "RIOB33_X73Y59",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 37,
+      "tile": "RIOB33_X73Y69",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 38,
+      "tile": "LIOB33_X0Y27",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 39,
+      "tile": "LIOB33_X0Y15",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 40,
+      "tile": "RIOB33_X73Y93",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 41,
+      "tile": "RIOB33_X73Y77",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 42,
+      "tile": "RIOB33_X73Y75",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 43,
+      "tile": "LIOB33_X0Y5",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 44,
+      "tile": "LIOB33_X0Y19",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 45,
+      "tile": "LIOB33_X0Y7",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 46,
+      "tile": "RIOB33_X73Y91",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 47,
+      "tile": "RIOB33_X73Y79",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 48,
+      "tile": "RIOB33_X73Y63",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 49,
+      "tile": "RIOB33_X73Y57",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 50,
+      "tile": "RIOB33_X73Y67",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 51,
+      "tile": "LIOB33_X0Y17",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 52,
+      "tile": "LIOB33_X0Y13",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 53,
+      "tile": "RIOB33_X73Y83",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 54,
+      "tile": "RIOB33_X73Y55",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 55,
+      "tile": "LIOB33_X0Y23",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 56,
+      "tile": "LIOB33_X0Y21",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 57,
+      "tile": "LIOB33_X0Y9",
+      "feature": "LIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 58,
+      "tile": "RIOB33_X73Y85",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    },
+    {
+      "pair": 59,
+      "tile": "RIOB33_X73Y65",
+      "feature": "RIOB33.DIFF.DIFF_TERM",
+      "bits": [
+        "38_100",
+        "39_97"
+      ],
+      "added": 2,
+      "removed": 0
+    }
+  ],
+  "source_sha256": {
+    "all.bit": "cc303ed965a5e78de2b54466a9b9f500edf92e1287279fb861fd35f797d000ba",
+    "off-repeat.bit": "d559e2d6621fc3759c602f2f47d398aac11f34569e6143232b35ced651133389",
+    "off.bit": "0aa8c41f331ab2d6db3c19ecdd7f72a169e62b06a9c079f9553d037803fa49c9",
+    "pair0.bit": "2db3f8d8338b818e31ba68cef9486500d83d531f7c0087843e6a5a35b1328467",
+    "pair1.bit": "cd5d7415f7908aa07e5934eba915d1e63fc6378f11412d1be6de0de3ce259374",
+    "pair10.bit": "5d59d0cd093f5dccc9d229a9d3bd69241c3775e7a78999c31ae30fb55c5e16a7",
+    "pair11.bit": "b6d05b0e051d9c8aa796a08491b5968a0132e98bcf464e51e97d57db29b4a915",
+    "pair12.bit": "51dd29f1abbed7b339a0eeeb583ad9b00c2fada5d864d51f448242836673cc05",
+    "pair13.bit": "a0801ddc135af09d34fafbe0d1ea4ce4182f0c6e1441e08e9d2b69f1c196fadd",
+    "pair14.bit": "71b8f5bf5cd5e86a9a9a8475aafaeeac9c2a6482a070be862ddd53150903b962",
+    "pair15.bit": "601c7d743ebdd63595c3e2b4577ac24b403be283303bdbe5df0a6598171fc50a",
+    "pair16.bit": "d804e93a194c76a6ccab14801de46a67383ccedc1049d04e916634676d0bb9d3",
+    "pair17.bit": "ae30ecec1c5b292d80f1e8519bd236f6132b72e3253d51e8e1e505756fc4708c",
+    "pair18.bit": "67d37ecb46bd591127e30996710d619c6661bf1726ac481db025e75370030bd5",
+    "pair19.bit": "0bf5d3fd11c3fa4312005a7da40e437958a872a2fb4c85469ce726103946d50e",
+    "pair2.bit": "649260ba801e6ebcf6b04ab292ad7635cd053444a103165b07efc9fdec3bc54f",
+    "pair20.bit": "d5c5cef54ce3674ad435841ace89c20cf810285fbb29aeae96acaa67561cb54c",
+    "pair21.bit": "6ef5c1996f54092eb6e6bb567edf1ccabf1d943022f0bdcd7aafb3099961e661",
+    "pair22.bit": "92d909235a993caa5bc8b616d8aaee0447851c46a3945a6a5328de55c794d1a7",
+    "pair23.bit": "3ef0ea37bbdb9a834881d5b4504d86253e148344b92e7cc319c7ffe7b27f619d",
+    "pair24.bit": "66ab9b0e5f2f788eb7e414e07deeb08504ea9a67ba138ddb01a3a28adce0fa61",
+    "pair25.bit": "a1557ed47641c2b1a366ab2b893067eb2f9dde1a21dd228b01e0e4049b380e44",
+    "pair26.bit": "1ffe94012c963ac31cf1f1c522ab54261d55b543070f4de542cf7fecce9732be",
+    "pair27.bit": "712ce7b423f531c9ab42c7fc871c44781e0824d6d086eeef30c80f6edc447230",
+    "pair28.bit": "a5389a2f3e42be3f551ef3bc2f0f74f8c638ec542aabca12c53d97f72551baed",
+    "pair29.bit": "17d96b4b1425d771e0270ca07039bfb2f7c765a6dcb281d2eab0ba2101254598",
+    "pair3.bit": "29a3837ada42917e487de39afd971d02c7ae8d071d804db2178ff1578480d9cc",
+    "pair30.bit": "4d373a54955027f72646f34e19fbdaeaa80d0032f1412e1757e96f266b165355",
+    "pair31.bit": "48cdb0ec8acb876be1a6d4782efa45ede4fa26b1d21a9a6c2fe6fdbdcf129c2b",
+    "pair32.bit": "8fe0de33e32b34ad21593c53a03a81f33bcfba7fc9466954d9ec08a1e83bd4d6",
+    "pair33.bit": "fe9132595eb680ad2280b6a83bcaf7df3e994281bda9e005071aa566b4afcef6",
+    "pair34.bit": "aac7b8aeb1700304f9aaf8536e8cd98db6a08c97cdad5007a1e455c0c55e07d2",
+    "pair35.bit": "64b5c433851c31f65335675810475a1594721847a230d601d4306ebb66026a86",
+    "pair36.bit": "c1535dcf663c61faca3c499cdabc011072b741c39a7cd8d05f3c989543555cc6",
+    "pair37.bit": "fa623af3b3c5e2fc97334ca6dc6ea54719db3df14e2f38584eb54de076ce698c",
+    "pair38.bit": "dd3a92b68869e048c3e528327427ffc4425a7d3983809344d7dba8ce1cf17a1f",
+    "pair39.bit": "de24e6e6d7f7fabe530ab05fd353ca6a3739ed609f236c7e99ba1842e8087fc5",
+    "pair4.bit": "4033a5ac5c39a15c83787cb60165b8367a3596db49ed28bb77a164862d26ffed",
+    "pair40.bit": "8471397b4b51b96433b973e7055cb9bf73b96dccab9862a3156bbf5ba76d8b7d",
+    "pair41.bit": "06771a01d7ca92e7a35dc238ebdc4a2dd24c884b4336fa644e144267f693d2cc",
+    "pair42.bit": "1591e4e048f3e47d5f2b5a4c24e17478fcfd69b5525fcf04867c564bdc777da4",
+    "pair43.bit": "bc6473a29737715b5045dc29fd6170856ff742f325b91d123d976eca9cc7beba",
+    "pair44.bit": "b3376549d0eb6c6ff852f14053ed43b508e2420a452f031b40e2b37b6a36dfda",
+    "pair45.bit": "d2d6cbfbe2b689bdaecbe3b0f0e590c06c7273c68e2b93e0a9bf88ca4542f6e3",
+    "pair46.bit": "b274cd97df09300ccf783e1888ddde7297948d63985dd9096027e65af3a7e43a",
+    "pair47.bit": "21c84090b9aced49dd5fad78116fff59ad9d69de11a8241106e336e900626fe5",
+    "pair48.bit": "499594109e7226fc56f9668a1c8f626efdf8fcb983346612c10a45ffe3da6ae7",
+    "pair49.bit": "13c84d48538f3d16c7d8b3b54d728abae671ecca7cea95aef097ce4bc9c5b3c1",
+    "pair5.bit": "2dc1fbf2b31968a4d71516b866505f6744d77d04064c54d05f978f405abf197c",
+    "pair50.bit": "e025bd6ff9b31b8488a10df01a2ca2373a1db871e1e00a3105ec274723a1e59b",
+    "pair51.bit": "1d5d5ad96c87854902a7b87eb8b623acce47b51c03052f062e0befa22dc5cf3f",
+    "pair52.bit": "4982de3ef5e2cd02d06fb2bd8768307513b035886d2855991cacd2fafaad531b",
+    "pair53.bit": "a684a0a9e6a6ef9366e4b8e60c82c41b67cd4ad5c2baeea112003b8b965412d1",
+    "pair54.bit": "803ad8127695273a2f2978c845447541dcdfac5200a9e3cacb3deed385b8e6a4",
+    "pair55.bit": "efbb00ea903de86d2802e06e30e144f940e8dff7e3a933ea9f522e2615792484",
+    "pair56.bit": "598f1313aeda16ae2a6419778c757d14cbecbe2ef008be7970ef92ffd7e8c87b",
+    "pair57.bit": "2a10e9392617462c749a236215291ef050a783241ff8d6af02292ce2d203d0c3",
+    "pair58.bit": "eb5f7c031e4759d46bc86a9b1708d8e36ac102febeef1a944f239d0dab742805",
+    "pair59.bit": "6d2f754626664b8d9230f5a1fe1d1add5b3d9aa3fc1a72bddcce5a8fb46c1a27",
+    "pair6.bit": "4e2c89455883923da42b3349a4c7d68f2de8953bd866cc9b25dfc0adfd4c582b",
+    "pair7.bit": "84bccfe488bf863cff8f990760b9dfef691be27d831a837a7ccaf1f3f556ce78",
+    "pair8.bit": "8da156babd68a075a6655e8cd7a3211572ea3345fbe117245cd8b65f7548a633",
+    "pair9.bit": "f3c395003cb68408af49f171609a2d0a98be91d85474c5a8e9d0c4bbf11eb91f"
+  },
+  "repeated_baseline_identical": true,
+  "all_on_union_verified": true,
+  "comparator_part": "xc7z020clg400-1",
+  "ecc_word_excluded": 50
+}

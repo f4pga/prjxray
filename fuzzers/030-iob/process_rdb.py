@@ -64,7 +64,7 @@ def filter_bits(site, bits):
     return frozenset(inner())
 
 
-def process_features_sets(iostandard_lines):
+def process_features_sets(iostandard_lines, diff_term_bits=frozenset()):
     sites = {}
 
     for iostd_type, iostd_list in iostandard_lines.items():
@@ -241,7 +241,18 @@ def process_features_sets(iostandard_lines):
 
             neg_bits = frozenset(
                 '!{}'.format(b) for b in (common_bits[(site, group)] - bits))
-            print('{} {}'.format(feature, ' '.join(sorted(bits | neg_bits))))
+            # LVDS termination shares bits with differential output drive.
+            # Keep the legacy grouped feature for compatibility, but provide
+            # an LVDS input-only feature that does not force DIFF_TERM off.
+            alias = 'IOB33.IOB_Y0.LVDS_25.IN_ONLY'
+            term_aware = (site == 'IOB_Y0' and group == 'IN_ONLY' and
+                          'LVDS_25' in iostandards and diff_term_bits)
+            if feature != alias or not term_aware:
+                print('{} {}'.format(feature, ' '.join(sorted(bits | neg_bits))))
+            if term_aware:
+                assert not (bits & diff_term_bits), 'IN_ONLY unexpectedly sets DIFF_TERM'
+                relaxed = neg_bits - frozenset('!' + b for b in diff_term_bits)
+                print('{} {}'.format(alias, ' '.join(sorted(bits | relaxed))))
 
 
 def main():
@@ -258,7 +269,13 @@ def main():
     }
 
     with open(args.input_rdb) as f:
-        for l in f:
+        lines = list(f)
+        diff_term_bits = frozenset()
+        for l in lines:
+            if get_name(l) == 'IOB33.DIFF.DIFF_TERM':
+                diff_term_bits = parse_bits(l)
+                assert all(not b.startswith('!') for b in diff_term_bits)
+        for l in lines:
             if ('.SSTL' in l or '.LVCMOS' in l
                     or '.LVTTL' in l) and 'IOB_' in l:
                 iostandard_lines["NORMAL"].append(l)
@@ -267,7 +284,7 @@ def main():
             else:
                 print(l.strip())
 
-    process_features_sets(iostandard_lines)
+    process_features_sets(iostandard_lines, diff_term_bits)
 
 
 if __name__ == "__main__":

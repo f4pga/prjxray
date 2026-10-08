@@ -1,0 +1,976 @@
+{
+  "part": "xc7z020clg400-1",
+  "pairs": [
+    {
+      "p": {
+        "pin": "B19",
+        "bank": "35",
+        "site": "IOB_X1Y146",
+        "tile": "RIOB33_X73Y145",
+        "pin_function": "IO_L2P_T0_AD8P_35"
+      },
+      "n": {
+        "pin": "A20",
+        "bank": "35",
+        "site": "IOB_X1Y145",
+        "tile": "RIOB33_X73Y145",
+        "pin_function": "IO_L2N_T0_AD8N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "C20",
+        "bank": "35",
+        "site": "IOB_X1Y148",
+        "tile": "RIOB33_X73Y147",
+        "pin_function": "IO_L1P_T0_AD0P_35"
+      },
+      "n": {
+        "pin": "B20",
+        "bank": "35",
+        "site": "IOB_X1Y147",
+        "tile": "RIOB33_X73Y147",
+        "pin_function": "IO_L1N_T0_AD0N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "D19",
+        "bank": "35",
+        "site": "IOB_X1Y142",
+        "tile": "RIOB33_X73Y141",
+        "pin_function": "IO_L4P_T0_35"
+      },
+      "n": {
+        "pin": "D20",
+        "bank": "35",
+        "site": "IOB_X1Y141",
+        "tile": "RIOB33_X73Y141",
+        "pin_function": "IO_L4N_T0_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "E17",
+        "bank": "35",
+        "site": "IOB_X1Y144",
+        "tile": "RIOB33_X73Y143",
+        "pin_function": "IO_L3P_T0_DQS_AD1P_35"
+      },
+      "n": {
+        "pin": "D18",
+        "bank": "35",
+        "site": "IOB_X1Y143",
+        "tile": "RIOB33_X73Y143",
+        "pin_function": "IO_L3N_T0_DQS_AD1N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "E18",
+        "bank": "35",
+        "site": "IOB_X1Y140",
+        "tile": "RIOB33_X73Y139",
+        "pin_function": "IO_L5P_T0_AD9P_35"
+      },
+      "n": {
+        "pin": "E19",
+        "bank": "35",
+        "site": "IOB_X1Y139",
+        "tile": "RIOB33_X73Y139",
+        "pin_function": "IO_L5N_T0_AD9N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "F16",
+        "bank": "35",
+        "site": "IOB_X1Y138",
+        "tile": "RIOB33_X73Y137",
+        "pin_function": "IO_L6P_T0_35"
+      },
+      "n": {
+        "pin": "F17",
+        "bank": "35",
+        "site": "IOB_X1Y137",
+        "tile": "RIOB33_X73Y137",
+        "pin_function": "IO_L6N_T0_VREF_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "F19",
+        "bank": "35",
+        "site": "IOB_X1Y120",
+        "tile": "RIOB33_X73Y119",
+        "pin_function": "IO_L15P_T2_DQS_AD12P_35"
+      },
+      "n": {
+        "pin": "F20",
+        "bank": "35",
+        "site": "IOB_X1Y119",
+        "tile": "RIOB33_X73Y119",
+        "pin_function": "IO_L15N_T2_DQS_AD12N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "G17",
+        "bank": "35",
+        "site": "IOB_X1Y118",
+        "tile": "RIOB33_X73Y117",
+        "pin_function": "IO_L16P_T2_35"
+      },
+      "n": {
+        "pin": "G18",
+        "bank": "35",
+        "site": "IOB_X1Y117",
+        "tile": "RIOB33_X73Y117",
+        "pin_function": "IO_L16N_T2_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "G19",
+        "bank": "35",
+        "site": "IOB_X1Y114",
+        "tile": "RIOB33_X73Y113",
+        "pin_function": "IO_L18P_T2_AD13P_35"
+      },
+      "n": {
+        "pin": "G20",
+        "bank": "35",
+        "site": "IOB_X1Y113",
+        "tile": "RIOB33_X73Y113",
+        "pin_function": "IO_L18N_T2_AD13N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "H15",
+        "bank": "35",
+        "site": "IOB_X1Y112",
+        "tile": "RIOB33_X73Y111",
+        "pin_function": "IO_L19P_T3_35"
+      },
+      "n": {
+        "pin": "G15",
+        "bank": "35",
+        "site": "IOB_X1Y111",
+        "tile": "RIOB33_X73Y111",
+        "pin_function": "IO_L19N_T3_VREF_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "H16",
+        "bank": "35",
+        "site": "IOB_X1Y124",
+        "tile": "RIOB33_X73Y123",
+        "pin_function": "IO_L13P_T2_MRCC_35"
+      },
+      "n": {
+        "pin": "H17",
+        "bank": "35",
+        "site": "IOB_X1Y123",
+        "tile": "RIOB33_X73Y123",
+        "pin_function": "IO_L13N_T2_MRCC_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "J18",
+        "bank": "35",
+        "site": "IOB_X1Y122",
+        "tile": "RIOB33_X73Y121",
+        "pin_function": "IO_L14P_T2_AD4P_SRCC_35"
+      },
+      "n": {
+        "pin": "H18",
+        "bank": "35",
+        "site": "IOB_X1Y121",
+        "tile": "RIOB33_X73Y121",
+        "pin_function": "IO_L14N_T2_AD4N_SRCC_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "J20",
+        "bank": "35",
+        "site": "IOB_X1Y116",
+        "tile": "RIOB33_X73Y115",
+        "pin_function": "IO_L17P_T2_AD5P_35"
+      },
+      "n": {
+        "pin": "H20",
+        "bank": "35",
+        "site": "IOB_X1Y115",
+        "tile": "RIOB33_X73Y115",
+        "pin_function": "IO_L17N_T2_AD5N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "K14",
+        "bank": "35",
+        "site": "IOB_X1Y110",
+        "tile": "RIOB33_X73Y109",
+        "pin_function": "IO_L20P_T3_AD6P_35"
+      },
+      "n": {
+        "pin": "J14",
+        "bank": "35",
+        "site": "IOB_X1Y109",
+        "tile": "RIOB33_X73Y109",
+        "pin_function": "IO_L20N_T3_AD6N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "K16",
+        "bank": "35",
+        "site": "IOB_X1Y102",
+        "tile": "RIOB33_X73Y101",
+        "pin_function": "IO_L24P_T3_AD15P_35"
+      },
+      "n": {
+        "pin": "J16",
+        "bank": "35",
+        "site": "IOB_X1Y101",
+        "tile": "RIOB33_X73Y101",
+        "pin_function": "IO_L24N_T3_AD15N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "K17",
+        "bank": "35",
+        "site": "IOB_X1Y126",
+        "tile": "RIOB33_X73Y125",
+        "pin_function": "IO_L12P_T1_MRCC_35"
+      },
+      "n": {
+        "pin": "K18",
+        "bank": "35",
+        "site": "IOB_X1Y125",
+        "tile": "RIOB33_X73Y125",
+        "pin_function": "IO_L12N_T1_MRCC_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "K19",
+        "bank": "35",
+        "site": "IOB_X1Y130",
+        "tile": "RIOB33_X73Y129",
+        "pin_function": "IO_L10P_T1_AD11P_35"
+      },
+      "n": {
+        "pin": "J19",
+        "bank": "35",
+        "site": "IOB_X1Y129",
+        "tile": "RIOB33_X73Y129",
+        "pin_function": "IO_L10N_T1_AD11N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "L14",
+        "bank": "35",
+        "site": "IOB_X1Y106",
+        "tile": "RIOB33_X73Y105",
+        "pin_function": "IO_L22P_T3_AD7P_35"
+      },
+      "n": {
+        "pin": "L15",
+        "bank": "35",
+        "site": "IOB_X1Y105",
+        "tile": "RIOB33_X73Y105",
+        "pin_function": "IO_L22N_T3_AD7N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "L16",
+        "bank": "35",
+        "site": "IOB_X1Y128",
+        "tile": "RIOB33_X73Y127",
+        "pin_function": "IO_L11P_T1_SRCC_35"
+      },
+      "n": {
+        "pin": "L17",
+        "bank": "35",
+        "site": "IOB_X1Y127",
+        "tile": "RIOB33_X73Y127",
+        "pin_function": "IO_L11N_T1_SRCC_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "L19",
+        "bank": "35",
+        "site": "IOB_X1Y132",
+        "tile": "RIOB33_X73Y131",
+        "pin_function": "IO_L9P_T1_DQS_AD3P_35"
+      },
+      "n": {
+        "pin": "L20",
+        "bank": "35",
+        "site": "IOB_X1Y131",
+        "tile": "RIOB33_X73Y131",
+        "pin_function": "IO_L9N_T1_DQS_AD3N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "M14",
+        "bank": "35",
+        "site": "IOB_X1Y104",
+        "tile": "RIOB33_X73Y103",
+        "pin_function": "IO_L23P_T3_35"
+      },
+      "n": {
+        "pin": "M15",
+        "bank": "35",
+        "site": "IOB_X1Y103",
+        "tile": "RIOB33_X73Y103",
+        "pin_function": "IO_L23N_T3_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "M17",
+        "bank": "35",
+        "site": "IOB_X1Y134",
+        "tile": "RIOB33_X73Y133",
+        "pin_function": "IO_L8P_T1_AD10P_35"
+      },
+      "n": {
+        "pin": "M18",
+        "bank": "35",
+        "site": "IOB_X1Y133",
+        "tile": "RIOB33_X73Y133",
+        "pin_function": "IO_L8N_T1_AD10N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "M19",
+        "bank": "35",
+        "site": "IOB_X1Y136",
+        "tile": "RIOB33_X73Y135",
+        "pin_function": "IO_L7P_T1_AD2P_35"
+      },
+      "n": {
+        "pin": "M20",
+        "bank": "35",
+        "site": "IOB_X1Y135",
+        "tile": "RIOB33_X73Y135",
+        "pin_function": "IO_L7N_T1_AD2N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "N15",
+        "bank": "35",
+        "site": "IOB_X1Y108",
+        "tile": "RIOB33_X73Y107",
+        "pin_function": "IO_L21P_T3_DQS_AD14P_35"
+      },
+      "n": {
+        "pin": "N16",
+        "bank": "35",
+        "site": "IOB_X1Y107",
+        "tile": "RIOB33_X73Y107",
+        "pin_function": "IO_L21N_T3_DQS_AD14N_35"
+      }
+    },
+    {
+      "p": {
+        "pin": "N17",
+        "bank": "34",
+        "site": "IOB_X1Y54",
+        "tile": "RIOB33_X73Y53",
+        "pin_function": "IO_L23P_T3_34"
+      },
+      "n": {
+        "pin": "P18",
+        "bank": "34",
+        "site": "IOB_X1Y53",
+        "tile": "RIOB33_X73Y53",
+        "pin_function": "IO_L23N_T3_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "N18",
+        "bank": "34",
+        "site": "IOB_X1Y74",
+        "tile": "RIOB33_X73Y73",
+        "pin_function": "IO_L13P_T2_MRCC_34"
+      },
+      "n": {
+        "pin": "P19",
+        "bank": "34",
+        "site": "IOB_X1Y73",
+        "tile": "RIOB33_X73Y73",
+        "pin_function": "IO_L13N_T2_MRCC_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "N20",
+        "bank": "34",
+        "site": "IOB_X1Y72",
+        "tile": "RIOB33_X73Y71",
+        "pin_function": "IO_L14P_T2_SRCC_34"
+      },
+      "n": {
+        "pin": "P20",
+        "bank": "34",
+        "site": "IOB_X1Y71",
+        "tile": "RIOB33_X73Y71",
+        "pin_function": "IO_L14N_T2_SRCC_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "P14",
+        "bank": "34",
+        "site": "IOB_X1Y88",
+        "tile": "RIOB33_X73Y87",
+        "pin_function": "IO_L6P_T0_34"
+      },
+      "n": {
+        "pin": "R14",
+        "bank": "34",
+        "site": "IOB_X1Y87",
+        "tile": "RIOB33_X73Y87",
+        "pin_function": "IO_L6N_T0_VREF_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "P15",
+        "bank": "34",
+        "site": "IOB_X1Y52",
+        "tile": "RIOB33_X73Y51",
+        "pin_function": "IO_L24P_T3_34"
+      },
+      "n": {
+        "pin": "P16",
+        "bank": "34",
+        "site": "IOB_X1Y51",
+        "tile": "RIOB33_X73Y51",
+        "pin_function": "IO_L24N_T3_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "R16",
+        "bank": "34",
+        "site": "IOB_X1Y62",
+        "tile": "RIOB33_X73Y61",
+        "pin_function": "IO_L19P_T3_34"
+      },
+      "n": {
+        "pin": "R17",
+        "bank": "34",
+        "site": "IOB_X1Y61",
+        "tile": "RIOB33_X73Y61",
+        "pin_function": "IO_L19N_T3_VREF_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "T5",
+        "bank": "13",
+        "site": "IOB_X0Y12",
+        "tile": "LIOB33_X0Y11",
+        "pin_function": "IO_L19P_T3_13"
+      },
+      "n": {
+        "pin": "U5",
+        "bank": "13",
+        "site": "IOB_X0Y11",
+        "tile": "LIOB33_X0Y11",
+        "pin_function": "IO_L19N_T3_VREF_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "T9",
+        "bank": "13",
+        "site": "IOB_X0Y26",
+        "tile": "LIOB33_X0Y25",
+        "pin_function": "IO_L12P_T1_MRCC_13"
+      },
+      "n": {
+        "pin": "U10",
+        "bank": "13",
+        "site": "IOB_X0Y25",
+        "tile": "LIOB33_X0Y25",
+        "pin_function": "IO_L12N_T1_MRCC_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "T11",
+        "bank": "34",
+        "site": "IOB_X1Y98",
+        "tile": "RIOB33_X73Y97",
+        "pin_function": "IO_L1P_T0_34"
+      },
+      "n": {
+        "pin": "T10",
+        "bank": "34",
+        "site": "IOB_X1Y97",
+        "tile": "RIOB33_X73Y97",
+        "pin_function": "IO_L1N_T0_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "T12",
+        "bank": "34",
+        "site": "IOB_X1Y96",
+        "tile": "RIOB33_X73Y95",
+        "pin_function": "IO_L2P_T0_34"
+      },
+      "n": {
+        "pin": "U12",
+        "bank": "34",
+        "site": "IOB_X1Y95",
+        "tile": "RIOB33_X73Y95",
+        "pin_function": "IO_L2N_T0_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "T14",
+        "bank": "34",
+        "site": "IOB_X1Y90",
+        "tile": "RIOB33_X73Y89",
+        "pin_function": "IO_L5P_T0_34"
+      },
+      "n": {
+        "pin": "T15",
+        "bank": "34",
+        "site": "IOB_X1Y89",
+        "tile": "RIOB33_X73Y89",
+        "pin_function": "IO_L5N_T0_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "T16",
+        "bank": "34",
+        "site": "IOB_X1Y82",
+        "tile": "RIOB33_X73Y81",
+        "pin_function": "IO_L9P_T1_DQS_34"
+      },
+      "n": {
+        "pin": "U17",
+        "bank": "34",
+        "site": "IOB_X1Y81",
+        "tile": "RIOB33_X73Y81",
+        "pin_function": "IO_L9N_T1_DQS_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "T17",
+        "bank": "34",
+        "site": "IOB_X1Y60",
+        "tile": "RIOB33_X73Y59",
+        "pin_function": "IO_L20P_T3_34"
+      },
+      "n": {
+        "pin": "R18",
+        "bank": "34",
+        "site": "IOB_X1Y59",
+        "tile": "RIOB33_X73Y59",
+        "pin_function": "IO_L20N_T3_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "T20",
+        "bank": "34",
+        "site": "IOB_X1Y70",
+        "tile": "RIOB33_X73Y69",
+        "pin_function": "IO_L15P_T2_DQS_34"
+      },
+      "n": {
+        "pin": "U20",
+        "bank": "34",
+        "site": "IOB_X1Y69",
+        "tile": "RIOB33_X73Y69",
+        "pin_function": "IO_L15N_T2_DQS_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "U7",
+        "bank": "13",
+        "site": "IOB_X0Y28",
+        "tile": "LIOB33_X0Y27",
+        "pin_function": "IO_L11P_T1_SRCC_13"
+      },
+      "n": {
+        "pin": "V7",
+        "bank": "13",
+        "site": "IOB_X0Y27",
+        "tile": "LIOB33_X0Y27",
+        "pin_function": "IO_L11N_T1_SRCC_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "U9",
+        "bank": "13",
+        "site": "IOB_X0Y16",
+        "tile": "LIOB33_X0Y15",
+        "pin_function": "IO_L17P_T2_13"
+      },
+      "n": {
+        "pin": "U8",
+        "bank": "13",
+        "site": "IOB_X0Y15",
+        "tile": "LIOB33_X0Y15",
+        "pin_function": "IO_L17N_T2_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "U13",
+        "bank": "34",
+        "site": "IOB_X1Y94",
+        "tile": "RIOB33_X73Y93",
+        "pin_function": "IO_L3P_T0_DQS_PUDC_B_34"
+      },
+      "n": {
+        "pin": "V13",
+        "bank": "34",
+        "site": "IOB_X1Y93",
+        "tile": "RIOB33_X73Y93",
+        "pin_function": "IO_L3N_T0_DQS_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "U14",
+        "bank": "34",
+        "site": "IOB_X1Y78",
+        "tile": "RIOB33_X73Y77",
+        "pin_function": "IO_L11P_T1_SRCC_34"
+      },
+      "n": {
+        "pin": "U15",
+        "bank": "34",
+        "site": "IOB_X1Y77",
+        "tile": "RIOB33_X73Y77",
+        "pin_function": "IO_L11N_T1_SRCC_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "U18",
+        "bank": "34",
+        "site": "IOB_X1Y76",
+        "tile": "RIOB33_X73Y75",
+        "pin_function": "IO_L12P_T1_MRCC_34"
+      },
+      "n": {
+        "pin": "U19",
+        "bank": "34",
+        "site": "IOB_X1Y75",
+        "tile": "RIOB33_X73Y75",
+        "pin_function": "IO_L12N_T1_MRCC_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "V6",
+        "bank": "13",
+        "site": "IOB_X0Y6",
+        "tile": "LIOB33_X0Y5",
+        "pin_function": "IO_L22P_T3_13"
+      },
+      "n": {
+        "pin": "W6",
+        "bank": "13",
+        "site": "IOB_X0Y5",
+        "tile": "LIOB33_X0Y5",
+        "pin_function": "IO_L22N_T3_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "V8",
+        "bank": "13",
+        "site": "IOB_X0Y20",
+        "tile": "LIOB33_X0Y19",
+        "pin_function": "IO_L15P_T2_DQS_13"
+      },
+      "n": {
+        "pin": "W8",
+        "bank": "13",
+        "site": "IOB_X0Y19",
+        "tile": "LIOB33_X0Y19",
+        "pin_function": "IO_L15N_T2_DQS_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "V11",
+        "bank": "13",
+        "site": "IOB_X0Y8",
+        "tile": "LIOB33_X0Y7",
+        "pin_function": "IO_L21P_T3_DQS_13"
+      },
+      "n": {
+        "pin": "V10",
+        "bank": "13",
+        "site": "IOB_X0Y7",
+        "tile": "LIOB33_X0Y7",
+        "pin_function": "IO_L21N_T3_DQS_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "V12",
+        "bank": "34",
+        "site": "IOB_X1Y92",
+        "tile": "RIOB33_X73Y91",
+        "pin_function": "IO_L4P_T0_34"
+      },
+      "n": {
+        "pin": "W13",
+        "bank": "34",
+        "site": "IOB_X1Y91",
+        "tile": "RIOB33_X73Y91",
+        "pin_function": "IO_L4N_T0_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "V15",
+        "bank": "34",
+        "site": "IOB_X1Y80",
+        "tile": "RIOB33_X73Y79",
+        "pin_function": "IO_L10P_T1_34"
+      },
+      "n": {
+        "pin": "W15",
+        "bank": "34",
+        "site": "IOB_X1Y79",
+        "tile": "RIOB33_X73Y79",
+        "pin_function": "IO_L10N_T1_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "V16",
+        "bank": "34",
+        "site": "IOB_X1Y64",
+        "tile": "RIOB33_X73Y63",
+        "pin_function": "IO_L18P_T2_34"
+      },
+      "n": {
+        "pin": "W16",
+        "bank": "34",
+        "site": "IOB_X1Y63",
+        "tile": "RIOB33_X73Y63",
+        "pin_function": "IO_L18N_T2_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "V17",
+        "bank": "34",
+        "site": "IOB_X1Y58",
+        "tile": "RIOB33_X73Y57",
+        "pin_function": "IO_L21P_T3_DQS_34"
+      },
+      "n": {
+        "pin": "V18",
+        "bank": "34",
+        "site": "IOB_X1Y57",
+        "tile": "RIOB33_X73Y57",
+        "pin_function": "IO_L21N_T3_DQS_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "V20",
+        "bank": "34",
+        "site": "IOB_X1Y68",
+        "tile": "RIOB33_X73Y67",
+        "pin_function": "IO_L16P_T2_34"
+      },
+      "n": {
+        "pin": "W20",
+        "bank": "34",
+        "site": "IOB_X1Y67",
+        "tile": "RIOB33_X73Y67",
+        "pin_function": "IO_L16N_T2_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "W10",
+        "bank": "13",
+        "site": "IOB_X0Y18",
+        "tile": "LIOB33_X0Y17",
+        "pin_function": "IO_L16P_T2_13"
+      },
+      "n": {
+        "pin": "W9",
+        "bank": "13",
+        "site": "IOB_X0Y17",
+        "tile": "LIOB33_X0Y17",
+        "pin_function": "IO_L16N_T2_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "W11",
+        "bank": "13",
+        "site": "IOB_X0Y14",
+        "tile": "LIOB33_X0Y13",
+        "pin_function": "IO_L18P_T2_13"
+      },
+      "n": {
+        "pin": "Y11",
+        "bank": "13",
+        "site": "IOB_X0Y13",
+        "tile": "LIOB33_X0Y13",
+        "pin_function": "IO_L18N_T2_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "W14",
+        "bank": "34",
+        "site": "IOB_X1Y84",
+        "tile": "RIOB33_X73Y83",
+        "pin_function": "IO_L8P_T1_34"
+      },
+      "n": {
+        "pin": "Y14",
+        "bank": "34",
+        "site": "IOB_X1Y83",
+        "tile": "RIOB33_X73Y83",
+        "pin_function": "IO_L8N_T1_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "W18",
+        "bank": "34",
+        "site": "IOB_X1Y56",
+        "tile": "RIOB33_X73Y55",
+        "pin_function": "IO_L22P_T3_34"
+      },
+      "n": {
+        "pin": "W19",
+        "bank": "34",
+        "site": "IOB_X1Y55",
+        "tile": "RIOB33_X73Y55",
+        "pin_function": "IO_L22N_T3_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "Y7",
+        "bank": "13",
+        "site": "IOB_X0Y24",
+        "tile": "LIOB33_X0Y23",
+        "pin_function": "IO_L13P_T2_MRCC_13"
+      },
+      "n": {
+        "pin": "Y6",
+        "bank": "13",
+        "site": "IOB_X0Y23",
+        "tile": "LIOB33_X0Y23",
+        "pin_function": "IO_L13N_T2_MRCC_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "Y9",
+        "bank": "13",
+        "site": "IOB_X0Y22",
+        "tile": "LIOB33_X0Y21",
+        "pin_function": "IO_L14P_T2_SRCC_13"
+      },
+      "n": {
+        "pin": "Y8",
+        "bank": "13",
+        "site": "IOB_X0Y21",
+        "tile": "LIOB33_X0Y21",
+        "pin_function": "IO_L14N_T2_SRCC_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "Y12",
+        "bank": "13",
+        "site": "IOB_X0Y10",
+        "tile": "LIOB33_X0Y9",
+        "pin_function": "IO_L20P_T3_13"
+      },
+      "n": {
+        "pin": "Y13",
+        "bank": "13",
+        "site": "IOB_X0Y9",
+        "tile": "LIOB33_X0Y9",
+        "pin_function": "IO_L20N_T3_13"
+      }
+    },
+    {
+      "p": {
+        "pin": "Y16",
+        "bank": "34",
+        "site": "IOB_X1Y86",
+        "tile": "RIOB33_X73Y85",
+        "pin_function": "IO_L7P_T1_34"
+      },
+      "n": {
+        "pin": "Y17",
+        "bank": "34",
+        "site": "IOB_X1Y85",
+        "tile": "RIOB33_X73Y85",
+        "pin_function": "IO_L7N_T1_34"
+      }
+    },
+    {
+      "p": {
+        "pin": "Y18",
+        "bank": "34",
+        "site": "IOB_X1Y66",
+        "tile": "RIOB33_X73Y65",
+        "pin_function": "IO_L17P_T2_34"
+      },
+      "n": {
+        "pin": "Y19",
+        "bank": "34",
+        "site": "IOB_X1Y65",
+        "tile": "RIOB33_X73Y65",
+        "pin_function": "IO_L17N_T2_34"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "pin": "G14",
+      "bank": "35",
+      "site": "IOB_X1Y149",
+      "tile": "RIOB33_SING_X73Y149",
+      "pin_function": "IO_0_35"
+    }
+  ],
+  "reserved_pair": null,
+  "all_bonded_pairs": true
+}

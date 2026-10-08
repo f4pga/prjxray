@@ -1,0 +1,9 @@
+.Xil/
+*.bit
+*.bits
+*.dcp
+*.jou
+*.log
+*-io.txt
+webtalk*
+usage_statistics*
