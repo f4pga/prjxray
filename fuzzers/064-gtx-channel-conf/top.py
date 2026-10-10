@@ -102,6 +102,7 @@ assign out = in;
 
         in_use = bool(random.randint(0, 9))
         params["IN_USE"] = in_use
+        params["GTGREFCLK_USED"] = False
 
         if in_use:
             for param, param_info in attrs.items():
@@ -136,6 +137,14 @@ assign out = in;
             .IS_{}_INVERTED({}),""".format(param, is_inverted)
                 verilog_ports += """
             .{}({}),""".format(param, luts.get_next_output_net())
+
+            # Hold the selector fixed; fuzz the fabric reference connection
+            # independently of the channel attribute/inversion tags.
+            params["GTGREFCLK_USED"] = bool(random.randint(0, 1))
+            refclk = luts.get_next_output_net() if params["GTGREFCLK_USED"] else "1'b0"
+            verilog_ports += """
+            .CPLLREFCLKSEL(3'd7),
+            .GTGREFCLK({}),""".format(refclk)
 
             verilog_attr = verilog_attr.rstrip(",")
             verilog_attr += "\n)"

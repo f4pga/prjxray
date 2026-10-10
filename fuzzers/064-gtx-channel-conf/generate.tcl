@@ -16,6 +16,8 @@ proc run {} {
 
     set_property IS_ENABLED 0 [get_drc_checks {NSTD-1}]
     set_property IS_ENABLED 0 [get_drc_checks {UCIO-1}]
+    # GTGREFCLK is test-only; this fuzzer intentionally maps that input.
+    set_property IS_ENABLED 0 [get_drc_checks {REQP-52}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-48}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-47}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-1619}]

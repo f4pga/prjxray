@@ -62,6 +62,8 @@ def main():
             in_use = params["IN_USE"]
 
             segmk.add_site_tag(site, "IN_USE", in_use)
+            segmk.add_site_tag(
+                site, "GTGREFCLK_USED", params.get("GTGREFCLK_USED", False))
 
             if in_use:
                 for param, param_info in attrs.items():
