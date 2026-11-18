@@ -10,6 +10,7 @@
 #ifndef PRJXRAY_LIB_MEMORY_MAPPED_FILE
 #define PRJXRAY_LIB_MEMORY_MAPPED_FILE
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
