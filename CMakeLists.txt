@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.5.0)
 
+# Bundled third_party submodules (e.g. gflags) declare cmake_minimum_required
+# versions older than CMake 4 allows. Pretend they request at least 3.5 so the
+# build works with modern CMake without patching each submodule.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 project(prjxray)
 option(PRJXRAY_BUILD_TESTING "" OFF)
 
@@ -37,6 +42,14 @@ target_include_directories(yaml-cpp PUBLIC
 	)
 
 add_compile_options(-Wall -Werror)
+
+# GCC 15 emits a false-positive -Wfree-nonheap-object in libstdc++'s
+# new_allocator.h for some prjxray allocations. Keep -Werror but do not let
+# this specific warning break the build on affected compilers.
+CHECK_CXX_COMPILER_FLAG("-Wno-error=free-nonheap-object" CXX_COMPILER_SUPPORTS_NO_FREE_NONHEAP)
+if(${CXX_COMPILER_SUPPORTS_NO_FREE_NONHEAP})
+    add_compile_options("-Wno-error=free-nonheap-object")
+endif()
 
 add_subdirectory(lib)
 add_subdirectory(tools)
