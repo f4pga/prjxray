@@ -122,6 +122,35 @@ def active_pip_edges(fasm_path, uf, tilegrid, wiresets):
     return edges
 
 
+def ppips_edges(db_root, part, uf, type_to_tiles):
+    """Fixed 'always' pseudo-PIPs from ppips_*.db (e.g. PS7 EMIO -> PSS LOGIC_OUTS).
+
+    These are hardwired connections not present in the bitstream FASM, but they
+    are essential to link PS7 EMIO signal wires to the fabric routing. Format:
+    TILETYPE.dst.src always — applies to every tile instance of TILETYPE.
+    """
+    import glob
+    edges = []
+    base = os.path.join(db_root, part)
+    paths = glob.glob(os.path.join(base, "ppips_*.db"))
+    paths += glob.glob(os.path.join(os.path.dirname(base), "ppips_*.db"))
+    type_re = re.compile(r"^([A-Z0-9_]+)\.([A-Z0-9_]+)\.([A-Z0-9_]+)$")
+    for path in paths:
+        with open(path) as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) < 2 or parts[1] != "always":
+                    continue
+                m = type_re.match(parts[0])
+                if not m:
+                    continue
+                ttype, dst, src = m.groups()
+                for tile in type_to_tiles.get(ttype, []):
+                    edges.append((uf.find((tile, src)), uf.find((tile, dst)),
+                                  parts[0]))
+    return edges
+
+
 def components(edges):
     uf = UnionFind()
     adj = defaultdict(set)
@@ -203,6 +232,7 @@ def main():
     wiresets = wire_sets(node_wires)
     uf, type_to_tiles, grid_to_tile = build_nodes(tilegrid, tileconn)
     edges = active_pip_edges(args.fasm, uf, tilegrid, wiresets)
+    edges += ppips_edges(args.db_root, args.part, uf, type_to_tiles)
     if args.iomux:
         edges += iomux_edges(args.fasm, uf, tilegrid)
     print("active routing PIP edges: %d" % len(edges), file=sys.stderr)
@@ -245,6 +275,12 @@ def main():
             types[tilegrid.get(tile, {}).get("type", "?")] += 1
         print("site %s: component size %d, types %s"
               % (s, len(nodes), sorted(types.items(), key=lambda kv: -kv[1])[:8]))
+        io = sorted({tile for (tile, wire) in nodes
+                     if tilegrid.get(tile, {}).get("type", "") in
+                     ("RIOI3", "LIOI3", "RIOB33", "LIOB33", "RIOI3_TBYTESRC",
+                      "LIOI3_TBYTETERM")})
+        if io:
+            print("  IO tiles in component: %s" % io)
 
 
 if __name__ == "__main__":
